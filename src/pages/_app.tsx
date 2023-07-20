@@ -1,6 +1,8 @@
-// import { AuthProvider } from "@/components/Authentication/AuthProvider";
+import { AuthProvider } from "@/components/Authentication/AuthProvider";
 import Head from "next/head";
-import '@/globals.css';
+import { Toaster } from "react-hot-toast";
+
+import "@/globals.css";
 
 export default function MyApp({ Component, pageProps }: any) {
   return (
@@ -17,9 +19,11 @@ export default function MyApp({ Component, pageProps }: any) {
         <link rel="manifest" href="/favicons/manifest.json" /> */}
       </Head>
 
-      {/* <AuthProvider> */}
-      <Component {...pageProps} />
-      {/* </AuthProvider> */}
+      <AuthProvider>
+        <Component {...pageProps} />
+      </AuthProvider>
+
+      <Toaster />
     </>
   );
 }
