@@ -2,4 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer components {}
+@layer components {
+  .form-label {
+    @apply block mb-1 text-gray-600 text-xs;
+  }
+
+  .form-input,
+  .form-textarea {
+    @apply w-full mx-auto p-4 rounded-md outline-none border border-gray-300 focus:border-primary text-xs text-gray-900 focus:bg-white disabled:opacity-50 invalid:border-red-500 invalid:text-red-600
+		focus:invalid:border-red-500 focus:invalid:ring-red-500;
+  }
+
+  .btn {
+    @apply py-2 px-4 text-sm font-semibold rounded-xl outline-none border transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-accent {
+    @apply text-white bg-accent border-accent hover:opacity-80;
+  }
+
+  .btn-primary {
+    @apply text-white bg-primary border-primary hover:opacity-80 disabled:opacity-60;
+  }
+
+  .btn-secondary {
+    @apply text-black bg-secondary border-secondary hover:opacity-80;
+  }
+
+  .btn-outline {
+    @apply text-gray-700 border-primary hover:text-primary hover:border-primary;
+  }
+
+  .btn-outline-accent {
+    @apply text-gray-700 border-accent hover:text-accent hover:border-accent;
+  }
+
+  .btn-icon-suffix {
+    @apply ml-3 py-2 bg-white text-center text-primary rounded-full;
+  }
+
+  .btn-flex {
+    @apply flex items-center gap-2;
+  }
+}
