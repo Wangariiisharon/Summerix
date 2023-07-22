@@ -1,4 +1,5 @@
-import { fbAuth } from "@/firebase/configs";
+import firebaseApp from "@/firebase/configs"
+import { getAuth } from "firebase/auth";
 import { useRouter } from "next/router";
 import { createContext, useContext, useEffect, useState } from "react";
 
@@ -18,7 +19,9 @@ export function AuthProvider({ children }: Props) {
 
   useEffect(() => {
     setIsAuthenticated(false);
-
+     
+    
+     const fbAuth = getAuth(firebaseApp);
     const unsubscribe = fbAuth.onAuthStateChanged(async (user) => {
       console.log('onAuthStateChanged > user:', user);
       

@@ -1,3 +1,4 @@
+import 'firebase/auth'
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore, Timestamp } from "firebase/firestore";
@@ -9,13 +10,12 @@ if (!apps.length || apps.length === 0) {
 
   try {
     const firebaseConfig = {
-      apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-      authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-      messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-      appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-      measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+      apiKey: "AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE",
+      authDomain: "truck-it-bf0b2.firebaseapp.com",
+      projectId: "truck-it-bf0b2",
+      storageBucket: "truck-it-bf0b2.appspot.com",
+      messagingSenderId: "444807794647",
+      appId: "1:444807794647:web:a2754d536a13ff3df90592"
     };
 
     initializeApp(firebaseConfig);
@@ -27,7 +27,7 @@ if (!apps.length || apps.length === 0) {
 const firebaseApp = getApps()[0];
 // console.log('firebaseApp:', firebaseApp);
 
-export const fbAuth = getAuth(firebaseApp);
+// export const fbAuth = getAuth(firebaseApp);
 export const fbDb = getFirestore(firebaseApp);
 export const fromMillis = Timestamp.fromMillis;
 
