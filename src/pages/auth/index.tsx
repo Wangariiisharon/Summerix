@@ -1,6 +1,9 @@
 import AuthLayout from "@/components/Authentication/AuthLayout";
 import Seo from "@/components/Seo";
-import { fbAuth } from "@/firebase/configs";
+import firebaseApp from "@/firebase/configs"
+import { getAuth } from "firebase/auth";
+
+// import { fbAuth } from "@/firebase/configs";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { Field, Form, Formik } from "formik";
 import { useRouter } from "next/router";
@@ -11,7 +14,8 @@ export default function LoginPage() {
 
   const doLogin = async (formValues: any) => {
     console.log("doLogin > formValues:", formValues);
-  
+    const fbAuth = getAuth(firebaseApp);
+
     try {
       const results = await signInWithEmailAndPassword(
         fbAuth,
