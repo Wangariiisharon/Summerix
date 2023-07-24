@@ -14,6 +14,7 @@ export default function CreateAccount() {
 
   const doCreateAccount = async (formValues: { organisation: string; location: string; }) => {
     console.log("doCreateAccount > formValues:", formValues);
+    
     const fbAuth = getAuth(firebaseApp); 
 
     try {

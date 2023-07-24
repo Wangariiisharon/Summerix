@@ -9,7 +9,7 @@ interface Props {
   imageURL?: string;
 }
 
-const Seo = ({ lang, title, description, imageURL }: Props) => {
+const Seo = ({ lang, title, description, imageURL }: Props) => {   
   const seo = {
     lang: lang || 'en',
     title: title || 'Goracle',

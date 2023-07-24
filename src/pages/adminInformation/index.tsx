@@ -7,12 +7,21 @@ import { Field, Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { toast } from 'react-hot-toast';
 import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
+import Link from "next/link";
+import { useState } from "react";
 
 // ... other imports ...
 
 export default function AdminInformation() {
     const router = useRouter();
-  
+    const [isCheckboxChecked, setIsCheckboxChecked] = useState(false); 
+
+    const handleCheckboxChange = (event: { target: { checked: boolean | ((prevState: boolean) => boolean); }; }) => {
+      setIsCheckboxChecked(event.target.checked);
+    };
+
+
+
     const doAdmin = async (formValues: { firstname: any; lastname: any; email: any; phonenumber: any; password?: string; confirmpassword?: string; }) => {
       console.log("doAdmin > formValues:", formValues);
   
@@ -23,7 +32,12 @@ export default function AdminInformation() {
         console.error("Invalid organisationId");
         return;
       }
-  
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formValues.email)) {
+        console.error('Invalid email format');
+        toast.error('Please enter a valid email address.');
+        return;
+      }
       try {
         const adminCollection = collection(fbDb, 'admins');
         const docRef = doc(adminCollection, organisationId);
@@ -119,11 +133,17 @@ export default function AdminInformation() {
                   />
                 </label>
               </div>
+              <div className=" px-4 flex flex-row"> 
+                <input className="ml-3" type="checkbox"checked={isCheckboxChecked} // Bind checkbox value to state
+                  onChange={handleCheckboxChange}  />
+                <p className="ml-4 text-xs">I agree to terms & conditions</p> 
+                </div>
               <div className="my-5 flex justify-center">
-                <button type="submit" className="btn btn-primary px-5">
+                <button type="submit" className="btn btn-primary px-5" disabled={!isCheckboxChecked} >
                   <i className="fas fa-sign-in-alt mr-2"></i> Create Account
                 </button>
               </div>
+
             </Form>
           )}
         </Formik>

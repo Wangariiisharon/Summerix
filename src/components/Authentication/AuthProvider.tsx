@@ -9,7 +9,7 @@ const AuthContext = createContext({
 });
 
 type Props = {
-  children: any;
+  children: any;   
 };
 
 export function AuthProvider({ children }: Props) {
