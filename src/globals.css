@@ -9,7 +9,7 @@
 
   .form-input,
   .form-textarea {
-    @apply w-full mx-auto p-4 rounded-md outline-none border border-gray-300 focus:border-primary text-xs text-gray-900 focus:bg-white disabled:opacity-50 invalid:border-red-500 invalid:text-red-600
+    @apply w-full mx-auto p-2 rounded-md outline-none border border-gray-300 focus:border-blue-600 text-xs text-gray-900 focus:bg-white disabled:opacity-50 invalid:border-red-500 invalid:text-red-600
 		focus:invalid:border-red-500 focus:invalid:ring-red-500;
   }
 
@@ -22,9 +22,14 @@
   }
 
   .btn-primary {
-    @apply text-white bg-primary border-primary hover:opacity-80 disabled:opacity-60;
+    @apply text-white  bg-blue-600 hover:bg-blue-700 disabled:opacity-60;
+  } 
+  .btn-google{ 
+    @apply shadow-lg text-black bg-white disabled:opacity-60 py-2 px-4 text-sm
+    font-semibold rounded-xl outline-none border transition duration-150 ease-in-out disabled:cursor-not-allowed 
+    disabled:opacity-50; 
   }
-
+ 
   .btn-secondary {
     @apply text-black bg-secondary border-secondary hover:opacity-80;
   }

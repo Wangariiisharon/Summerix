@@ -1,6 +1,6 @@
 import 'firebase/auth'
 import { initializeApp, getApps } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth ,onAuthStateChanged} from "firebase/auth";
 import { getFirestore, Timestamp } from "firebase/firestore";
 
 const apps = getApps();

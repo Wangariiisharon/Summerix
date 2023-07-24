@@ -1,7 +1,7 @@
 import AuthLayout from "@/components/Authentication/AuthLayout";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import Seo from "@/components/Seo";
-import { fbAuth } from "@/firebase/configs";
+// import { fbAuth } from "@/firebase/configs";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { Field, Form, Formik } from "formik";
 import { useRouter } from "next/router";
