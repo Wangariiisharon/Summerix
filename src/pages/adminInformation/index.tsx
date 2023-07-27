@@ -32,10 +32,8 @@ export default function AdminInformation() {
         console.error("Invalid organisationId");
         return;
       }
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(formValues.email)) {
-        console.error('Invalid email format');
-        toast.error('Please enter a valid email address.');
+      if (!formValues.firstname || !formValues.lastname|| !formValues.email|| !formValues.phonenumber || !formValues.password || !formValues.confirmpassword) {
+        toast.error('Please fill in all fields.');
         return;
       }
       try {
@@ -139,7 +137,7 @@ export default function AdminInformation() {
                 <p className="ml-4 text-xs">I agree to terms & conditions</p> 
                 </div>
               <div className="my-5 flex justify-center">
-                <button type="submit" className="btn btn-primary px-5" disabled={!isCheckboxChecked} >
+                <button type="submit" className="btn btn-primary w-72 px-5" disabled={!isCheckboxChecked} >
                   <i className="fas fa-sign-in-alt mr-2"></i> Create Account
                 </button>
               </div>
