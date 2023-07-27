@@ -12,6 +12,7 @@ module.exports = {
         secondary: '#E2EDF8', // light
         accent: '#34B53A', // green
         stats: '#274F79', // slightly light
+        slight:'14FFC7'
       },
       fontFamily: {
         sans: ['"Open Sans"', 'sans-serif'],

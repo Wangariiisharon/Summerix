@@ -8,14 +8,18 @@ import { Field, Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { toast } from 'react-hot-toast';
 import { collection, addDoc } from 'firebase/firestore';
+import Link from "next/link";
 
 export default function CreateAccount() {
   const router = useRouter();
 
   const doCreateAccount = async (formValues: { organisation: string; location: string; }) => {
     console.log("doCreateAccount > formValues:", formValues);
-    
     const fbAuth = getAuth(firebaseApp); 
+    if (!formValues.organisation || !formValues.location) {
+      toast.error('Please fill in all fields.');
+      return;
+    }
 
     try {
       const organizationsCollection = collection(fbDb, 'organizations');
@@ -25,7 +29,7 @@ export default function CreateAccount() {
   
       router.push(`/adminInformation?organisationId=${encodeURIComponent(docRef.id)}`);
     } catch (error) {
-      console.error('DO LOGIN ERROR:::', error);
+      console.error('DO LOGIN ERROR:::', error);     
       toast.error('Please enter the correct auth details.');
     }
   };
@@ -44,8 +48,9 @@ export default function CreateAccount() {
         >
           {({ errors, values, handleChange }) => (
             <Form className="mt-10">
-              <div className="m-4 px-4 grid gap-5 shadow-sm">
-                <label className="block">
+              <div className="m-4 px-4 grid gap-5 shadow-sm"> 
+              <h1 className="text-base">Lets get you all set up</h1>  
+                <label className="block"> 
                   <label className="form-label">Organisation Name</label>
                   <Field
                     type="text"
@@ -67,10 +72,12 @@ export default function CreateAccount() {
                 </label>
               </div>
               <div className="my-5 flex justify-center">
-                <button type="submit" className="btn btn-primary px-5">
-                  <i className="fas fa-sign-in-alt mr-2"></i> Create Account
+                <button type="submit" className="btn w-72 btn-primary px-5">
+                Next<i className="fa-solid fa-arrow-right p-2"></i>
                 </button>
               </div>
+              <Link className="mt-15 ml-10 text-xs text-blue-600" href="/">Already have an account?</Link>
+
             </Form>
           )}
         </Formik>

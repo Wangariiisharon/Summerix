@@ -17,6 +17,7 @@ export default function AuthLayout({ children }: Props) {
               dignissimos deserunt similique accusamus esse nesciunt nemo
               accusantium repellendus deleniti id!
             </p> */}
+            
             <Image
           src="/truckit.png"
           alt="Truck It"
