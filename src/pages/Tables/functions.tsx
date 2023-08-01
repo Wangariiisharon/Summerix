@@ -143,9 +143,6 @@ const clientColumns = [
     { label: "Profit", accessor: "id" },
     { label: "TRIP ID", accessor: "id" },
     { label: "TRIP ID", accessor: "id" },
-
-
-
 ];
 
 export function VehiclesTable() {
