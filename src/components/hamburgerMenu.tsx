@@ -10,7 +10,7 @@ const HamburgerMenu = () => {
   };
 
   return (
-    <div className="hamburger-menu relative ">
+    <div className="fixed left-30 relative ">
       <div className="menu-icon text-2xl cursor-pointer" onClick={handleToggle}>
         {isOpen ? <RiCloseLine /> : <RiMenu3Line />}
       </div>

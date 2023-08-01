@@ -49,4 +49,8 @@
   .btn-flex {
     @apply flex items-center gap-2;
   }
+.table-body{
+  @apply divide-y divide-gray-200 bg-white px-8
+}
+
 }
