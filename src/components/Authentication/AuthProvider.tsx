@@ -1,5 +1,6 @@
+import 'firebase/auth';
 import firebaseApp from "@/firebase/configs"
-import { getAuth } from "firebase/auth";
+import { getAuth } from 'firebase/auth';
 import { useRouter } from "next/router";
 import { createContext, useContext, useEffect, useState } from "react";
 

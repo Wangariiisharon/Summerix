@@ -11,6 +11,5 @@ export default function Dashboard(){
             <p>This is the Dashboard</p>
         </DashLayout>
         </main>
-
     )
 }
