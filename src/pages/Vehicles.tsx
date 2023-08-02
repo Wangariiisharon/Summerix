@@ -1,5 +1,5 @@
 import SiteLayout from "@/Layout/SiteLayout";
-import VehiclesComponent from "@/Components/Vehicles";
+import VehiclesComponent from "@/components/Vehicles";
 
 export default function Vehicles(){
     return(

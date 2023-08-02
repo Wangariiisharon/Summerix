@@ -1,10 +1,10 @@
-import {Header} from "@/Components/Headers";
-import {Button} from "@/Components/Buttons";
+import {Header} from "@/components/Headers";
+import {Button} from "@/components/Buttons";
 import {ArrowDownTrayIcon, ChevronDownIcon, PlusIcon} from "@heroicons/react/24/solid";
-import {Form} from "@/Components/Forms/Form";
-import {Input} from "@/Components/Forms/input";
-import {SmallCard} from "@/Components/Cards/SmallCard";
-import DummyTable, {ClientsTable} from "@/Components/Table/Table";
+import {Form} from "@/components/Forms/Form";
+import {Input} from "@/components/Forms/input";
+import {SmallCard} from "@/components/Cards/SmallCard";
+import DummyTable, {ClientsTable} from "@/components/Table/Table";
 import {Fragment} from "react";
 
 

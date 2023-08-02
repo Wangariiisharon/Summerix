@@ -10,7 +10,7 @@ import {
     UsersIcon,
     XMarkIcon,
 } from '@heroicons/react/24/outline'
-import {Logo} from "@/Components/images";
+import {Logo} from "@/components/images";
 import {useRouter} from "next/router";
 
 const navigation = [

@@ -2,7 +2,6 @@ import AuthLayout from "@/components/Authentication/AuthLayout";
 import Seo from "@/components/Seo";
 import firebaseApp from "@/firebase/configs";
 import { fbDb } from "@/firebase/configs";
-import { getAuth } from "firebase/auth";
 import { Field, Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { toast } from 'react-hot-toast';
@@ -10,7 +9,7 @@ import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
 import Link from "next/link";
 import { useState } from "react";
 
-// ... other imports ...
+
 
 export default function AdminInformation() {
     const router = useRouter();
@@ -70,7 +69,7 @@ export default function AdminInformation() {
             password: "",
             confirmpassword: ""
           }}
-          onSubmit={(values) => doAdmin(values)}
+          onSubmit={(values: { firstname: any; lastname: any; email: any; phonenumber: any; password?: string | undefined; confirmpassword?: string | undefined; }) => doAdmin(values)}
         >
           {({ errors, values }) => (
             <Form className="mt-10">

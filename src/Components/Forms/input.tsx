@@ -1,5 +1,5 @@
 import {ExclamationCircleIcon} from '@heroicons/react/20/solid'
-import {Button} from "@/Components/Buttons";
+import {Button} from "@/components/Buttons";
 import {MagnifyingGlassIcon} from "@heroicons/react/24/outline";
 
 interface inputProps {

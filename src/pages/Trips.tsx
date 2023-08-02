@@ -1,5 +1,5 @@
 import SiteLayout from "@/Layout/SiteLayout";
-import TripsComponent from "@/Components/Trips";
+import TripsComponent from "@/components/Trips";
 
 export default function Trips() {
     return (

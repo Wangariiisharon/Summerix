@@ -1,11 +1,11 @@
-import {Header} from "@/Components/Headers";
+import {Header} from "@/components/Headers";
 import {Tab} from "@headlessui/react";
 import {Fragment} from "react";
-import {Admins} from "@/Components/Administration/Admins";
-import {Cities} from "@/Components/Administration/Cities";
-import {Vehicles} from "@/Components/Administration/Vehicles";
-import {Drivers} from "@/Components/Administration/Drivers";
-import {Roles} from "@/Components/Administration/Roles";
+import {Admins} from "@/components/Administration/Admins";
+import {Cities} from "@/components/Administration/Cities";
+import {Vehicles} from "@/components/Administration/Vehicles";
+import {Drivers} from "@/components/Administration/Drivers";
+import {Roles} from "@/components/Administration/Roles";
 
 
 const tabs = [
