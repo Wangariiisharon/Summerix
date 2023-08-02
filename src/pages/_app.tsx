@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { AuthProvider } from "@/components/Authentication/AuthProvider";
 import Head from "next/head";
 import { Toaster } from "react-hot-toast";
@@ -26,4 +27,18 @@ export default function MyApp({ Component, pageProps }: any) {
       <Toaster />
     </>
   );
+=======
+import '@/styles/globals.css'
+import type {AppProps} from 'next/app'
+import { Nunito } from 'next/font/google'
+
+
+const nunito = Nunito({ subsets: ['latin']})
+export default function App({Component, pageProps}: AppProps) {
+    return (
+        <main className={nunito.className}>
+            <Component {...pageProps} />
+        </main>
+    )
+>>>>>>> origin/develop
 }
