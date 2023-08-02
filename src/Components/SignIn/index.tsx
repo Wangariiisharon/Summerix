@@ -2,7 +2,7 @@ import Image from "next/image";
 import truckImage from '../../../public/truck.png'
 import {useRouter} from "next/router";
 import {FormEvent} from "react";
-import {DarkLogo} from "@/Components/images";
+import {DarkLogo} from "@/components/images";
 
 export default function SignInComponent(){
     const router = useRouter()

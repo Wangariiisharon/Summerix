@@ -1,11 +1,11 @@
-import {Header, HeaderBar} from "@/Components/Headers";
-import DummyTable, {ClientsTable, TripsTable} from "@/Components/Table/Table";
-import {Form} from "@/Components/Forms/Form";
-import {Input, Submit} from "@/Components/Forms/input";
-import {AddButton, Button} from "@/Components/Buttons";
+import {Header, HeaderBar} from "@/components/Headers";
+import DummyTable, {ClientsTable, TripsTable} from "@/components/Table/Table";
+import {Form} from "@/components/Forms/Form";
+import {Input, Submit} from "@/components/Forms/input";
+import {AddButton, Button} from "@/components/Buttons";
 import {ArrowDownTrayIcon, ChevronDownIcon, InboxArrowDownIcon, PlusIcon} from "@heroicons/react/24/solid";
 import {XMarkIcon} from "@heroicons/react/24/outline";
-import {FormModal} from "@/Components/Modals/FormModal";
+import {FormModal} from "@/components/Modals/FormModal";
 import {useState} from "react";
 
 

@@ -1,5 +1,5 @@
 import {Tab} from "@headlessui/react";
-import {AddButton} from "@/Components/Buttons";
+import {AddButton} from "@/components/Buttons";
 import {Fragment} from "react";
 import {SearchBar} from "../Forms/input";
 import Table, {DummyTable} from "../Table/Table";

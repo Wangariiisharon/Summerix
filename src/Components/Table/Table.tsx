@@ -1,4 +1,4 @@
-import {DeleteBtn, EditBtn} from "@/Components/Buttons";
+import {DeleteBtn, EditBtn} from "@/components/Buttons";
 import {Fragment, ReactNode} from "react";
 
 interface Props {

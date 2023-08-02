@@ -1,4 +1,4 @@
-import {CardIcon} from "@/Components/images";
+import {CardIcon} from "@/components/images";
 
 interface Props {
     name: string

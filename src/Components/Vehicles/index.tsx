@@ -1,11 +1,11 @@
-import {Header, HeaderBar} from "@/Components/Headers";
-import {AddButton, Button} from "@/Components/Buttons";
+import {Header, HeaderBar} from "@/components/Headers";
+import {AddButton, Button} from "@/components/Buttons";
 import {headers} from "next/headers";
-import DummyTable from "@/Components/Table/Table";
+import {DummyTable} from "@/components/Table/Table";
 import {FormEvent, useState} from "react";
-import {FormModal} from "@/Components/Modals/FormModal";
-import {Form} from "@/Components/Forms/Form";
-import {Input, Submit} from "@/Components/Forms/input";
+import {FormModal} from "@/components/Modals/FormModal";
+import {Form} from "@/components/Forms/Form";
+import {Input, Submit} from "@/components/Forms/input";
 import {XMarkIcon} from "@heroicons/react/24/outline";
 
 

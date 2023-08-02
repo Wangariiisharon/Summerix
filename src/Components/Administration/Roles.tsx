@@ -1,8 +1,8 @@
 import {Tab} from "@headlessui/react";
 import {Fragment} from "react";
-import {AddButton} from "@/Components/Buttons";
-import DummyTable from "@/Components/Table/Table";
-import {tabs} from "@/Components/Administration/Admins";
+import {AddButton} from "@/components/Buttons";
+import {DummyTable} from "@/components/Table/Table";
+import {tabs} from "@/components/Administration/Admins";
 
 export function Roles(){
     const handleAdd = () => {
