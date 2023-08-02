@@ -1,3 +1,17 @@
+import SiteLayout from "@/Layout/SiteLayout";
+import AdministrationComponent from "@/components/Administration";
+
+export default function Administration() {
+    return (
+        <>
+            <SiteLayout>
+                <>
+                    <AdministrationComponent/>
+                </>
+            </SiteLayout>
+        </>
+    )
+}
 import { Component, useState } from 'react';
 import Seo from "@/components/Seo";
 import DashLayout from "@/components/DashboardLayout/DashboardLayout";
@@ -20,7 +34,7 @@ const tabs = [
 
 ];
 
-export default function AdministrationPage() { 
+export  function AdministrationPage() { 
   const admins=[{
     id: '789797',
     name: 'Brian Andy',

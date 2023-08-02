@@ -1,11 +1,16 @@
 {
+<<<<<<< HEAD
   "name": "truckit",
+=======
+  "name": "trucking-app",
+>>>>>>> origin/develop
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+<<<<<<< HEAD
     "vercel-build": "next build",
     "lint": "next lint",
     "lint:fix": "next lint --fix"
@@ -37,5 +42,30 @@
     "prettier": "2.8.7",
     "tailwindcss": "^3.3.3",
     "typescript": "5.1.6"
+=======
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@headlessui/react": "^1.7.13",
+    "@headlessui/tailwindcss": "^0.1.2",
+    "@heroicons/react": "^2.0.17",
+    "@tailwindcss/forms": "^0.5.3",
+    "@types/node": "18.15.11",
+    "@types/react": "18.0.31",
+    "@types/react-dom": "18.0.11",
+    "chart.js": "^4.2.1",
+    "eslint": "8.37.0",
+    "eslint-config-next": "13.2.4",
+    "next": "13.2.4",
+    "react": "18.2.0",
+    "react-chartjs-2": "^5.2.0",
+    "react-dom": "18.2.0",
+    "typescript": "5.0.2"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.21",
+    "tailwindcss": "^3.3.0"
+>>>>>>> origin/develop
   }
 }
