@@ -27,7 +27,7 @@ interface AdminsProps {
   }
   
 
-  export function AdminsPage({ admins }: AdminsProps) {
+  export default function AdminsPage({ admins }: AdminsProps) {
     const router=useRouter()
     const [selectedTab, setSelectedTab] = useState(0);
   const handleTabChange = (index:number) => {
@@ -79,7 +79,11 @@ interface AdminsProps {
 
 
 
-export  function AdminsTable({ admins }: { admins: Admin[] }) {
+export function AdminsTable({ admins }: { admins: Admin[] }) {
+  if (!admins || !Array.isArray(admins) || admins.length === 0) {
+    return <div>No admins to display</div>;
+  }
+
     return (
       <>
       <div className="table-container">

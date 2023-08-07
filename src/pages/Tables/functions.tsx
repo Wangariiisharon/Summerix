@@ -145,7 +145,7 @@ const clientColumns = [
     { label: "TRIP ID", accessor: "id" },
 ];
 
-export function VehiclesTable() {
+export default function VehiclesTable() {
   return <Table data={vehicles} columns={vehicleColumns} />;
 }
 

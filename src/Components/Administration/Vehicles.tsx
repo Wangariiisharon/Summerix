@@ -1,56 +1,56 @@
-import {Tab} from "@headlessui/react";
-import {Fragment} from "react";
-import {AddButton} from "@/components/Buttons";
-import {DummyTable} from "@/components/Table/Table";
-import {tabs} from "@/components/Administration/Admins";
+import { Tab } from "@headlessui/react";
+import { Fragment } from "react";
+import { AddButton } from "@/components/Buttons";
+import { DummyTable } from "@/components/Table/Table";
 
-export function Vehicles(){
-    const handleAdd = () => {
-    }
+const tabs = [
+  { name: "Tab 1", href: "#", current: false },
+  { name: "Tab 2", href: "#", current: false },
+  { name: "Tab 3", href: "#", current: true },
+];
 
-    return (
-        <>
-            <div className='mt-8'>
-                <Tab.Group>
-                    <div className='flex w-full justify-end'>
-                        <div className='bg-white'>
-                            <Tab.List>
-                                {tabs.map((tab, index) => {
-                                    return (
-                                        <Fragment key={index}>
-                                            <Tab
-                                                className='ui-selected:bg-d-green h-10 w-32  ui-not-selected:bg-white uppercase'>
-                                                {tab.name}
-                                            </Tab>
-                                        </Fragment>
-                                    )
-                                })
-                                }
-                            </Tab.List>
-                        </div>
-                        <div className='ml-8'>
-                            Search bar
-                        </div>
-                        <div className='ml-8'>
-                            <AddButton name='Add Admin' handleAddClick={handleAdd}/>
-                        </div>
+export function Vehicles() {
+  const handleAdd = () => {};
 
-                    </div>
-
-                    <Tab.Panels>
-                        <Tab.Panel>
-                            <DummyTable/>
-                        </Tab.Panel>
-                        <Tab.Panel>
-                            <DummyTable/>
-                        </Tab.Panel>
-                        <Tab.Panel>
-                            <DummyTable/>
-                        </Tab.Panel>
-                    </Tab.Panels>
-                </Tab.Group>
-
+  return (
+    <>
+      <div className="mt-8">
+        <Tab.Group>
+          <div className="flex w-full justify-end">
+            <div className="bg-white">
+              <Tab.List>
+                {tabs.map((tab, index) => {
+                  return (
+                    <Fragment key={index}>
+                      <Tab
+                        className="ui-selected:bg-d-green h-10 w-32  ui-not-selected:bg-white uppercase"
+                      >
+                        {tab.name}
+                      </Tab>
+                    </Fragment>
+                  );
+                })}
+              </Tab.List>
             </div>
-        </>
-    )
+            <div className="ml-8">Search bar</div>
+            <div className="ml-8">
+              <AddButton name="Add Admin" handleAddClick={handleAdd} />
+            </div>
+          </div>
+
+          <Tab.Panels>
+            <Tab.Panel>
+              <DummyTable />
+            </Tab.Panel>
+            <Tab.Panel>
+              <DummyTable />
+            </Tab.Panel>
+            <Tab.Panel>
+              <DummyTable />
+            </Tab.Panel>
+          </Tab.Panels>
+        </Tab.Group>
+      </div>
+    </>
+  );
 }

@@ -16,12 +16,12 @@ import { Component, useState } from 'react';
 import Seo from "@/components/Seo";
 import DashLayout from "@/components/DashboardLayout/DashboardLayout";
 import Link from "next/link";
-import  { AdminsPage,AdminsTable } from "./admins";
-import  Cities  from "./clients";
-import Vehicles from "./vehicles";
-import Drivers from "./drivers";
-import Roles from "./roles";
-import Department from "./department";
+import  AdminsPage,{AdminsTable } from "./manage_admins/admins";
+import  Cities  from "./manage_clients/clients";
+import Vehicles from "./manage_vehicles/vehicles";
+import Drivers from "./manage_drivers/drivers";
+import Roles from "./manage_roles/roles";
+import Department from "./manage_department/department";
 
 
 const tabs = [

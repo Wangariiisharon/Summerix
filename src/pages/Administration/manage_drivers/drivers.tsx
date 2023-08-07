@@ -1,54 +1,55 @@
 import { useState } from "react";
 import { Tab } from "@headlessui/react";
-import { AddButton } from "../Button";
-// import {VehiclesTable} from "../Tables/functions";
-import Table from "../Tables/tables";
+import {AddButton} from "@/components/Buttons";
+import Table from "../../Tables/tables";
 
 import { Fragment } from "react";
 
 
-const cities: any[] = [
+const drivers: any[] = [
   {
-      clientid: '98560945bdy',
-      name: 'Winfred Njiru',
-      expenses: 'ksh 25000',
-      profit:"ksh 10000"
-  
+      driverId: '2822',
+      driver: 'David Mwangi',
+      mobile: '01313368009',
+      vehicleType:"Flatbed Truck",
+      completedTrips:"3 trips"  
   },
   {
-    clientid: '98560945bdy',
-    name: 'Winfred Njiru',
-    expenses: 'ksh 25000',
-    profit:"ksh 10000"
-
+    driverId: '2822',
+    driver: 'David Mwangi',
+    mobile: '01313368009',
+    vehicleType:"Flatbed Truck",
+    completedTrips:"3 trips"  
 },
 {
-  clientid: '98560945bdy',
-  name: 'Winfred Njiru',
-  expenses: 'ksh 25000',
-  profit:"ksh 10000"
-
+    driverId: '2822',
+    driver: 'David Mwangi',
+    mobile: '01313368009',
+    vehicleType:"Flatbed Truck",
+    completedTrips:"3 trips"  
 },
 {
-  clientid: '98560945bdy',
-  name: 'Winfred Njiru',
-  expenses: 'ksh 25000',
-  profit:"ksh 10000"
-
+    driverId: '2822',
+    driver: 'David Mwangi',
+    mobile: '01313368009',
+    vehicleType:"Flatbed Truck",
+    completedTrips:"3 trips"  
 },
 ];
 
-const clientsColumns = [
-  { label: "CLIENT ID", accessor: "clientid" },
-  { label: "NAME", accessor: "name" },
-  { label: "EXPENSES", accessor: "expenses" },
-  { label: "PROFIT", accessor: "profit" },
+const  driversColumns = [
+  { label: "DRIVER ID", accessor: "driverId" },
+  { label: "DRIVER", accessor: "driver" },
+  { label: "MOBILE", accessor: "mobile" },
+  { label: "VEHICLE TYPE", accessor: "vehicleType" },
+  { label: "COMPLETED TRIPS", accessor: "completedTrips" },
+
 ];
-export function ClientsTable() {
-  return <Table data={cities} columns={clientsColumns} />;
+export function DriversTable() {
+  return <Table data={drivers} columns={driversColumns} />;
 }
 
-export default function Cities() {
+export default function Drivers() {
   const [activeTab, setActiveTab] = useState(0);
 
   const handleTabChange = (tabIndex:number) => {
@@ -58,13 +59,13 @@ export default function Cities() {
   return (
     <>
       <div className="mt-8">
-        <CitiesTabs handleTabChange={handleTabChange} activeTab={activeTab} />
+        <DriversTabs handleTabChange={handleTabChange} activeTab={activeTab} />
 
         <Tab.Group as="div">
           <Tab.Panels>
             {tabs.map((tab, index) => (
               <Tab.Panel key={index}>
-                <ClientsTable />
+                <DriversTable />
               </Tab.Panel>
             ))}
           </Tab.Panels>
@@ -84,12 +85,12 @@ const tabs = [
   { name: "InActive" },
 ];
 
-interface CitiesTabsProps {
+interface DriversTableProps {
   handleTabChange: (tabIndex: number) => void;
   activeTab: number;
 }
 
-export function CitiesTabs({ handleTabChange, activeTab }: CitiesTabsProps) {
+export function DriversTabs({ handleTabChange, activeTab }: DriversTableProps) {
   return (
     <div className="flex w-full justify-end">
       <div className="bg-white">
