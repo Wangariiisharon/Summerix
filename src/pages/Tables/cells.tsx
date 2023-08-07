@@ -4,7 +4,7 @@ interface Props {
   children: ReactNode;
 }
 
-export function HeaderCell({ children }: Props) {
+export default function HeaderCell({ children }: Props) {
   return <th className="header-cell">{children}</th>;
 }
 

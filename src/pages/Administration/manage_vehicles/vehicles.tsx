@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Tab } from "@headlessui/react";
-import { AddButton } from "../Button";
-import Table from "../Tables/tables";
+import {AddButton} from "@/components/Buttons";
+import Table from "../../Tables/tables";
 
 import { Fragment } from "react";
 

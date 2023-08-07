@@ -1,4 +1,4 @@
-import { DeleteBtn, EditBtn } from "../Button";
+import { DeleteBtn, EditBtn } from "@/components/Buttons";
 import { Fragment, ReactNode } from "react";
 
 
@@ -13,6 +13,9 @@ interface Props {
 }
 
 export default function Table({ data, columns }: Props) {
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return <div>No data to display</div>;
+  }
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="mt-8 flow-root">

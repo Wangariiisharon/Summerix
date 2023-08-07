@@ -10,13 +10,13 @@ import {
     UsersIcon,
     XMarkIcon,
 } from '@heroicons/react/24/outline'
-import {Logo} from "@/components/images";
+import {DashboardLogo, Logo} from "@/components/images";
 import {useRouter} from "next/router";
 
 const navigation = [
     { name: 'Dashboard', href: '/Dashboard', icon: HomeIcon, current: true },
     { name: 'Administration', href: '/Administration', icon: UsersIcon, current: false },
-    { name: 'Vehicles', href: '/Vehicles', icon: FolderIcon, current: false },
+    { name: 'Vehicles', href: '../Vehicles', icon: FolderIcon, current: false },
     { name: 'Trips', href: '/Trips', icon: CalendarIcon, current: false },
     { name: 'Clients', href: '/Clients', icon: DocumentDuplicateIcon, current: false },
 ]
@@ -80,7 +80,7 @@ export default function SiteNav({children}: Props) {
                                     {/* Sidebar component, swap this element with another sidebar if you like */}
                                     <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-blue px-6 pb-2">
                                         <div className="flex h-16 shrink-0 items-center">
-                                            <Logo/>
+                                            <DashboardLogo/>
                                         </div>
                                         <nav className="flex flex-1 flex-col">
                                             <ul role="list" className="flex flex-1 flex-col gap-y-7">
@@ -155,7 +155,7 @@ export default function SiteNav({children}: Props) {
                                     </ul>
                                 </li>
 
-                                <li className="-mx-6 mt-auto">
+                                {/* <li className="-mx-6 mt-auto">
                                     <a
                                         href="#"
                                         className="flex items-center gap-x-4 px-6 py-3 text-xl font-semibold leading-6 text-white hover:bg-indigo-700"
@@ -168,7 +168,7 @@ export default function SiteNav({children}: Props) {
                                         <span className="sr-only">Your profile</span>
                                         <span aria-hidden="true">Tom Cook</span>
                                     </a>
-                                </li>
+                                </li> */}
                             </ul>
                         </nav>
                     </div>
