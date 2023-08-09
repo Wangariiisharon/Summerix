@@ -1,10 +1,10 @@
 import {Tab} from "@headlessui/react";
 import {Fragment} from "react";
-import {AddButton, DeleteBtn, EditBtn} from "@/components/Buttons";
+import {AddButton} from "@/components/Buttons";
 import Table, {DummyTable} from "@/components/Table/Table";
-import { HeaderCell, BodyCell } from "../../../components/Table/Cells";
-import { TableBody } from "../../../components/Table/Row";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
+import { BodyCell, HeaderCell } from "../../../components/Table/Cells";
+import { TableBody } from "../../../components/Table/Row";
 
 
 export const tabs = [
@@ -13,53 +13,53 @@ export const tabs = [
     {name: "InActive"},
 
 ]
-const Headers = ["DRIVER ID", "NAME", "CITY", "PHONE","STATUS","SUPER ADMIN"]
-const roles = [
+const Headers = ["DRIVER ID", "NAME", "MEMBERS", "PERMISIONS","UPDATED"," STATUS"]
+const departments = [
     {
         driver_id: "789797",
         name: "Leonard Omsula",
-        city: "Nairobi",
-        phone: "+25478637853",
-        status: true,
-        super_admin: false,
-    },
-    {
-        driver_id: "789797",
-        name: "Leonard Omsula",
-        city: "Nairobi",
-        phone: "+25478637853",
+        members: "8",
+        permisions: "+25478637853",
+        updated:"6 months ago",
         status: false,
-        super_admin: true,
     },
     {
         driver_id: "789797",
         name: "Leonard Omsula",
-        city: "Nairobi",
-        phone: "+25478637853",
-        status: true,
-        super_admin: false,
-    },
-    {
-        driver_id: "789797",
-        name: "Leonard Omsula",
-        city: "Nairobi",
-        phone: "+25478637853",
+        members: "8",
+        permisions: "+25478637853",
+        updated:"6 months ago",
         status: false,
-        super_admin: true,
     },
     {
         driver_id: "789797",
         name: "Leonard Omsula",
-        city: "Nairobi",
-        phone: "+25478637853",
+        members: "8",
+        permisions: "+25478637853",
+        updated:"6 months ago",
         status: false,
-        super_admin: true,
+    },
+    {
+        driver_id: "789797",
+        name: "Leonard Omsula",
+        members: "8",
+        permisions: "+25478637853",
+        updated:"6 months ago",
+        status: false,
+    },
+    {
+        driver_id: "789797",
+        name: "Leonard Omsula",
+        members: "8",
+        permisions: "+25478637853",
+        updated:"6 months ago",
+        status: false,
     },
 ]
 
-export default function Roles(){
+export default function Departments(){
     const handleAdd = () => {
-    }
+    }  
 
     return (
         <>
@@ -85,15 +85,16 @@ export default function Roles(){
                             Search bar
                         </div>
                         <div className='ml-8'>
-                            <AddButton name='Add Driver' handleAddClick={handleAdd}/>
+                            <AddButton name='Add Admin' handleAddClick={handleAdd}/>
                         </div>
 
                     </div>
 
                     <Tab.Panels>
+
                         <Tab.Panel>
                         <div  className="max-h-[500px] overflow-y-auto">
-                        <RolesTable/>
+                        <DepartmentsTable/>
                             </div>
                         </Tab.Panel>
                     </Tab.Panels>
@@ -105,8 +106,7 @@ export default function Roles(){
 } 
 
 
-
-function RolesTable() { 
+function DepartmentsTable() { 
     const handleReasign = () => {
     }
     return (
@@ -127,36 +127,20 @@ function RolesTable() {
                     </tr>
                     </thead>
                     <TableBody>
-                        {roles.map((roles, index) => {
+                        {departments.map((departments, index) => {
                             return (
                                 <Fragment key={index}>
                                     <tr className='text-base'>
                                         <td className="whitespace-nowrap  pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0">
-                                            {roles.driver_id}
+                                            {departments.driver_id}
                                         </td>
                                         <BodyCell>
-                                        {roles.name}
+                                        {departments.name}
                                         </BodyCell>
-                                        <BodyCell>{roles.city}</BodyCell>
-                                        <BodyCell>{roles.phone}</BodyCell>
-                                        <BodyCell>{roles.status ? 'Active' : 'Inactive'}</BodyCell>
-                                        <BodyCell>
-                                            <>
-                                                <div className='h-16 flex items-center '>
-                                                    {roles.super_admin ?
-                                                        <CheckCircleIcon className='h-8 w-8 text-d-green'/>
-                                                        :
-                                                        <XCircleIcon className='h-8 w-8 text-crimson-red'/>
-                                                    }
-                                                </div>
-
-                                            </>
-                                        </BodyCell>
-
-                                        <td>
-                                            <button className="text-sm text-slate-400 mt-2 px-2 py-2  rounded bg-gray-100 ">Assign Role</button>
-                                        <div className='h-12'></div>
-                                    </td>
+                                        <BodyCell>{departments.members}</BodyCell>
+                                        <BodyCell>{departments.permisions}</BodyCell>
+                                        <BodyCell>{departments.updated}</BodyCell>
+                                        <BodyCell>{departments.status ? 'Active' : 'Inactive'}</BodyCell>
 
                                     </tr>
                                 </Fragment>
@@ -168,4 +152,5 @@ function RolesTable() {
         </>
     )
 }
+
 

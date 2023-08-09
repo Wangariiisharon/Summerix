@@ -10,7 +10,7 @@ export function HeaderCell({children}: Props) {
         <>
             <th
                 scope="col"
-                className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left text-lg font-bold sm:pl-0 uppercase"
+                className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left text-base font-bold sm:pl-0 uppercase"
             >
                 {children}
             </th>

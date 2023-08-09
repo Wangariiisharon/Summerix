@@ -23,7 +23,7 @@ const trips = [
 
 ]
 
-export function TripsOverView(){
+export default function TripsOverView(){
     return(
         <>
         <div className='rounded-lg bg-white shadow lg:min-w-[28rem]'>

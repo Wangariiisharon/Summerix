@@ -15,7 +15,7 @@ ChartJS.register(
     Tooltip,
 );
 
-export const options = {
+export  const options = {
     responsive: true,
     plugins: {
         legend: {
@@ -48,7 +48,7 @@ const data = {
         borderWidth: 0
     }]
 };
-export function FuelCostOverView(){
+export default function FuelCostOverView(){
     return(
         <>
             <div className="w-1/2 mt-8 grid max-w-3xl lg:max-w-7xl mr-4">

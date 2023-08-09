@@ -1,3 +1,4 @@
+import 'firebase/firestore';
 import AuthLayout from "@/components/Authentication/AuthLayout";
 import Seo from "@/components/Seo";
 import firebaseApp from "@/firebase/configs";
@@ -48,7 +49,7 @@ export default function AdminInformation() {
   
         await setDoc(docRef, data);
   
-        router.push(`/ResetPassword`);
+        router.push(`/Administration`);
       } catch (error) {
         console.error('ACCOUNT CREATION ERROR:::', error);
         toast.error('Please enter the correct auth details.');

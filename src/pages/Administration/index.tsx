@@ -1,107 +1,85 @@
+import {Header} from "@/components/Headers";
+import {Tab} from "@headlessui/react";
+import {Fragment} from "react";
+import Admins from "./manage_admins/Admins";
+import Cities from "./manage_cities/Cities";
+import Vehicles from "./manage_vehicles/Vehicles";
+import Drivers from "./manage_drivers/Drivers";
+import Roles from "./manage_roles/Roles";
+import Departments from "./manage_department/Departments";
 import SiteLayout from "@/Layout/SiteLayout";
-import AdministrationComponent from "@/components/Administration";
-
-export default function Administration() {
-    return (
-        <>
-            <SiteLayout>
-                <>
-                    <AdministrationComponent/>
-                </>
-            </SiteLayout>
-        </>
-    )
-}
-import { Component, useState } from 'react';
-import Seo from "@/components/Seo";
-import DashLayout from "@/components/DashboardLayout/DashboardLayout";
-import Link from "next/link";
-import  AdminsPage,{AdminsTable } from "./manage_admins/admins";
-import  Cities  from "./manage_clients/clients";
-import Vehicles from "./manage_vehicles/vehicles";
-import Drivers from "./manage_drivers/drivers";
-import Roles from "./manage_roles/roles";
-import Department from "./manage_department/department";
+import Profile from "../Profile"
 
 
 const tabs = [
-  { name: 'Manage Admins', component: AdminsPage }, 
-  { name: 'Manage Cities', component: Cities }, 
-  { name: 'Manage Vehicles', component: Vehicles },
-  { name: 'Manage Driver', component: Drivers },
-  { name: 'Manage Role', component: Roles },
-  { name: 'Manage Department', component: Department },
-
-];
-
-export  function AdministrationPage() { 
-  const admins=[{
-    id: '789797',
-    name: 'Brian Andy',
-    city: 'Nairobi, Kenya',
-    phone: '+254710607738',
-    active: true,
-    superAdmin: true,
-  },
-  {
-    id: '789797',
-    name: 'Brian Andy',
-    city: 'Nairobi, Kenya',
-    phone: '+254710607738',
-    active: true,
-    superAdmin: true,
-  },
-  {
-    id: '789797',
-    name: 'Brian Andy',
-    city: 'Nairobi, Kenya',
-    phone: '+254710607738',
-    active: false,
-    superAdmin: true,
-  },
-  {
-    id: '789797',
-    name: 'Brian Andy',
-    city: 'Nairobi, Kenya',
-    phone: '+254710607738',
-    active: false,
-    superAdmin: true,
-  },
+    {name: 'Manage Admins', href: '#', current: false},
+    {name: 'Manage Cities', href: '#', current: false},
+    {name: 'Manage Vehicles', href: '#', current: true},
+    {name: 'Manage Driver', href: '#', current: false},
+    {name: 'Manage Role', href: '#', current: false},
+    {name: 'Manage Department', href: '#', current: false},
 ]
- 
-  
-  const [activeTab, setActiveTab] = useState(0);
 
-  return (
-    <main>
-      <Seo title="Admin" />
-      <DashLayout>
-        <div className="">
-          <p className="fixed top-10 p-4 ml-0.5">Administration</p>
-          <div className='mt-16'>
-            <div className='w-full flex justify-around  mb-3'>
-              {tabs.map((tab, index) => (
-                <button
-                  key={index}
-                  className={`ui-selected:border-b-4 border-d-green outline-none ui-selected:text-d-green text-sm font-semibold uppercase p-6
-              ${index === activeTab ? 'ui-selected' : ''}`}
-                  onClick={() => setActiveTab(index)}
-                >
-                  {tab.name}
-                </button>
-              ))}
-            </div>
-            <div className='h-full flex flex-col'>
-            {tabs.map((tab, index) => (
-              <div className="h-full text-sm" key={index} hidden={index !== activeTab}>
-              <tab.component admins={admins} />
-             </div>
-              ))}
-
-            </div>
-          </div>
-        </div>
-      </DashLayout>
-    </main>
-  );
+function classNames(...classes: any) {
+    return classes.filter(Boolean).join(' ')
 }
+
+export default function AdministrationComponent() {
+    return (
+        <SiteLayout>
+            <div className="max-h-[600px]">
+
+                {/* <Header heading="Administration"/> */}
+                <p className="text-lg font-bold">Administration</p>
+
+                <div>
+
+                    <div className='mt-12'>
+                        <Tab.Group>
+                            <Tab.List className='w-full flex justify-around mb-3 '>
+                                {tabs.map((tab, index) => {
+                                    return (
+                                        <Fragment key={index}>
+                                            <Tab className='ui-selected:border-b-4 border-d-green outline-none
+                                             ui-selected:text-d-green text-sm font-bold uppercase flex flex-row'>
+                                                {tab.name}
+                                            </Tab>
+                                        </Fragment>
+                                    )
+                                })}
+
+                            </Tab.List>
+                            <Tab.Panels className='h-full'>
+                                <Tab.Panel className='h-full'>
+                                    <Admins/>
+                                </Tab.Panel>
+                                <Tab.Panel className='h-full'>
+                                    <Cities/>
+                                </Tab.Panel>
+                                <Tab.Panel className='h-full'>
+                                    <Vehicles/>
+                                </Tab.Panel>
+                                <Tab.Panel className='h-full'>
+                                    <Drivers/>
+                                </Tab.Panel>
+                                <Tab.Panel className='h-full'>
+                                    <Roles/>
+                                </Tab.Panel>
+                                <Tab.Panel className='h-full'>
+                                    <Departments/>
+                                </Tab.Panel>
+                            </Tab.Panels>
+                        </Tab.Group>
+
+                    </div>
+
+                </div>
+            </div>
+
+            </SiteLayout>
+    )
+}
+
+
+
+

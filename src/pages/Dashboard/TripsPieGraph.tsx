@@ -1,5 +1,5 @@
 import {Doughnut} from "react-chartjs-2";
-import {ThisWeek} from "@/components/Dashboard/index";
+import {ThisWeek} from "@/pages/Dashboard/index";
 import {Chart as ChartJS, ArcElement, Tooltip, ScriptableContext} from 'chart.js';
 import {AnyObject} from "chart.js/dist/types/basic";
 

@@ -1,12 +1,13 @@
 import Card from "@/components/Cards/Card";
+import SiteLayout from "@/Layout/SiteLayout";
 import {SmallCard} from "@/components/Cards/SmallCard";
-import {VehicleOverview} from "@/components/Dashboard/VehicleOverview";
-import {FuelCostOverView} from "@/components/Dashboard/FuelCostOverView";
-import TripsPieGraph from "@/components/Dashboard/TripsPieGraph";
-import {TripsOverView} from "@/components/Dashboard/TripsOverView";
-import {ClientsOverView} from "@/components/Dashboard/ClientsOverView";
-import {OnRoute} from "@/components/Dashboard/OnRoute";
-import {OutOfService} from "@/components/Dashboard/OutOfService";
+import VehicleOverview from "@/pages/Dashboard/VehicleOverview";
+import FuelCostOverView from "@/pages/Dashboard/FuelCostOverView";
+import TripsPieGraph from "@/pages/Dashboard/TripsPieGraph";
+import TripsOverView from "@/pages/Dashboard/TripsOverView";
+import ClientsOverView from "@/pages/Dashboard/ClientsOverView";
+import OnRoute from "@/pages/Dashboard/OnRoute";
+import OutOfService from "@/pages/Dashboard/OutOfService";
 import {Header} from "@/components/Headers";
 import {Fragment} from "react";
 import {ChevronDownIcon} from "@heroicons/react/24/solid";
@@ -21,8 +22,8 @@ const cards = [
 
 export default function DashboardComponent() {
     return (
-        <>
-            <div>
+        <SiteLayout>
+            <div  className="max-h-[700px] overflow-y-auto">
                 <Header heading="Dashboard"/>
                 <div className='mt-8 flex justify-around'>
                     {cards.map((card, index) => {
@@ -48,7 +49,7 @@ export default function DashboardComponent() {
                 </div>
 
             </div>
-        </>
+            </SiteLayout>
     )
 }
 
