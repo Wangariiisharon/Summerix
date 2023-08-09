@@ -38,7 +38,7 @@ const people = [
 
 ]
 
-export function ClientsOverView() {
+export default function ClientsOverView() {
     return (
         <>
             <div className=" grid max-w-3xl lg:max-w-7xl w-[32rem]">

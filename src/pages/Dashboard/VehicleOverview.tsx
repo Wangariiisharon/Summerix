@@ -50,7 +50,7 @@ const options = {
 
 }
 
-export function VehicleOverview() {
+export default function VehicleOverview() {
 
     // @ts-ignore
     return (

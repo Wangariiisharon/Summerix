@@ -14,7 +14,7 @@ const people = [
     // More people...
 ]
 
-export function OutOfService() {
+export default function OutOfService() {
     return (
         <>
             <div className='bg-white shadow rounded-lg w-1/3 ml-2'>

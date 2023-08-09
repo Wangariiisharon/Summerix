@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import 'firebase/firestore';
 import AuthLayout from "../../components/Authentication/AuthLayout";
 import Seo from "../../components/Seo";
 import firebaseApp from "../../firebase/configs"
@@ -7,13 +7,13 @@ import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 
 import { Field, Form, Formik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import React from "react";
 import { toast } from 'react-hot-toast';
 
 export default function LoginPage() {
   const router = useRouter();
 
   const doGoogleSignIn = async () => {
-
     const fbAuth = getAuth(firebaseApp);
     const provider = new GoogleAuthProvider();
   
@@ -45,7 +45,7 @@ export default function LoginPage() {
         formValues.email,
         formValues.password
       );
-      console.log("doLogin > results:", results);
+      // console.log("doLogin > results:", results);
       if (results.user){
         console.log("User logged in successfully:", results.user.email);
         router.push('/Dashboard')
@@ -55,7 +55,7 @@ export default function LoginPage() {
       console.error('DO LOGIN ERROR:::', error);
       toast.error('Please enter the correct auth details.');
     }
-  };             
+  };         
 
   return (
     <main className="">

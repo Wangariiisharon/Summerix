@@ -1,3 +1,4 @@
+import 'firebase/firestore';
 import AuthLayout from "@/components/Authentication/AuthLayout";
 import Seo from "@/components/Seo";
 import firebaseApp, { fbDb } from '@/firebase/configs';
@@ -81,7 +82,7 @@ export default function CreateAccount() {
                   Next<i className="fa-solid fa-arrow-right p-2"></i>
                 </button>
               </div>
-              <Link className="mt-15 ml-10 text-xs text-blue-600" href="/auth">
+              <Link className="mt-15 ml-10 text-xs text-blue-600" href="/signin">
                 Already have an account?
               </Link>
             </Form>

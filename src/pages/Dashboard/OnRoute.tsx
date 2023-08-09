@@ -40,7 +40,7 @@ const people = [
 
     // More people...
 ]
-export function OnRoute(){
+export default function OnRoute(){
     return(
         <>
         <div className='bg-white shadow rounded-lg w-2/3 mr-2'>

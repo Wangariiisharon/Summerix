@@ -38,14 +38,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-<<<<<<< HEAD
-# dotenv environment variables file
-.env
-.env.test
-.env*.local
-
-.vercel
-=======
 package-lock.json
 yarn.lock
->>>>>>> origin/develop
+.env.sample

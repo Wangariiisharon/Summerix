@@ -1,7 +1,8 @@
 import {Tab} from "@headlessui/react";
 import {Fragment} from "react";
-import {AddButton, DeleteBtn, EditBtn} from "@/components/Buttons";
+import {AddButton} from "@/components/Buttons";
 import Table, {DummyTable} from "@/components/Table/Table";
+import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import { HeaderCell, BodyCell } from "../../../components/Table/Cells";
 import { TableBody } from "../../../components/Table/Row";
 
@@ -11,56 +12,46 @@ export const tabs = [
     {name: "InActive"},
 
 ]
-const Headers = ["DRIVER ID", "DRIVER", "MOBILE", "VEHICLE TYPE","COMPLETED TRIPS"]
-const drivers = [
+const Headers = ["CLIENT ID", "NAME", "EXPENSES", "PROFIT"]
+const cities = [
     {
-        driver_id: "789797",
-        driver: "Leonard Omsula",
-        mobile: "+25478637853",
-        vehicle_type: "Ferari",
-        completed_trips: "4",
-
+        client_id: "789797",
+        name: "Bennedict Ambula",
+        expenses: "6000",
+        profit: "4500",
 
     },
     {
-        driver_id: "789797",
-        driver: "Leonard Omsula",
-        mobile: "+25478637853",
-        vehicle_type: "Ferari",
-        completed_trips: "4",
-
+        client_id: "789797",
+        name: "Bennedict Ambula",
+        expenses: "6000",
+        profit: "4500",
 
     },
     {
-        driver_id: "789797",
-        driver: "Leonard Omsula",
-        mobile: "+25478637853",
-        vehicle_type: "Ferari",
-        completed_trips: "4",
-
+        client_id: "789797",
+        name: "Bennedict Ambula",
+        expenses: "6000",
+        profit: "4500",
 
     },
     {
-        driver_id: "789797",
-        driver: "Leonard Omsula",
-        mobile: "+25478637853",
-        vehicle_type: "Ferari",
-        completed_trips: "4",
-
+        client_id: "789797",
+        name: "Bennedict Ambula",
+        expenses: "6000",
+        profit: "4500",
 
     },
     {
-        driver_id: "789797",
-        driver: "Leonard Omsula",
-        mobile: "+25478637853",
-        vehicle_type: "Ferari",
-        completed_trips: "4",
-
+        client_id: "789797",
+        name: "Bennedict Ambula",
+        expenses: "6000",
+        profit: "4500",
 
     },
 ]
 
-export default function Drivers(){
+export default function Cities(){
     const handleAdd = () => {
     }
 
@@ -93,13 +84,11 @@ export default function Drivers(){
 
                     </div>
 
-                    <Tab.Panels>
-                        <Tab.Panel> 
-                        <div  className="max-h-[500px] overflow-y-auto">
-                        <DriversTable/>
+                        <Tab.Panel>
+                            <div  className="max-h-[500px] overflow-y-auto">
+                            <CitiesTable/>
                             </div>
                         </Tab.Panel>
-                    </Tab.Panels>
                 </Tab.Group>
 
             </div>
@@ -107,14 +96,13 @@ export default function Drivers(){
     )
 } 
 
-
-function DriversTable() {
+function CitiesTable() {
     return (
         <>
             <Table>
                 <>
                     <thead>
-                    <tr className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left text-base  sm:pl-0">
+                    <tr>
                         {Headers.map((header, index) => {
                             return (
                                 <Fragment key={index}>
@@ -127,25 +115,18 @@ function DriversTable() {
                     </tr>
                     </thead>
                     <TableBody>
-                        {drivers.map((drivers, index) => {
+                        {cities.map((cities, index) => {
                             return (
                                 <Fragment key={index}>
-                                    <tr className='text-base'>
-                                        <td className="whitespace-nowrap  pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0">
-                                            {drivers.driver_id}
+                                    <tr className=' text-base'>
+                                    <td className="whitespace-nowrap  pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0">
+                                            {cities.client_id}
                                         </td>
                                         <BodyCell>
-                                        {drivers.driver}
+                                            {cities.name}
                                         </BodyCell>
-                                        <BodyCell>{drivers.mobile}</BodyCell>
-                                        <BodyCell>{drivers.vehicle_type}</BodyCell>
-                                        <BodyCell>{drivers.completed_trips}</BodyCell>
-                                        <td className="relative whitespace-nowrap pt-6 pl-3 pr-4 text-right text-sm font-medium sm:pr-0 flex justify-around">
-                                        <EditBtn/>
-                                        <DeleteBtn/>
-                                        <div className='h-12'></div>
-                                    </td>
-
+                                        <BodyCell>{cities.expenses}</BodyCell>
+                                        <BodyCell>{cities.profit}</BodyCell>
                                     </tr>
                                 </Fragment>
                             )
@@ -156,5 +137,4 @@ function DriversTable() {
         </>
     )
 }
-
 

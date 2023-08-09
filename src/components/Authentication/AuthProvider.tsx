@@ -20,19 +20,23 @@ export function AuthProvider({ children }: Props) {
 
   useEffect(() => {  
     setIsAuthenticated(false);
+    const fbAuth = getAuth(firebaseApp);
     if (typeof window !== "undefined") {
-      const fbAuth = getAuth(firebaseApp);
-      const unsubscribe = fbAuth.onAuthStateChanged(async (user) => {
-        console.log('onAuthStateChanged > user:', user);
-        
-        setCurrentUser(user?.toJSON());
-  
-        if (user && user?.uid) {
-          setIsAuthenticated(true);
-        } else {
-          router.push("/auth");
-        }
-      });
+        const unsubscribe = fbAuth.onAuthStateChanged(async (user) => {
+            console.log('onAuthStateChanged > user:', user);
+            
+            if (user) {
+              console.log('User is authenticated:', user.toJSON());
+              setCurrentUser(user.toJSON());
+              setIsAuthenticated(true);
+            } else {
+              console.log('User is not authenticated.');
+              setCurrentUser(null);
+              setIsAuthenticated(false);
+              router.push("/auth");
+            }
+          });
+          
   
       return () => unsubscribe();
     }
