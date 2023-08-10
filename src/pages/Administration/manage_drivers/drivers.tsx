@@ -1,16 +1,18 @@
 import {Tab} from "@headlessui/react";
-import {Fragment} from "react";
-import {AddButton, DeleteBtn, EditBtn} from "@/components/Buttons";
+import {Fragment, useState} from "react";
+import {AddButton, Button, DeleteBtn, EditBtn} from "@/components/Buttons";
 import Table, {DummyTable} from "@/components/Table/Table";
 import { HeaderCell, BodyCell } from "../../../components/Table/Cells";
 import { TableBody } from "../../../components/Table/Row";
+import { SearchBar } from "@/components/Forms/input";
+import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { FormModal } from "@/components/Modals/FormModal";
+import { Formik, Form, Field } from "formik";
+import { File } from "buffer";
+import ImageInput from '../../../components/ImageInputs';
 
-export const tabs = [
-    {name: "All"},
-    {name: "Active"},
-    {name: "InActive"},
 
-]
+
 const Headers = ["DRIVER ID", "DRIVER", "MOBILE", "VEHICLE TYPE","COMPLETED TRIPS"]
 const drivers = [
     {
@@ -61,7 +63,16 @@ const drivers = [
 ]
 
 export default function Drivers(){
-    const handleAdd = () => {
+    const [open,setOpen]=useState(false) 
+
+    const handleAddDriver = () => { 
+        setOpen(true)
+    } 
+    const handleReset = () => {
+        setOpen(false)
+    }
+    const handleSubmit = async (values: { name: any; phonenumber: any; email_adress: any; gender: any;country: any; city: any;vehicle_type: any;model: any;year: any;number: any;profile: any; }) => {
+
     }
 
     return (
@@ -69,26 +80,16 @@ export default function Drivers(){
             <div className='mt-8 max-h-[700px]'>
                 <Tab.Group>
                     <div className='flex w-full justify-end'>
-                        <div className='bg-white'>
-                            <Tab.List>
-                                {tabs.map((tab, index) => {
-                                    return (
-                                        <Fragment key={index}>
-                                            <Tab
-                                                className='ui-selected:bg-d-green h-10 w-32  ui-not-selected:bg-white uppercase'>
-                                                {tab.name}
-                                            </Tab>
-                                        </Fragment>
-                                    )
-                                })
-                                }
-                            </Tab.List>
-                        </div>
+
+                    <Button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center py-4 px-4'
+                                handleClick={handleAddDriver}>
+                            <>
+                                <ArrowDownTrayIcon className='h-4 w-4 mr-2'/>
+                                Export
+                            </>
+                        </Button>
                         <div className='ml-8'>
-                            Search bar
-                        </div>
-                        <div className='ml-8'>
-                            <AddButton name='Add Admin' handleAddClick={handleAdd}/>
+                            <AddButton name='Add Driver' handleAddClick={handleAddDriver}/>
                         </div>
 
                     </div>
@@ -100,7 +101,162 @@ export default function Drivers(){
                             </div>
                         </Tab.Panel>
                     </Tab.Panels>
-                </Tab.Group>
+                </Tab.Group> 
+                <div>
+            <FormModal open={open} setOpen={setOpen}>
+                <div className='p-5'>
+                    <div className='flex w-full h-full justify-between items-center mb-12'>
+                        <div className='text-xl font-semibold '>
+                            New Truck
+                        </div>
+                        <Button className='bg-red-50 h-12 w-12 flex items-center justify-center rounded-full' handleClick={handleReset}>
+                            <XMarkIcon className='h-6 w-6 text-red-400'/>
+                        </Button>
+                    </div>
+                    <Formik
+                    initialValues={{
+                        name: "",
+                        phonenumber: "",
+                        email_adress: "",
+                        gender: "",
+                        country: "",
+                        city: "",
+                        vehicle_type: "",
+                        model: "",
+                        year: "",
+                        number: "",
+                        profile: File
+
+                                      }}
+                        // onSubmit={(values) => handleSubmit(values)}   
+                        onSubmit={(values) => {
+                            handleSubmit(values);
+                          }}
+                        >
+                       {({ values }) => (
+                    <Form>
+                        <div className=''>
+                            <div className='flex w-full justify-between'>
+                            <label className="block">
+                             <label className="form-label">NAME</label>
+                             <Field
+                              type="text"
+                              name="name"
+                              value={values.name}
+                              className="form-input bg-grey w-48"
+                            />
+                             </label>
+                             <label className="block">
+                             <label className="form-label"> PHONE NUMBER</label>
+                              <Field
+                              type="email"
+                              name="phonenumber"
+                              value={values.phonenumber}
+                              className="form-input bg-grey w-48"
+                              />
+                            </label>                           
+                             </div>
+                            <div className='flex w-full justify-between mt-8'>
+                            <label className="block">
+                            <label className="form-label"> EMAIL ADRESS</label>
+                            <Field
+                             type="text"
+                             name="email"
+                             value={values.email_adress}
+                             className="form-input bg-grey w-48"
+                            />
+                             </label>                                
+                             <label className="block">
+                             <label className="form-label">GENDER</label>
+                             <Field
+                             type="text"
+                             name="gender"
+                             value={values.gender}
+                             className="form-input bg-grey w-48"
+                            />
+                            </label>                            
+                            </div>
+                            <div className='flex w-full justify-between mt-8'>
+                            <label className="block">
+                            <label className="form-label">COUNTRY</label>
+                            <Field
+                             type="text"
+                             name="country"
+                             value={values.country}
+                             className="form-input bg-grey w-48"
+                            />
+                             </label>                                
+                             <label className="block">
+                             <label className="form-label">CITY</label>
+                             <Field
+                             type="text"
+                             name="city"
+                             value={values.city}
+                             className="form-input bg-grey w-48"
+                            />
+                            </label>                            
+                            </div> 
+                            <div className='flex w-full justify-between mt-8'>
+                            <label className="block">
+                            <label className="form-label">VEHICLE TYPE</label>
+                            <Field
+                             type="text"
+                             name="vehicle_type"
+                             value={values.vehicle_type}
+                             className="form-input bg-grey w-48"
+                            />
+                             </label>                                
+                             <label className="block">
+                             <label className="form-label">MODEL</label>
+                             <Field
+                             type="text"
+                             name="model"
+                             value={values.model}
+                             className="form-input bg-grey w-48"
+                            />
+                            </label>                            
+                            </div>
+                            <div className='flex w-full justify-between mt-8'>
+                            <label className="block">
+                            <label className="form-label">YEAR</label>
+                            <Field
+                             type="text"
+                             name="vehicle_type"
+                             value={values.year}
+                             className="form-input bg-grey w-48"
+                            />
+                             </label>                                
+                             <label className="block">
+                             <label className="form-label">NUMBER</label>
+                             <Field
+                             type="text"
+                             name="model"
+                             value={values.number}
+                             className="form-input bg-grey w-48"
+                            />
+                            </label>                            
+                            </div>
+                            <div className='flex w-full justify-between mt-8'>
+                            <label className="block">
+                            <label className="form-label">PROFILE</label>
+                            <ImageInput />
+                             </label>                                                            
+                            </div>
+                            <div className='flex w-full justify-end mt-24 '>
+                                <Button className='text-blue text-xl mr-32' handleClick={handleReset}>Reset</Button>
+                                {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
+                                <button type='submit' >Save</button>
+                            </div>
+
+                        </div>
+                    </Form>
+                     )}
+                    </Formik>
+                </div>
+            </FormModal>
+
+            </div>
+
 
             </div>
         </>
@@ -111,6 +267,10 @@ export default function Drivers(){
 function DriversTable() {
     return (
         <>
+            <p className="text-lg font-bold">Drivers</p> 
+                <div className='flex  text-base mt-2 searchBarContainer'>
+                <SearchBar name='admins_searchbar' placeholder='Search name, id, phone' /> 
+               </div>
             <Table>
                 <>
                     <thead>

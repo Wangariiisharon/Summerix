@@ -119,58 +119,7 @@ export default function Admins() {
     const handleReset = () => {
         setOpen(false)
     }
-    // async function addAdmin(values: {
-    //     firstname: string;
-    //     lastname: string;
-    //     email: string;
-    //     phonenumber: string;
-    //   })
-    //    {  
-    //     console.log("Submitted values > formValues:", values);
 
-    //     try {
-    //       const auth = getAuth(); 
-          
-    //       const currentUser: User | null = auth.currentUser;
-    //       if (!currentUser) {
-    //         console.log('User is not authenticated');
-    //         return;
-    //       }
-      
-    //       if (
-    //         !values ||
-    //         values.firstname === "" ||
-    //         values.lastname === "" ||
-    //         values.email === "" ||
-    //         values.phonenumber === ""
-    //       ) {
-    //         console.error('Required form fields are missing');
-    //         return;
-    //       }
-          
-      
-    //       const fbDb = getFirestore();
-      
-    //       const adminValues = {
-    //         firstname: values.firstname,
-    //         lastname: values.lastname,
-    //         email: values.email,
-    //         phonenumber: values.phonenumber,
-    //       };
-
-      
-    //       const adminCollectionRef = collection(fbDb, 'admin');
-    //       const newAdminDocRef = doc(adminCollectionRef);
-    //       await setDoc(newAdminDocRef, adminValues); 
-      
-    //       console.log('Admin added successfully');
-    //     } catch (error) {
-    //       console.error('Error adding admin:', error);
-    //     }
-    //   }  
-
-
-    
     const handleSubmit = async (values: { firstname: any; lastname: any; email: any; phonenumber: any; }) => {
         console.log("Submitted Values:", values);
     
@@ -214,7 +163,7 @@ export default function Admins() {
                                     return (
                                         <Fragment key={index}>
                                             <Tab
-                                                className='ui-selected:bg-d-green h-10 w-32  ui-not-selected:bg-white uppercase'>
+                                                className='ui-selected:bg-d-green h-8 w-32 ui-not-selected:bg-white text-sm uppercase'>
                                                 {tab.name}
                                             </Tab>
                                         </Fragment>
@@ -222,13 +171,14 @@ export default function Admins() {
                                 })
                                 }
                             </Tab.List>
-                        </div>
-                        <div className='ml-8'>
-                            <SearchBar name='admins_searchbar' placeholder='Search name, id, phone, email'/>
-                        </div>
-                        <div className='ml-8'>
+                        </div> 
+                        <div className='flex justify-end text-base mr-2'>
+                            <SearchBar name='admins_searchbar' placeholder='Search name, id, phone'/>
+                          <div className='ml-2'>
                             <AddButton name='Add Admin' handleAddClick={handleAddAdmin}/>
+                            </div>
                         </div>
+
 
                     </div>
 

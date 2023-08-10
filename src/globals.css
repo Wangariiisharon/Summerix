@@ -51,6 +51,9 @@
   }
 .table-body{
   @apply divide-y divide-gray-200 bg-white px-8
+} 
+.searchBarContainer {
+  width: 64; 
 }
 
 }

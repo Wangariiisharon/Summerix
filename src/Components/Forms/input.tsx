@@ -60,12 +60,15 @@ interface SearchBarProps{
 export function SearchBar({name, placeholder}: SearchBarProps){
     return(
         <>
-        <div className='flex items-center bg-white px-4 py-2 lg:w-[540px]'>
-            <div className='border-r-2 px-4 border-gray-300'>
-                <MagnifyingGlassIcon className='h-6 w-6'/>
-            </div>
-            <input className='border-0 w-full placeholder:text-lg' type='text' placeholder={placeholder} name={name}/>
+        <div className='relative flex bg-white px-1 py-1'>
+        <input className='border-1 border-gray-300 text-gray-300 w-42 h-8 pl-8 text-base' type='text' placeholder={placeholder} name={name} />
+        <div className='absolute left-2 top-1.5'>
+        <MagnifyingGlassIcon className='h-4 w-4'/>
         </div>
+        </div>
+
+
+
         </>
     )
 }
