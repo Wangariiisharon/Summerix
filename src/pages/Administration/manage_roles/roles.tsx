@@ -5,6 +5,7 @@ import Table, {DummyTable} from "@/components/Table/Table";
 import { HeaderCell, BodyCell } from "../../../components/Table/Cells";
 import { TableBody } from "../../../components/Table/Row";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
+import { SearchBar } from "@/components/Forms/input";
 
 
 export const tabs = [
@@ -58,7 +59,7 @@ const roles = [
 ]
 
 export default function Roles(){
-    const handleAdd = () => {
+    const handleAddDriver = () => {
     }
 
     return (
@@ -71,21 +72,20 @@ export default function Roles(){
                                 {tabs.map((tab, index) => {
                                     return (
                                         <Fragment key={index}>
-                                            <Tab
-                                                className='ui-selected:bg-d-green h-10 w-32  ui-not-selected:bg-white uppercase'>
-                                                {tab.name}
-                                            </Tab>
-                                        </Fragment>
+                                        <Tab
+                                            className='ui-selected:bg-d-green h-8 w-32 ui-not-selected:bg-white text-sm uppercase'>
+                                            {tab.name}
+                                        </Tab>
+                                    </Fragment>
                                     )
                                 })
                                 }
                             </Tab.List>
                         </div>
-                        <div className='ml-8'>
-                            Search bar
-                        </div>
-                        <div className='ml-8'>
-                            <AddButton name='Add Driver' handleAddClick={handleAdd}/>
+                        <div className='flex justify-end text-base mr-2'>
+                          <div className='ml-2'>
+                            <AddButton name='Add Role' handleAddClick={handleAddDriver}/>
+                            </div>
                         </div>
 
                     </div>

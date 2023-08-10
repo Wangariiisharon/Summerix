@@ -7,12 +7,7 @@ import { BodyCell, HeaderCell } from "../../../components/Table/Cells";
 import { TableBody } from "../../../components/Table/Row";
 
 
-export const tabs = [
-    {name: "All"},
-    {name: "Active"},
-    {name: "InActive"},
 
-]
 const Headers = ["DRIVER ID", "NAME", "MEMBERS", "PERMISIONS","UPDATED"," STATUS"]
 const departments = [
     {
@@ -67,25 +62,13 @@ export default function Departments(){
                 <Tab.Group>
                     <div className='flex w-full justify-end'>
                         <div className='bg-white'>
-                            <Tab.List>
-                                {tabs.map((tab, index) => {
-                                    return (
-                                        <Fragment key={index}>
-                                            <Tab
-                                                className='ui-selected:bg-d-green h-10 w-32  ui-not-selected:bg-white uppercase'>
-                                                {tab.name}
-                                            </Tab>
-                                        </Fragment>
-                                    )
-                                })
-                                }
-                            </Tab.List>
+             
                         </div>
-                        <div className='ml-8'>
-                            Search bar
-                        </div>
-                        <div className='ml-8'>
-                            <AddButton name='Add Admin' handleAddClick={handleAdd}/>
+
+                        <div className='flex justify-end text-base mr-2'>
+                          <div className='ml-2'>
+                            <AddButton name='Add' handleAddClick={handleAdd}/>
+                            </div>
                         </div>
 
                     </div>

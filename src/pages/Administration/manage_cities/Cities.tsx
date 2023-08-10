@@ -5,13 +5,9 @@ import Table, {DummyTable} from "@/components/Table/Table";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import { HeaderCell, BodyCell } from "../../../components/Table/Cells";
 import { TableBody } from "../../../components/Table/Row";
+import { SearchBar } from "@/components/Forms/input";
 
-export const tabs = [
-    {name: "All"},
-    {name: "Active"},
-    {name: "InActive"},
 
-]
 const Headers = ["CLIENT ID", "NAME", "EXPENSES", "PROFIT"]
 const cities = [
     {
@@ -61,26 +57,10 @@ export default function Cities(){
                 <Tab.Group>
                     <div className='flex w-full justify-end'>
                         <div className='bg-white'>
-                            <Tab.List>
-                                {tabs.map((tab, index) => {
-                                    return (
-                                        <Fragment key={index}>
-                                            <Tab
-                                                className='ui-selected:bg-d-green h-10 w-32  ui-not-selected:bg-white uppercase'>
-                                                {tab.name}
-                                            </Tab>
-                                        </Fragment>
-                                    )
-                                })
-                                }
-                            </Tab.List>
+ 
                         </div>
-                        <div className='ml-8'>
-                            Search bar
-                        </div>
-                        <div className='ml-8'>
-                            <AddButton name='Add Admin' handleAddClick={handleAdd}/>
-                        </div>
+
+
 
                     </div>
 
@@ -99,6 +79,16 @@ export default function Cities(){
 function CitiesTable() {
     return (
         <>
+        <p className="text-lg font-bold">Cities</p> 
+        <div className='flex  text-base mt-2 searchBarContainer'>
+           <SearchBar name='admins_searchbar' placeholder='Search name, id, phone' /> 
+        </div>
+        <div className="flex justify-end mr-20 bg-white">
+            <p>Nairobi,Kenya</p> 
+           <i className="fa fa-angle-down" aria-hidden="true"></i>
+           </div>
+
+
             <Table>
                 <>
                     <thead>

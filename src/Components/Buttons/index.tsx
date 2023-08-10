@@ -35,9 +35,9 @@ export function AddButton({name, handleAddClick}: AddBtnProps) {
     return (
         <>
             <Button
-                className='rounded bg-d-green w-[180px] h-[44px] uppercase text-white font-semibold flex items-center py-4 px-4'
+                className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center py-4 px-4'
                 handleClick={handleAddClick}>
-                <PlusIcon className='h-6 w-6 mr-2'/>
+                <PlusIcon className='h-5 w-5 mr-2'/>
                 {name}
             </Button>
         </>
