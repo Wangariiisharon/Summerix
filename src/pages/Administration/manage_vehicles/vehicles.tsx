@@ -37,7 +37,7 @@ const vehicles = [
         vehicle_id: "789797",
         name: "Joseph Kiriamit",
         lisence_plate: "Nairobi",
-        status: true,
+        status: false,
     },
     {
         vehicle_id: "789797",
@@ -50,11 +50,31 @@ const vehicles = [
         name: "Joseph Kiriamit",
         lisence_plate: "Nairobi",
         status: true,
+    },
+    {
+        vehicle_id: "789797",
+        name: "Joseph Kiriamit",
+        lisence_plate: "Nairobi",
+        status: true,
+    },
+    {
+        vehicle_id: "789797",
+        name: "Joseph Kiriamit",
+        lisence_plate: "Nairobi",
+        status: false,
+    },
+    {
+        vehicle_id: "789797",
+        name: "Joseph Kiriamit",
+        lisence_plate: "Nairobi",
+        status: false,
     },
 ]
 
 export default function Vehicles(){
     const [open,setOpen]=useState(false) 
+    const [selectedTab, setSelectedTab] = useState<number>(0); 
+
 
     const handleAddVehicles = () => { 
         setOpen(true)
@@ -77,10 +97,15 @@ export default function Vehicles(){
                                 {tabs.map((tab, index) => {
                                     return (
                                         <Fragment key={index}>
-                                            <Tab
-                                                className='ui-selected:bg-d-green h-8 w-32 ui-not-selected:bg-white text-sm uppercase'>
-                                                {tab.name}
-                                            </Tab>
+                                    <Tab
+                                        className='ui-selected:bg-d-green h-8 w-32 ui-not-selected:bg-white text-sm uppercase'
+                                        onClick={() => {
+                                            console.log("Tab Clicked", index);
+                                            setSelectedTab(index);
+                                          }}
+                                        >
+                                        {tab.name}
+                                    </Tab>
                                         </Fragment>
                                     )
                                 })
@@ -99,7 +124,20 @@ export default function Vehicles(){
                     <Tab.Panels>
                         <Tab.Panel>
                         <div  className="max-h-[500px] overflow-y-auto">
-                        <VehiclesTable/>
+                        <VehiclesTable selectedTab={selectedTab} />
+
+                            </div>
+                        </Tab.Panel>
+                        <Tab.Panel>
+                        <div  className="max-h-[500px] overflow-y-auto">
+                        <VehiclesTable selectedTab={selectedTab} />
+
+                            </div>
+                        </Tab.Panel>
+                        <Tab.Panel>
+                        <div  className="max-h-[500px] overflow-y-auto">
+                        <VehiclesTable selectedTab={selectedTab} />
+
                             </div>
                         </Tab.Panel>
                     </Tab.Panels>
@@ -217,7 +255,20 @@ export default function Vehicles(){
 } 
 
 
-function VehiclesTable() { 
+interface VehiclesTableProps {
+    selectedTab: number; 
+}
+
+export function VehiclesTable({ selectedTab }: VehiclesTableProps) {
+        console.log("VehiclesTable Rendering with selectedTab:", selectedTab);
+
+    const filteredVehicles = vehicles.filter(vehicles =>
+        selectedTab === 0 ||
+        (selectedTab === 1 && vehicles.status) ||
+        (selectedTab === 2 && !vehicles.status)
+    );
+
+    console.log("Filtered Vehicles:", filteredVehicles);
     const handleReasign = () => {
     }
     return (
@@ -238,8 +289,8 @@ function VehiclesTable() {
                     </tr>
                     </thead>
                     <TableBody>
-                        {vehicles.map((vehicles, index) => {
-                            return (
+                    {filteredVehicles.map((vehicles, index) => {
+                                                    return (
                                 <Fragment key={index}>
                                     <tr className='text-base'>
                                         <td className="whitespace-nowrap  pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0">
@@ -266,8 +317,9 @@ function VehiclesTable() {
                                     </tr>
                                 </Fragment>
                             )
-                        })}
-                    </TableBody>
+                    })}
+                </TableBody>
+    
                 </>
             </Table>
         </>
