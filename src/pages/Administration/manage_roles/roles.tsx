@@ -1,5 +1,5 @@
 import {Tab} from "@headlessui/react";
-import {Fragment} from "react";
+import {Fragment, useState} from "react";
 import {AddButton, DeleteBtn, EditBtn} from "@/components/Buttons";
 import Table, {DummyTable} from "@/components/Table/Table";
 import { HeaderCell, BodyCell } from "../../../components/Table/Cells";
@@ -59,6 +59,8 @@ const roles = [
 ]
 
 export default function Roles(){
+    const [selectedTab, setSelectedTab] = useState<number>(0); 
+
     const handleAddDriver = () => {
     }
 
@@ -72,10 +74,15 @@ export default function Roles(){
                                 {tabs.map((tab, index) => {
                                     return (
                                         <Fragment key={index}>
-                                        <Tab
-                                            className='ui-selected:bg-d-green h-8 w-32 ui-not-selected:bg-white text-sm uppercase'>
-                                            {tab.name}
-                                        </Tab>
+                                    <Tab
+                                        className='ui-selected:bg-d-green h-8 w-32 ui-not-selected:bg-white text-sm uppercase'
+                                        onClick={() => {
+                                            console.log("Tab Clicked", index);
+                                            setSelectedTab(index);
+                                          }}
+                                        >
+                                        {tab.name}
+                                    </Tab>
                                     </Fragment>
                                     )
                                 })
@@ -93,7 +100,20 @@ export default function Roles(){
                     <Tab.Panels>
                         <Tab.Panel>
                         <div  className="max-h-[500px] overflow-y-auto">
-                        <RolesTable/>
+                        <RolesTable selectedTab={selectedTab} />
+
+                            </div>
+                        </Tab.Panel>
+                        <Tab.Panel>
+                        <div  className="max-h-[500px] overflow-y-auto">
+                        <RolesTable selectedTab={selectedTab} />
+
+                            </div>
+                        </Tab.Panel>
+                        <Tab.Panel>
+                        <div  className="max-h-[500px] overflow-y-auto">
+                        <RolesTable selectedTab={selectedTab} />
+
                             </div>
                         </Tab.Panel>
                     </Tab.Panels>
@@ -106,8 +126,21 @@ export default function Roles(){
 
 
 
-function RolesTable() { 
-    const handleReasign = () => {
+interface RolesTableProps {
+    selectedTab: number; 
+}
+
+export function RolesTable({ selectedTab }: RolesTableProps) {
+        console.log("RolesTable Rendering with selectedTab:", selectedTab);
+
+    const filteredRoles = roles.filter(roles =>
+        selectedTab === 0 ||
+        (selectedTab === 1 && roles.status) ||
+        (selectedTab === 2 && !roles.status)
+    );
+
+    console.log("Filtered Vehicles:", filteredRoles);
+const handleReasign = () => {
     }
     return (
         <>
@@ -127,8 +160,8 @@ function RolesTable() {
                     </tr>
                     </thead>
                     <TableBody>
-                        {roles.map((roles, index) => {
-                            return (
+                    {filteredRoles.map((roles, index) => {
+                         return (
                                 <Fragment key={index}>
                                     <tr className='text-base'>
                                         <td className="whitespace-nowrap  pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0">
@@ -161,8 +194,9 @@ function RolesTable() {
                                     </tr>
                                 </Fragment>
                             )
-                        })}
-                    </TableBody>
+                    })}
+                </TableBody>
+
                 </>
             </Table>
         </>

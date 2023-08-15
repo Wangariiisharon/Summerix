@@ -2,12 +2,14 @@ import {Header, HeaderBar} from "@/components/Headers";
 import {AddButton, Button} from "@/components/Buttons";
 import {headers} from "next/headers";
 import {DummyTable} from "@/components/Table/Table";
-import {FormEvent, useState} from "react";
+import {FormEvent, Fragment, useState} from "react";
 import {FormModal} from "@/components/Modals/FormModal";
 import {Form} from "@/components/Forms/Form";
 import {Input, Submit} from "@/components/Forms/input";
 import SiteLayout from "@/Layout/SiteLayout";
 import {XMarkIcon} from "@heroicons/react/24/outline";
+import { Tab } from "@headlessui/react";
+import { MaintananceTable } from "./maintanance";
 
 
 const Headers = [
@@ -40,6 +42,8 @@ const Headers = [
 
 export default function VehiclesComponent() {
     const [open, setOpen] = useState(false)
+    const [selectedTab, setSelectedTab] = useState<number>(0); 
+
     const handleAddClick = () => {
         setOpen(true)
     }
@@ -62,14 +66,72 @@ export default function VehiclesComponent() {
                     <Header heading="Vehicles"/>
                     <AddButton name="Add Vehicle" handleAddClick={handleAddClick}/>
                 </div>
-                <div className='mt-4'>
-                    <HeaderBar headers={Headers}/>
-                </div>
-                <div>
-                    <DummyTable/>
-                </div>
+                <div className='mt-4'> 
+                <Tab.Group>
+                    <Tab.List className="w-full flex justify-around mb-3"> 
+                                {Headers.map((header, index) => {
+                                    return (
+                                        <Fragment key={index}>
+                                    <Tab
+                                        className='ui-selected:border-b-4 border-d-green outline-none
+                                            ui-selected:text-d-green text-sm font-bold uppercase flex flex-row'                                        onClick={() => {
+                                            console.log("Tab Clicked", index);
+                                            setSelectedTab(index);
+                                          }}
+                                        >
+                                        {header.name}
+                                    </Tab>
+                                        </Fragment>
+                                    )
+                                })
+                                }
+                    </Tab.List>
+                    <Tab.Panels>
+                        <Tab.Panel>
+                        <div  className="max-h-[500px] overflow-y-auto">
+                        <DummyTable selectedTab={selectedTab} />
 
+                            </div>
+                        </Tab.Panel>
+                        <Tab.Panel>
+                        <div  className="max-h-[500px] overflow-y-auto">
+                        <DummyTable selectedTab={selectedTab} />
+
+                            </div>
+                        </Tab.Panel>
+                        <Tab.Panel>
+                        <div  className="max-h-[500px] overflow-y-auto">
+                        <DummyTable selectedTab={selectedTab} />
+
+                            </div>
+                        </Tab.Panel>
+                        <Tab.Panel>
+                        <div  className="max-h-[500px] overflow-y-auto">
+                        <DummyTable selectedTab={selectedTab} />
+
+                            </div>
+                        </Tab.Panel>
+                        <Tab.Panel>
+                        <div  className="max-h-[500px] overflow-y-auto">
+                        <MaintananceTable selectedTab={selectedTab} />
+
+                            </div>
+                        </Tab.Panel>
+                        <Tab.Panel>
+                        <div  className="max-h-[500px] overflow-y-auto">
+                        <DummyTable selectedTab={selectedTab} />
+
+                            </div>
+                        </Tab.Panel>
+
+                    </Tab.Panels>
+                </Tab.Group> 
+                </div> 
+                <div>
+                </div>
+            
             </div>
+
             <FormModal open={open} setOpen={setOpen}>
                 <div className='p-8'>
                     <div className='flex w-full h-full justify-between items-center mb-12'>

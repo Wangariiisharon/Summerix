@@ -96,21 +96,14 @@ const admins = [
         superAdmin: true
 
     },
-    {
-        id: "789797",
-        name: "Joseph Njau",
-        city: "Kasarani, Kenya",
-        phone: "+254710607738",
-        active: true,
-        superAdmin: true
-
-    },
 ]
 
 
 
 export default function Admins() {
     const [open,setOpen]=useState(false) 
+    const [selectedTab, setSelectedTab] = useState<number>(0); 
+
     const handleAddAdmin = () => {
         setOpen(true)
     }
@@ -162,10 +155,16 @@ export default function Admins() {
                                 {tabs.map((tab, index) => {
                                     return (
                                         <Fragment key={index}>
-                                            <Tab
-                                                className='ui-selected:bg-d-green h-8 w-32 ui-not-selected:bg-white text-sm uppercase'>
-                                                {tab.name}
-                                            </Tab>
+                                    <Tab
+                                        className='ui-selected:bg-d-green h-8 w-32 ui-not-selected:bg-white text-sm uppercase'
+                                        onClick={() => {
+                                            console.log("Tab Clicked", index);
+                                            setSelectedTab(index);
+                                          }}
+                                        >
+                                        {tab.name}
+                                    </Tab>
+
                                         </Fragment>
                                     )
                                 })
@@ -185,7 +184,17 @@ export default function Admins() {
                     <Tab.Panels>
                         <Tab.Panel>
                             <div  className="max-h-[500px] overflow-y-auto">
-                            <AdminsTable/>
+                            <AdminsTable selectedTab={selectedTab} />
+                            </div>
+                        </Tab.Panel>
+                        <Tab.Panel>
+                            <div  className="max-h-[500px] overflow-y-auto">
+                            <AdminsTable selectedTab={selectedTab} />
+                            </div>
+                        </Tab.Panel>
+                        <Tab.Panel>
+                            <div  className="max-h-[500px] overflow-y-auto">
+                            <AdminsTable selectedTab={selectedTab} />
                             </div>
                         </Tab.Panel>
                        
@@ -277,7 +286,20 @@ export default function Admins() {
     )
 }
 
-export  function AdminsTable() {
+interface AdminsTableProps {
+    selectedTab: number; 
+}
+export function AdminsTable({ selectedTab }: AdminsTableProps) {
+    console.log("AdminsTable Rendering with selectedTab:", selectedTab);
+
+    const filteredAdmins = admins.filter(admin =>
+        selectedTab === 0 ||
+        (selectedTab === 1 && admin.active) ||
+        (selectedTab === 2 && !admin.active)
+    );
+
+    console.log("Filtered Admins:", filteredAdmins);
+
     return (
         <div className="">
             <Table>
@@ -296,7 +318,7 @@ export  function AdminsTable() {
                     </tr>
                     </thead>
                     <TableBody>
-                        {admins.map((admin, index) => {
+                    {filteredAdmins.map((admin, index) => {
                             return (
                                 <Fragment key={index}>
                                     <tr className=' text-base'>
@@ -325,7 +347,9 @@ export  function AdminsTable() {
                                     </tr>
                                 </Fragment>
                             )
-                        })}
+                        
+                    })}
+                        
                     </TableBody>
                 </>
             </Table>
