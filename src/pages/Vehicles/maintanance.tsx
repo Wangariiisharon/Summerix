@@ -260,8 +260,8 @@ export function MaintananceTable({ selectedTab }: VehiclesTableProps) {
 
     const filteredVehicles = vehicles.filter(vehicles =>
         selectedTab === 0 ||
-        (selectedTab === 1 ) ||
-        (selectedTab === 1) 
+        (selectedTab === 1 && vehicles.date >new Date()) ||
+        (selectedTab === 1 && vehicles.date <new Date()) 
 
     );
 
@@ -325,7 +325,7 @@ export function MaintananceTable({ selectedTab }: VehiclesTableProps) {
  
                             <tbody  className="divide-y divide-gray-200 bg-white">
                             {filteredVehicles.map((vehicles, index) => { 
-                                 const uniqueKey = `${vehicles.vehicle}_${vehicles.date}_${index}`;
+                                 const uniqueKey = `${vehicles.vehicle}_${vehicles.date}_${index}`;     
 
                                 return( 
                                     

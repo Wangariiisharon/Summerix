@@ -79,11 +79,11 @@ export default function Cities(){
 function CitiesTable() {
     return (
         <>
-        <p className="text-lg font-bold">Cities</p> 
-        <div className='flex  text-base mt-2 searchBarContainer'>
+        <p className="text-lg ml-8 font-bold">Cities</p> 
+        <div className='flex  text-base mt-2 ml-8 w-72 searchBarContainer'>
            <SearchBar name='admins_searchbar' placeholder='Search name, id, phone' /> 
         </div>
-        <div className="flex justify-end mr-20 bg-white">
+        <div className="flex justify-end mr-20 bg-[#FAFAFB]">
             <p>Nairobi,Kenya</p> 
            <i className="fa fa-angle-down" aria-hidden="true"></i>
            </div>
@@ -107,17 +107,21 @@ function CitiesTable() {
                     <TableBody>
                         {cities.map((cities, index) => {
                             return (
-                                <Fragment key={index}>
-                                    <tr className=' text-base'>
-                                    <td className="whitespace-nowrap  pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0">
+                                <Fragment key={index}> 
+                                    <div className='w-full mb-2'></div>
+                                    <tr className='border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>
+                                    <td className="whitespace-nowrap  pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0 font-nunito font-regular">
                                             {cities.client_id}
                                         </td>
                                         <BodyCell>
                                             {cities.name}
                                         </BodyCell>
                                         <BodyCell>{cities.expenses}</BodyCell>
-                                        <BodyCell>{cities.profit}</BodyCell>
-                                    </tr>
+                                        <BodyCell>{cities.profit}</BodyCell> 
+                                        <div className='h-10'></div>
+    
+                                    </tr> 
+                                    {/* </div> */}
                                 </Fragment>
                             )
                         })}

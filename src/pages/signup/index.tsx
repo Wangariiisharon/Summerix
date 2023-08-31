@@ -52,12 +52,15 @@ export default function CreateAccount() {
           }}
           onSubmit={(values) => doCreateAccount(values)}
         >
-          {({ errors, values, handleChange }) => (
-            <Form className="mt-10">
-              <div className="m-4 px-4 grid gap-5 shadow-sm">
-                <h1 className="text-base">Lets get you all set up</h1>
+          {({ errors, values, handleChange }) => ( 
+            
+            <Form className=""> 
+            <div className='flex flex-col'>
+              <div className="m-4 px-4 grid gap-5 shadow-sm"> 
+              <p className="font-inter font-bold text-base mt-4">Create Account</p>
+                <h1 className="text-sm font-mulish text-[#8692A6]">Lets get you all set up</h1>
                 <label className="block">
-                  <label className="form-label">Organisation Name</label>
+                  <label className="form-label font-mulish font-semibold">Organisation Name</label>
                   <Field
                     type="text"
                     name="organisation"
@@ -67,7 +70,7 @@ export default function CreateAccount() {
                   />
                 </label>
                 <label className="block">
-                  <label className="form-label">Location</label>
+                  <label className="form-label font-mulish font-semibold">Location</label>
                   <Field
                     type="text"
                     name="location"
@@ -77,14 +80,15 @@ export default function CreateAccount() {
                   />
                 </label>
               </div>
-              <div className="my-5 flex justify-center">
-                <button type="submit" className="btn w-72 btn-primary px-5">
-                  Next<i className="fa-solid fa-arrow-right p-2"></i>
+              <div className="my-5 mr-7 flex justify-center">
+                <button type="submit" className="btn font-inter font-medium rounded-md btn-primary w-72 px-5">
+                  Next<i className="fa-solid fa-arrow-right ml-10"></i>
                 </button>
               </div>
-              <Link className="mt-15 ml-10 text-xs text-blue-600" href="/signin">
+              <Link className="mt-15 ml-10 text-[#757575] underline text-xs " href="/signin">
                 Already have an account?
-              </Link>
+              </Link> 
+              </div>
             </Form>
           )}
         </Formik>

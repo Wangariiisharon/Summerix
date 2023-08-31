@@ -18,7 +18,7 @@ export default function SiteLayout({children}: Props) {
                 <link rel="icon" href="/favicon.ico"/>
             </Head>
             <SiteNav>
-                <div>
+                <div  className=''>
                     {children}
                 </div>
             </SiteNav>

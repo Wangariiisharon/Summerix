@@ -8,8 +8,9 @@ import Drivers from "./manage_drivers/Drivers";
 import Roles from "./manage_roles/Roles";
 import Departments from "./manage_department/Departments";
 import SiteLayout from "@/Layout/SiteLayout";
-import Profile from "../Profile"
-
+import Profile from "../Profile" 
+import HamburgerMenu from "@/components/hamburgerMenu"; 
+import AssignRole from "./manage_roles/assignRole";
 
 const tabs = [
     {name: 'Manage Admins', href: '#', current: false},
@@ -21,27 +22,37 @@ const tabs = [
 ]
 
 function classNames(...classes: any) {
-    return classes.filter(Boolean).join(' ')
-}
+    return classes.filter(Boolean).join(' ') 
+
+} 
+
 
 export default function AdministrationComponent() {
     return (
-        <SiteLayout>
-            <div className="max-h-[600px]">
+        <SiteLayout>  
+            <div className="w-full flex flex-row bg-[#FFFFFF] fixed top-0 h-10">   
+            <div className="flex justify-center">
+            <div className="ml-7 flex justify-center"><HamburgerMenu/></div> 
+            <div> 
+            <img src="Frame 13.png" className="fixed right-14 w-8" alt="Notification" /> 
+            <img src="Ellipse 1.png" className=" w-9 fixed right-4 pl-2" alt="" />
 
-                {/* <Header heading="Administration"/> */}
-                <p className="text-lg font-bold">Administration</p>
+            </div> 
+            </div>   
+            </div>
+            <div className=" bg-[#FAFAFB] max-h-[600px]"> 
+                <p className="text-lg font-nunito font-bold mt-2 ml-7">Administration</p>
 
                 <div>
 
                     <div className='mt-12'>
                         <Tab.Group>
-                            <Tab.List className='w-full flex justify-around mb-3 '>
+                            <Tab.List className='w-full bg-[#FAFAFB] font-nunito flex justify-around mb-3 '>
                                 {tabs.map((tab, index) => {
                                     return (
                                         <Fragment key={index}>
                                             <Tab className='ui-selected:border-b-4 border-d-green outline-none
-                                             ui-selected:text-d-green text-sm font-bold uppercase flex flex-row'>
+                                             ui-selected:text-d-green text-sm font-nunito font-bold uppercase flex flex-row'>
                                                 {tab.name}
                                             </Tab>
                                         </Fragment>
@@ -49,7 +60,7 @@ export default function AdministrationComponent() {
                                 })}
 
                             </Tab.List>
-                            <Tab.Panels className='h-full'>
+                            <Tab.Panels className=' bg-[#FAFAFB] h-full'>
                                 <Tab.Panel className='h-full'>
                                     <Admins/>
                                 </Tab.Panel>
@@ -64,7 +75,7 @@ export default function AdministrationComponent() {
                                 </Tab.Panel>
                                 <Tab.Panel className='h-full'>
                                     <Roles/>
-                                </Tab.Panel>
+                                </Tab.Panel > 
                                 <Tab.Panel className='h-full'>
                                     <Departments/>
                                 </Tab.Panel>

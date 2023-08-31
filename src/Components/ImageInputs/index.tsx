@@ -1,11 +1,14 @@
 import React, { useState, ChangeEvent } from 'react';
 
-const ImageInput = () => {
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+interface ImageInputProps {
+  selectedImage: File | null;
+  onSelectImage: (file: File | null) => void;
+}
 
+const ImageInput: React.FC<ImageInputProps> = ({ selectedImage, onSelectImage }) => {
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const imageFile = event.target.files?.[0];
-    setSelectedImage(imageFile || null);
+    onSelectImage(imageFile || null);
   };
 
   return (

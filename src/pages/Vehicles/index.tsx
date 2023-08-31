@@ -60,7 +60,7 @@ export default function VehiclesComponent() {
 
     return (
         
-            <SiteLayout>
+             <SiteLayout>
             <div className=''>
                 <div className='flex justify-between items-center'>
                     <Header heading="Vehicles"/>
@@ -172,8 +172,9 @@ export default function VehiclesComponent() {
                         </div>
                     </Form>
                 </div>
-            </FormModal>
+            </FormModal> 
             </SiteLayout>
+
         
     )
 }

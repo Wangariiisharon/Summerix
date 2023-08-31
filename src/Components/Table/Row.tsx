@@ -7,7 +7,8 @@ interface Props {
 export function TableBody({children}: Props) {
     return (
         <>
-            <tbody className="divide-y divide-gray-200 bg-white px-8">
+            <tbody className="divide-y border-solid divide-gray-200 bg-[#FAFAFB]">
+                
             {children}
             </tbody>
 

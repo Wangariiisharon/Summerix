@@ -124,7 +124,7 @@ export default function SiteNav({children}: Props) {
                     {/* Sidebar component, swap this element with another sidebar if you like */}
                     <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-d-blue px-6">
                         <div className="flex h-16 shrink-0 items-center">
-                           <Logo/>
+                        <DashboardLogo/>
                         </div>
                         <nav className="flex flex-1 flex-col">
                             <ul role="list" className="flex flex-1 flex-col gap-y-7">
@@ -190,9 +190,9 @@ export default function SiteNav({children}: Props) {
                     </a>
                 </div>
 
-                <main className="py-10 lg:pl-72">
-                    <div className="px-4 sm:px-6 lg:px-8">{children}</div>
-                </main>
+                {/* <main className="py-10 lg:pl-72 bg-[#FAFAFB]"> */}
+                    <div className="px-4 py-10 lg:pl-72 sm:px-6 lg:px-8 bg-[#FAFAFB]">{children}</div>
+                {/* </main> */}
             </div>
         </>
     )

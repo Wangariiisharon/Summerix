@@ -1,4 +1,4 @@
-import 'firebase/firestore';
+import React, { useState } from "react";
 import AuthLayout from "../../components/Authentication/AuthLayout";
 import Seo from "../../components/Seo";
 import firebaseApp from "../../firebase/configs"
@@ -7,83 +7,102 @@ import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 
 import { Field, Form, Formik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React from "react";
 import { toast } from 'react-hot-toast';
+import { fbDb } from "@/firebase/configs";
+import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore"; 
+import bcrypt from 'bcryptjs';     
+
+import { FirebaseError } from "firebase/app";
+import { log } from "console";
 
 export default function LoginPage() {
   const router = useRouter();
 
   const doGoogleSignIn = async () => {
+
     const fbAuth = getAuth(firebaseApp);
     const provider = new GoogleAuthProvider();
   
     try {
       const results = await signInWithPopup(fbAuth, provider);
+      console.log(results); 
       if (results.user){
         router.push('/Dashboard');
       } 
-      // if (results.user) {
-      //   if (window.opener) {
-      //     window.close();
-      //   } else {
-      //     router.push('/Dashboard');
-      //   }
-      // }
+
     } catch (error) {    
       console.error('DO GOOGLE SIGN-IN ERROR:', error);
       toast.error('Google Sign-In failed. Please try again.');
     }
   }; 
 
-  const doLogin = async (formValues: any) => {  
-    console.log("doLogin > formValues:", formValues);
-    const fbAuth = getAuth(firebaseApp);
+  
 
+  const doLogin = async (formValues: { email: any; password: any; }) => { 
     try {
-      const results = await signInWithEmailAndPassword(
-        fbAuth,
-        formValues.email,
-        formValues.password
-      );
-      // console.log("doLogin > results:", results);
-      if (results.user){
-        console.log("User logged in successfully:", results.user.email);
-        router.push('/Dashboard')
+      const { email, password } = formValues; 
+  
+      const adminQuery = query(collection(fbDb, 'admins'), where('email', '==', email));
+      const adminQuerySnapshot = await getDocs(adminQuery); 
+      
+  
+      if (!adminQuerySnapshot.empty) {
+        const adminDoc = adminQuerySnapshot.docs[0];
+        const storedHashedPassword = adminDoc.data().passwordHash; 
+  
+        const isPasswordCorrect = await bcrypt.compare(password, storedHashedPassword); 
         
+  
+        if (isPasswordCorrect) {
+          // const fbAuth = getAuth(firebaseApp);
+          // await signInWithEmailAndPassword(fbAuth, email, password);
+  
+          router.push('/Administration');
+        } else {
+          toast.error('Invalid credentials');
+        }
+      } else {
+        toast.error('User not found');
       }
     } catch (error) {
-      console.error('DO LOGIN ERROR:::', error);
-      toast.error('Please enter the correct auth details.');
+      console.error('Login error:', error);
+      toast.error('Login failed. Please try again.');
     }
-  };         
-
+  };
+  
+  
   return (
     <main className="">
-      <Seo title="Login" />
-
-      <AuthLayout>
+      <Seo title="Login" /> 
+      <AuthLayout> 
         <Formik
           initialValues={{
             email: "",
             password: "",
           }}
           onSubmit={(values) => doLogin(values)}
+
         >
-          {({ errors, values }) => (
-            <Form className="mt-10">
+          {({ errors, values,handleSubmit }) => ( 
+            <Form className="mt-6" onSubmit={handleSubmit}> 
+            <div className="flex flex-col"> 
+            <p className="font-inter font-bold text-base mt-4 ml-8">Log in to your Account</p>
+            <p className="font-mulish text-[#8692A6] text-sm mt-2 ml-8">Welcome back! Select method to log in</p>
               <div className="m-4 px-4  grid gap-5 shadow-sm">
                 <label className="block">
-                  <label className="form-label">Email</label>
-                  <Field
-                    type="text"
+                  <label className="form-label font-mulish font-semibold text-[#333333]">Email</label>
+                  <Field 
+                    required
+                    type="email"
                     name="email"
                     value={values.email}
                     className="form-input"
                   />
                 </label>
                 <label className="block">
-                  <label className="form-label">Password</label>
-                  <Field
+                  <label className="form-label font-mulish font-semibold">Password</label>
+                  <Field 
+                    required
                     type="password"
                     name="password"
                     value={values.password}
@@ -91,26 +110,30 @@ export default function LoginPage() {
                   />
                 </label>
               </div>
-              <div className=" px-4  mt-4 flex flex-row"> 
-                <input className="ml-3" type="checkbox" />
-                <p className="ml-4 text-xs">Remenber me?</p> 
-                <Link className="ml-20 text-xs text-blue-700" href="/ResetPassword">Forgot Password?</Link>
-                </div>  
+              <div className=" px-4 w-full mt-4  flex flex-row"> 
+                <input className="ml-6" type="checkbox" />
+                <p className="ml-4 text-xs font-inter">Remenber me?</p> 
+                <Link className="ml-20 text-xs font-inter text-blue-700" href="/ResetPassword">Forgot Password?</Link>
+                </div> 
               <div className="my-5 flex justify-center">
-                  <button type="submit" className="btn rounded-md btn-primary w-72 px-5">
-                    <i className="fas fa-sign-in-alt mr-2"></i> Login
+                  <button type="submit" className="btn font-inter font-medium rounded-md btn-primary w-72 px-5">
+                    {/* <i className="fas fa-sign-in-alt mr-2"></i>  */}
+                    Submit
                   </button> 
                 </div>
 
                 <p className="flex justify-center mt-5">Or</p>
                 <div className="my-5 flex justify-center">
-                  <button type="submit" className="btn-google w-72 px-5" onClick={doGoogleSignIn}>
-                  <i className="fa-brands fa-google mr-2"></i>
+                   <button type="button" className="btn-google w-72 px-5 font-inter font-medium" onClick={doGoogleSignIn}>
+                   <span className="flex items-center">
+                   {/* <i className="fa-brands fa-google mr-2"></i> */}
+                  <img src="google.png" className="w-4 mr-9 ml-7" alt="Google Logo" />
                   Sign In With Google
-                  </button>    
+                   </span>
+                 </button>
                 </div>
-                <p  className="flex justify-center mt-7 text-xs">Dont have an account?<Link className="text-blue-700" href="/signUp">Register</Link></p>
-              
+                <p  className="flex justify-center mt-7 underline text-xs font-mulish">Dont have an account?<Link className="text-blue-700" href="/signUp">Register</Link></p>
+                </div>
             </Form>
           )}
         </Formik>
