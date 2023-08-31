@@ -8,7 +8,9 @@ import { useRouter } from "next/router";
 import { toast } from 'react-hot-toast';
 import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
 import Link from "next/link";
-import { useState } from "react";
+import { useState } from "react"; 
+import bcrypt from 'bcryptjs';
+
 
 
 
@@ -22,7 +24,7 @@ export default function AdminInformation() {
 
 
 
-    const doAdmin = async (formValues: { firstname: any; lastname: any; email: any; phonenumber: any; password?: string; confirmpassword?: string; }) => {
+    const doAdmin = async (formValues: { firstname: string; lastname: string; email: string; phonenumber: string; password?: string; confirmpassword?: string; }) => {
       console.log("doAdmin > formValues:", formValues);
   
       const { firstname, lastname, email, phonenumber } = formValues;
@@ -38,13 +40,18 @@ export default function AdminInformation() {
       }
       try {
         const adminCollection = collection(fbDb, 'admins');
-        const docRef = doc(adminCollection, organisationId);
+        const docRef = doc(adminCollection, organisationId); 
+        const hashedPassword = await bcrypt.hash(formValues.password, 10);
+
   
         const data = {
           firstname,
           lastname,
           email,
           phonenumber,
+          status: true, 
+          superadmin: true, 
+          passwordHash: hashedPassword,
         };
   
         await setDoc(docRef, data);
@@ -70,13 +77,16 @@ export default function AdminInformation() {
             password: "",
             confirmpassword: ""
           }}
-          onSubmit={(values: { firstname: any; lastname: any; email: any; phonenumber: any; password?: string | undefined; confirmpassword?: string | undefined; }) => doAdmin(values)}
+          onSubmit={(values) => doAdmin(values)}
         >
-          {({ errors, values }) => (
-            <Form className="mt-10">
+          {({ errors, values }) => ( 
+
+            <Form className=""> 
+            <p className="font-inter font-bold text-base mt-4 ml-8">Admin Information</p>
+
               <div className="m-4 px-4 grid gap-5 shadow-sm">
                 <label className="block">
-                  <label className="form-label">First Name</label>
+                  <label className="form-label font-mulish font-semibold">First Name</label>
                   <Field
                     type="text"
                     name="firstname"
@@ -85,7 +95,7 @@ export default function AdminInformation() {
                   />
                 </label>
                 <label className="block">
-                  <label className="form-label">Last Name</label>
+                  <label className="form-label font-mulish font-semibold">Last Name</label>
                   <Field
                     type="text"
                     name="lastname"
@@ -95,16 +105,16 @@ export default function AdminInformation() {
                 </label>
 
                 <label className="block">
-                  <label className="form-label">Email</label>
+                  <label className="form-label font-mulish font-semibold">Email</label>
                   <Field
-                    type="text"
+                    type="email"
                     name="email"
                     value={values.email}
                     className="form-input"
                   />
                 </label>
                 <label className="block">
-                  <label className="form-label">Phone Number</label>
+                  <label className="form-label font-mulish font-semibold">Phone Number</label>
                   <Field
                     type="text"
                     name="phonenumber"
@@ -113,7 +123,7 @@ export default function AdminInformation() {
                   />
                 </label>
                 <label className="block">
-                  <label className="form-label">Password</label>
+                  <label className="form-label font-mulish font-semibold">Password</label>
                   <Field
                     type="password"
                     name="password"
@@ -122,7 +132,7 @@ export default function AdminInformation() {
                   />
                 </label>
                 <label className="block">
-                  <label className="form-label">Confirm Password</label>
+                  <label className="form-label font-mulish font-semibold">Confirm Password</label>
                   <Field
                     type="password"
                     name="confirmpassword"
@@ -132,13 +142,13 @@ export default function AdminInformation() {
                 </label>
               </div>
               <div className=" px-4 flex flex-row"> 
-                <input className="ml-3" type="checkbox"checked={isCheckboxChecked} // Bind checkbox value to state
+                <input className="ml-5" type="checkbox"checked={isCheckboxChecked} // Bind checkbox value to state
                   onChange={handleCheckboxChange}  />
                 <p className="ml-4 text-xs">I agree to terms & conditions</p> 
                 </div>
               <div className="my-5 flex justify-center">
-                <button type="submit" className="btn btn-primary w-72 px-5" disabled={!isCheckboxChecked} >
-                  <i className="fas fa-sign-in-alt mr-2"></i> Create Account
+                <button type="submit" className="btn btn-primary w-72 mr-7 px-5" disabled={!isCheckboxChecked} >
+                    Submit
                 </button>
               </div>
 

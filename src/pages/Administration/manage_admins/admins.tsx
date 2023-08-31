@@ -2,18 +2,24 @@ import firebase from 'firebase/app';
 import 'firebase/firestore';
 import {Tab} from "@headlessui/react";
 import {AddButton, Button} from "@/components/Buttons";
-import {Fragment, useState} from "react";
+import {Fragment, useEffect, useState} from "react";
 import {SearchBar, Submit} from "../../../components/Forms/input";
 import Table, {DummyTable} from "../../../components/Table/Table";
 import {BodyCell, HeaderCell} from "../../../components/Table/Cells";
 import {TableBody} from "../../../components/Table/Row";
-import {CheckCircleIcon, XCircleIcon, XMarkIcon} from "@heroicons/react/24/outline";
+import {CheckCircleIcon,CheckIcon, XCircleIcon, XMarkIcon} from "@heroicons/react/24/outline";
 import {useRouter} from "next/router";
 import { FormModal } from "@/components/Modals/FormModal";
 import { Field, Form, Formik } from "formik";
+
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import { User, getAuth } from 'firebase/auth';
-import { getFirestore, collection, doc, setDoc, addDoc } from 'firebase/firestore';
+import { getFirestore, collection, doc, setDoc, addDoc,getDocs, DocumentData } from 'firebase/firestore';
+
+import { Switch } from "@headlessui/react"; 
+
+import ImageInput from '../../../components/ImageInputs';
+
 
 
 export const tabs = [
@@ -22,87 +28,15 @@ export const tabs = [
     {name: "InActive"},
 
 ]
-const Headers = ["Id", "Name", "City", "Phone", "Status", "Super Admin"]
-const admins = [
-    {
-        id: "789797",
-        name: "Brian Andy",
-        city: "Nairobi, Kenya",
-        phone: "+254710607738",
-        active: true,
-        superAdmin: true
-
-    },
-    {
-        id: "789797",
-        name: "Brian Andy",
-        city: "Nairobi, Kenya",
-        phone: "+254710607738",
-        active: false,
-        superAdmin: false
-
-    },
-    {
-        id: "789797",
-        name: "Brian Andy",
-        city: "Nairobi, Kenya",
-        phone: "+254710607738",
-        active: true,
-        superAdmin: false
-
-    },
-    {
-        id: "789797",
-        name: "Brian Andy",
-        city: "Nairobi, Kenya",
-        phone: "+254710607738",
-        active: true,
-        superAdmin: true
-
-    },
-    {
-        id: "789797",
-        name: "Brian Andy",
-        city: "Nairobi, Kenya",
-        phone: "+254710607738",
-        active: true,
-        superAdmin: true
-
-    },
-    {
-        id: "789068",
-        name: "Yvone chaka",
-        city: "Meru, Kenya",
-        phone: "+254710607738",
-        active: false,
-        superAdmin: true
-
-    },
-    {
-        id: "789797",
-        name: "Lovette Kendi",
-        city: "Kiambu, Kenya",
-        phone: "+254710607738",
-        active: true,
-        superAdmin: true
-
-    },
-    {
-        id: "789797",
-        name: "Christopher Njiru",
-        city: "Mombasa, Kenya",
-        phone: "+254710607738",
-        active: false,
-        superAdmin: true
-
-    },
-]
-
-
+const Headers = ["Id", "Name", "Phone", "Status", "Super Admin"]
 
 export default function Admins() {
     const [open,setOpen]=useState(false) 
     const [selectedTab, setSelectedTab] = useState<number>(0); 
+    const [fetchedAdmins, setFetchedAdmins] = useState<DocumentData[]>([]); 
+
+    
+
 
     const handleAddAdmin = () => {
         setOpen(true)
@@ -113,7 +47,7 @@ export default function Admins() {
         setOpen(false)
     }
 
-    const handleSubmit = async (values: { firstname: any; lastname: any; email: any; phonenumber: any; }) => {
+    const handleSubmit = async (values: { firstname: any; lastname: any; email: any; phonenumber: any; super_admin:boolean}) => {
         console.log("Submitted Values:", values);
     
         try {
@@ -132,8 +66,12 @@ export default function Admins() {
                 lastname: values.lastname,
                 email: values.email,
                 phonenumber: values.phonenumber,
-              
+                status:true,
+                super_admin:values.super_admin
+
             };
+            console.log(adminData);
+            
     
             const docRef = await addDoc(collection(fbDb, 'admins'), adminData);
             console.log('Admin added with ID: ', docRef.id);
@@ -141,22 +79,43 @@ export default function Admins() {
             setOpen(false);
         } catch (error) {
             console.error('Error adding admin:', error);
-        }
-    }
+        } 
+    } 
+    useEffect(() => {
+        const fetchAdmins = async () => {
+            try {
+                const querySnapshot = await getDocs(collection(fbDb, 'admins'));
+                const adminsData: DocumentData[] = [];
+                querySnapshot.forEach((doc) => {
+                    const admin = {
+                        id: doc.id,
+                        ...doc.data()
+                    };
+                    adminsData.push(admin);
+                });
+                setFetchedAdmins(adminsData);
+            } catch (error) {
+                console.error('Error fetching admins:', error);
+            }
+        };
+    
+        fetchAdmins();
+    }, []);
     
         
     return (
         <>
+        <div className='bg-[#FAFAFB]'>
             <div className='mt-8 max-h-[500px]'>
                 <Tab.Group>
                     <div className='flex w-full justify-end'>
-                        <div className='bg-white'>
+                        <div className='bg-[#FAFAFB]'>
                             <Tab.List>
                                 {tabs.map((tab, index) => {
                                     return (
                                         <Fragment key={index}>
                                     <Tab
-                                        className='ui-selected:bg-d-green h-8 w-32 ui-not-selected:bg-white text-sm uppercase'
+                                        className='ui-selected:bg-d-green h-8 w-32 ui-not-selected:bg-[#FFFFFF] text-sm uppercase'
                                         onClick={() => {
                                             console.log("Tab Clicked", index);
                                             setSelectedTab(index);
@@ -184,17 +143,17 @@ export default function Admins() {
                     <Tab.Panels>
                         <Tab.Panel>
                             <div  className="max-h-[500px] overflow-y-auto">
-                            <AdminsTable selectedTab={selectedTab} />
+                        <AdminsTable selectedTab={selectedTab} admins={fetchedAdmins} /> 
                             </div>
                         </Tab.Panel>
                         <Tab.Panel>
                             <div  className="max-h-[500px] overflow-y-auto">
-                            <AdminsTable selectedTab={selectedTab} />
+                            <AdminsTable selectedTab={selectedTab} admins={fetchedAdmins} /> 
                             </div>
                         </Tab.Panel>
                         <Tab.Panel>
                             <div  className="max-h-[500px] overflow-y-auto">
-                            <AdminsTable selectedTab={selectedTab} />
+                            <AdminsTable selectedTab={selectedTab} admins={fetchedAdmins} />
                             </div>
                         </Tab.Panel>
                        
@@ -217,13 +176,15 @@ export default function Admins() {
                         lastname: "",
                         email: "",
                         phonenumber: "",
+                        super_admin:false,
                                       }}
-                        // onSubmit={(values) => handleSubmit(values)}   
                         onSubmit={(values) => {
                             handleSubmit(values);
+                            console.log(values);
+                            
                           }}
                         >
-                       {({ values }) => (
+                       {({ values}) => (
                     <Form>
                         <div className=''>
                             <div className='flex w-full justify-between'>
@@ -250,7 +211,7 @@ export default function Admins() {
                             <label className="block">
                             <label className="form-label">Email</label>
                             <Field
-                             type="text"
+                             type="email"
                              name="email"
                              value={values.email}
                              className="form-input bg-grey w-48"
@@ -265,7 +226,18 @@ export default function Admins() {
                              className="form-input bg-grey w-48"
                             />
                             </label>                            
-                            </div>
+                            </div> 
+                            <div className="flex w-full justify-between mt-8">
+                                <label className="block">
+                                <label className="form-label">Super Admin</label>
+                                <Field
+                                type="checkbox"
+                                name="super_admin" 
+                               checked={values.super_admin}
+                               className="form-checkbox bg-gray-200"
+                               />
+                          </label>
+                           </div>
                             <div className='flex w-full justify-end mt-24 '>
                                 <Button className='text-blue text-xl mr-32' handleClick={handleReset}>Reset</Button>
                                 {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
@@ -281,21 +253,24 @@ export default function Admins() {
 
             </div>
 
+            </div> 
             </div>
         </>
     )
 }
 
 interface AdminsTableProps {
-    selectedTab: number; 
+    selectedTab: number;
+    admins: DocumentData[];
 }
-export function AdminsTable({ selectedTab }: AdminsTableProps) {
+
+export function AdminsTable({ selectedTab, admins }: AdminsTableProps) {
     console.log("AdminsTable Rendering with selectedTab:", selectedTab);
 
     const filteredAdmins = admins.filter(admin =>
         selectedTab === 0 ||
-        (selectedTab === 1 && admin.active) ||
-        (selectedTab === 2 && !admin.active)
+        (selectedTab === 1 && admin.status) ||
+        (selectedTab === 2 && !admin.status)
     );
 
     console.log("Filtered Admins:", filteredAdmins);
@@ -317,40 +292,47 @@ export function AdminsTable({ selectedTab }: AdminsTableProps) {
                         })}
                     </tr>
                     </thead>
-                    <TableBody>
-                    {filteredAdmins.map((admin, index) => {
-                            return (
-                                <Fragment key={index}>
-                                    <tr className=' text-base'>
-                                        <td className="whitespace-nowrap  pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0">
-                                            {admin.id}
-                                        </td>
-                                        <BodyCell>
-                                            {admin.name}
-                                        </BodyCell>
-                                        <BodyCell>{admin.city}</BodyCell>
-                                        <BodyCell>{admin.phone}</BodyCell>
-                                        <BodyCell>{admin.active ? 'Active' : 'Inactive'}</BodyCell>
-                                        <BodyCell>
-                                            <>
-                                                <div className='h-16 flex items-center '>
-                                                    {admin.superAdmin ?
-                                                        <CheckCircleIcon className='h-8 w-8 text-d-green'/>
-                                                        :
-                                                        <XCircleIcon className='h-8 w-8 text-crimson-red'/>
-                                                    }
-                                                </div>
+                    <TableBody> 
+                    {/* <div className='border-solid border-2 border-[#D9E2F6S] mb-2 '> */}
 
-                                            </>
-                                        </BodyCell>
+    {filteredAdmins.map((admin, index) => {
+        return (
+            
 
-                                    </tr>
-                                </Fragment>
-                            )
-                        
-                    })}
-                        
-                    </TableBody>
+            <Fragment key={index}> 
+            <div className='w-full mb-2'></div>
+                <tr className='border-solid border-2 border-[#D9E2F6] h-10 font-nunito font-regular'>
+                    <td className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0">
+                        {admin.id}
+                    </td> 
+                    <BodyCell>
+                        {`${admin.firstname} ${admin.lastname}`}
+                    </BodyCell> 
+                    <BodyCell >{admin.phonenumber}</BodyCell> 
+
+                    <BodyCell>{admin.status ? 'Active' : 'Inactive'}</BodyCell> 
+                    <BodyCell>
+                        <>
+                            <div className='h-10 flex items-center '>
+                                {admin.super_admin ?
+                                    <CheckCircleIcon className='h-8 w-8 text-d-green'/>
+                                    :
+                                    <XCircleIcon className='h-8 w-8 text-crimson-red'/>
+                                }
+                            </div>
+                        </>
+                    </BodyCell> 
+ 
+                </tr>  
+              
+            </Fragment>
+
+        )
+    })}
+                    {/* </div> */}
+
+           </TableBody>
+
                 </>
             </Table>
             </div>

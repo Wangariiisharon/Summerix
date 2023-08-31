@@ -14,7 +14,7 @@
   }
 
   .btn {
-    @apply py-2 px-4 text-sm font-semibold rounded-xl outline-none border transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50;
+    @apply p-2 text-sm font-semibold rounded-xl outline-none border transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .btn-accent {
@@ -54,6 +54,12 @@
 } 
 .searchBarContainer {
   width: 64; 
-}
+} 
+.submit{
+  @apply w-full mx-auto p-2 rounded-md outline-none bg-blue-600 text-white
+} 
+
 
 }
+
+

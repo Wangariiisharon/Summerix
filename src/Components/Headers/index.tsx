@@ -1,6 +1,7 @@
 import {Fragment} from 'react'
 import {Disclosure, Menu, Transition} from '@headlessui/react'
 import {Bars3Icon, BellIcon, XMarkIcon} from '@heroicons/react/24/outline'
+import HamburgerMenu from '@/components/hamburgerMenu'; 
 
 interface Props {
     heading: string
@@ -90,6 +91,22 @@ export function HeaderBar({headers}: BarProps) {
                 </>
             )}
         </Disclosure>
+    )
+} 
+ 
+export default function TopMenu(){
+    return( 
+        <>      <div className="w-full flex flex-row bg-[#FFFFFF] fixed top-0 h-10">   
+        <div className="flex justify-center">
+        <div className="ml-7 flex justify-center"><HamburgerMenu/></div> 
+        <div> 
+        <img src="Frame 13.png" className="fixed right-14 w-8" alt="Notification" /> 
+        <img src="Ellipse 1.png" className=" w-9 fixed right-4 pl-2" alt="" />
+
+        </div> 
+        </div>   
+        </div>
+        </>
     )
 }
 
