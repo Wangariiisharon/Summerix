@@ -26,7 +26,9 @@ interface ViewMenuProps {
       {isOpen && (
         <ul className="flex flex-col menu absolute bg-white shadow-md p-2">       
           <li className=" cursor-pointer text-[#000000]"><Link href={`/Administration/manage_departments/viewDepartment?id=${departmentId}`}> 
-          View             
+          View       
+          {/* router.push(`/Administration/manage_roles/assignRole?id=${admin.id}`); */}   
+       
           </Link></li>
         <li>
             <Link className=" cursor-pointer text-[#000000]" href="./rename">

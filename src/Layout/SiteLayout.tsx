@@ -8,7 +8,8 @@ interface Props {
     children: ReactNode
 }
 
-export default function SiteLayout({children}: Props) {
+export default function SiteLayout({children}: Props) { 
+    
     return (
         <>
             <Head>

@@ -14,7 +14,7 @@ interface DepatmentDetailsProps {
   } 
   
 
-export default function viewDepatment() {  
+export default function ViewDepatment() {  
     const [departments, setdepartments] = useState<DepatmentDetailsProps['department'] | null>(null);
     const router=useRouter()
     const { id } = router.query;

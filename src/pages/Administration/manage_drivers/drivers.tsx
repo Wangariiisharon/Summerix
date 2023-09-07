@@ -1,10 +1,10 @@
 import {Tab} from "@headlessui/react";
-import {ChangeEventHandler, FormEvent, Fragment, SetStateAction, useEffect, useState} from "react";
+import {ChangeEvent, ChangeEventHandler, FormEvent, Fragment, SetStateAction, useEffect, useState} from "react";
 import {AddButton, Button, DeleteBtn, EditBtn} from "@/components/Buttons";
 import Table, {DummyTable} from "@/components/Table/Table";
 import { HeaderCell, BodyCell } from "../../../components/Table/Cells";
 import { TableBody } from "../../../components/Table/Row";
-import { SearchBar } from "@/components/Forms/input";
+import SearchBar from "../../../components/Forms/input"
 import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { FormModal } from "@/components/Modals/FormModal";
 import { Formik, Form, Field } from "formik";
@@ -31,7 +31,7 @@ export default function Drivers(){
     const [open,setOpen]=useState(false) 
     const [selectedDriver, setSelectedDriver] = useState<DocumentData | null>(null); 
     const [editModalOpen, setEditModalOpen] = useState(false); 
-
+    const [searchQuery, setSearchQuery] = useState("");
     const [field, setFieldValue] = useState(null);
     const [fetchedDrivers, setfetchedDrivers] = useState<DocumentData[]>([]);  
     const [editFormInitialValues, setEditFormInitialValues] = useState({
@@ -44,7 +44,8 @@ export default function Drivers(){
         vehicle_type: "",
         model: "",
         year: "",
-        number: "",
+        number: "", 
+        completedTrips:0
       });
     const router=useRouter()
 
@@ -53,8 +54,14 @@ export default function Drivers(){
     } 
     const handleReset = () => {
         setOpen(false)
-    }
-    const handleSubmit = async (values: { name: any; phonenumber: any; email_adress: any; gender: any;country: any; city: any;vehicle_type: any;model: any;year: any;number: any;profile: any; }) => { 
+    } 
+    const handleSearchChange = (e:any) => {
+        const query = e.target.value;
+        console.log("Search Query:", query);
+        setSearchQuery(query);
+      };  
+
+    const handleSubmit = async (values: { name: any; phonenumber: any; email_adress: any; gender: any;country: any; city: any;vehicle_type: any;model: any;year: any;number: any;completedTrips: any;profile: any; }) => { 
             console.log("Submitted Values:", values);
         
             try {
@@ -64,7 +71,7 @@ export default function Drivers(){
                     return;
                 }
         
-                if (!values.name || !values.phonenumber || !values.email_adress || !values.gender||!values.country||!values.city||!values.vehicle_type||!values.model||!values.year||!values.number) {
+                if (!values.name || !values.phonenumber || !values.email_adress || !values.gender||!values.country||!values.city||!values.vehicle_type||!values.model||!values.year||!values.number||!values.completedTrips) {
                     console.error('Required form fields are missing');
                     console.log("Submitted Values:", values);
 
@@ -96,7 +103,7 @@ export default function Drivers(){
                     year:values.year,
                     number:values.number,
                     profile:profileImageUrl, 
-                    completedTrips:'0'
+                    completedTrips:values.completedTrips,
 
                 };
         
@@ -143,7 +150,8 @@ export default function Drivers(){
             vehicle_type:driver.vehicle_type,
             model:driver.model,
             year:driver.year,
-            number:driver.number, 
+            number:driver.number,  
+            completedTrips: driver.completedTrips
 
         });
         setEditModalOpen(true);
@@ -166,7 +174,8 @@ export default function Drivers(){
         vehicle_type:any,
         model:any,
         year:any,
-        number:any,
+        number:any, 
+        completedTrips:any
       }) => { 
         if (!selectedDriver) {
             console.error("No selected vehicle to update");
@@ -191,12 +200,16 @@ export default function Drivers(){
             !values.city||
             !values.model||
             !values.year||
-            !values.number
+            !values.number|| 
+            !values.completedTrips
+
+
 
           )  {
             console.error("Required form fields are missing");
             return;
-          }  
+          } 
+ 
  
 
           // Update the vehicle data in the database using the selectedVehicle.id
@@ -212,6 +225,8 @@ export default function Drivers(){
             model:values.model,
             year:values.year,
             number:values.number,
+            completedTrips:values.completedTrips,
+
           });
       
           // Update the local fetchedVehicles state
@@ -228,7 +243,9 @@ export default function Drivers(){
                   vehicle_type:values.vehicle_type,
                   model:values.model,
                   year:values.year,
-                  number:values.number,
+                  number:values.number, 
+                  completedTrips:values.completedTrips,
+
                 }
               : driver
           );
@@ -245,7 +262,7 @@ export default function Drivers(){
 
     return (
         <>
-            <div className='mt-8 max-h-[700px]'>
+            <div className='mt-8'>
                 <Tab.Group>
                     <div className='flex w-full justify-end'>
 
@@ -264,7 +281,7 @@ export default function Drivers(){
 
                     <Tab.Panels>
                         <Tab.Panel> 
-                        <div  className="max-h-[500px] overflow-y-auto">
+                        <div  className="">
                         <DriversTable drivers={fetchedDrivers} updateFetchedDrivers={updateFetchedDrivers} handleEditClick={handleEditClick}/>
                             </div>
                         </Tab.Panel>
@@ -292,8 +309,10 @@ export default function Drivers(){
                         vehicle_type: "",
                         model: "",
                         year: "",
-                        number: "",
-                        profile: null
+                        number: "", 
+                        completedTrips:0,
+                        profile: null 
+
 
                                       }}
                         // onSubmit={(values) => handleSubmit(values)}   
@@ -418,7 +437,16 @@ export default function Drivers(){
                             )}
                            </Field>
 
-                          </label>
+                          </label> 
+                          <label className="block">
+                             <label className="form-label">COMPLETED TRIPS</label>
+                             <Field
+                             type="number"
+                             name="completedTrips"
+                             value={values.completedTrips}
+                             className="form-input bg-grey w-48"
+                            />
+                            </label>  
                             </div>
                             <div className='flex w-full justify-end mt-24 '>
                                 <Button className='text-blue text-xl mr-32' handleClick={handleReset}>Reset</Button>
@@ -606,8 +634,20 @@ interface VehiclesTableProps {
 
 export function DriversTable({ drivers,updateFetchedDrivers, handleEditClick }: VehiclesTableProps) { 
 
-    const [selectedDriver, setSelectedDriver] = useState(null); 
-    const router=useRouter();  
+    const [selectedDriver, setSelectedDriver] = useState(null);  
+    const [searchQuery, setSearchQuery] = useState("");
+
+    const router=useRouter();   
+
+    const handleSearchChange = (e:any) => {
+        const query = e.target.value;
+        console.log("Search Query:", query);
+        setSearchQuery(query);
+      };  
+      const filteredDrivers = drivers.filter((drivers) => {
+        const fullName = `${drivers.name}`.toLowerCase();
+        return fullName.includes(searchQuery.toLowerCase());
+      }); 
 
 
 const handleDeleteClick = async (driverId: any) => {
@@ -631,14 +671,20 @@ const handleDeleteClick = async (driverId: any) => {
 
     const handleDriverClick = (driver: any) => {
         router.push(`/Administration/manage_drivers/driversDetails?id=${driver.id}`);
-      }; 
+      };  
+
 
     return (
         <>
-            <p className="text-lg font-bold">Drivers</p> 
-                <div className='flex  text-base mt-2 searchBarContainer'>
-                <SearchBar name='admins_searchbar' placeholder='Search name, id, phone' /> 
-               </div>
+            <p className="text-lg font-bold ml-7">Drivers</p> 
+                <div className='flex  text-base mt-2 w-80 ml-7'>
+                <SearchBar
+                  placeholder='Search name, id, phone'
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                /> 
+               </div>  
+               <div className="max-h-[500px] overflow-y-auto">
             <Table>
                 <>
                     <thead>
@@ -655,7 +701,7 @@ const handleDeleteClick = async (driverId: any) => {
                     </tr>
                     </thead>
                     <TableBody>
-                        {drivers.map((drivers, index) => {
+                        {filteredDrivers.map((drivers, index) => {
                             return (
                                 <Fragment key={index}>
                                     <div className='w-full mb-2'></div>
@@ -687,7 +733,8 @@ const handleDeleteClick = async (driverId: any) => {
                         })}
                     </TableBody>
                 </>
-            </Table>
+            </Table> 
+            </div>
 
         </>
     )  

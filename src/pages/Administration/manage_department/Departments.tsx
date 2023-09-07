@@ -13,7 +13,7 @@ import { formatDistanceToNow } from 'date-fns';
 import ViewMenu from "./viewMenu"
 
 
-const Headers = ["DRIVER ID", "NAME", "MEMBERS", "PERMISIONS","UPDATED"," STATUS"]
+const Headers = ["DRIVER ID", "NAME", "MEMBERS","UPDATED"," STATUS"]
 
 
 export default function Departments(){ 
@@ -26,7 +26,7 @@ export default function Departments(){
     const handleReset = () => {
 
     }
-    const handleSubmit = async (values: { name: any; members: any; permissions: any;  }) => { 
+    const handleSubmit = async (values: { name: any; members: any;}) => { 
         console.log("Submitted Values:", values);
     
         try {
@@ -36,7 +36,7 @@ export default function Departments(){
                 return;
             }
     
-            if (!values.name || !values.members || !values.permissions ) {
+            if (!values.name || !values.members ) {
                 console.error('Required form fields are missing');
                 console.log("Submitted Values:", values);
 
@@ -51,7 +51,6 @@ export default function Departments(){
             const DepartmentsData = {
                 name: values.name,
                 members: values.members,
-                permissions: values.permissions,
                 updated: updated,  
                 status:true,
 
@@ -132,7 +131,6 @@ export default function Departments(){
                     initialValues={{
                         name: "",
                         members: 0,
-                        permissions: 0,
 
                                       }}
                         onSubmit={(values) => {
@@ -164,17 +162,7 @@ export default function Departments(){
                               />
                             </label>                           
                              </div>
-                            <div className='flex w-full justify-between mt-8'>
-                            <label className="block">
-                            <label className="form-label">Permisions</label>
-                            <Field
-                             type="number"
-                             name="permissions"
-                             value={values.permissions}
-                             className="form-input bg-grey w-48"
-                            />
-                             </label>                                   
-                            </div>
+              
 
    
                             <div className='flex w-full justify-end mt-24 '>
@@ -224,7 +212,7 @@ export function DepartmentsTable({ departments,updateFetchedDepartments }: Vehic
                     </thead>
                     <TableBody>
                         {departments.map((departments, index) => {
-                        const { seconds } = departments.updated; // Extract seconds from updated object
+                        const { seconds } = departments.updated; 
                         const updatedDate = new Date(seconds * 1000);
 
                             return (
@@ -233,13 +221,13 @@ export function DepartmentsTable({ departments,updateFetchedDepartments }: Vehic
                                     <tr className='border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] h-10 font-nunito font-regular' >
                                         <td className="whitespace-nowrap flex flex-row  pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0 font-nunito font-regular">
                                             {departments.id}  <ViewMenu departmentId={departments.id} />
-                                            
+                                            {/* router.push(`/Administration/manage_roles/assignRole?id=${admin.id}`); */}
+
                                         </td>
                                         <BodyCell>
                                         {departments.name}
                                         </BodyCell>
                                         <BodyCell>{departments.members}</BodyCell>
-                                        <BodyCell>{departments.permissions}</BodyCell>
                                         <BodyCell>{formatDistanceToNow(updatedDate)} ago</BodyCell>
                                         <BodyCell>{departments.status ? 'Active' : 'Inactive'}</BodyCell>
                                         <div className="h-10 font-nunito font-regular"></div>

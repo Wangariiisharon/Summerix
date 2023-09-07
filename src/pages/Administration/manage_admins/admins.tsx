@@ -2,8 +2,9 @@ import firebase from 'firebase/app';
 import 'firebase/firestore';
 import {Tab} from "@headlessui/react";
 import {AddButton, Button} from "@/components/Buttons";
-import {Fragment, useEffect, useState} from "react";
-import {SearchBar, Submit} from "../../../components/Forms/input";
+import {Fragment, SetStateAction, useEffect, useState} from "react";
+// import {Submit} from "../../../components/Forms/input"; 
+import SearchBar from "../../../components/Forms/input"
 import Table, {DummyTable} from "../../../components/Table/Table";
 import {BodyCell, HeaderCell} from "../../../components/Table/Cells";
 import {TableBody} from "../../../components/Table/Row";
@@ -33,10 +34,32 @@ const Headers = ["Id", "Name", "Phone", "Status", "Super Admin"]
 export default function Admins() {
     const [open,setOpen]=useState(false) 
     const [selectedTab, setSelectedTab] = useState<number>(0); 
-    const [fetchedAdmins, setFetchedAdmins] = useState<DocumentData[]>([]); 
+    const [fetchedAdmins, setFetchedAdmins] = useState<DocumentData[]>([]);   
+    const [searchQuery, setSearchQuery] = useState("");
+ 
+    const handleSearchChange = (e:any) => {
+        const query = e.target.value;
+        console.log("Search Query:", query);
+        setSearchQuery(query);
+      }; 
+      const filteredAdmins = fetchedAdmins.filter((admin) => {
+        const fullName = `${admin.firstname} ${admin.lastname}`.toLowerCase();
+        const nameMatch = fullName.includes(searchQuery.toLowerCase());
+      
+        if (selectedTab === 0) {
+          return nameMatch;
+        } else if (selectedTab === 1) {
+          return admin.status && nameMatch;
+        } else if (selectedTab === 2) {
+          return !admin.status && nameMatch;
+        }
+      
+        return false;
+      });
+      
 
     
-
+    
 
     const handleAddAdmin = () => {
         setOpen(true)
@@ -131,8 +154,13 @@ export default function Admins() {
                             </Tab.List>
                         </div> 
                         <div className='flex justify-end text-base mr-2'>
-                            <SearchBar name='admins_searchbar' placeholder='Search name, id, phone'/>
-                          <div className='ml-2'>
+                        <SearchBar
+                  placeholder='Search name, id, phone'
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                />
+                         
+                        <div className='ml-2'>
                             <AddButton name='Add Admin' handleAddClick={handleAddAdmin}/>
                             </div>
                         </div>
@@ -143,17 +171,17 @@ export default function Admins() {
                     <Tab.Panels>
                         <Tab.Panel>
                             <div  className="max-h-[500px] overflow-y-auto">
-                        <AdminsTable selectedTab={selectedTab} admins={fetchedAdmins} /> 
+                            <AdminsTable selectedTab={selectedTab} admins={fetchedAdmins} filteredAdmins={filteredAdmins} />
                             </div>
                         </Tab.Panel>
                         <Tab.Panel>
                             <div  className="max-h-[500px] overflow-y-auto">
-                            <AdminsTable selectedTab={selectedTab} admins={fetchedAdmins} /> 
+                            <AdminsTable selectedTab={selectedTab} admins={fetchedAdmins} filteredAdmins={filteredAdmins} />
                             </div>
                         </Tab.Panel>
                         <Tab.Panel>
                             <div  className="max-h-[500px] overflow-y-auto">
-                            <AdminsTable selectedTab={selectedTab} admins={fetchedAdmins} />
+                            <AdminsTable selectedTab={selectedTab} admins={fetchedAdmins} filteredAdmins={filteredAdmins} />
                             </div>
                         </Tab.Panel>
                        
@@ -261,17 +289,24 @@ export default function Admins() {
 
 interface AdminsTableProps {
     selectedTab: number;
-    admins: DocumentData[];
+    admins: DocumentData[]; 
+    filteredAdmins: DocumentData[];
 }
 
-export function AdminsTable({ selectedTab, admins }: AdminsTableProps) {
+export function AdminsTable({ selectedTab, admins ,filteredAdmins}: AdminsTableProps) { 
+    const [currentPage, setCurrentPage] = useState(0);
+    const rowsPerPage = 4;
     console.log("AdminsTable Rendering with selectedTab:", selectedTab);
 
-    const filteredAdmins = admins.filter(admin =>
-        selectedTab === 0 ||
-        (selectedTab === 1 && admin.status) ||
-        (selectedTab === 2 && !admin.status)
-    );
+    // const filteredAdmins = admins.filter(admin =>
+    //     selectedTab === 0 ||
+    //     (selectedTab === 1 && admin.status) ||
+    //     (selectedTab === 2 && !admin.status)
+    // ); 
+
+    const startIndex = currentPage * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    const visibleAdmins = filteredAdmins.slice(startIndex, endIndex);
 
     console.log("Filtered Admins:", filteredAdmins);
 
@@ -295,7 +330,7 @@ export function AdminsTable({ selectedTab, admins }: AdminsTableProps) {
                     <TableBody> 
                     {/* <div className='border-solid border-2 border-[#D9E2F6S] mb-2 '> */}
 
-    {filteredAdmins.map((admin, index) => {
+    {visibleAdmins.map((admin, index) => {
         return (
             
 
@@ -334,7 +369,26 @@ export function AdminsTable({ selectedTab, admins }: AdminsTableProps) {
            </TableBody>
 
                 </>
-            </Table>
+            </Table> 
+
+            <div className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
+                             text-sm font-nunito font-bold uppercase bg-[#FAFAFB]">
+    <button 
+        className="ml-5"
+        onClick={() => setCurrentPage(currentPage - 1)}
+        disabled={currentPage === 0}
+    >
+        Prev
+    </button>
+    <span className="ml-5">{currentPage + 1}</span>
+    <button 
+        className="ml-5"
+        onClick={() => setCurrentPage(currentPage + 1)}
+        disabled={endIndex >= filteredAdmins.length}
+    >
+        Next
+    </button>
+</div> 
             </div>
     )
 }
