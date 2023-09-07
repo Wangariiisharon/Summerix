@@ -17,9 +17,9 @@ export default function MyApp({ Component, pageProps }: any) {
 
       </Head>
 
-      <AuthProvider>
+      {/* <AuthProvider> */}
         <Component {...pageProps} />
-      </AuthProvider>
+      {/* </AuthProvider> */}
 
       <Toaster />
     </>

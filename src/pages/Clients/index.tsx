@@ -30,13 +30,13 @@ export default function ClientsComponent() {
                 <div className='flex items-center justify-between'>
                     <Header heading='Clients'/>
                     <div className='flex'>
-                        <Button className='bg-white px-3 py-3 uppercase flex items-center rounded font-semibold'
+                        <Button className='bg-white w-30 h-38 px-3 py-3 text-sm uppercase flex items-center rounded font-semibold'
                                 handleClick={handleClick}>
                             Nairobi,Kenya
                             <ChevronDownIcon className='ml-4 h-4 w-4'/>
                         </Button>
 
-                        <Button className='ml-2 bg-white px-3 py-3 uppercase flex items-center rounded font-semibold'
+                        <Button className='ml-2 bg-white px-3 py-3 text-sm w-30 h-38 uppercase flex items-center rounded font-semibold'
                                 handleClick={handleClick}>
                             Today
                             <ChevronDownIcon className='ml-4 h-4 w-4'/>
@@ -46,12 +46,12 @@ export default function ClientsComponent() {
 
                 <div className='flex w-full items-center justify-between my-6'>
                     <Form handleSubmit={handleSearch}>
-                        <Input type='text' name='search' placeholder='Search for track Delivery Status, destination'
+                        <Input type='text' name='search' placeholder='Search destination'
                                id='search' label=''/>
                     </Form>
                     <div className='flex'>
                         <Button
-                            className='bg-d-green text-white text-sm flex w-[180px] h-[44px] items-center justify-center uppercase rounded'
+                            className='bg-d-green text-white text-sm flex w-[150px] h-[38px] items-center justify-center uppercase rounded'
                             handleClick={handleExport}>
                             <>
                                 <ArrowDownTrayIcon className='h-6 w-6 mr-2'/>

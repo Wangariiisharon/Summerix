@@ -14,7 +14,7 @@ import AssignRole from "./manage_roles/assignRole";
 
 const tabs = [
     {name: 'Manage Admins', href: '#', current: false},
-    {name: 'Manage Cities', href: '#', current: false},
+    {name: 'Manage Client', href: '#', current: false},
     {name: 'Manage Vehicles', href: '#', current: true},
     {name: 'Manage Driver', href: '#', current: false},
     {name: 'Manage Role', href: '#', current: false},
@@ -28,26 +28,18 @@ function classNames(...classes: any) {
 
 
 export default function AdministrationComponent() {
+    
     return (
         <SiteLayout>  
-            <div className="w-full flex flex-row bg-[#FFFFFF] fixed top-0 h-10">   
-            <div className="flex justify-center">
-            <div className="ml-7 flex justify-center"><HamburgerMenu/></div> 
-            <div> 
-            <img src="Frame 13.png" className="fixed right-14 w-8" alt="Notification" /> 
-            <img src="Ellipse 1.png" className=" w-9 fixed right-4 pl-2" alt="" />
-
-            </div> 
-            </div>   
-            </div>
-            <div className=" bg-[#FAFAFB] max-h-[600px]"> 
-                <p className="text-lg font-nunito font-bold mt-2 ml-7">Administration</p>
-
+   
+            <div className=" bg-[#FAFAFB] flex flex-col"> 
+                <p className="text-lg font-nunito font-bold mt-2 ml-5">Administration</p>
+   
                 <div>
 
-                    <div className='mt-12'>
+                    <div className='mt-10'>
                         <Tab.Group>
-                            <Tab.List className='w-full bg-[#FAFAFB] font-nunito flex justify-around mb-3 '>
+                            <Tab.List className='w-full bg-[#FAFAFB] font-nunito flex justify-around mb-3'> 
                                 {tabs.map((tab, index) => {
                                     return (
                                         <Fragment key={index}>

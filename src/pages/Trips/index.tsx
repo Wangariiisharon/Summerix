@@ -57,7 +57,7 @@ export default function TripsComponent() {
                         <FilterBanner active={false} number={'76'} name='Incomplete'/>
                         <FilterBanner active={false} number={'76'} name='Complete'/>
                     </div>
-                    <div className='flex'>
+                    {/* <div className='flex'>
                         <Button className='bg-white px-3 uppercase flex items-center rounded font-semibold' handleClick={handleClick}>
                             Nairobi,Kenya
                             <ChevronDownIcon className='ml-4 h-4 w-4'/>
@@ -68,7 +68,7 @@ export default function TripsComponent() {
                         <ChevronDownIcon className='ml-4 h-4 w-4'/>
                     </Button>
 
-                    </div>
+                    </div> */}
 
                 </div>
                 <div className='flex w-full items-center justify-between my-6'>

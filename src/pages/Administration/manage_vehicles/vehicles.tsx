@@ -501,7 +501,7 @@ export function VehiclesTable({
     handleEditClick 
 }: VehiclesTableProps) {
     const [currentPage, setCurrentPage] = useState(0);
-    const rowsPerPage = 5;
+    const rowsPerPage = 3;
     
      console.log("VehiclesTable Rendering with selectedTab:", selectedTab);
         const activeVehicles = vehicles.filter((vehicle) => vehicle.status);

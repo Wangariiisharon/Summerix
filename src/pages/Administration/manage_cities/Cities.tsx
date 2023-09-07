@@ -1,11 +1,13 @@
 import {Tab} from "@headlessui/react";
-import {Fragment} from "react";
+import {ChangeEvent, Fragment} from "react";
 import {AddButton} from "@/components/Buttons";
 import Table, {DummyTable} from "@/components/Table/Table";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import { HeaderCell, BodyCell } from "../../../components/Table/Cells";
 import { TableBody } from "../../../components/Table/Row";
-import { SearchBar } from "@/components/Forms/input";
+import SearchBar from "../../../components/Forms/input"
+import Link from "next/link";
+import DashboardComponent from "../../Dashboard"
 
 
 const Headers = ["CLIENT ID", "NAME", "EXPENSES", "PROFIT"]
@@ -79,9 +81,11 @@ export default function Cities(){
 function CitiesTable() {
     return (
         <>
-        <p className="text-lg ml-8 font-bold">Cities</p> 
+        <p className="text-lg ml-8 font-bold">Clients</p> 
         <div className='flex  text-base mt-2 ml-8 w-72 searchBarContainer'>
-           <SearchBar name='admins_searchbar' placeholder='Search name, id, phone' /> 
+           <SearchBar name='admins_searchbar' placeholder='Search name, id, phone' value={""} onChange={function (e: ChangeEvent<HTMLInputElement>): void {
+                    throw new Error("Function not implemented.");
+                } } /> 
         </div>
         <div className="flex justify-end mr-20 bg-[#FAFAFB]">
             <p>Nairobi,Kenya</p> 
@@ -121,13 +125,16 @@ function CitiesTable() {
                                         <div className='h-10'></div>
     
                                     </tr> 
-                                    {/* </div> */}
+                                    {/* </div> */} 
+                                 
                                 </Fragment>
                             )
                         })}
                     </TableBody>
                 </>
-            </Table>
+            </Table> 
+      
+            
         </>
     )
 }
