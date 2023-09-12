@@ -41,7 +41,8 @@ export default function Admins() {
         const query = e.target.value;
         console.log("Search Query:", query);
         setSearchQuery(query);
-      }; 
+      };  
+      
       const filteredAdmins = fetchedAdmins.filter((admin) => {
         const fullName = `${admin.firstname} ${admin.lastname}`.toLowerCase();
         const nameMatch = fullName.includes(searchQuery.toLowerCase());

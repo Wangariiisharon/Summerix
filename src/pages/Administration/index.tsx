@@ -41,7 +41,7 @@ export default function AdministrationComponent() {
                         <Tab.Group>
                             <Tab.List className='w-full bg-[#FAFAFB] font-nunito flex justify-around mb-3'> 
                                 {tabs.map((tab, index) => {
-                                    return (
+                                     return (
                                         <Fragment key={index}>
                                             <Tab className='ui-selected:border-b-4 border-d-green outline-none
                                              ui-selected:text-d-green text-sm font-nunito font-bold uppercase flex flex-row'>

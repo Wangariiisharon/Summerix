@@ -10,7 +10,6 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { getFirestore, collection, doc, setDoc, addDoc,getDocs, DocumentData, deleteDoc } from 'firebase/firestore';
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import { useRouter } from "next/router"; 
-import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
 
 import SiteLayout from "@/Layout/SiteLayout"; 
 

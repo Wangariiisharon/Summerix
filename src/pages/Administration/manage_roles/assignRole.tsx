@@ -2,11 +2,10 @@ import { DocumentData, collection, doc, getDoc, getDocs } from 'firebase/firesto
 import { useRouter } from 'next/router';
 import React, { Fragment, useEffect, useState } from 'react';
 import { fbDb } from '@/firebase/configs';
-import HamburgerMenu from '@/components/hamburgerMenu'; 
+// import HamburgerMenu from '@/components/hamburgerMenu'; 
 import {AddButton, Button, DeleteBtn, EditBtn} from "@/components/Buttons";
 import {PlusIcon,  XMarkIcon} from "@heroicons/react/24/solid"; 
 import SiteLayout from "@/Layout/SiteLayout"; 
-import TopMenu from "@/components/Headers"
 import { HeaderCell, BodyCell } from '@/components/Table/Cells';
 import { TableBody } from '@/components/Table/Row';
 import Table from '@/components/Table/Table';
@@ -72,10 +71,12 @@ export default function AssignRole(){
           console.error("Error fetching departments:", error);
         }
       }; 
-      const fetchedPermisions = async () => {
+      const fetchPermissions = async () => { 
         try {
-          const querySnapshot = await getDocs(collection(fbDb, "permisions"));
-          const permissionsData: DocumentData[] = [];
+          const querySnapshot = await getDocs(collection(fbDb, "permisions"));            
+          const permissionsData: DocumentData[] = []; 
+          console.log(permissionsData);
+
           querySnapshot.forEach((doc) => {
             const permission = {
               id: doc.id,
@@ -85,12 +86,12 @@ export default function AssignRole(){
           });
           setFetchedPermisions(permissionsData);
         } catch (error) {
-          console.error("Error fetching permisions:", error);
+          console.error("Error fetching permissions:", error); 
         }
       };
+            
       
-      
-      fetchedPermisions();
+      fetchPermissions();
       fetchDepartments();
       fetchAdminDetails(); 
 
@@ -108,9 +109,8 @@ export default function AssignRole(){
     
 
     return(   
-      <SiteLayout>
+       <SiteLayout> 
             <div  className='bg-[#FAFAFB] h-full text-[#030229]'> 
-      <TopMenu/>
           <p className="text-lg font-nunito flex justify-center font-bold mt-2  ml-7">{`${adminDetails.firstname} ${adminDetails.lastname}`}</p>  
           <div className='flex flex-col'>
           <div className='rounded-md  flex justify-center shadow-md bg-[#FFFFFF] ml-5 mt-5 ' >
@@ -154,45 +154,39 @@ export default function AssignRole(){
 
           </div> 
           </div>   
-          <div className='flex flex-row'>
-      <div className='mt-10 ml-5'>
-        <div className='shadow-md bg-[#FFFFFF] rounded-md'>
+          <div className='flex'>
+      {/* <div className='mt-10 ml-5 w-1/3'>  */}
+      <div className="mt-10 ml-5 w-1/3">
+
+        <div className='shadow-md bg-[#FFFFFF] rounded-md '>
           <div className='flex flex-row divide-y divide-solid flex space-x-20'>
-            <p className='text-base font-nunito font-bold ml-2 mr-20'>Department</p>
+            <p className='text-base font-nunito font-bold ml-2 mr-20 mt-2'>Department</p>
             <Button
-              className='rounded bg-d-green w-[80px] h-6 uppercase text-white font-semibold flex items-center py-4 px-4 ml-20 mr-4'
+              className='rounded bg-d-green w-[80px] h-6 uppercase text-white font-semibold flex items-center py-4 px-4 ml-20 mr-2 mt-2'
               handleClick={handleAddDepartment}>
               <PlusIcon className='h-10 w-10 mr-2' />
               Add
             </Button>
           </div>
-          <div className='bg-[#FAFAFB]'>
+          <div className='bg-[#FAFAFB] mt-1 mr-2 ml-2 mb-2 '>
           <DepartmentsTable departments={fetchedDepartments} updateFetchedDepartments={(updatedDepartments) => setFetchedDepartments(updatedDepartments)} />
           </div>
         </div>
       </div>  
-      <div className='mt-10 ml-5'>
+      {/* <div className='mt-10 w-1/3 fixed right-10'> */} 
+      <div className="mt-10 w-1/3 fixed right-10">
         <div className='shadow-md bg-[#FFFFFF] rounded-md'>
-          <div className='flex flex-row divide-y divide-solid'>
-            <p className='text-base font-nunito font-bold ml-2 mr-20'>Permisions</p>
+          <div className='flex flex-row divide-y divide-solid mt-4'>
+            <p className='text-base font-nunito font-bold ml-2 mr-20 mt-2'>Permisions</p>
             <Button
-              className='rounded bg-d-green w-[80px] h-6 uppercase text-white font-semibold flex items-center py-4 px-4 ml-20 mr-2 '
-              handleClick={handleAddDepartment}>
+              className='rounded bg-d-green w-[80px] h-6 uppercase text-white font-semibold flex items-center py-4 px-4 ml-20 mr-2 mt-2'
+              handleClick={handleAddPermisions}>
               <PlusIcon className='h-10 w-10 mr-2' />
               Add
             </Button>
           </div>
-          <div className='bg-[#FAFAFB] w-38'>     
-          {/* <PermissionsTable permissions={fetchedPermisions} /> */} 
-          {/* {fetchedPermisions.map((permission, index) => ( */}
-              <div className='p-2 w-25'>
-                <p className='font-nunito font-regular text-base '>Manage Exports</p>
-                <p className='font-nunito font-regular text-base'>Manage Roles</p>
-                <p className='font-nunito font-regular text-base'>Manage Admins</p>
-                <p className='font-nunito font-regular text-base'>Manage Trips</p>
-                <p className='font-nunito font-regular text-base'></p>
-              </div>
-            {/* // ))} */}
+          <div className='bg-[#FAFAFB] mt-1 mr-2 ml-2 mb-2 '>
+          <PermissionsTable permissions={fetchedPermisions} />
           </div>
         </div>
       </div> 
@@ -211,8 +205,8 @@ export default function AssignRole(){
       </div> 
       </div>
 
+    </SiteLayout> 
 
-    </SiteLayout>
     )
 }   
 
@@ -226,13 +220,13 @@ interface DepartmentsTableProps {
 
 export function DepartmentsTable({ departments, updateFetchedDepartments }: DepartmentsTableProps) {
   return (
-    <table className="table mr-2">
+    <table className=" mr-2">
 
       <tbody>
         {departments.map((department, index) => {
           return (
-            <tr key={index}>
-              <td className=''>{department.name} 
+            <tr key={index} className='h-10'>
+              <td className='ml-2'>{department.name} 
                </td> 
               <div className='ml-20'>
               <BodyCell>
@@ -260,19 +254,20 @@ interface PermissionsTableProps {
 export function PermissionsTable({ permissions }: PermissionsTableProps) {
   return (
 
-    <table className="table mr-2">
+    <table className="mr-2">
 
-<tbody>
-        {permissions.map((permission, index) => (
-          <tr key={index}>
-            <td>{permission.exportdata}</td>
-            <td>{permission.managetrips}</td>
-            <td>{permission.viewclients}</td>
-            <td>{permission.managedrivers}</td>
-          </tr>
-        ))}
+      <tbody>
+        {permissions.map((permission, index) => {
+          return (
+            <tr key={index} className='h-10'>
+              <td className='ml-2'>{permission.name} 
+               </td> 
+            </tr>
+          );
+        })}
       </tbody>
     </table>
+  
   );
 }
 
