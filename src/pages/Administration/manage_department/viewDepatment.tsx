@@ -6,7 +6,14 @@ import SiteLayout from "@/Layout/SiteLayout";
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/Buttons';
 import { BodyCell } from '@/components/Table/Cells'; 
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns'; 
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
 
 
 
@@ -19,8 +26,39 @@ interface DepatmentDetailsProps {
         permissions: number, 
         update:Date
     };
-  }   
+  }  
+   
+  // interface MembersTable {
+  //   createData: {
+  //     name: string,
+  //     id: string,
+  //     AddedAt: number,
+  //     Action: number,
+  //   };
+  // }   
+
+  // const rows = [
+  //   createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
+  //   createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
+  //   createData('Eclair', 262, 16.0, 24, 6.0),
+  //   createData('Cupcake', 305, 3.7, 67, 4.3),
+  //   createData('Gingerbread', 356, 16.0, 49, 3.9),
+  // ];
+
+  function createData(
+    id: string,
+    name: string,
+    AddedAt: string,
+    Action: React.ReactNode | null,
+  ) {
+    return { name, id, AddedAt, Action };
+  }
   
+  const action = <i className="fa-sharp fa-solid fa-rectangle-xmark text-[#F34C4C] text-sm"></i>;
+  
+  const rows = [
+    createData('11', "Dina Morad", "6 months ago", action),
+  ];
   
 
 export default function ViewDepatment() {   
@@ -33,7 +71,9 @@ export default function ViewDepatment() {
      function handleAddPermissions(){
 
      } 
-     
+     function handleAddMembers(){
+
+     }
 
     useEffect(()=>{ 
         const fetchDepartmentDetails = async () => {
@@ -94,26 +134,17 @@ export default function ViewDepatment() {
  <div  className='bg-[#FAFAFB] h-full text-[#030229]'> 
  <p className="text-lg font-nunito flex justify-center font-bold mt-2  ml-7">{`View Depatment:${departments?.name}`}</p>  
  <div className='flex flex-col'>
- <div className='rounded-md  flex justify-center shadow-md bg-[#FFFFFF] ml-5 mt-5 ' >
- <div className='bg-[#FFFFFF] flex flex-row py-5'>  
- <div className='flex flex-col mt-5 '> 
- {/* <img className=' w-20 h-20 rounded-full border border-gray-600' src="user.png"/> */}  
- <div className='text-gray-600'>
- <i className="fa fa-user-circle fa-3x" aria-hidden="true"></i>  
- </div>
+ <div className='rounded-md flex justify-between shadow-md bg-[#FFFFFF] ml-5 mt-5 ' >
+ <div className='bg-[#FFFFFF]  flex-row py-5'>  
+ {/* justify-between  */}
 
-
- <p className='font-nunito font-regular text-sm text-[#030229] font-nunito font-bold'>{`${departments?.name}`}</p> 
- <p className='font-nunito font-regular text-sm text-[#030229]'>{departments?.name}</p> 
- <p className='font-nunito font-regular text-sm text-[#030229]'>{departments?.name}</p> 
- </div> 
  <div className='w-full ml-10 flex flex-col'>  
- <div className=' mt-5 px-10 flex flex-row mb-5'>  
+ <div className=' mt-5 px-10 flex justify-start flex-row mb-5'>  
 <div>
 <p className='font-nunito font-regular text-sm font-nunito font-regular'>GROUP NAME</p>
 <p className='font-nunito font-regular text-sm text-[#030229] font-nunito font-bold'>{departments?.name}</p> 
 </div>  
-<div className='ml-14'>
+<div className='ml-20'>
 <p className='font-nunito font-regular text-sm font-nunito font-regular'>CREATED AT</p>
 <p className='font-nunito font-regular text-sm text-[#030229] font-nunito font-bold'>
 {departments?.update
@@ -121,46 +152,38 @@ export default function ViewDepatment() {
     : 'N/A'}
 
 </p>
-</div>
+</div> 
+<div className='ml-20'>
+<p className='font-nunito font-regular text-sm font-nunito font-regular'>UPDATED AT</p>
+<p className='font-nunito font-regular text-sm text-[#030229] font-nunito font-bold'>David Mwangi</p> 
+</div> 
 
 </div> 
-<div className=' mt-5  px-10 flex flex-row mb-5'>  
-
-<div>
-<p className='font-nunito font-regular text-sm font-nunito font-regular'>Distance Covered</p>
-<p className='font-nunito font-regular text-sm text-[#030229] font-nunito font-bold'>501.4mi</p> 
-</div>  
-<div className='ml-10'>
-<p className='font-nunito font-regular text-sm font-nunito font-regular'>Distance Covered</p>
-<p className='font-nunito font-regular text-sm text-[#030229] font-nunito font-bold'>10h 5min</p>
-</div>
-
-</div> 
+ 
 </div> 
 
 </div> 
 </div>   
-<div className='flex'>
+<div className='flex flex-row'>
  {/* <div className='mt-10 ml-5 w-1/3'>  */}
-{/* <div className="mt-10 ml-5 w-1/3">
-
-<div className='shadow-md bg-[#FFFFFF] rounded-md '>
+<div className="mt-10 ml-5">
+<div className='shadow-md bg-[#FFFFFF] rounded-md h-64 '>
 <div className='flex flex-row divide-y divide-solid flex space-x-20'>
 <p className='text-base font-nunito font-bold ml-2 mr-20 mt-2'>Department</p>
 <Button
   className='rounded bg-d-green w-[80px] h-6 uppercase text-white font-semibold flex items-center py-4 px-4 ml-20 mr-2 mt-2'
-  handleClick={handleAddDepartment}>
+  handleClick={handleAddMembers}>
   <PlusIcon className='h-10 w-10 mr-2' />
   Add
 </Button>
 </div>
 <div className='bg-[#FAFAFB] mt-1 mr-2 ml-2 mb-2 '>
-<DepartmentsTable departments={fetchedDepartments} updateFetchedDepartments={(updatedDepartments) => setFetchedDepartments(updatedDepartments)} />
+<MembersTable />
 </div>
 </div>
-</div>   */}
+</div>  
 {/* <div className='mt-10 w-1/3 fixed right-10'> */} 
-<div className="mt-10 w-1/3 fixed right-10">
+<div className="mt-10 w-[300] fixed right-10">
 <div className='shadow-md bg-[#FFFFFF] rounded-md'>
 <div className='flex flex-row divide-y divide-solid mt-4'>
 <p className='text-base font-nunito font-bold ml-2 mr-20 mt-2'>Permisions</p>
@@ -200,34 +223,36 @@ export default function ViewDepatment() {
 }   
 
 
-interface DepartmentsTableProps {
-  departments: DocumentData[];
-  updateFetchedDepartments: (updatedDepartments: DocumentData[]) => void;
-}
-
-export function DepartmentsTable({ departments, updateFetchedDepartments }: DepartmentsTableProps) {
+ function MembersTable() {
   return (
-    <table className=" mr-2">
-
-      <tbody>
-        {departments.map((department, index) => {
-          return (
-            <tr key={index} className='h-10'>
-              <td className='ml-2'>{department.name} 
-               </td> 
-              <div className='ml-20'>
-              <BodyCell>
-              <XMarkIcon className='h-6 w-6 text-crimson-red'/>
-              </BodyCell> 
-              </div>
-
-              <td>
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+    <TableContainer component={Paper} className='bg-[#FAFAFB]'>
+      <Table sx={{ minWidth: 400 }} aria-label="simple table">
+        <TableHead>
+          <TableRow className='h-10'>
+            <TableCell>ID</TableCell>
+            <TableCell align="right">Name</TableCell>
+            <TableCell align="right">Added AT</TableCell>
+            <TableCell align="right">Action</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.map((row) => (
+            <TableRow
+              key={row.name}
+              sx={{ '&:last-child td, &:last-child th': { border: 0 } }} 
+              className='h-10'
+            >
+              <TableCell component="th" scope="row">
+                {row.id}
+              </TableCell>
+              <TableCell align="right">{row.name}</TableCell>
+              <TableCell align="right">{row.AddedAt}</TableCell>
+              <TableCell align="right">{row.Action}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 }
 
@@ -241,7 +266,7 @@ interface PermissionsTableProps {
 export function PermissionsTable({ permissions }: PermissionsTableProps) {
   return (
 
-    <table className="mr-2">
+    <Table sx={{ minWidth: 400}} aria-label="simple table">
 
       <tbody>
         {permissions.map((permission, index) => {
@@ -253,7 +278,7 @@ export function PermissionsTable({ permissions }: PermissionsTableProps) {
           );
         })}
       </tbody>
-    </table>
+      </Table>
   
   );
 }

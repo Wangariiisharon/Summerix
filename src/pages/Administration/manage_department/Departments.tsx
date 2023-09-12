@@ -13,7 +13,7 @@ import { formatDistanceToNow } from 'date-fns';
 import ViewMenu from "./viewMenu"
 
 
-const Headers = ["DEPARTMENT ID", "NAME", "MEMBERS","UPDATED"," STATUS"]
+const Headers = ["DEPARTMENT ID", "NAME","UPDATED"]
 
 
 export default function Departments(){ 
@@ -227,9 +227,9 @@ export function DepartmentsTable({ departments,updateFetchedDepartments }: Vehic
                                         <BodyCell>
                                         {departments.name}
                                         </BodyCell>
-                                        <BodyCell>{departments.members}</BodyCell>
+                                        {/* <BodyCell>{departments.members}</BodyCell> */}
                                         <BodyCell>{formatDistanceToNow(updatedDate)} ago</BodyCell>
-                                        <BodyCell>{departments.status ? 'Active' : 'Inactive'}</BodyCell>
+                                        {/* <BodyCell>{departments.status ? 'Active' : 'Inactive'}</BodyCell> */}
                                         <div className="h-10 font-nunito font-regular"></div>
 
                                     </tr>
