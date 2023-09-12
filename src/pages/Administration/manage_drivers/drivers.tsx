@@ -25,7 +25,7 @@ import { deleteDoc, doc } from 'firebase/firestore';
 
 
 
-const Headers = ["DRIVER ID", "DRIVER", "MOBILE", "VEHICLE TYPE","COMPLETED TRIPS"]
+const Headers = ["DRIVER ID", "DRIVER", "MOBILE", "VEHICLE TYPE","TRIPS "]
 
 export default function Drivers(){
     const [open,setOpen]=useState(false) 
@@ -45,7 +45,7 @@ export default function Drivers(){
         model: "",
         year: "",
         number: "", 
-        completedTrips:0
+        completedTrips:0 
       });
     const router=useRouter()
 
@@ -59,7 +59,8 @@ export default function Drivers(){
         const query = e.target.value;
         console.log("Search Query:", query);
         setSearchQuery(query);
-      };  
+      }; 
+   
 
     const handleSubmit = async (values: { name: any; phonenumber: any; email_adress: any; gender: any;country: any; city: any;vehicle_type: any;model: any;year: any;number: any;completedTrips: any;profile: any; }) => { 
             console.log("Submitted Values:", values);
@@ -103,7 +104,9 @@ export default function Drivers(){
                     year:values.year,
                     number:values.number,
                     profile:profileImageUrl, 
-                    completedTrips:values.completedTrips,
+                    completedTrips:values.completedTrips, 
+                    archive:false,
+
 
                 };
         
@@ -151,7 +154,7 @@ export default function Drivers(){
             model:driver.model,
             year:driver.year,
             number:driver.number,  
-            completedTrips: driver.completedTrips
+            completedTrips: driver.completedTrips 
 
         });
         setEditModalOpen(true);
@@ -623,12 +626,15 @@ export default function Drivers(){
     )
 } 
 
+
+
 interface VehiclesTableProps {
     drivers: DocumentData[];
     updateFetchedDrivers: (updatedDrivers: DocumentData[]) => void; 
     handleEditClick: any
 
-}
+} 
+
 
 
 
@@ -644,29 +650,36 @@ export function DriversTable({ drivers,updateFetchedDrivers, handleEditClick }: 
         console.log("Search Query:", query);
         setSearchQuery(query);
       };  
-      const filteredDrivers = drivers.filter((drivers) => {
-        const fullName = `${drivers.name}`.toLowerCase();
-        return fullName.includes(searchQuery.toLowerCase());
-      }); 
+    //   const filteredDrivers = drivers.filter((drivers) => { 
 
-
-const handleDeleteClick = async (driverId: any) => {
-    const deleteDriverFromDatabase = async (driverId: string) => {
-        try {
-            const driverRef = doc(fbDb, 'drivers', driverId);
-            await deleteDoc(driverRef);
-            console.log('Driver deleted from the database:', driverId);
-        } catch (error) {
-            console.error('Error deleting driver from database:', error);
-        }
-    };
+    //     const fullName = `${drivers.name}`.toLowerCase();
+    //     return fullName.includes(searchQuery.toLowerCase());
+    //   });  
+      const filteredDrivers = drivers.filter(driver => {
+        const isArchived = driver.archive === false;
+      
+        const fullName = driver.name.toLowerCase();
+        const includesSearchQuery = fullName.includes(searchQuery.toLowerCase());
+      
+        return isArchived && includesSearchQuery;
+      });
+      
+ 
+const updateDriverStatusInDatabase = async (driverId: string, newStatus: boolean) => {
     try {
-        await deleteDriverFromDatabase(driverId);
-        updateFetchedDrivers(drivers.filter(driver => driver.id !== driverId));
+        const driverRef = doc(fbDb, 'drivers', driverId);
+        await setDoc(driverRef, { archive: newStatus }, { merge: true });
+        console.log('Driver status updated in the database:', driverId);
+
+        const updatedDrivers = drivers.map(driver =>
+            driver.id === driverId ? { ...driver, status: newStatus } : driver
+        );
+        updateFetchedDrivers(updatedDrivers);
     } catch (error) {
-        console.error('Error deleting driver:', error);
+        console.error('Error updating Driver status in database:', error);
     }
-}; 
+};
+
 
 
     const handleDriverClick = (driver: any) => {
@@ -719,9 +732,11 @@ const handleDeleteClick = async (driverId: any) => {
                                         <div  onClick={()=>handleEditClick(drivers)}>
                                             <EditBtn/>
                                         </div>
-                                         <div onClick={() => handleDeleteClick(drivers.id)}>
-                                         <DeleteBtn/> 
-                                         </div>
+                                         <div>  
+                                          <button className="bg-[#E7EDF4] text-[#777E96] h-6 w-18" onClick={() => updateDriverStatusInDatabase(drivers.id,true)}>Archive</button>
+                                         </div> 
+                                         {/* <button className="text-sm text-slate-400 mt-2 px-2 py-2  rounded bg-gray-100" onClick={()=>handleReasign(admin)}>Assign Role</button> */}
+
                                         
                                         <div className='h-10'></div>
                                     </td>
