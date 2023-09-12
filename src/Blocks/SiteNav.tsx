@@ -39,8 +39,9 @@ export default function SiteNav({ children }: Props) {
         {/* Hamburger Menu */} 
 
 
-        {/* Main content and Sidebar */}
-        <div className="flex">
+        {/* Main content and Sidebar */} 
+        <div className=' flex '>
+        <div className="flex flex-row">
           {/* Sidebar */}
           <div
             ref={drawerRef}
@@ -80,16 +81,35 @@ export default function SiteNav({ children }: Props) {
               </ul>
             </nav>
           </div> 
-        <div className="flex flex-row absolute top-0 h-10 bg-[#FFFFFF]">
+          <div className="bg-[#F34C4C]"></div>
+ 
+        {/* <div className="flex flex-row absolute top-0 h-10">
         <div className={`ml-4 lg:fixed ${isDrawerOpen ? 'fixed left-72' : 'fixed left-7'} cursor-pointer`} onClick={toggleSidebar}>
-          <i className="fa fa-bars" aria-hidden="true"></i>
+          <i className="fa fa-bars bg-[#F34C4C]" aria-hidden="true"></i>
         </div>
         <div>
           <img src="Frame 13.png" className="fixed right-14 w-8" alt="Notification" />
           <img src="Ellipse 1.png" className="w-9 fixed right-4 pl-2" alt="" />
         </div> 
+        </div>  */} 
+          <div className={`flex flex-row fixed top-0 h-10 bg-[#FFFFFF] flex items-center shadow-inner ${isDrawerOpen ? 'fixed left-72 w-full' : 'w-full'}`}>
+          <div className={`ml-4 lg:fixed ${isDrawerOpen ? 'fixed left-72 ml-16' : 'fixed left-7'} cursor-pointer`} onClick={toggleSidebar}>
+          <i className="fa fa-bars" aria-hidden="true"></i>
         </div>
 
+          <div className='mb-6'>
+          <img src="Frame 13.png" className="fixed right-14 w-8" alt="" />
+          <img src="Ellipse 1.png" className="w-9 fixed right-4 pl-2" alt="" />
+        </div> 
+          
+
+
+
+        </div> 
+        </div> 
+
+
+ 
           {/* Main content */}
           <div
             className={`bg-[#FAFAFB] px-4 py-10 ${isDrawerOpen ? 'lg:w-full sm:px-6 lg:px-8' : 'lg:w-full'} transition-all ease-in-out duration-300`}
