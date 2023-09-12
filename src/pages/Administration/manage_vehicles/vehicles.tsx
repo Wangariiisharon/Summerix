@@ -22,13 +22,13 @@ import SiteLayout from "@/Layout/SiteLayout";
 
 
 
-export const tabs = [
-    {name: "All"},
-    {name: "Active"},
-    {name: "InActive"},
+// export const tabs = [
+//     {name: "All"},
+//     {name: "Active"},
+//     {name: "InActive"},
 
-]
-const Headers = ["VEHICLE ID", "NAME", "LISENCE PLATE","STATUS"]
+// ]
+const Headers = ["VEHICLE ID", "NAME", "LISENCE PLATE"]
 
 
 
@@ -95,7 +95,8 @@ export default function Vehicles(){
                 lisence_plate: values.lisence_plate,
                 vehicle_type:values.vehicle_type,
                 color:values.color,
-                status:true  
+                status:true, 
+                archive:false  
 
             };
     
@@ -205,7 +206,7 @@ export default function Vehicles(){
                 <Tab.Group>
                     <div className='flex w-full justify-end'>
                         <div className='bg-[#FAFAFB] '>
-                            <Tab.List>
+                            {/* <Tab.List>
                                 {tabs.map((tab, index) => {
                                     return (
                                         <Fragment key={index}>
@@ -222,7 +223,7 @@ export default function Vehicles(){
                                     )
                                 })
                                 }
-                            </Tab.List>
+                            </Tab.List> */}
                         </div>
            
                         <div className='flex justify-end text-base mr-2'>
@@ -506,17 +507,22 @@ export function VehiclesTable({
         const activeVehicles = vehicles.filter((vehicle) => vehicle.status);
 
 
-    const filteredVehicles = vehicles.filter(vehicles =>
-        selectedTab === 0 ||
-        (selectedTab === 1 && vehicles.status) ||
-        (selectedTab === 2 && !vehicles.status)
-    ); 
+    // const filteredVehicles = vehicles.filter(vehicles =>
+    //     selectedTab === 0 ||
+    //     (selectedTab === 1 && vehicles.status) ||
+    //     (selectedTab === 2 && !vehicles.status)
+    // );  
+  
+
+    const filteredNonArchivedVehicles = vehicles.filter((vehicle) => !vehicle.archive);
+
+      
 
     const startIndex = currentPage * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
-    const visibleVehicles = filteredVehicles.slice(startIndex, endIndex);
+    const visibleVehicles = filteredNonArchivedVehicles.slice(startIndex, endIndex);
 
-    console.log("Filtered Vehicles:", filteredVehicles);
+    console.log("Filtered Vehicles:", filteredNonArchivedVehicles);
     const handleReasign = () => {
     }   
     const router=useRouter()
@@ -525,7 +531,7 @@ export function VehiclesTable({
 const updateVehicleStatusInDatabase = async (vehicleId: string, newStatus: boolean) => {
     try {
         const vehicleRef = doc(fbDb, 'vehicles', vehicleId);
-        await setDoc(vehicleRef, { status: newStatus }, { merge: true });
+        await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
         console.log('Vehicle status updated in the database:', vehicleId);
 
         const updatedVehicles = vehicles.map(vehicle =>
@@ -573,7 +579,7 @@ const updateVehicleStatusInDatabase = async (vehicleId: string, newStatus: boole
                                         {vehicles.name}
                                         </BodyCell>
                                         <BodyCell>{vehicles.lisence_plate}</BodyCell>
-                                        <BodyCell>{vehicles.status ? 'Active' : 'Inactive'}</BodyCell>
+                                        {/* <BodyCell>{vehicles.status ? 'Active' : 'Inactive'}</BodyCell> */}
                                         <BodyCell>
                                             <>
                              
@@ -585,8 +591,8 @@ const updateVehicleStatusInDatabase = async (vehicleId: string, newStatus: boole
                                         <div  onClick={()=>handleEditClick(vehicles)}>
                                             <EditBtn/>
                                         </div>                                        
-                                        <div onClick={() => updateVehicleStatusInDatabase(vehicles.id, false)}>
-                                         <DeleteBtn/> 
+                                        <div>  
+                                          <button className="bg-[#E7EDF4] text-[#777E96] h-6 w-18" onClick={() => updateVehicleStatusInDatabase(vehicles.id,true)}>Archive</button>
                                          </div>
                                         <div className='h-10'></div>
                                     </td>
@@ -613,7 +619,7 @@ const updateVehicleStatusInDatabase = async (vehicleId: string, newStatus: boole
     <button 
         className="ml-5"
         onClick={() => setCurrentPage(currentPage + 1)}
-        disabled={endIndex >= filteredVehicles.length}
+        disabled={endIndex >= filteredNonArchivedVehicles.length}
     >
         Next
     </button>
