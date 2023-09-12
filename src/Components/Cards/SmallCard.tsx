@@ -29,7 +29,6 @@ import {CardIcon} from "@/components/images";
 //     )
 // } 
 
-import Box from "@mui/material/Box"; 
 interface Props {
     name: string
     icon: string

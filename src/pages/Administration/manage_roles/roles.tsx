@@ -5,7 +5,6 @@ import Table, {DummyTable} from "@/components/Table/Table";
 import { HeaderCell, BodyCell } from "../../../components/Table/Cells";
 import { TableBody } from "../../../components/Table/Row";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
-import { SearchBar } from "@/components/Forms/input";
 import { useRouter } from "next/router"; 
 import { DocumentData, collection, getDocs } from 'firebase/firestore';
 import { fbDb } from "@/firebase/configs";

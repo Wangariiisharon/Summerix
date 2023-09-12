@@ -13,7 +13,7 @@ import { formatDistanceToNow } from 'date-fns';
 import ViewMenu from "./viewMenu"
 
 
-const Headers = ["DRIVER ID", "NAME", "MEMBERS","UPDATED"," STATUS"]
+const Headers = ["DEPARTMENT ID", "NAME", "MEMBERS","UPDATED"," STATUS"]
 
 
 export default function Departments(){ 

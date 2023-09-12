@@ -72,6 +72,10 @@ export default function ClientsComponent() {
                 </div>
                 <ClientsTable/>
             </div>
-            </SiteLayout>  
+            </SiteLayout>   
+            
     )
-}
+} 
+
+
+
