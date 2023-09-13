@@ -650,19 +650,30 @@ export function DriversTable({ drivers,updateFetchedDrivers, handleEditClick }: 
         console.log("Search Query:", query);
         setSearchQuery(query);
       };  
-    //   const filteredDrivers = drivers.filter((drivers) => { 
+      const filteredDrivers = drivers.filter((drivers) => { 
 
-    //     const fullName = `${drivers.name}`.toLowerCase();
-    //     return fullName.includes(searchQuery.toLowerCase());
-    //   });  
-      const filteredDrivers = drivers.filter(driver => {
-        const isArchived = driver.archive === false;
+        const fullName = `${drivers.name}`.toLowerCase();
+        return fullName.includes(searchQuery.toLowerCase());
+      });  
+    //   const filteredDrivers = drivers.filter(driver => {
+    //     const isArchived = driver.archive === false;
       
-        const fullName = driver.name.toLowerCase();
-        const includesSearchQuery = fullName.includes(searchQuery.toLowerCase());
+    //     const fullName = driver.name.toLowerCase();
+    //     const includesSearchQuery = fullName.includes(searchQuery.toLowerCase());
       
-        return isArchived && includesSearchQuery;
-      });
+    //     return isArchived && includesSearchQuery;
+    //   }); 
+
+    const sortedDrivers = [...filteredDrivers].sort((a, b) => {
+        if (a.archive && !b.archive) {
+          return 1; // a should come after b (archived vehicles come after non-archived)
+        } else if (!a.archive && b.archive) {
+          return -1; // a should come before b
+        } else {
+          return 0; // no change in order
+        }
+      });  
+      console.log("These are the sortedVehicles",sortedDrivers)
       
  
 const updateDriverStatusInDatabase = async (driverId: string, newStatus: boolean) => {
@@ -714,7 +725,7 @@ const updateDriverStatusInDatabase = async (driverId: string, newStatus: boolean
                     </tr>
                     </thead>
                     <TableBody>
-                        {filteredDrivers.map((drivers, index) => {
+                        {sortedDrivers.map((drivers, index) => {
                             return (
                                 <Fragment key={index}>
                                     <div className='w-full mb-2'></div>
@@ -732,9 +743,17 @@ const updateDriverStatusInDatabase = async (driverId: string, newStatus: boolean
                                         <div  onClick={()=>handleEditClick(drivers)}>
                                             <EditBtn/>
                                         </div>
-                                         <div>  
-                                          <button className="bg-[#E7EDF4] text-[#777E96] h-6 w-18" onClick={() => updateDriverStatusInDatabase(drivers.id,true)}>Archive</button>
-                                         </div> 
+                                         <div>   
+                                         <button
+                                        className="bg-[#E7EDF4] text-[#777E96] h-6 w-18"
+                                        onClick={() => updateDriverStatusInDatabase(drivers.id, !drivers.archive)}
+                                        >
+                                        {drivers.archive ? 'Unarchive' : 'Archive'}
+                                        </button>
+                                          {/* <button className="bg-[#E7EDF4] text-[#777E96] h-6 w-18" onClick={() => updateDriverStatusInDatabase(drivers.id,true)}>Archive</button> */}
+                                         </div>  
+
+
                                          {/* <button className="text-sm text-slate-400 mt-2 px-2 py-2  rounded bg-gray-100" onClick={()=>handleReasign(admin)}>Assign Role</button> */}
 
                                         
