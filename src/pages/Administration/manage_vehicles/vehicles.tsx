@@ -482,151 +482,138 @@ export default function Vehicles(){
     )
      } 
 
-
-
-
-interface VehiclesTableProps {
-    selectedTab: number; 
-     vehicles: DocumentData[]; 
-     updateFetchedVehicles: (updatedDrivers: DocumentData[]) => void;  
-     handleEditClick: any
-
-
-}
-
-export function VehiclesTable({
-    selectedTab,
-    vehicles,
-    updateFetchedVehicles,
-    handleEditClick 
-}: VehiclesTableProps) {
-    const [currentPage, setCurrentPage] = useState(0);
-    const rowsPerPage = 3;
-    
-     console.log("VehiclesTable Rendering with selectedTab:", selectedTab);
+     interface VehiclesTableProps {
+        selectedTab: number;
+        vehicles: DocumentData[];
+        updateFetchedVehicles: (updatedDrivers: DocumentData[]) => void;
+        handleEditClick: any;
+      }
+      
+      export function VehiclesTable({
+        selectedTab,
+        vehicles,
+        updateFetchedVehicles,
+        handleEditClick,
+      }: VehiclesTableProps) {
+        const [currentPage, setCurrentPage] = useState(0);
+        const rowsPerPage = 3;
+      
         const activeVehicles = vehicles.filter((vehicle) => vehicle.status);
+      
+        // const filteredNonArchivedVehicles = vehicles.filter((vehicle) => vehicle.archive); 
+        // console.log("These are the filteredNonArchivedVehicles",filteredNonArchivedVehicles)
+      
+        // Sort vehicles to put archived vehicles at the bottom
+        const sortedVehicles = [...vehicles].sort((a, b) => {
+          if (a.archive && !b.archive) {
+            return 1; // a should come after b (archived vehicles come after non-archived)
+          } else if (!a.archive && b.archive) {
+            return -1; // a should come before b
+          } else {
+            return 0; // no change in order
+          }
+        });  
+        console.log("These are the sortedVehicles",sortedVehicles)
 
-
-    // const filteredVehicles = vehicles.filter(vehicles =>
-    //     selectedTab === 0 ||
-    //     (selectedTab === 1 && vehicles.status) ||
-    //     (selectedTab === 2 && !vehicles.status)
-    // );  
-  
-
-    const filteredNonArchivedVehicles = vehicles.filter((vehicle) => !vehicle.archive);
 
       
-
-    const startIndex = currentPage * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-    const visibleVehicles = filteredNonArchivedVehicles.slice(startIndex, endIndex);
-
-    console.log("Filtered Vehicles:", filteredNonArchivedVehicles);
-    const handleReasign = () => {
-    }   
-    const router=useRouter()
-    
-
-const updateVehicleStatusInDatabase = async (vehicleId: string, newStatus: boolean) => {
-    try {
-        const vehicleRef = doc(fbDb, 'vehicles', vehicleId);
-        await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
-        console.log('Vehicle status updated in the database:', vehicleId);
-
-        const updatedVehicles = vehicles.map(vehicle =>
-            vehicle.id === vehicleId ? { ...vehicle, status: newStatus } : vehicle
-        );
-        updateFetchedVehicles(updatedVehicles);
-    } catch (error) {
-        console.error('Error updating Vehicle status in database:', error);
-    }
-};
-
-    
-    
-    
-    
-    return (
-        <> 
-        <div className="bg-[#FAFAFB] h-400 w-100%"> 
-
-            <Table>
+        const startIndex = currentPage * rowsPerPage;
+        const endIndex = startIndex + rowsPerPage;
+        const visibleVehicles = sortedVehicles.slice(startIndex, endIndex);
+      
+        const handleReassign = () => {
+          // Implement your reassign logic here
+        };
+        const router = useRouter();
+      
+        const updateVehicleStatusInDatabase = async (vehicleId: string, newStatus: boolean) => {
+          try {
+            const vehicleRef = doc(fbDb, 'vehicles', vehicleId);
+            await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
+            console.log('Vehicle status updated in the database:', vehicleId);
+      
+            const updatedVehicles = vehicles.map((vehicle) =>
+              vehicle.id === vehicleId ? { ...vehicle, archive: newStatus } : vehicle
+            );
+            updateFetchedVehicles(updatedVehicles);
+          } catch (error) {
+            console.error('Error updating Vehicle status in database:', error);
+          }
+        };
+      
+        return (
+          <>
+            <div className="bg-[#FAFAFB] h-400 w-100%">
+              <Table>
                 <>
-                    <thead>
-                    <tr className="whitespace-nowrap py-3.5 pl-4 pr-3 bg-[#FAFAFB] text-left text-base  sm:pl-0">
-                        {Headers.map((header, index) => {
-                            return (
-                                <Fragment key={index}>
-                                    <HeaderCell>
-                                        {header}
-                                    </HeaderCell>
-                                </Fragment>
-                            )
-                        })}
+                  <thead>
+                    <tr className="whitespace-nowrap py-3.5 pl-4 pr-3 bg-[#FAFAFB] text-left text-base sm:pl-0">
+                      {Headers.map((header, index) => {
+                        return (
+                          <Fragment key={index}>
+                            <HeaderCell>{header}</HeaderCell>
+                          </Fragment>
+                        );
+                      })}
                     </tr>
-                    </thead>
-                    <TableBody> 
-
-                    {visibleVehicles.map((vehicles, index) => {
-                                return (
-                                <Fragment key={index}>
-                                    <div className='w-full mb-2 font-nunito font-regular'></div>
-                                    <tr className='border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>                                        <td className="whitespace-nowrap  pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0">
-                                        {vehicles.id}
-                                        </td>
-                                        <BodyCell>
-                                        {vehicles.name}
-                                        </BodyCell>
-                                        <BodyCell>{vehicles.lisence_plate}</BodyCell>
-                                        {/* <BodyCell>{vehicles.status ? 'Active' : 'Inactive'}</BodyCell> */}
-                                        <BodyCell>
-                                            <>
-                             
-
-                                            </>
-                                        </BodyCell>
-
-                                        <td className="relative whitespace-nowrap pt-6 pl-3 pr-4 text-right text-sm font-medium sm:pr-0 flex justify-around">
-                                        <div  onClick={()=>handleEditClick(vehicles)}>
-                                            <EditBtn/>
-                                        </div>                                        
-                                        <div>  
-                                          <button className="bg-[#E7EDF4] text-[#777E96] h-6 w-18" onClick={() => updateVehicleStatusInDatabase(vehicles.id,true)}>Archive</button>
-                                         </div>
-                                        <div className='h-10'></div>
-                                    </td>
-
-                                    </tr>
-                                </Fragment>
-                            )
+                  </thead>
+                  <TableBody>
+                    {sortedVehicles.map((vehicle, index) => {
+                      return (
+                        <Fragment key={index}>
+                          <div className="w-full mb-2 font-nunito font-regular"></div>
+                          <tr className="border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular">
+                            <td className="whitespace-nowrap pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0">
+                              {vehicle.id}
+                            </td>
+                            <BodyCell>{vehicle.name}</BodyCell>
+                            <BodyCell>{vehicle.lisence_plate}</BodyCell>
+                            <BodyCell>
+                              <>
+                                {/* Render any other data here */}
+                              </>
+                            </BodyCell>
+                            <td className="relative whitespace-nowrap pt-6 pl-3 pr-4 text-right text-sm font-medium sm:pr-0 flex justify-around">
+                              <div onClick={() => handleEditClick(vehicle)}>
+                                <EditBtn />
+                              </div>
+                              <div>
+                                <button
+                                  className="bg-[#E7EDF4] text-[#777E96] h-6 w-18"
+                                  onClick={() => updateVehicleStatusInDatabase(vehicle.id, !vehicle.archive)}
+                                >
+                                  {vehicle.archive ? 'Unarchive' : 'Archive'}
+                                </button>
+                              </div>
+                              <div className="h-10"></div>
+                            </td>
+                          </tr>
+                        </Fragment>
+                      );
                     })}
-                </TableBody>
-    
+                  </TableBody>
                 </>
-            </Table> 
-
-            <div className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
-                             text-sm font-nunito font-bold uppercase">
-    <button 
-        className="ml-5"
-        onClick={() => setCurrentPage(currentPage - 1)}
-        disabled={currentPage === 0}
-    >
-        Prev
-    </button>
-    <span className="ml-5">{currentPage + 1}</span>
-    <button 
-        className="ml-5"
-        onClick={() => setCurrentPage(currentPage + 1)}
-        disabled={endIndex >= filteredNonArchivedVehicles.length}
-    >
-        Next
-    </button>
-</div> 
+              </Table>
+      
+              <div className="flex flex-row justify-center my-4 ui-selected:border-b-4 outline-none text-sm font-nunito font-bold uppercase">
+                <button
+                  className="ml-5"
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 0}
+                >
+                  Prev
+                </button>
+                <span className="ml-5">{currentPage + 1}</span>
+                <button
+                  className="ml-5"
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={endIndex >= sortedVehicles.length}
+                >
+                  Next
+                </button>
+              </div>
             </div>
-        </>
-    )
-}
-
-
+          </>
+        );
+      }
+      
