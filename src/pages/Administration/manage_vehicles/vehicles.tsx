@@ -9,7 +9,10 @@ import { FormModal } from "@/components/Modals/FormModal";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { getFirestore, collection, doc, setDoc, addDoc,getDocs, DocumentData, deleteDoc } from 'firebase/firestore';
 import firebaseApp, { fbDb } from "@/firebase/configs";
-import { useRouter } from "next/router"; 
+import { useRouter } from "next/router";
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+
 
 import SiteLayout from "@/Layout/SiteLayout"; 
 
@@ -46,7 +49,8 @@ export default function Vehicles(){
         vehicle_type: '',
         color: '',
       });
-      
+
+
       const handleEditClick = (vehicle: DocumentData) => {
         setSelectedVehicle(vehicle);
         setEditFormInitialValues({
@@ -74,8 +78,9 @@ export default function Vehicles(){
     const handleReset = () => {
         setOpen(false)
     }
-    const handleSubmit = async (values: { name: any; make_and_model: any; cargo_capacity: any; lisence_plate: any;vehicle_type: any; color: any; }) => {
-        console.log("Submitted Values:", values);
+    const handleSubmit = async (values: { name: any; make_and_model: any; cargo_capacity: any; lisence_plate: any;vehicle_type: any; color: any;supplier: any;availability_status:any;fuel_budget:any}) => {
+        console.log("Submitted Values:", values); 
+        console.log("Supplier:", values.supplier);
     
         try {
             if (!values) {
@@ -83,10 +88,12 @@ export default function Vehicles(){
                 return;
             }
     
-            if (!values.name || !values.make_and_model || !values.cargo_capacity || !values.lisence_plate||!values.vehicle_type||!values.color) {
+            if (!values.name || !values.make_and_model || !values.cargo_capacity || !values.lisence_plate||!values.vehicle_type||!values.color||!values.supplier||!values.availability_status||!values.fuel_budget) {
                 console.error('Required form fields are missing');
                 return;
-            }
+            } 
+            const registration_date = new Date();
+
     
             const VehicleData = {
                 name: values.name,
@@ -96,7 +103,12 @@ export default function Vehicles(){
                 vehicle_type:values.vehicle_type,
                 color:values.color,
                 status:true, 
-                archive:false  
+                archive:false , 
+                supplier:values.supplier,  
+                registration_date:registration_date,   
+                availability_status:values.availability_status,
+                fuel_budget:values.fuel_budget
+
 
             };
     
@@ -198,6 +210,7 @@ export default function Vehicles(){
           console.error("Error updating Vehicle:", error);
         }
       };
+
       
     
     return (
@@ -288,7 +301,10 @@ export default function Vehicles(){
                         cargo_capacity: "",
                         lisence_plate: "",
                         vehicle_type: "",
-                        color: "",
+                        color: "", 
+                        supplier: "",  
+                        availability_status:"", 
+                        fuel_budget:0
 
 
                                       }}
@@ -360,7 +376,50 @@ export default function Vehicles(){
                              className="form-input bg-grey w-48"
                             />
                             </label>                            
-                            </div>
+                            </div> 
+                            <div className='flex w-full justify-between mt-8'>
+                  
+                             <label className="block">
+                             <label className="form-label">SUPPLIER</label>
+                
+                                      <Field as="select" name="supplier"                               
+                                      value={values.supplier} 
+                                      className="form-input bg-grey w-48"
+                                      >
+                                      <option value="Ultra">Ultra</option>
+                                      <option value="Shell">Shell</option>
+                                      <option value="Mandela">Mandela</option> 
+                                      <option value="Runway Traders">Runway Traders</option>
+                                      <option value="Others">Others</option>
+
+                                     </Field>
+
+                            </label>   
+                            <label className="block">
+                             <label className="form-label">AVAILABILITY STATUS</label>
+                
+                                      <Field as="select" name="availability_status"                               
+                                      value={values.availability_status} 
+                                      className="form-input bg-grey w-48"
+                                      >
+                                      <option value="Available">Available</option>
+                                      <option value="On Route">On Route</option>
+                                      <option value="Out Of Service	">Out Of Service	</option> 
+                                     </Field>
+
+                            </label>                         
+                             </div> 
+                             <div className='flex w-full justify-between mt-8'>
+                            <label className="block">
+                            <label className="form-label">Fuel Budget</label>
+                            <Field
+                             type="text"
+                             name="fuel_budget"
+                             value={values.fuel_budget}
+                             className="form-input bg-grey w-48"
+                            />
+                             </label>                                                          
+                            </div> 
                             <div className='flex w-full justify-end mt-24 '>
                                 <Button className='text-blue text-xl mr-32' handleClick={handleReset}>Reset</Button>
                                 {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
@@ -579,8 +638,8 @@ export default function Vehicles(){
                               </div>
                               <div>
                                 <button
-                                  className="bg-[#E7EDF4] text-[#777E96] h-6 w-18"
-                                  onClick={() => updateVehicleStatusInDatabase(vehicle.id, !vehicle.archive)}
+                                        className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2"
+                                        onClick={() => updateVehicleStatusInDatabase(vehicle.id, !vehicle.archive)}
                                 >
                                   {vehicle.archive ? 'Unarchive' : 'Archive'}
                                 </button>
