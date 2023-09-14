@@ -745,18 +745,13 @@ const updateDriverStatusInDatabase = async (driverId: string, newStatus: boolean
                                         </div>
                                          <div>   
                                          <button
-                                        className="bg-[#E7EDF4] text-[#777E96] h-6 w-18"
+                                        className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2"
                                         onClick={() => updateDriverStatusInDatabase(drivers.id, !drivers.archive)}
                                         >
                                         {drivers.archive ? 'Unarchive' : 'Archive'}
                                         </button>
-                                          {/* <button className="bg-[#E7EDF4] text-[#777E96] h-6 w-18" onClick={() => updateDriverStatusInDatabase(drivers.id,true)}>Archive</button> */}
                                          </div>  
 
-
-                                         {/* <button className="text-sm text-slate-400 mt-2 px-2 py-2  rounded bg-gray-100" onClick={()=>handleReasign(admin)}>Assign Role</button> */}
-
-                                        
                                         <div className='h-10'></div>
                                     </td>
 

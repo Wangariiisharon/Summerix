@@ -2,35 +2,30 @@ import {Header, HeaderBar} from "@/components/Headers";
 import {AddButton, Button, DeleteBtn, EditBtn} from "@/components/Buttons";
 import {headers} from "next/headers";
 import {DummyTable} from "@/components/Table/Table";
-import {FormEvent, Fragment, ReactNode, useState} from "react";
+import {FormEvent, Fragment, ReactNode, useEffect, useState} from "react";
 import {FormModal} from "@/components/Modals/FormModal";
 import {Form} from "@/components/Forms/Form";
 import {Input, Submit} from "@/components/Forms/input";
 import SiteLayout from "@/Layout/SiteLayout";
 import {XMarkIcon} from "@heroicons/react/24/outline";
 import { Tab } from "@headlessui/react";
+import Planned from "./planned";
+import { fbDb } from "@/firebase/configs";
+import { getDocs, collection, DocumentData } from "firebase/firestore";
+import { parseISO, format } from 'date-fns';
 
 
-const Headers = [
-    {
-        name: "PLANNED",
-        active: true
-    },
-    {
-        name: "HISTORY ",
-        active: false
-    },
-    {
-        name: "JOB CARD",
-        active: false
-    },
-
+const tabs = [
+    {name: 'PLANNED', href: '#', current: false},
+    {name: 'HISTORY', href: '#', current: false},
+    {name: 'JOB CARD', href: '#', current: true},
 ]
 
 
 export default function Maintenance() {
     const [open, setOpen] = useState(false)
-    const [selectedTab, setSelectedTab] = useState<number>(0); 
+    const [selectedTab, setSelectedTab] = useState<number>(0);  
+    const [fetchedMaintanance, setFetchedMaintanance]=useState<DocumentData[]>([]);  
 
     const handleAddClick = () => {
         setOpen(true)
@@ -42,19 +37,46 @@ export default function Maintenance() {
     }
     const handleReset = () => {
         setOpen(false)
-    }
+    }  
+    const handleTabClick = (index:any) => {
+        setSelectedTab(index);
+    };
+
+    useEffect(() => {
+        const fetchedMaintanance = async () => {
+            try {
+                const querySnapshot = await getDocs(collection(fbDb, 'maintenance'));
+                const maintenanceData: DocumentData[] = []; 
+                console.log(maintenanceData);
+                
+                querySnapshot.forEach((doc) => {
+                    const maintenance = {
+                        id: doc.id,
+                        ...doc.data()
+                    };
+                    maintenanceData.push(maintenance);
+                });
+                setFetchedMaintanance(maintenanceData);
+            } catch (error) {
+                console.error('Error fetching maintenance:', error);
+            }
+        };
+    
+        fetchedMaintanance();
+    }, []);
 
 
 
     return (
-        
-            <SiteLayout>
+        <>
             <div className=''>
-                <div className='flex justify-between items-center'>
-                    <Header heading="Maintanance"/> 
-                    <div className='flex w-full justify-end'> 
+                <div className='fixed right-0 '>
+                    {/* <Header heading="Maintanance"/>  */}
+                    <div className='flex flex row w-full  fixed top-12'>  
+                    <div className=''>
                     <AddButton name="Add JOB CARD" handleAddClick={handleAddClick}/>
-                    <div className='ml-8'>
+                    </div>
+                    <div className=' ml-10'>
                     <AddButton name="Add Vehicle" handleAddClick={handleAddClick}/>
                     </div>
                     </div>
@@ -62,42 +84,37 @@ export default function Maintenance() {
                 </div>
                 <div className='mt-4'> 
                 <Tab.Group>
-                    <Tab.List className="w-full flex justify-around mb-3"> 
-                                {Headers.map((header, index) => {
-                                    return (
+                <Tab.List className='w-full bg-[#FAFAFB] font-nunito flex justify-start mb-3'> 
+                                {tabs.map((tab, index) => {
+                                     return (
                                         <Fragment key={index}>
-                                    <Tab
-                                        className='ui-selected:border-b-4 border-d-green outline-none
-                                            ui-selected:text-d-green text-sm font-bold uppercase flex flex-row'                                        onClick={() => {
-                                            console.log("Tab Clicked", index);
-                                            console.log("Tab Clicked", header.name);
-
-                                            setSelectedTab(index);
-                                          }}
-                                        >
-                                        {header.name}
-                                    </Tab>
+                                            <Tab className='ui-selected:border-b-4 border-d-green outline-none
+                                             ui-selected:text-d-green text-sm font-nunito font-bold uppercase flex flex-row ml-10' 
+                                             onClick={() => handleTabClick(index)}
+                                             >
+                                                {tab.name}
+                                            </Tab>
                                         </Fragment>
                                     )
-                                })
-                                }
-                    </Tab.List>
+                                })}
+
+                            </Tab.List>
                     <Tab.Panels>
                         <Tab.Panel>
                         <div  className="max-h-[500px] overflow-y-auto">
-                        <MaintananceTable selectedTab={selectedTab} />
+                        <MaintananceTable selectedTab={selectedTab} maintananceList={fetchedMaintanance}  />
 
                             </div>
                         </Tab.Panel>
                         <Tab.Panel>
                         <div  className="max-h-[500px] overflow-y-auto">
-                        <MaintananceTable selectedTab={selectedTab} />
+                        <MaintananceTable selectedTab={selectedTab} maintananceList={fetchedMaintanance}  />
 
                             </div>
                         </Tab.Panel>
                         <Tab.Panel>
                         <div  className="max-h-[500px] overflow-y-auto">
-                        <MaintananceTable selectedTab={selectedTab} />
+                        <MaintananceTable selectedTab={selectedTab} maintananceList={fetchedMaintanance} />
                             </div>
                         </Tab.Panel>
        
@@ -152,120 +169,41 @@ export default function Maintenance() {
                     </Form>
                 </div>
             </FormModal>
-            </SiteLayout>
+            </>
         
     )
 }  
 
 
-const vehicles = [
-    {
-        vehicle: 'Ford F-150',
-        date:new Date("2022-03-25"),
-        job_cards: 'Oil Change, Engine Examination',
-        requested_by: 'Elizabeth Gardener',
-        cost: '6000',
-
-    },
-    {
-        vehicle: 'Ford F-150',
-        date:new Date("2022-03-25"),
-        job_cards: 'Oil Change, Engine Examination',
-        requested_by: 'Elizabeth Gardener',
-        cost: '6000',
-
-    },    
-    {
-        vehicle: 'Ford F-150',
-        date:new Date("2022-015-10"),
-        job_cards: 'Oil Change, Engine Examination',
-        requested_by: 'Elizabeth Gardener',
-        cost: '6000',
-
-    },   
-    {
-        vehicle: 'Ford F-150',
-        date:new Date("2022-03-25"),
-        job_cards: 'Oil Change, Engine Examination',
-        requested_by: 'Elizabeth Gardener',
-        cost: '6000',
-
-    },    
-    {
-        vehicle: 'Ford F-150',
-        date:new Date("2022-10-25"),
-        job_cards: 'Oil Change, Engine Examination',
-        requested_by: 'Elizabeth Gardener',
-        cost: '6000',
-
-    },
-    {
-        vehicle: 'Ford F-150',
-        date:new Date("2022-03-25"),
-        job_cards: 'Oil Change, Engine Examination',
-        requested_by: 'Elizabeth Gardener',
-        cost: '6000',
-
-    }, 
-    {
-        vehicle: 'Ford F-150',
-        date: new Date("2022-03-25"),
-        job_cards: 'Oil Change, Engine Examination',
-        requested_by: 'Elizabeth Gardener',
-        cost: '6000',
-
-    },
-    {
-        vehicle: 'Ford F-150',
-        date:new Date("2022-03-25"),
-        job_cards: 'Oil Change, Engine Examination',
-        requested_by: 'Elizabeth Gardener',
-        cost: '6000',
-
-    },
-    {
-        vehicle: 'Ford F-150',
-        date:new Date("2022-03-25"),
-        job_cards: 'Oil Change, Engine Examination',
-        requested_by: 'Elizabeth Gardener',
-        cost: '6000',
-
-    }, 
-    {
-        vehicle: 'Ford F-150',
-        date: new Date("2022-03-25"),
-        job_cards: 'Oil Change, Engine Examination',
-        requested_by: 'Elizabeth Gardener',
-        cost: '6000',
-
-    },
-    {
-        vehicle: 'Ford F-150',
-        date: new Date(),
-        job_cards: 'Oil Change, Engine Examination',
-        requested_by: 'Elizabeth Gardener',
-        cost: '6000',
-
-    },
-]
-
-
 
 interface VehiclesTableProps {
-    selectedTab: number; 
+    selectedTab: number;  
+    maintananceList:DocumentData
 }
 
-export function MaintananceTable({ selectedTab }: VehiclesTableProps) {
-        console.log("MaintananceTable Rendering with selectedTab:", selectedTab);
+export function MaintananceTable({ selectedTab,maintananceList }: VehiclesTableProps) {
+        console.log("MaintananceTable Rendering with selectedTab:", selectedTab); 
+        console.log("Mainanace list", maintananceList);
+        
+        const currentDate = new Date();
 
-    const filteredVehicles = vehicles.filter(vehicles =>
-        selectedTab === 0 ||
-        (selectedTab === 1 && vehicles.date >new Date()) ||
-        (selectedTab === 1 && vehicles.date <new Date()) 
+        const filteredMaintenance = maintananceList.filter((maintenance: any) => {
+            const maintenanceDate = new Date(maintenance.date.seconds * 1000);
+    
+            if (selectedTab === 0) {
+                // Show items with dates that are yet to reach (future dates)
+                return maintenanceDate > currentDate;
+            } else if (selectedTab === 1) {
+                // Show items with dates that have already passed (past dates)
+                return maintenanceDate < currentDate;
+            }
+    
+            return true;
+        });
+        
+    
 
-    );
-
-    console.log("Filtered Vehicles:", filteredVehicles); 
+    console.log("Filtered Vehicles:", filteredMaintenance); 
     return (
         <div className="px-4 sm:px-6 lg:px-8">
             <div className="mt-8 flow-root">
@@ -273,7 +211,14 @@ export function MaintananceTable({ selectedTab }: VehiclesTableProps) {
                     <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
                         <table className="min-w-full divide-y divide-gray-300">
                             <thead>
-                                <tr>
+                                <tr> 
+                                    <th 
+                                      scope="col"
+                                      className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left font-semibold sm:pl-0" 
+                                    > 
+                                         
+
+                                    </th>
                                     <th
                                         scope="col"
                                         className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left font-semibold sm:pl-0"
@@ -308,7 +253,7 @@ export function MaintananceTable({ selectedTab }: VehiclesTableProps) {
                                         scope="col"
                                         className="whitespace-nowrap px-2 py-3.5 text-left font-semibold"
                                     > 
-                                    DETAILS
+                                    
 
                                     </th>
                                     <th
@@ -324,30 +269,32 @@ export function MaintananceTable({ selectedTab }: VehiclesTableProps) {
                             </thead>
  
                             <tbody  className="divide-y divide-gray-200 bg-white">
-                            {filteredVehicles.map((vehicles, index) => { 
-                                 const uniqueKey = `${vehicles.vehicle}_${vehicles.date}_${index}`;     
+                            {filteredMaintenance.map((maintenance:any, index:any) => {  
+                                 const { seconds } = maintenance.date; 
+                                 const updatedDate = new Date(seconds * 1000);
 
                                 return( 
                                     
-                                    <tr key={uniqueKey} className='my-4'>
-                                    <td>
+                                    <tr  className='my-4'>
+                                      <td>
                                         <i className="fa-light fa-truck"></i>
                                          </td>
                     
-                                        <td className="whitespace-nowrap pl-4 pr-3 !pt-4 text-d-blue sm:pl-0">{vehicles.vehicle}</td>
+                                        <td className="whitespace-nowrap pl-4 pr-3 !pt-4 text-d-blue sm:pl-0">{maintenance.vehicle}</td>
                                         <td className="whitespace-nowrap px-2  pt-4 font-medium ">
-                                            {vehicles.date.toLocaleString()}
+                                        {format(updatedDate, 'MM/dd/yy')}
                                         </td>
                                
-                                        <td className="whitespace-nowrap px-2 pt-4">{vehicles.job_cards}</td>
-                                        <td className="whitespace-nowrap px-2 pt-4">{vehicles.requested_by}</td>
-                                        <td className="whitespace-nowrap pl-14 pt-4">{vehicles.cost}</td>
-                                        <td className="whitespace-nowrap pl-14 pt-4">
-                                            Details <i className="fa-regular fa-angle-down"></i>
+                                        <td className="whitespace-nowrap px-2 pt-4">{maintenance.job_cards}</td>
+                                        <td className="whitespace-nowrap px-2 pt-4">{maintenance.requested_by}</td>
+                                        <td className="whitespace-nowrap px-2 pt-4">{maintenance.cost}</td>
+                                        <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">
+                                        Details <i className="fa-solid fa-angle-down"></i>
                                          </td>
 
-                                        <td className="whitespace-nowrap pl-8 pt-4 "> 
-                                        <i className="fa-light fa-ellipsis-vertical"></i>                                           
+                                        <td className="whitespace-nowrap pl-8 pt-4 ">  
+                                        :
+                                        {/* <i className="fa-light fa-ellipsis-vertical"></i>                                            */}
                                          </td>
 
                            
