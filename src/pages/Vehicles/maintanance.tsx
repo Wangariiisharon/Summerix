@@ -4,15 +4,16 @@ import {headers} from "next/headers";
 import {DummyTable} from "@/components/Table/Table";
 import {FormEvent, Fragment, ReactNode, useEffect, useState} from "react";
 import {FormModal} from "@/components/Modals/FormModal";
-import {Form} from "@/components/Forms/Form";
 import {Input, Submit} from "@/components/Forms/input";
 import SiteLayout from "@/Layout/SiteLayout";
-import {XMarkIcon} from "@heroicons/react/24/outline";
+import {PlusIcon, XMarkIcon} from "@heroicons/react/24/outline";
 import { Tab } from "@headlessui/react";
-import Planned from "./planned";
+import Planned from "./jobcard";
 import { fbDb } from "@/firebase/configs";
-import { getDocs, collection, DocumentData } from "firebase/firestore";
+import { getDocs, collection, DocumentData, addDoc } from "firebase/firestore";
 import { parseISO, format } from 'date-fns';
+import Jobcard from "./jobcard";
+import { Field, Formik,Form } from "formik";
 
 
 const tabs = [
@@ -29,11 +30,6 @@ export default function Maintenance() {
 
     const handleAddClick = () => {
         setOpen(true)
-    }
-    const handleSubmit = () => {
-        //validate form
-        setOpen(false)
-        //submit form
     }
     const handleReset = () => {
         setOpen(false)
@@ -63,15 +59,44 @@ export default function Maintenance() {
         };
     
         fetchedMaintanance();
-    }, []);
+    }, []); 
 
+    const handleAddJobcard = async (values: { name: any;}) => {
+        console.log("Submitted Values:", values); 
+    
+        try {
+            if (!values) {
+                console.error('Form values are undefined');
+                return;
+            }
+    
+            if (!values.name) {
+                console.error('Required form fields are missing');
+                return;
+            } 
+
+    
+            const JobcardData = {
+                name: values.name,
+            };
+    
+            const docRef = await addDoc(collection(fbDb, 'jobcard'), JobcardData);
+            console.log('Jobcard added with ID: ', docRef.id);
+    
+            setOpen(false);
+        } catch (error) {
+            console.error('Error adding jobcard:', error);
+        } 
+    } 
+
+
+    
 
 
     return (
         <>
             <div className=''>
-                <div className='fixed right-0 '>
-                    {/* <Header heading="Maintanance"/>  */}
+                {/* <div className=''>
                     <div className='flex flex row w-full  fixed top-12'>  
                     <div className=''>
                     <AddButton name="Add JOB CARD" handleAddClick={handleAddClick}/>
@@ -80,6 +105,30 @@ export default function Maintenance() {
                     <AddButton name="Add Vehicle" handleAddClick={handleAddClick}/>
                     </div>
                     </div>
+
+                </div> */} 
+                <div className="flex flex-row fixed top-12 right-10">  
+                <div>  
+                {/* <AddButton name="JOB CARD" handleAddClick={handleAddClick}/> */} 
+                <Button
+                className='rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2 mt-2'
+                handleClick={handleAddClick}>
+               <PlusIcon className='h-6 w-6 mr-2' />
+                ADD JOB CARD
+              </Button>
+                </div>  
+                <div className="ml-2"> 
+                {/* <AddButton name="Add Vehicle" handleAddClick={handleAddClick}/> */} 
+                <Button
+                className='rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4  mr-2 mt-2'
+                handleClick={handleAddClick}>
+               <PlusIcon className='h-6 w-6 mr-2' />
+                 Schedule Maintenance
+              </Button>
+
+                </div>
+
+
 
                 </div>
                 <div className='mt-4'> 
@@ -114,7 +163,7 @@ export default function Maintenance() {
                         </Tab.Panel>
                         <Tab.Panel>
                         <div  className="max-h-[500px] overflow-y-auto">
-                        <MaintananceTable selectedTab={selectedTab} maintananceList={fetchedMaintanance} />
+                        <Jobcard />
                             </div>
                         </Tab.Panel>
        
@@ -139,34 +188,45 @@ export default function Maintenance() {
                         </Button>
                     </div>
 
-                    <Form handleSubmit={handleSubmit}>
+                    <Formik
+                    initialValues={{
+                        name: "",
+            
+                                      }}
+                        onSubmit={(values) => handleAddJobcard(values)}  
+  
+                        // onSubmit={(values) => handleEditSubmit(values)}
+
+
+                        >
+                       {({ values }) => (
+                    <Form>
                         <div className=''>
                             <div className='flex w-full justify-between'>
-                                <Input type='text' name='v_name' placeholder='' id='v_name' label='Vehicle Name*'/>
-                                <Input type='text' name='v_type' placeholder='' id='v_type' label='Vehicle Type*'/>
-                            </div>
-                            <div className='flex w-full justify-between mt-8'>
-                                <Input type='text' name='r_date' placeholder='' id='r-date' label='Registration Date*'/>
-                                <Input type='text' name='supplier' placeholder='' id='supplier' label='Supplier'/>
-                            </div>
-                            <div className='flex w-full justify-between mt-8'>
-                                <Input type='text' name='plate' placeholder='' id='plate' label='License Plate*'/>
-                                <Input type='text' name='model' placeholder='' id='model' label='Model'/>
-                            </div>
-                            <div className='flex w-full justify-between mt-8'>
-                                <Input type='text' name='color' placeholder='' id='color' label='Color'/>
-                                <Input type='text' name='budget' placeholder='' id='budget' label='Budget*'/>
-                            </div>
-                            <div className='flex w-full justify-between mt-8'>
-                                <Input type='text' name='year' placeholder='' id='year' label='Car Year'/>
-                            </div>
+                            <label className="block">
+                             <label className="form-label">NAME</label>
+                             <Field
+                              type="text"
+                              name="name"
+                              value={values.name}
+                              className="form-input bg-grey w-48"
+                            />
+                             </label>                         
+                             </div>
+     
+             
+                           
+        
                             <div className='flex w-full justify-end mt-24 '>
                                 <Button className='text-blue text-xl mr-32' handleClick={handleReset}>Reset</Button>
-                                <Submit name="save" handleSubmit={handleSubmit}/>
+                                {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
+                                <button type='submit' >Save</button>
                             </div>
 
                         </div>
                     </Form>
+                     )}
+                    </Formik>
                 </div>
             </FormModal>
             </>
@@ -216,7 +276,7 @@ export function MaintananceTable({ selectedTab,maintananceList }: VehiclesTableP
                                       scope="col"
                                       className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left font-semibold sm:pl-0" 
                                     > 
-                                         
+                                       Truck  
 
                                     </th>
                                     <th
@@ -276,9 +336,13 @@ export function MaintananceTable({ selectedTab,maintananceList }: VehiclesTableP
                                 return( 
                                     
                                     <tr  className='my-4'>
-                                      <td>
-                                        <i className="fa-light fa-truck"></i>
-                                         </td>
+                                      <td>  
+                                      <span className="fa-stack fa-lg">
+                                      <i className="fa fa-circle fa-stack-2x text-[#F2F2F2]" aria-hidden="true"></i>
+                                      <i className="fa fa-truck fa-stack-1x fa-inverse text-[#0C0C0C]" aria-hidden="true"></i> 
+                                      </span>
+
+                                       </td>
                     
                                         <td className="whitespace-nowrap pl-4 pr-3 !pt-4 text-d-blue sm:pl-0">{maintenance.vehicle}</td>
                                         <td className="whitespace-nowrap px-2  pt-4 font-medium ">
@@ -286,8 +350,8 @@ export function MaintananceTable({ selectedTab,maintananceList }: VehiclesTableP
                                         </td>
                                
                                         <td className="whitespace-nowrap px-2 pt-4">{maintenance.job_cards}</td>
-                                        <td className="whitespace-nowrap px-2 pt-4">{maintenance.requested_by}</td>
-                                        <td className="whitespace-nowrap px-2 pt-4">{maintenance.cost}</td>
+                                        <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">{maintenance.requested_by}</td>
+                                        <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">{maintenance.cost}</td>
                                         <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">
                                         Details <i className="fa-solid fa-angle-down"></i>
                                          </td>
