@@ -241,7 +241,7 @@ export default function Vehicles(){
            
                         <div className='flex justify-end text-base mr-2'>
                           <div className='ml-2'>
-                            <AddButton name='Add Vehicles' handleAddClick={handleAddVehicles}/>
+                            <AddButton name="Add Vehicle" handleAddClick={handleAddVehicles}/>
                             </div>
                         </div>
 
