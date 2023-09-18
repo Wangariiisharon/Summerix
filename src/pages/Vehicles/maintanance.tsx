@@ -25,9 +25,16 @@ const tabs = [
 
 export default function Maintenance() {
     const [open, setOpen] = useState(false)
-    const [selectedTab, setSelectedTab] = useState<number>(0);  
+    const [selectedTab, setSelectedTab] = useState<number>(0); 
+    const [fetchedVehicles, setFetchedVehicles] = useState<DocumentData[]>([]);    
     const [fetchedMaintanance, setFetchedMaintanance]=useState<DocumentData[]>([]);  
+    const [fetchedJobcards, setfetchedJobcards]=useState<DocumentData[]>([]); 
+    const [fetchedDrivers, setfetchedDrivers] = useState<DocumentData[]>([]);  
+    const [vehicleNames, setVehicleNames] = useState<string[]>([]); 
+    const [jobcards, setjobcards] = useState<string[]>([]);
 
+
+  
     const handleAddClick = () => {
         setOpen(true)
     }
@@ -36,9 +43,61 @@ export default function Maintenance() {
     }  
     const handleTabClick = (index:any) => {
         setSelectedTab(index);
-    };
+    }; 
 
-    useEffect(() => {
+
+    useEffect(() => { 
+        const fetchedVehicles = async () => {
+            try {
+                const querySnapshot = await getDocs(collection(fbDb, 'vehicles'));
+                const vehiclesData: DocumentData[] = [];
+                querySnapshot.forEach((doc) => {
+                    const vehicle = {
+                        id: doc.id,
+                        ...doc.data()
+                    };
+                    vehiclesData.push(vehicle);
+                });
+                setFetchedVehicles(vehiclesData);
+            } catch (error) {
+                console.error('Error fetching Vehicles:', error);
+            }
+        };  
+        const fetchedDrivers = async () => {
+            try {
+                const querySnapshot = await getDocs(collection(fbDb, 'drivers'));
+                const driversData: DocumentData[] = [];
+                querySnapshot.forEach((doc) => {
+                    const driver = {
+                        id: doc.id,
+                        ...doc.data()
+                    };
+                    driversData.push(driver);
+                });
+                setfetchedDrivers(driversData);
+            } catch (error) {
+                console.error('Error fetching Drivers:', error);
+            }
+        }; 
+        const fetchVehicleNames = async () => {
+            try {
+                const querySnapshot = await getDocs(collection(fbDb, 'vehicles'));
+                const names = querySnapshot.docs.map(doc => doc.data().name);
+                setVehicleNames(names);
+            } catch (error) {
+                console.error('Error fetching Vehicle names:', error);
+            }
+        }; 
+        const fetchJobCard = async () => {
+            try {
+                const querySnapshot = await getDocs(collection(fbDb, 'jobcard'));
+                const names = querySnapshot.docs.map(doc => doc.data().name);
+                setjobcards(names);
+            } catch (error) {
+                console.error('Error fetching Vehicle names:', error);
+            }
+        };
+  
         const fetchedMaintanance = async () => {
             try {
                 const querySnapshot = await getDocs(collection(fbDb, 'maintenance'));
@@ -57,8 +116,11 @@ export default function Maintenance() {
                 console.error('Error fetching maintenance:', error);
             }
         };
-    
-        fetchedMaintanance();
+        fetchVehicleNames();
+        fetchedMaintanance(); 
+        fetchedVehicles(); 
+        fetchJobCard();  
+        fetchedDrivers();  
     }, []); 
 
     const handleAddJobcard = async (values: { name: any;}) => {
@@ -88,6 +150,34 @@ export default function Maintenance() {
             console.error('Error adding jobcard:', error);
         } 
     } 
+    
+    const handleScheduleMaintanace = async (values: { name: any;}) => {
+        console.log("Submitted Values:", values); 
+    
+        try {
+            if (!values) {
+                console.error('Form values are undefined');
+                return;
+            }
+    
+            if (!values.name) {
+                console.error('Required form fields are missing');
+                return;
+            } 
+
+    
+            const JobcardData = {
+                name: values.name,
+            };
+    
+            const docRef = await addDoc(collection(fbDb, 'maintenance'), JobcardData);
+            console.log('Jobcard added with ID: ', docRef.id);
+    
+            setOpen(false);
+        } catch (error) {
+            console.error('Error adding jobcard:', error);
+        } 
+    }
 
 
     
@@ -213,6 +303,81 @@ export default function Maintenance() {
                             />
                              </label>                         
                              </div>
+     
+             
+                           
+        
+                            <div className='flex w-full justify-end mt-24 '>
+                                <Button className='text-blue text-xl mr-32' handleClick={handleReset}>Reset</Button>
+                                {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
+                                <button type='submit' >Save</button>
+                            </div>
+
+                        </div>
+                    </Form>
+                     )}
+                    </Formik>
+                </div>
+            </FormModal> 
+
+
+            <FormModal open={open} setOpen={setOpen}>
+                <div className='p-8'>
+                    <div className='flex w-full h-full justify-between items-center mb-12'>
+                        <div className='text-xl font-semibold '>
+                            Manage Vehicle
+                        </div>
+                        <Button className='bg-red-50 h-12 w-12 flex items-center justify-center rounded-full' handleClick={handleReset}>
+                            <XMarkIcon className='h-6 w-6 text-red-400'/>
+                        </Button>
+                    </div>
+
+                    <Formik
+                    initialValues={{
+                        name: "",
+            
+                                      }}
+                        onSubmit={(values) => handleScheduleMaintanace(values)}  
+  
+                        // onSubmit={(values) => handleEditSubmit(values)}
+
+
+                        >
+                       {({ values }) => (
+                    <Form>
+                        <div className=''>
+                            <div className='flex w-full justify-between'>
+                            <label className="block">
+                             <label className="form-label">VEHICLE</label>
+                             <Field
+                             as="select"
+                            name="vehicle"  // Change the name to "vehicle"
+                           value={values.name}
+                         className="form-input bg-grey w-80"
+                         >
+                        {vehicleNames.map((name, index) => (
+                        <option key={index} value={name}>
+                         {name}
+                       </option>
+            ))}
+        </Field>
+                             </label>                          
+                             </div> 
+                             <label className="block">
+                             <label className="form-label">VEHICLE</label>
+                             <Field
+                             as="select"
+                            name="vehicle"  // Change the name to "vehicle"
+                           value={values.name}
+                         className="form-input bg-grey w-80"
+                         >
+                        {vehicleNames.map((name, index) => (
+                        <option key={index} value={name}>
+                         {name}
+                       </option>
+            ))}
+        </Field>
+                             </label>                         
      
              
                            
