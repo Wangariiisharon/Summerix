@@ -13,7 +13,7 @@ import HamburgerMenu from "@/components/hamburgerMenu";
 import AssignRole from "./manage_roles/assignRole";
 
 const tabs = [
-    {name: 'Manage Admins', href: '#', current: false},
+    {name: 'Manage Users', href: '#', current: false},
     {name: 'Manage Client', href: '#', current: false},
     {name: 'Manage Vehicles', href: '#', current: true},
     {name: 'Manage Driver', href: '#', current: false},

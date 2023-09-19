@@ -75,7 +75,7 @@ export default function Jobcard() {
 
                         return( 
                             
-                            <tr  className='my-4'>
+                            <tr key={jobcard.id}   className='my-4'>
                               <td>  
                               <span className="fa-stack fa-lg">
                               <i className="fa fa-circle fa-stack-2x text-[#F2F2F2]" aria-hidden="true"></i>
