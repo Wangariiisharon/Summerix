@@ -9,11 +9,13 @@ import SiteLayout from "@/Layout/SiteLayout";
 import {PlusIcon, XMarkIcon} from "@heroicons/react/24/outline";
 import { Tab } from "@headlessui/react";
 import Planned from "./jobcard";
-import { fbDb } from "@/firebase/configs";
-import { getDocs, collection, DocumentData, addDoc } from "firebase/firestore";
+import firebaseApp, { fbDb } from "@/firebase/configs";
+import { getDocs, collection, DocumentData, addDoc, Timestamp } from "firebase/firestore";
 import { parseISO, format } from 'date-fns';
-import Jobcard from "./jobcard";
+import Jobcard from "./jobcard"; 
+import { serverTimestamp } from 'firebase/firestore'
 import { Field, Formik,Form } from "formik";
+import { AnyCnameRecord } from "dns";
 
 
 const tabs = [
@@ -26,59 +28,33 @@ const tabs = [
 export default function Maintenance() {
     const [open, setOpen] = useState(false)
     const [selectedTab, setSelectedTab] = useState<number>(0); 
-    const [fetchedVehicles, setFetchedVehicles] = useState<DocumentData[]>([]);    
     const [fetchedMaintanance, setFetchedMaintanance]=useState<DocumentData[]>([]);  
-    const [fetchedJobcards, setfetchedJobcards]=useState<DocumentData[]>([]); 
-    const [fetchedDrivers, setfetchedDrivers] = useState<DocumentData[]>([]);  
     const [vehicleNames, setVehicleNames] = useState<string[]>([]); 
-    const [jobcards, setjobcards] = useState<string[]>([]);
+    const [jobcards, setjobcards] = useState<string[]>([]); 
+    const [drivers, setdrivers] = useState<string[]>([]);
 
+    const [showAddJobcardModal, setShowAddJobcardModal] = useState(false);
+    const [showScheduleMaintenanceModal, setShowScheduleMaintenanceModal] = useState(false);
 
   
-    const handleAddClick = () => {
+    const handleAddClick = () => {   
         setOpen(true)
     }
-    const handleReset = () => {
-        setOpen(false)
-    }  
+    const handleJobCardReset = () => {
+        setShowAddJobcardModal(false)
+    } 
+    const handleMaintenanceReset = () => {
+        setShowScheduleMaintenanceModal(false)
+    }   
     const handleTabClick = (index:any) => {
         setSelectedTab(index);
-    }; 
+    };  
+    const handleDropdownClick = (event: { stopPropagation: () => void; }) => {
+        event.stopPropagation();
+    };
 
 
     useEffect(() => { 
-        const fetchedVehicles = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(fbDb, 'vehicles'));
-                const vehiclesData: DocumentData[] = [];
-                querySnapshot.forEach((doc) => {
-                    const vehicle = {
-                        id: doc.id,
-                        ...doc.data()
-                    };
-                    vehiclesData.push(vehicle);
-                });
-                setFetchedVehicles(vehiclesData);
-            } catch (error) {
-                console.error('Error fetching Vehicles:', error);
-            }
-        };  
-        const fetchedDrivers = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(fbDb, 'drivers'));
-                const driversData: DocumentData[] = [];
-                querySnapshot.forEach((doc) => {
-                    const driver = {
-                        id: doc.id,
-                        ...doc.data()
-                    };
-                    driversData.push(driver);
-                });
-                setfetchedDrivers(driversData);
-            } catch (error) {
-                console.error('Error fetching Drivers:', error);
-            }
-        }; 
         const fetchVehicleNames = async () => {
             try {
                 const querySnapshot = await getDocs(collection(fbDb, 'vehicles'));
@@ -93,6 +69,15 @@ export default function Maintenance() {
                 const querySnapshot = await getDocs(collection(fbDb, 'jobcard'));
                 const names = querySnapshot.docs.map(doc => doc.data().name);
                 setjobcards(names);
+            } catch (error) {
+                console.error('Error fetching JobCard names:', error);
+            }
+        }; 
+        const fetchDriver = async () => {
+            try {
+                const querySnapshot = await getDocs(collection(fbDb, 'drivers'));
+                const names = querySnapshot.docs.map(doc => doc.data().name);
+                setdrivers(names);
             } catch (error) {
                 console.error('Error fetching Vehicle names:', error);
             }
@@ -116,15 +101,18 @@ export default function Maintenance() {
                 console.error('Error fetching maintenance:', error);
             }
         };
-        fetchVehicleNames();
+        fetchVehicleNames(); 
+        fetchDriver();
         fetchedMaintanance(); 
-        fetchedVehicles(); 
         fetchJobCard();  
-        fetchedDrivers();  
     }, []); 
 
-    const handleAddJobcard = async (values: { name: any;}) => {
-        console.log("Submitted Values:", values); 
+    const handleAddJobcard = async (values: { name: any;}) => { 
+        setShowAddJobcardModal(true);
+        setShowScheduleMaintenanceModal(false); 
+        setOpen(true)
+        console.log("Submitted Values:", values);  
+
     
         try {
             if (!values) {
@@ -151,7 +139,12 @@ export default function Maintenance() {
         } 
     } 
     
-    const handleScheduleMaintanace = async (values: { name: any;}) => {
+    const handleScheduleMaintanace = async (values: { requested_by: any; cost:any; remarks:any;vehicle:any; job_cards:any; date:any}) => {  
+        setShowScheduleMaintenanceModal(true);
+        setShowAddJobcardModal(false);  
+        setOpen(true);
+
+
         console.log("Submitted Values:", values); 
     
         try {
@@ -160,17 +153,25 @@ export default function Maintenance() {
                 return;
             }
     
-            if (!values.name) {
+            if (!values.requested_by||!values.vehicle||!values.cost||!values.job_cards||!values.remarks||!values.date) {
                 console.error('Required form fields are missing');
                 return;
             } 
 
-    
-            const JobcardData = {
-                name: values.name,
+            const dateObj = new Date(values.date +"T00:00:00");  
+            const timestamp=Timestamp.fromDate(dateObj)
+
+
+            const maintenanceData = {
+                requested_by: values.requested_by, 
+                vehicle: values.vehicle, 
+                date: timestamp, 
+                cost: values.cost,  
+                job_cards: values.job_cards,
+                remarks: values.remarks,
             };
     
-            const docRef = await addDoc(collection(fbDb, 'maintenance'), JobcardData);
+            const docRef = await addDoc(collection(fbDb, 'maintenance'), maintenanceData);
             console.log('Jobcard added with ID: ', docRef.id);
     
             setOpen(false);
@@ -202,7 +203,7 @@ export default function Maintenance() {
                 {/* <AddButton name="JOB CARD" handleAddClick={handleAddClick}/> */} 
                 <Button
                 className='rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2 mt-2'
-                handleClick={handleAddClick}>
+                handleClick={handleAddJobcard}>
                <PlusIcon className='h-6 w-6 mr-2' />
                 ADD JOB CARD
               </Button>
@@ -211,11 +212,10 @@ export default function Maintenance() {
                 {/* <AddButton name="Add Vehicle" handleAddClick={handleAddClick}/> */} 
                 <Button
                 className='rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4  mr-2 mt-2'
-                handleClick={handleAddClick}>
+                handleClick={handleScheduleMaintanace}>
                <PlusIcon className='h-6 w-6 mr-2' />
                  Schedule Maintenance
               </Button>
-
                 </div>
 
 
@@ -267,13 +267,13 @@ export default function Maintenance() {
             
             </div>
 
-            <FormModal open={open} setOpen={setOpen}>
+            <FormModal open={showAddJobcardModal} setOpen={setShowAddJobcardModal}>
                 <div className='p-8'>
                     <div className='flex w-full h-full justify-between items-center mb-12'>
-                        <div className='text-xl font-semibold '>
-                            Manage Vehicle
+                        <div className='text-xl font-semibold '> 
+                        ADD JOBCARD
                         </div>
-                        <Button className='bg-red-50 h-12 w-12 flex items-center justify-center rounded-full' handleClick={handleReset}>
+                        <Button className='bg-red-50 h-12 w-12 flex items-center justify-center rounded-full' handleClick={handleJobCardReset}>
                             <XMarkIcon className='h-6 w-6 text-red-400'/>
                         </Button>
                     </div>
@@ -308,7 +308,7 @@ export default function Maintenance() {
                            
         
                             <div className='flex w-full justify-end mt-24 '>
-                                <Button className='text-blue text-xl mr-32' handleClick={handleReset}>Reset</Button>
+                                <Button className='text-blue text-xl mr-32' handleClick={handleJobCardReset}>Reset</Button>
                                 {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
                                 <button type='submit' >Save</button>
                             </div>
@@ -321,25 +321,29 @@ export default function Maintenance() {
             </FormModal> 
 
 
-            <FormModal open={open} setOpen={setOpen}>
+            <FormModal open={showScheduleMaintenanceModal} setOpen={setShowScheduleMaintenanceModal}>
                 <div className='p-8'>
                     <div className='flex w-full h-full justify-between items-center mb-12'>
                         <div className='text-xl font-semibold '>
-                            Manage Vehicle
+                            Schedule Maintanance
                         </div>
-                        <Button className='bg-red-50 h-12 w-12 flex items-center justify-center rounded-full' handleClick={handleReset}>
+                        <Button className='bg-red-50 h-12 w-12 flex items-center justify-center rounded-full' handleClick={handleMaintenanceReset}>
                             <XMarkIcon className='h-6 w-6 text-red-400'/>
                         </Button>
                     </div>
 
                     <Formik
                     initialValues={{
-                        name: "",
+                        requested_by: "",  
+                        vehicle: "",
+                        cost:"", 
+                        job_cards: "", 
+                        remarks: "", 
+                        date: "",
             
                                       }}
                         onSubmit={(values) => handleScheduleMaintanace(values)}  
   
-                        // onSubmit={(values) => handleEditSubmit(values)}
 
 
                         >
@@ -348,43 +352,92 @@ export default function Maintenance() {
                         <div className=''>
                             <div className='flex w-full justify-between'>
                             <label className="block">
-                             <label className="form-label">VEHICLE</label>
+                             <label className="form-label">MAINTANANCE TYPE</label>
                              <Field
                              as="select"
-                            name="vehicle"  // Change the name to "vehicle"
-                           value={values.name}
-                         className="form-input bg-grey w-80"
+                            name="job_cards"  
+                           value={values.job_cards}
+                         className="form-input bg-grey w-80" 
+                         onClick={handleDropdownClick}
+
                          >
-                        {vehicleNames.map((name, index) => (
-                        <option key={index} value={name}>
-                         {name}
+                        {jobcards.map((job_cards, index) => (
+                        <option key={index} value={job_cards}>
+                         {job_cards}
                        </option>
             ))}
         </Field>
                              </label>                          
                              </div> 
-                             <label className="block">
+                             <label className="block  mt-8">
                              <label className="form-label">VEHICLE</label>
                              <Field
                              as="select"
-                            name="vehicle"  // Change the name to "vehicle"
-                           value={values.name}
-                         className="form-input bg-grey w-80"
+                            name="vehicle"  
+                           value={values.vehicle}
+                         className="form-input bg-grey w-80" 
+                         onClick={handleDropdownClick}
+
                          >
-                        {vehicleNames.map((name, index) => (
-                        <option key={index} value={name}>
-                         {name}
+                        {vehicleNames.map((vehicle, index) => (
+                        <option key={index} value={vehicle}>
+                         {vehicle}
                        </option>
             ))}
         </Field>
-                             </label>                         
+                             </label>   
+                             <div className='flex w-full justify-between  mt-8'> 
+                             <label className="block">
+                             <label className="form-label">REQUESTED BY</label>
+                             <Field
+                             as="select"
+                            name="requested_by"  
+                           value={values.requested_by}
+                         className="form-input bg-grey w-48" 
+                         onClick={handleDropdownClick}
+
+                         >
+                        {drivers.map((requested_by, index) => (
+                        <option key={index} value={requested_by}>
+                         {requested_by}
+                       </option>
+                       ))}
+                      </Field>
+                             </label>  
+                             <label className="block">
+                             <label className="form-label">DATE</label>
+                             <Field
+                             type="date"
+                             name="date"
+                             value={values.date}
+                             className="form-input bg-grey w-48"
+                            />
+                            </label> 
+                                </div>   
+                             <label className="block mt-8">
+                             <label className="form-label">COST</label>
+                             <Field
+                             type="number"
+                             name="cost"
+                             value={values.cost}
+                             className="form-input bg-grey w-48"
+                            />
+                            </label>  
+                            <label className="block mt-8">
+                            <label className="form-label">REMARKS</label>
+                            <Field
+                             type="text"
+                             name="remarks"
+                             value={values.remarks}
+                             className="form-input bg-grey w-80 h-20"
+                            />
+                            </label>                      
      
              
                            
         
                             <div className='flex w-full justify-end mt-24 '>
-                                <Button className='text-blue text-xl mr-32' handleClick={handleReset}>Reset</Button>
-                                {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
+                                <Button className='text-blue text-xl mr-32' handleClick={handleMaintenanceReset}>Reset</Button>
                                 <button type='submit' >Save</button>
                             </div>
 
@@ -500,7 +553,7 @@ export function MaintananceTable({ selectedTab,maintananceList }: VehiclesTableP
 
                                 return( 
                                     
-                                    <tr  className='my-4'>
+                                    <tr key={maintenance.id}   className='my-4'>
                                       <td>  
                                       <span className="fa-stack fa-lg">
                                       <i className="fa fa-circle fa-stack-2x text-[#F2F2F2]" aria-hidden="true"></i>
