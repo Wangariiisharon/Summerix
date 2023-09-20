@@ -489,7 +489,7 @@ export default function Vehicles(){
                         />
                          </label>                                
                          <label className="block">
-                         <label className="form-label">LISENCE PLATE</label>
+                         <label className="form-label">LICENSE PLATE</label>
                          <Field
                          type="text"
                          name="lisence_plate"

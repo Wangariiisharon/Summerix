@@ -14,6 +14,7 @@ import { DocumentData, collection, getDocs } from "firebase/firestore";
 import { fbDb } from "@/firebase/configs"; 
 import { parseISO, format } from 'date-fns';
 import Maintenance from "./maintanance";
+import VehicleAllocation from "./vehicle_allocation";
 
 
 
@@ -146,7 +147,7 @@ export default function VehiclesComponent() {
                         </Tab.Panel>
                         <Tab.Panel>
                         <div  className="max-h-[500px] overflow-y-auto">
-                        <DummyTable selectedTab={selectedTab} vehicles={fetchedVehicles} />
+                        <VehicleAllocation/>
 
                             </div>
                         </Tab.Panel>
@@ -187,7 +188,8 @@ export function DummyTable({ selectedTab,vehicles }: VehiclesTableProps) {
     );
 
     console.log("Filtered Vehicles:", filteredVehicles); 
-    return (
+    return ( 
+        <div className="bg-[#FAFAFB] h-400 w-100%">
         <div className="px-4 sm:px-6 lg:px-8">
             <div className="mt-8 flow-root">
                 <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -244,12 +246,15 @@ export function DummyTable({ selectedTab,vehicles }: VehiclesTableProps) {
                                 </tr>
                             </thead>
  
-                            <tbody  className="divide-y divide-gray-200 bg-white">
+                            <tbody  className="divide-y divide-gray-200  bg-[#FAFAFB]">
                             {filteredVehicles.map((vehicle, index) => {  
                                 const { seconds } = vehicle.registration_date; 
                                 const updatedDate = new Date(seconds * 1000);
-                                return(
-                                    <tr key={vehicle.id} className='my-2'>
+                                return( 
+                                    // <tr className='border-solid border-2 border-[#D9E2F6] h-10 font-nunito font-regular'>
+                                    <Fragment key={index}>  
+                                    <div className="w-full mb-2 font-nunito font-regular"></div>
+                                    <tr key={vehicle.id} className='my-2 border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>
                                         <td className="whitespace-nowrap text-center align-middle  pl-4 pr-3 !pt-2 text-d-blue sm:pl-0">{vehicle.id}</td>
                                         <td className="whitespace-nowrap px-2 p-2 text-left text-center align-middle pt-4 font-medium ">
                                             {vehicle.name}
@@ -273,7 +278,9 @@ export function DummyTable({ selectedTab,vehicles }: VehiclesTableProps) {
                                             <DeleteBtn />
                                             <div className='h-12'></div>
                                         </td> */}
-                                    </tr>
+                                    </tr> 
+                                    </Fragment>
+
                             )
                         })}
                             </tbody>
@@ -281,7 +288,9 @@ export function DummyTable({ selectedTab,vehicles }: VehiclesTableProps) {
                     </div>
                 </div>
             </div>
-        </div>
+        </div> 
+        </div> 
+
     )
 }
 
