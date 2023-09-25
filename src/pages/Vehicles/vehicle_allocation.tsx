@@ -19,6 +19,7 @@ import Jobcard from "./jobcard";
 import { serverTimestamp } from 'firebase/firestore'
 import { Field, Formik,Form } from "formik";
 import { AnyCnameRecord } from "dns";
+import NotAssigned from './not_assigned';
 
 
 const tabs = [
@@ -31,12 +32,13 @@ export default function VehicleAllocation() {
     const [open, setOpen] = useState(false)
     const [selectedTab, setSelectedTab] = useState<number>(0); 
     const [fetchedMaintanance, setFetchedMaintanance]=useState<DocumentData[]>([]);   
-    const [fetchedAllocation, setfetchedAllocation]=useState<DocumentData[]>([]);  
+    const [fetchedAllocation, setfetchedAllocation]=useState<DocumentData[]>([]); 
+    const [allocationList, setAllocationList] = useState<DocumentData[]>([]);
+  
     const [fetchedVehicles, setFetchedVehicles]=useState<DocumentData[]>([]);  
     const [vehicleNames, setVehicleNames] = useState<string[]>([]); 
     const [jobcards, setjobcards] = useState<string[]>([]); 
     const [fetchJobCard, setfetchJobCard] = useState<string[]>([]); 
-    const [allocationList, setAllocationList] = useState<DocumentData[]>([]);
     const [drivers, setdrivers] = useState<string[]>([]); 
 
     const [showAddJobcardModal, setShowAddJobcardModal] = useState(false);
@@ -171,16 +173,7 @@ export default function VehicleAllocation() {
     return (
         <>
             <div className=''>
-                <div className="flex flex-row fixed top-12 right-10">  
-                <div className="ml-2"> 
-                <Button
-                className='rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4  mr-2 mt-2'
-                handleClick={handleScheduleMaintanace}>
-               <PlusIcon className='h-6 w-6 mr-2' />
-                  ALLOCATE
-              </Button>
-                </div>
-                </div>
+        
                 <div className='mt-4'> 
                 <Tab.Group>
                 <Tab.List className='w-full bg-[#FAFAFB] font-nunito flex justify-start mb-3'> 
@@ -207,7 +200,7 @@ export default function VehicleAllocation() {
                         </Tab.Panel>
                         <Tab.Panel>
                         <div  className="max-h-[500px] overflow-y-auto">
-                        <MaintananceTable selectedTab={selectedTab} allocationList={allocationList} vehiclesList={fetchedVehicles} />
+                        <NotAssigned/>
 
                             </div>
                         </Tab.Panel>
@@ -224,92 +217,7 @@ export default function VehicleAllocation() {
                 </div> 
                 <div>
                 </div>
-            
             </div>
-
-            <FormModal open={showScheduleMaintenanceModal} setOpen={setShowScheduleMaintenanceModal}>
-                <div className='p-8'>
-                    <div className='flex w-full h-full justify-between items-center mb-12'>
-                        <div className='text-xl font-semibold '>
-                            Schedule Maintanance
-                        </div>
-                        <Button className='bg-red-50 h-12 w-12 flex items-center justify-center rounded-full' handleClick={handleMaintenanceReset}>
-                            <XMarkIcon className='h-6 w-6 text-red-400'/>
-                        </Button>
-                    </div>
-
-                    <Formik
-                    initialValues={{
-                        requested_by: "",  
-                        vehicle: "",
-                        cost:"", 
-                        job_cards: "", 
-                        remarks: "", 
-                        date: "",
-            
-                                      }}
-                        onSubmit={(values) => handleScheduleMaintanace(values)}  
-  
-
-
-                        >
-                       {({ values }) => (
-                    <Form> 
-                          <label className="block">
-                             <label className="form-label">Driver</label>
-                             <Field
-                             as="select"
-                            name="requested_by"  
-                           value={values.requested_by}
-                         className="form-input bg-grey w-96" 
-                         onClick={handleDropdownClick}
-
-                         >
-                        {drivers.map((requested_by, index) => (
-                        <option key={index} value={requested_by}>
-                         {requested_by}
-                       </option>
-                       ))}
-                      </Field> 
-            
-                             </label> 
-                                                 
-                             <div className='flex w-full justify-between  mt-8'> 
-
-                             <label className="block">
-                             <label className="form-label">START DATE</label>
-                             <Field
-                             type="date"
-                             name="date"
-                             value={values.date}
-                             className="form-input bg-grey w-48"
-                            />
-                            </label>  
-
-                            <label className="block">
-                             <label className="form-label">END DATE</label>
-                             <Field
-                             type="date"
-                             name="end_date"
-                             value={values.date}
-                             className="form-input bg-grey w-48"
-                            />
-                            </label> 
-                                </div>   
-
-                             
-                                          
-     
-                            <div className='flex w-full justify-end mt-24 '>
-                                <Button className='text-blue text-xl mr-32' handleClick={handleMaintenanceReset}>Reset</Button>
-                                <button type='submit' >Save</button>
-                            </div>
-
-                    </Form>
-                     )}
-                    </Formik>
-                </div>
-            </FormModal>
             </>
         
     )
@@ -337,39 +245,40 @@ export function MaintananceTable({ selectedTab,allocationList,vehiclesList }: Ve
                 return maintenanceDate > currentDate;
             } else if (selectedTab === 1) {
                 // Show items with dates that have already passed (past dates)
-                return maintenanceDate < currentDate;
+                return maintenanceDate < currentDate ;
             }
     
             return true;
         }); 
         const updatedAllocationList = filteredAllocation.map((allocation: any) => {
-        const maintenanceDate = new Date(allocation.end_time.seconds * 1000);
+        const endDate = new Date(allocation.end_time.seconds * 1000); 
+        const startDate = new Date(allocation.start_time.seconds * 1000);
+
         const updatedEndDate = new Date(allocation.end_time.seconds * 1000);
         const updatedStartDate = new Date(allocation.start_time.seconds * 1000); 
         const date=[updatedStartDate,updatedEndDate]
 
-        if (maintenanceDate < currentDate) {
+        if (endDate > currentDate && startDate == currentDate) {
             return {
                 ...allocation,
-                end_time: 'Not Defined', 
-                start_time: '',
-                status:'Available',
-                driver: 'Not Assigned'
+                end_time: format(updatedEndDate, 'dd/MM/yy'), 
+                start_time: format(updatedStartDate, 'dd/MM/yy'),
+                driver: allocation.driver ? allocation.driver : 'Not Assigned', 
+                status: allocation.status ? allocation.status : 'On Route'
             };
         }
-
+        else 
         return {
             ...allocation,
-            end_time: format(updatedEndDate, 'MM/dd/yy'), 
-            start_time: format(updatedStartDate, 'MM/dd/yy'),
+            end_time: format(updatedEndDate, 'dd/MM/yy'), 
+            start_time: format(updatedStartDate, 'dd/MM/yy'),
             driver: allocation.driver ? allocation.driver : 'Not Assigned', 
-            status: allocation.status ? allocation.status : 'Available'
+            status: allocation.status ? allocation.status : 'On Route'
 
-        };
+        }; 
+ 
     });
         
-    
-
     console.log("Filtered Allocation:", filteredAllocation); 
     return (
         <div className="px-4 sm:px-6 lg:px-8">
@@ -425,17 +334,21 @@ export function MaintananceTable({ selectedTab,allocationList,vehiclesList }: Ve
                             </thead>
  
                             <tbody  className="divide-y divide-gray-200  bg-[#FAFAFB]">
-                            {updatedAllocationList.map((allocation:any, index:any) => {  
-                                 const { seconds } = allocation.start_time; 
-                                 const {enders} = allocation.end_time; 
-                                 const updatedEndDate = new Date(allocation.end_time * 1000);
-                                 const updatedStartDate = new Date(allocation.start_time * 1000);
+                              { updatedAllocationList.map((allocation:any, index:any) => {  
+                              const formattedStartTime = allocation.start_time instanceof Date
+                              ? allocation.start_time.toLocaleString()
+                              : allocation.start_time;
 
+                             const formattedEndTime = allocation.end_time instanceof Date
+                               ? allocation.end_time.toLocaleString()
+                             : allocation.end_time;
                                 return( 
                                     <Fragment key={index}> 
                                     <div className="w-full mb-2 font-nunito font-regular"></div>
                                     <tr key={allocation.id}   className='my-4 border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>
-                                        <td className="whitespace-nowrap pl-4 pr-3 !pt-4  sm:pl-0">{allocation.vehicle}</td> 
+                                        {/* <td className="whitespace-nowrap pl-4 pr-3 !pt-4  sm:pl-0">{allocation.vehicle_id.name}</td>   */}
+                                        <td className="whitespace-nowrap pl-4 pr-3 !pt-4 sm:pl-0">{allocation.vehicle_id && allocation.vehicle_id.name}</td>
+
                                              <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">
                                          <div className={`rounded-full inline-block text-sm	 h-8    ${allocation.status === 'Available' ? 'bg-[#E2E9FB] text-[#0068DD]' : (allocation.status=== 'On Route' ? 'bg-[#B9F3EE] text-[#076960]' : 'bg-[#EAEAEA] text-[#364250]')}`} style={{ width: `${allocation.status .length * 8}px`, left: '-8px' }}>
                                                 <span className="inset-0 mt-1.5 flex">
@@ -444,18 +357,28 @@ export function MaintananceTable({ selectedTab,allocationList,vehiclesList }: Ve
                                             </div>  
                                             </td>
                                         {/* <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">{allocation.status}</td>  */}
-                                        <td className={`whitespace-nowrap px-2 pt-4 ${allocation.driver === 'Not Assigned' ? 'text-[#777E96] font-nunito' : (allocation.driver===`${allocation.driver}` ? ' text-[#000000]' : 'text-[#000000]')}`}>
-                                            {allocation.driver}
+                                        <td className={`whitespace-nowrap px-2 pt-4 ${allocation.requested_by === 'Not Assigned' ? 'text-[#777E96] font-nunito' : (allocation.requested_by===`${allocation.requested_by}` ? ' text-[#000000]' : 'text-[#000000]')}`}>
+                                            {allocation.requested_by}
                                         </td>
 
-                                        <td className={`whitespace-nowrap px-2 pt-4  ${allocation.end_time === 'Not Defined' ? 'text-[#777E96] font-nunito' : (allocation.end_time===`${allocation.end_time}` ? ' text-[#000000]' : 'text-[#777E96]')}`}>
-                                         {allocation.end_time !== 'Not Defined'
-                                       ? `${allocation.start_time}-${allocation.end_time}`
-                                        : allocation.end_time}
-                                        </td>
+                                        <td className={`whitespace-nowrap px-2 pt-4 ${allocation.end_time === 'Not Defined' ? 'text-[#777E96] font-nunito' : (allocation.end_time===`${allocation.end_time}` ? ' text-[#000000]' : 'text-[#777E96]')}`}>
+                                       {allocation.end_time !== 'Not Defined'
+                                      ? `${formattedStartTime}-${formattedEndTime}`
+                                      : allocation.end_time}
+                                       </td>
 
                                         {/* <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">{allocation.trips_completed}</td> */}
-                                        <td className="whitespace-nowrap p-2 text-center align-middle  text-left pt-4 text-lg font-bold text-black">{allocation.trips_completed} Trips</td>
+                                        <td className="whitespace-nowrap p-2 text-center align-middle  text-left pt-4 text-lg font-bold text-black"> {allocation.vehicle_id && allocation.vehicle_id.trips} Trips</td> 
+                                        {allocation.end_time === 'Not Defined' || new Date(allocation.end_time * 1000) < currentDate ? (
+                                        <tr key={`${allocation.id}-allocate`} className='relative whitespace-nowrap pt-3 pl-3 pr-4 text-right text-sm font-medium sm:pr-0 flex justify-around'>
+                                       <td colSpan={7} className="text-center">
+                                       <button className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2" >
+                                       Allocate
+                                      </button>
+                                      </td>
+                                      </tr>
+                                     ) : null} 
+                                     
 
                                     
 
