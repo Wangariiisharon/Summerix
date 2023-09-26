@@ -228,8 +228,11 @@ export default function Maintenance() {
                                      return (
                                         <Fragment key={index}>
                                             <Tab className='ui-selected:border-b-4 border-d-green outline-none
-                                             ui-selected:text-d-green text-sm font-nunito font-bold uppercase flex flex-row ml-10' 
-                                             onClick={() => handleTabClick(index)}
+                                             ui-selected:text-d-green text-sm font-nunito font-bold uppercase flex flex-row ml-10'  
+                                             onClick={() => {
+                                                console.log("Tab Clicked", index);
+                                                setSelectedTab(index);
+                                              }}
                                              >
                                                 {tab.name}
                                             </Tab>
@@ -494,7 +497,7 @@ export function MaintananceTable({ selectedTab,maintananceList }: VehiclesTableP
                                       scope="col"
                                       className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left font-semibold sm:pl-0" 
                                     > 
-                                       Truck  
+                                       TRUCK  
 
                                     </th>
                                     <th
