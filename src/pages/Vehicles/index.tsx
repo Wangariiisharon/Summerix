@@ -160,9 +160,7 @@ export default function VehiclesComponent() {
             
             </div>
 
-            </SiteLayout>
-
-        
+            </SiteLayout>   
     )
 }
 

@@ -257,25 +257,29 @@ export function MaintananceTable({ selectedTab,allocationList,vehiclesList }: Ve
         const updatedEndDate = new Date(allocation.end_time.seconds * 1000);
         const updatedStartDate = new Date(allocation.start_time.seconds * 1000); 
         const date=[updatedStartDate,updatedEndDate]
-
-        if (endDate > currentDate && startDate == currentDate) {
+        if (startDate <= currentDate && endDate > currentDate) {
+            console.log('Setting status to On Route');
             return {
-                ...allocation,
-                end_time: format(updatedEndDate, 'dd/MM/yy'), 
-                start_time: format(updatedStartDate, 'dd/MM/yy'),
-                driver: allocation.driver ? allocation.driver : 'Not Assigned', 
-                status: allocation.status ? allocation.status : 'On Route'
+              ...allocation,
+              end_time: format(updatedEndDate, 'dd/MM/yy'), 
+              start_time: format(updatedStartDate, 'dd/MM/yy'),
+              driver: allocation.driver ? allocation.driver : 'Not Assigned', 
+              status: 'On Route' // Set status to 'On Route' if start date has passed but end time has not
             };
-        }
-        else 
-        return {
-            ...allocation,
-            end_time: format(updatedEndDate, 'dd/MM/yy'), 
-            start_time: format(updatedStartDate, 'dd/MM/yy'),
-            driver: allocation.driver ? allocation.driver : 'Not Assigned', 
-            status: allocation.status ? allocation.status : 'On Route'
-
-        }; 
+          } else {
+            console.log('Keeping original status');
+            // If start date is in the future, keep the original status
+            return {
+              ...allocation,
+              end_time: format(updatedEndDate, 'dd/MM/yy'), 
+              start_time: format(updatedStartDate, 'dd/MM/yy'),
+              driver: allocation.driver ? allocation.driver : 'Not Assigned', 
+              status: allocation.status ? allocation.status : 'Unknown' // Set status to allocation.status if start date is in the future
+            };
+          }
+          
+          
+          
  
     });
         
@@ -334,60 +338,102 @@ export function MaintananceTable({ selectedTab,allocationList,vehiclesList }: Ve
                             </thead>
  
                             <tbody  className="divide-y divide-gray-200  bg-[#FAFAFB]">
-                              { updatedAllocationList.map((allocation:any, index:any) => {  
-                              const formattedStartTime = allocation.start_time instanceof Date
-                              ? allocation.start_time.toLocaleString()
-                              : allocation.start_time;
+                            {
+                             updatedAllocationList.map((allocation: any, index: any) => {
+                             const formattedStartTime =
+                             allocation.start_time instanceof Date
+                            ? allocation.start_time.toLocaleString()
+                             : allocation.start_time;
 
-                             const formattedEndTime = allocation.end_time instanceof Date
-                               ? allocation.end_time.toLocaleString()
-                             : allocation.end_time;
-                                return( 
-                                    <Fragment key={index}> 
-                                    <div className="w-full mb-2 font-nunito font-regular"></div>
-                                    <tr key={allocation.id}   className='my-4 border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>
-                                        {/* <td className="whitespace-nowrap pl-4 pr-3 !pt-4  sm:pl-0">{allocation.vehicle_id.name}</td>   */}
-                                        <td className="whitespace-nowrap pl-4 pr-3 !pt-4 sm:pl-0">{allocation.vehicle_id && allocation.vehicle_id.name}</td>
+                           const formattedEndTime =
+                           allocation.end_time instanceof Date
+                            ? allocation.end_time.toLocaleString()
+                       : allocation.end_time;
 
-                                             <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">
-                                         <div className={`rounded-full inline-block text-sm	 h-8    ${allocation.status === 'Available' ? 'bg-[#E2E9FB] text-[#0068DD]' : (allocation.status=== 'On Route' ? 'bg-[#B9F3EE] text-[#076960]' : 'bg-[#EAEAEA] text-[#364250]')}`} style={{ width: `${allocation.status .length * 8}px`, left: '-8px' }}>
-                                                <span className="inset-0 mt-1.5 flex">
-                                                    {allocation.status}
-                                                </span>
-                                            </div>  
-                                            </td>
-                                        {/* <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">{allocation.status}</td>  */}
-                                        <td className={`whitespace-nowrap px-2 pt-4 ${allocation.requested_by === 'Not Assigned' ? 'text-[#777E96] font-nunito' : (allocation.requested_by===`${allocation.requested_by}` ? ' text-[#000000]' : 'text-[#000000]')}`}>
-                                            {allocation.requested_by}
-                                        </td>
+                       const startDate =
+                       allocation.start_time.seconds !== undefined
+                         ? new Date(allocation.start_time.seconds * 1000)
+                         : new Date(allocation.start_time); // Convert to Date object
+                     
+                     const status =
+                       startDate.toDateString() === currentDate.toDateString()
+                         ? 'On Route'
+                         : allocation.status;
+  
 
-                                        <td className={`whitespace-nowrap px-2 pt-4 ${allocation.end_time === 'Not Defined' ? 'text-[#777E96] font-nunito' : (allocation.end_time===`${allocation.end_time}` ? ' text-[#000000]' : 'text-[#777E96]')}`}>
-                                       {allocation.end_time !== 'Not Defined'
-                                      ? `${formattedStartTime}-${formattedEndTime}`
-                                      : allocation.end_time}
-                                       </td>
+                            return (
+    <Fragment key={index}>
+      <div className="w-full mb-2 font-nunito font-regular"></div>
+      <tr
+        key={allocation.id}
+        className="my-4 border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular"
+      >
+        <td className="whitespace-nowrap pl-4 pr-3 !pt-4 sm:pl-0">
+          {allocation.vehicle_id && allocation.vehicle_id.name}
+        </td>
 
-                                        {/* <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">{allocation.trips_completed}</td> */}
-                                        <td className="whitespace-nowrap p-2 text-center align-middle  text-left pt-4 text-lg font-bold text-black"> {allocation.vehicle_id && allocation.vehicle_id.trips} Trips</td> 
-                                        {allocation.end_time === 'Not Defined' || new Date(allocation.end_time * 1000) < currentDate ? (
-                                        <tr key={`${allocation.id}-allocate`} className='relative whitespace-nowrap pt-3 pl-3 pr-4 text-right text-sm font-medium sm:pr-0 flex justify-around'>
-                                       <td colSpan={7} className="text-center">
-                                       <button className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2" >
-                                       Allocate
-                                      </button>
-                                      </td>
-                                      </tr>
-                                     ) : null} 
-                                     
+        <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">
+          <div
+            className={`rounded-full inline-block text-sm h-8    ${
+              status === 'Available'
+                ? 'bg-[#E2E9FB] text-[#0068DD]'
+                : status === 'On Route'
+                ? 'bg-[#B9F3EE] text-[#076960]'
+                : 'bg-[#EAEAEA] text-[#364250]'
+            }`}
+            style={{ width: `${status.length * 8}px`, left: '-8px' }}
+          >
+            <span className="inset-0 mt-1.5 flex">{status}</span>
+          </div>
+        </td>
 
-                                    
+        <td
+          className={`whitespace-nowrap px-2 pt-4 ${
+            allocation.requested_by === 'Not Assigned'
+              ? 'text-[#777E96] font-nunito'
+              : allocation.requested_by === `${allocation.requested_by}`
+              ? ' text-[#000000]'
+              : 'text-[#000000]'
+          }`}
+        >
+          {allocation.requested_by}
+        </td>
 
-                           
-                                    </tr> 
-                                    </Fragment>
+        <td
+          className={`whitespace-nowrap px-2 pt-4 ${
+            allocation.end_time === 'Not Defined'
+              ? 'text-[#777E96] font-nunito'
+              : allocation.end_time === `${allocation.end_time}`
+              ? ' text-[#000000]'
+              : 'text-[#777E96]'
+          }`}
+        >
+          {allocation.end_time !== 'Not Defined'
+            ? `${formattedStartTime}-${formattedEndTime}`
+            : allocation.end_time}
+        </td>
 
-                            )
-                        })}
+        <td className="whitespace-nowrap p-2 text-center align-middle  text-left pt-4 text-lg font-bold text-black">
+          {allocation.vehicle_id && allocation.vehicle_id.trips} Trips
+        </td>
+        {allocation.end_time === 'Not Defined' ||
+        new Date(allocation.end_time * 1000) < currentDate ? (
+          <tr
+            key={`${allocation.id}-allocate`}
+            className="relative whitespace-nowrap pt-3 pl-3 pr-4 text-right text-sm font-medium sm:pr-0 flex justify-around"
+          >
+            <td colSpan={7} className="text-center">
+              <button className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2">
+                Allocate
+              </button>
+            </td>
+          </tr>
+        ) : null}
+      </tr>
+    </Fragment>
+  );
+})}
+
                             </tbody>
                         </table>
                     </div>
