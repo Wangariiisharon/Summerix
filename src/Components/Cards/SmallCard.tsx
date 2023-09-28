@@ -40,11 +40,11 @@ export function SmallCard({ name, icon, amount}:Props) {
      <>
      <div className="overflow-hidden rounded-lg bg-white shadow">  
                      <div className="">
-                    <div className="flex items-center">
-                        <div className="flex-shrink-0 rounded-full">
+                    <div className="flex">
+                        <div className="flex rounded-full">
                              <CardIcon src={icon} alt={name}/> 
                          </div>
-                         <div className="ml-10 w-0 flex-1">
+                         <div className=" w-32 h-19 flex-1">
                              <dl>
                                  <dt className="truncate font-extrabold ">{amount}</dt>
                                  <dd>

@@ -33,12 +33,13 @@ export default function TripsComponent() {
     const [vehicleNames, setVehicleNames] = useState<string[]>([]); 
     const [selectedTab, setSelectedTab] = useState<number>(0); 
     const [fetchedTrips, setfetchedTrips]=useState<DocumentData[]>([]);  
+    const [searchQuery, setSearchQuery] = useState("");
  
-
-
-
-
-
+    const handleSearchChange = (e:any) => {
+        const query = e.target.value;
+        console.log("Search Query:", query);
+        setSearchQuery(query);
+      };  
     const handleSearch = () => {
 
     }
@@ -145,7 +146,7 @@ export default function TripsComponent() {
     return (
             <SiteLayout>
             <div>
-                <Header heading='Trips'/>
+            <p className="text-lg font-nunito font-bold mt-2 ml-5">Trips</p>
                 <div className='mt-8 flex justify-between'>
                     <div className='flex'>
                         <FilterBanner active={true} number={'76'} name={'All'}/>
@@ -167,11 +168,15 @@ export default function TripsComponent() {
 
                     </div> */}
 
-                </div>
-                <div className='flex w-full items-center justify-between my-6'>
-                        <Input type='text' name='search' placeholder='Search for track Delivery Status, destination'
-                               id='search' label=''/>
+                </div> 
 
+                <div className='flex w-full items-center justify-between my-6'> 
+                <SearchBar
+                  placeholder='Search  for track Delivery status, destination '
+                  value={searchQuery}
+                  onChange={handleSearchChange} 
+                  className='w-48'
+                />
                     <div className='flex'>
                         <Button className='bg-d-green text-white text-sm flex w-[140px] h-[38px] items-center justify-center uppercase rounded'
                                 handleClick={handleAddTrip}>
@@ -462,7 +467,7 @@ export function TripsTable({ selectedTab,trips }: TripsTableProps) {
       
       
     return ( 
-        <div className="px-4 sm:px-6 lg:px-8">
+        <div className="px-4 sm:px-6 lg:px-8 bg-[#FAFAFB]">
             <div className="mt-8 flow-root">
                 <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                     <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
@@ -518,12 +523,12 @@ export function TripsTable({ selectedTab,trips }: TripsTableProps) {
                                 </th>
                             </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-200 bg-white">
+                            <tbody  className="divide-y divide-gray-200  bg-[#FAFAFB]">
                             {filteredAllocation.map((trip) => (
-                                <tr key={trip.id}>
+                                <tr key={trip.id} className='my-2 border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>
                                     <td className="whitespace-nowrap py-2 pl-4 pr-3  text-d-blue sm:pl-0">{trip.id}</td>
                                     <td className="whitespace-nowrap px-2 py-4 text-lg font-medium ">
-                                    {trip.vehicle}                                    </td>
+                                    {trip.driver}                                    </td>
                                     <td className="whitespace-nowrap px-2 py-2  ">{trip.drop_off_location}</td>
                                     <td className="whitespace-nowrap px-2 py-2  ">{trip.pick_up_location}</td>
                                     <td className="whitespace-nowrap px-2 py-2  ">100KM</td>
