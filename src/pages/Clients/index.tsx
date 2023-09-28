@@ -124,13 +124,15 @@ export default function ClientsComponent() {
                     </div>
                 </div>
 
-                <div className='flex w-full items-center justify-between my-6'>
+                <div className='flex w-full items-center justify-between my-6'> 
+                <div className="ml-5">
                 <SearchBar
-                  placeholder='Search  for track Delivery status, destination '
+                  placeholder='Search For Clients'
                   value={searchQuery}
                   onChange={handleSearchChange} 
-                  className='mr-4'
-                />
+                  className=''
+                /> 
+                </div>
                          <div className='flex'>
                         <Button className='bg-d-green text-white text-sm flex w-[140px] h-[38px] items-center justify-center uppercase rounded'
                                 handleClick={handleAddClient}>
@@ -274,8 +276,12 @@ export function ClientsTable({ clients,filteredClients }: ClientsTableProps) {
                             </tr>
                             </thead>
                             <tbody  className="divide-y divide-gray-200  bg-[#FAFAFB]">
-                            {filteredClients.map((client) => (
-                                <tr key={client.id}  className='my-2 border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>
+                            {filteredClients.map((client,index) => { 
+                                     return( 
+                                        <Fragment key={index}>  
+                                    <div className="w-full mb-2 font-nunito font-regular"></div>
+
+                                <tr key={client.id}  className='my-2 border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mt-2 h-10 font-nunito font-regular'>
                                     <td className="whitespace-nowrap pl-4 pr-3 py-4 text-d-blue sm:pl-0">{client.id}</td>
                                     <td className="whitespace-nowrap px-2 py-2  font-medium ">
                                         {client.name}
@@ -284,8 +290,11 @@ export function ClientsTable({ clients,filteredClients }: ClientsTableProps) {
                                     <td className="whitespace-nowrap px-2 py-2  ">Ksh.250000</td>
 
 
-                                </tr>
-                            ))}
+                                </tr> 
+                                </Fragment>
+
+                            ) 
+                                })}
                             </tbody>
                         </table>
                     </div>

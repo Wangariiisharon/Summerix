@@ -152,9 +152,10 @@ export default function TripsComponent() {
     return (
             <SiteLayout>
             <div>
-            <p className="text-lg font-nunito font-bold mt-2 ml-5">Trips</p>
+            <p className="text-lg font-nunito font-bold mt-2 ml-5">Trips</p> 
+            <div className="flex flex-col">
                 <div className='mt-8 flex justify-between'>
-                    <div className='flex'>
+                    <div className='flex ml-5'>
                         <FilterBanner active={true} number={'76'} name={'All'}/>
                         <FilterBanner active={false} number={'76'} name='On Route'/>
                         <FilterBanner active={false} number={'76'} name='Waiting'/>
@@ -176,14 +177,16 @@ export default function TripsComponent() {
 
                 </div> 
 
-                <div className='flex w-full items-center justify-between my-6'> 
+                <div className='flex w-full flex-row mt-6'>  
+                <div className="fixed ml-5 w-full">
                 <SearchBar
                   placeholder='Search  for track Delivery status, destination '
                   value={searchQuery}
                   onChange={handleSearchChange} 
-                  className='w-48'
-                />
-                    <div className='flex'>
+                  className='w-full'
+                /> 
+                </div>
+                    <div className='flex fixed right-0'>
                         <Button className='bg-d-green text-white text-sm flex w-[140px] h-[38px] items-center justify-center uppercase rounded'
                                 handleClick={handleAddTrip}>
                             <>
@@ -204,11 +207,12 @@ export default function TripsComponent() {
                             <AddButton name='Add Trip' handleAddClick={handleAddTrip}/>
                             </div> */}
                     </div>
+                </div> 
                 </div>
                 {/* <HeaderBar headers={Headers}/> */} 
                 <div className='mt-4'> 
                 <Tab.Group>
-                    <Tab.List className="w-full bg-[#FAFAFB] font-nunito flex justify-start mb-3"> 
+                    <Tab.List className="w-full bg-[#FAFAFB] font-nunito flex justify-start mt-16"> 
                     {tabs.map((tab, index) => {
                                     return (
                                         <Fragment key={index}>
@@ -531,9 +535,12 @@ export function TripsTable({ selectedTab,trips,filteredTrips }: TripsTableProps)
                                 </th>
                             </tr>
                             </thead>
-                            <tbody  className="divide-y divide-gray-200  bg-[#FAFAFB]">
-                            {filteredAllocation.map((trip) => (
-                                <tr key={trip.id} className='my-2 border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>
+                            <tbody className="divide-y divide-gray-200  bg-[#FAFAFB]">
+                            {filteredAllocation.map((trip,index) => { 
+                                     return( 
+                                        <Fragment key={index}>  
+                                     <div className="w-full mb-2 font-nunito font-regular"></div>
+                                <tr key={trip.id} className='my-2 border-solid border-2  bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>
                                     <td className="whitespace-nowrap py-2 pl-4 pr-3  text-d-blue sm:pl-0">{trip.id}</td>
                                     <td className="whitespace-nowrap px-2 py-4 text-lg font-medium ">
                                     {trip.driver}                                    </td>
@@ -547,8 +554,10 @@ export function TripsTable({ selectedTab,trips,filteredTrips }: TripsTableProps)
                                     <td className="whitespace-nowrap py-2  px-2 text-left font-medium">
                                         On Route
                                     </td>
-                                </tr>
-                            ))}
+                                </tr> 
+                                </Fragment>
+                               ) 
+                             })}
                             </tbody>
                         </table>
                     </div>
