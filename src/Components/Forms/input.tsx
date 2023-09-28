@@ -63,7 +63,7 @@ const SearchBar = ({ placeholder, value, onChange }:any) => {
     placeholder={placeholder}
     value={value}
     onChange={onChange}
-    className="form-input bg-white"
+    className="searchbar bg-white"
     />
   );
 };

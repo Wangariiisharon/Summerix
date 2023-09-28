@@ -21,8 +21,9 @@ import { AnyCnameRecord } from "dns";
 const tabs = [
     {name: 'PLANNED', href: '#', current: false},
     {name: 'HISTORY', href: '#', current: false},
-    {name: 'JOB CARD', href: '#', current: true},
-]
+    {name: 'JOB CARD', href: '#', current: false},
+] 
+
 
 
 export default function Maintenance() {
@@ -227,15 +228,16 @@ export default function Maintenance() {
                                 {tabs.map((tab, index) => {
                                      return (
                                         <Fragment key={index}>
-                                            <Tab className='ui-selected:border-b-4 border-d-green outline-none
-                                             ui-selected:text-d-green text-sm font-nunito font-bold uppercase flex flex-row ml-10'  
-                                             onClick={() => {
-                                                console.log("Tab Clicked", index);
-                                                setSelectedTab(index);
-                                              }}
-                                             >
-                                                {tab.name}
-                                            </Tab>
+                                            <Tab
+                                        className='ui-selected:border-b-4 border-d-green outline-none
+                                        ui-selected:text-d-green text-sm font-nunito font-bold uppercase flex flex-row ml-10'  
+                                        onClick={() => {
+                                            console.log("Tab Clicked", index);
+                                            setSelectedTab(index);
+                                          }}
+                                        >
+                                        {tab.name}
+                                    </Tab>
                                         </Fragment>
                                     )
                                 })}

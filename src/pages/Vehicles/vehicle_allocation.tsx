@@ -1,29 +1,15 @@
 import React from 'react'
-
-
-import {Header, HeaderBar} from "@/components/Headers";
-import {AddButton, Button, DeleteBtn, EditBtn} from "@/components/Buttons";
-import {headers} from "next/headers";
-import {DummyTable} from "@/components/Table/Table";
-import {FormEvent, Fragment, ReactNode, useEffect, useState} from "react";
-import {FormModal} from "@/components/Modals/FormModal";
-import {Input, Submit} from "@/components/Forms/input";
-import SiteLayout from "@/Layout/SiteLayout";
-import {PlusIcon, XMarkIcon} from "@heroicons/react/24/outline";
+import { Fragment, useEffect, useState} from "react";
 import { Tab } from "@headlessui/react";
-import Planned from "./jobcard";
-import firebaseApp, { fbDb } from "@/firebase/configs";
+import  { fbDb } from "@/firebase/configs";
 import { getDocs, collection, DocumentData, addDoc, Timestamp } from "firebase/firestore";
-import { parseISO, format } from 'date-fns';
+import {  format } from 'date-fns';
 import Jobcard from "./jobcard"; 
-import { serverTimestamp } from 'firebase/firestore'
-import { Field, Formik,Form } from "formik";
-import { AnyCnameRecord } from "dns";
 import NotAssigned from './not_assigned';
 
 
 const tabs = [
-    {name: 'ASSIGNED', href: '#', current: true},
+    {name: 'ASSIGNED', href: '#', current: false},
     {name: 'NOT ASSIGNED', href: '#', current: false},
 ]
 
@@ -180,13 +166,17 @@ export default function VehicleAllocation() {
                                 {tabs.map((tab, index) => {
                                      return (
                                         <Fragment key={index}>
-                                            <Tab className='ui-selected:border-b-4 border-d-green outline-none
-                                             ui-selected:text-d-green text-sm font-nunito font-bold uppercase flex flex-row ml-10' 
-                                             onClick={() => handleTabClick(index)}
-                                             >
-                                                {tab.name}
-                                            </Tab>
-                                        </Fragment>
+                                         <Tab
+                                         className='ui-selected:border-b-4 border-d-green outline-none
+                                                    ui-selected:text-d-green text-sm font-nunito font-bold uppercase flex flex-row ml-10'  
+                                          onClick={() => {
+                                          console.log("Tab Clicked", index);
+                                          setSelectedTab(index);
+                                           }}
+                                         >
+                                         {tab.name}
+                                        </Tab> 
+                                        </Fragment> 
                                     )
                                 })}
 

@@ -11,6 +11,10 @@
   .form-textarea {
     @apply w-full mx-auto p-2 rounded-md outline-none border border-gray-300 focus:border-blue-600 text-xs text-gray-900 focus:bg-white disabled:opacity-50 invalid:border-red-500 invalid:text-red-600
 		focus:invalid:border-red-500 focus:invalid:ring-red-500;
+  } 
+  .searchbar {
+    @apply w-80 mx-auto p-2 rounded-md outline-none  focus:border-blue-600 text-xs text-gray-900 focus:bg-white disabled:opacity-50 invalid:border-red-500 invalid:text-red-600
+		focus:invalid:border-red-500 focus:invalid:ring-red-500;
   }
 
   .btn {
