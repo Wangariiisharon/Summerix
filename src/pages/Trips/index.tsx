@@ -33,13 +33,19 @@ export default function TripsComponent() {
     const [vehicleNames, setVehicleNames] = useState<string[]>([]); 
     const [selectedTab, setSelectedTab] = useState<number>(0); 
     const [fetchedTrips, setfetchedTrips]=useState<DocumentData[]>([]);  
-    const [searchQuery, setSearchQuery] = useState("");
+    const [searchQuery, setSearchQuery] = useState(""); 
+
  
     const handleSearchChange = (e:any) => {
         const query = e.target.value;
         console.log("Search Query:", query);
         setSearchQuery(query);
       };  
+      const filteredTrips = fetchedTrips.filter((trip) => {
+        const fullName = `${trip.driver}`.toLowerCase();
+        const nameMatch = fullName.includes(searchQuery.toLowerCase());
+          return nameMatch;
+      }); 
     const handleSearch = () => {
 
     }
@@ -226,13 +232,13 @@ export default function TripsComponent() {
                     <Tab.Panels>
                         <Tab.Panel>
                         <div  className="max-h-[500px] overflow-y-auto">
-                        <TripsTable selectedTab={selectedTab} trips={fetchedTrips} />
+                        <TripsTable selectedTab={selectedTab} trips={fetchedTrips} filteredTrips={filteredTrips}/>
 
                             </div>
                         </Tab.Panel>
                         <Tab.Panel>
                         <div  className="max-h-[500px] overflow-y-auto">
-                        <TripsTable selectedTab={selectedTab} trips={fetchedTrips} />
+                        <TripsTable selectedTab={selectedTab} trips={fetchedTrips} filteredTrips={filteredTrips} />
                             </div>
             
                         </Tab.Panel>
@@ -431,12 +437,14 @@ export default function TripsComponent() {
 
 interface TripsTableProps {
     selectedTab: number;  
-    trips: DocumentData[];
+    trips: DocumentData[]; 
+    filteredTrips: DocumentData[];
+
 
 }
 
 
-export function TripsTable({ selectedTab,trips }: TripsTableProps) { 
+export function TripsTable({ selectedTab,trips,filteredTrips }: TripsTableProps) { 
     const calculateHourDifference = (startTime: number, endTime: number) => {
         // Calculate the difference in milliseconds
         const differenceInMilliseconds = endTime - startTime;
@@ -449,7 +457,7 @@ export function TripsTable({ selectedTab,trips }: TripsTableProps) {
       const currentDate = new Date();
 
       
-      const filteredAllocation = trips.filter((trip: any) => {  
+      const filteredAllocation = filteredTrips.filter((trip: any) => {  
         const maintenanceDate = new Date(trip.start_time.seconds * 1000);
       
         if (selectedTab === 0) {

@@ -27,11 +27,22 @@ export default function ClientsComponent() {
     const [fetchedClients, setfetchedClients]=useState<DocumentData[]>([]);  
 
  
-    const handleSearchChange = (e:any) => {
+
+      const handleSearchChange = (e:any) => {
         const query = e.target.value;
         console.log("Search Query:", query);
         setSearchQuery(query);
-      };  
+      };   
+      const filteredClients = fetchedClients.filter((client) => {
+        const fullName = `${client.name}`.toLowerCase();
+        const nameMatch = fullName.includes(searchQuery.toLowerCase());
+          return nameMatch;
+      });
+    //   const filteredDrivers = drivers.filter((drivers) => { 
+
+    //     const fullName = `${drivers.name}`.toLowerCase();
+    //     return fullName.includes(searchQuery.toLowerCase());
+    //   });   
     const handleClick = () => {
     }
     const handleSearch = () => {
@@ -63,7 +74,6 @@ export default function ClientsComponent() {
         };
         fetchedClients();
     }, []);  
-    const handleSubmit = () => {}; 
     const handleAddClient = async (values: { name: any;}) => { 
         setOpen(true)
         console.log("Submitted Values:", values);  
@@ -92,7 +102,8 @@ export default function ClientsComponent() {
         } catch (error) {
             console.error('Error adding Client:', error);
         } 
-    } 
+    }  
+
     return (
         <SiteLayout>
             <div>
@@ -152,7 +163,7 @@ export default function ClientsComponent() {
                         )
                     })}
                 </div>
-                <ClientsTable clients={fetchedClients}/> 
+                <ClientsTable clients={fetchedClients} filteredClients={filteredClients}/> 
 
                 <FormModal open={open} setOpen={setOpen}>
                 <div className='p-8'>
@@ -212,12 +223,21 @@ export default function ClientsComponent() {
 
 
 interface ClientsTableProps {
-    clients: DocumentData[];
+    clients: DocumentData[]; 
+    filteredClients: DocumentData[];
+
 
 }
 
 
-export function ClientsTable({ clients }: ClientsTableProps) { 
+export function ClientsTable({ clients,filteredClients }: ClientsTableProps) {  
+    // const [searchQuery, setSearchQuery] = useState("");  
+    // const handleSearchChange = (e:any) => {
+    //     const query = e.target.value;
+    //     console.log("Search Query:", query);
+    //     setSearchQuery(query);
+    //   }
+
     return (
         <div className="px-4 sm:px-6 lg:px-8">
             <div className="mt-8 flow-root">
@@ -254,7 +274,7 @@ export function ClientsTable({ clients }: ClientsTableProps) {
                             </tr>
                             </thead>
                             <tbody  className="divide-y divide-gray-200  bg-[#FAFAFB]">
-                            {clients.map((client) => (
+                            {filteredClients.map((client) => (
                                 <tr key={client.id}  className='my-2 border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>
                                     <td className="whitespace-nowrap pl-4 pr-3 py-4 text-d-blue sm:pl-0">{client.id}</td>
                                     <td className="whitespace-nowrap px-2 py-2  font-medium ">
