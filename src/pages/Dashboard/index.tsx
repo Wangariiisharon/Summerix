@@ -1,6 +1,6 @@
 import Card from "@/components/Cards/Card";
 import SiteLayout from "@/Layout/SiteLayout";
-import {SmallCard} from "@/components/Cards/SmallCard";
+import {Cards} from "@/components/Cards/SmallCard";
 import VehicleOverview from "@/pages/Dashboard/VehicleOverview";
 import FuelCostOverView from "@/pages/Dashboard/FuelCostOverView";
 import TripsPieGraph from "@/pages/Dashboard/TripsPieGraph";
@@ -23,20 +23,26 @@ const cards = [
 export default function DashboardComponent() {
     return (
         <SiteLayout>
-            <div  className="max-h-[700px] overflow-y-auto">
-                <Header heading="Dashboard"/>
-                <div className='mt-8 flex justify-around'>
+            <div  className="max-h-full	 overflow-y-auto">
+                <p className="text-lg font-nunito font-bold mt-2 ml-5">Dashboard</p>
+
+                <div className='mt-8 flex justify-between '> 
                     {cards.map((card, index) => {
                         return (
                             <Fragment key={index}>
-                                <SmallCard name={card.name} icon={card.icon} amount={card.amount}/>
+                                <Cards name={card.name} icon={card.icon} amount={card.amount}/> 
+                                {/* <div> 
+                                    {card.name} 
+                                    {card.icon}
+                                    {card.amount}
+                                </div> */}
                             </Fragment>
                         )
                     })}
                 </div>
-                <div className='w-full flex'>
-                    <VehicleOverview/>
-                    <FuelCostOverView/>
+                <div className='w-full flex justify-between'>
+                    <VehicleOverview/> 
+                    <FuelCostOverView/>  
                 </div>
                 <div className='flex w-full justify-between mt-8 '>
                     <TripsPieGraph/>

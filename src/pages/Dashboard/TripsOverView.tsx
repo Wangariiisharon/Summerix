@@ -26,7 +26,7 @@ const trips = [
 export default function TripsOverView(){
     return(
         <>
-        <div className='rounded-lg bg-white shadow lg:min-w-[28rem]'>
+        <div className='rounded-lg bg-white shadowlg:min-w-[20] h-full max-h-[30]'>
             <div className="px-4 pt-8 sm:px-6   ">
                 <h2 id="applicant-information-title" className="text-xl font-bold leading-6">
                     Trips
@@ -48,7 +48,7 @@ export default function TripsOverView(){
                                 <tbody className="divide-y divide-gray-100 bg-white font-bold ">
                                 {trips.map((trip, index) => (
                                     <tr key={index}>
-                                        <td className="whitespace-nowrap py-4 pl-4 pr-3 sm:pl-0">
+                                        <td className="whitespace-nowrap  pl-4 pr-3 sm:pl-0">
                                             <div className="flex items-center">
                                                 <div className="h-10 w-10 flex-shrink-0 flex items-center">
                                                     <SignalIcon className='h-6 w-6 text-d-blue'/>
@@ -58,7 +58,7 @@ export default function TripsOverView(){
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="whitespace-nowrap px-3 py-4 ">
+                                        <td className="whitespace-nowrap px-3  ">
                                             <div className="text-gray-900">{trip.title}</div>
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
