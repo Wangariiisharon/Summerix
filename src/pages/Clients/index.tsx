@@ -147,7 +147,7 @@ export default function ClientsComponent() {
                                 handleClick={handleAddClient}>
                             <>
                                 <PlusIcon className='h-6 w-6 mr-2'/>
-                                Add Trip
+                                Add Client
                             </>
                         </Button> 
                         {/* <div className='ml-2'>

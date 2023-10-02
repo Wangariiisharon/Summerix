@@ -41,12 +41,12 @@ const people = [
 export default function ClientsOverView() {
     return (
         <>
-            <div className=" grid max-w-3xl lg:max-w-7xl w-[32rem]">
+            <div className=" grid lg:min-w-[28] h-full max-h-[30]">
                 <div className="space-y-6 ">
                     <section aria-labelledby="applicant-information-title">
                         <div className="bg-white shadow sm:rounded-lg">
                             <div
-                                className="px-4 pt-8 pb-2 sm:px-6 flex w-full items-center justify-between border-b border-gray-200 ">
+                                className="px-4 py-2 sm:px-6 flex w-full items-center justify-between border-b border-gray-200 ">
                                 <h2 id="applicant-information-title" className="text-xl font-bold leading-6">
                                     Clients
                                 </h2>
@@ -56,7 +56,7 @@ export default function ClientsOverView() {
                             </div>
                             <div className="px-4 pt-4 sm:px-6">
                                 <div className='text-base text-gray-500'>Profit</div>
-                                <div className='text-2xl font-extrabold'>524K</div>
+                                <div className='text-lg font-extrabold'>524K</div>
                             </div>
 
                             <div className=" px-4 py-1 sm:px-6">
@@ -83,8 +83,8 @@ export default function ClientsOverView() {
                                                 </thead>
                                                 <tbody className="divide-y divide-gray-100 bg-white">
                                                 {people.map((person, index) => (
-                                                    <tr key={index} className="font-bold">
-                                                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-0 ">
+                                                    <tr key={index} className="font-bold py-2">
+                                                        <td className="whitespace-nowrap pl-4 pr-3 text-sm sm:pl-0 ">
                                                             <div className="flex items-center">
                                                                 <div className="h-10 w-10 flex-shrink-0">
                                                                     <img className="h-10 w-10 rounded-full"
@@ -95,12 +95,12 @@ export default function ClientsOverView() {
                                                                 </div>
                                                             </div>
                                                         </td>
-                                                        <td className="whitespace-nowrap px-3 py-4 text-sm ">
+                                                        <td className="whitespace-nowrap px-3  text-sm ">
                                                             <div className="">{person.title}</div>
                                                         </td>
-                                                        <td className="whitespace-nowrap px-3 py-4 text-sm ">{person.role}</td>
+                                                        <td className="whitespace-nowrap px-3  text-sm ">{person.role}</td>
 
-                                                        <td className="whitespace-nowrap px-3 py-4 text-sm">
+                                                        <td className="whitespace-nowrap px-3 text-sm">
                                                               <span className="inline-flex bg-pill-blue px-2
                                                                text-xs font-semibold leading-5 text-t-blue rounded cursor-pointer">
                                                                 View

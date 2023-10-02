@@ -60,6 +60,35 @@ export function SmallCard({ name, icon, amount}:Props) {
 
      </>
     )
+} 
+
+interface Props {
+    name: string
+    icon: string
+    amount: string
+} 
+
+export function Cards({ name, icon, amount}:Props) { 
+    return(
+     <>
+     <div className="overflow-hidden rounded-lg bg-white shadow">  
+                   <div className="flex">
+                        <div className="flex rounded-full h-10  w-10">
+                             <CardIcon src={icon} alt={name}/> 
+                         </div>
+                             <dl>
+                                 <dt className="truncate font-extrabold ">{amount}</dt>
+                                 <dd>
+                                     <div className="text-sm font-medium text-f-black">{name}</div>
+                                 </dd>
+                             </dl>
+             </div>
+
+
+        </div> 
+
+     </>
+    )
 }
 
 

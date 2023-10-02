@@ -2,6 +2,7 @@ import {Doughnut} from "react-chartjs-2";
 import {ThisWeek} from "@/pages/Dashboard/index";
 import {Chart as ChartJS, ArcElement, Tooltip, ScriptableContext} from 'chart.js';
 import {AnyObject} from "chart.js/dist/types/basic";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
 
 ChartJS.register(ArcElement, Tooltip);
 
@@ -25,11 +26,11 @@ const data: dataset = {
             backgroundColor: ['#20C997', '#F7F8FA'],
             data: [33, 67],
             borderJoinStyle: 'round',
-            borderWidth: 0,
-            borderRadius: 10,
+            borderWidth: 20,
+            borderRadius: 100,
             borderAlign: "inner",
-            spacing: 10,
-            radius: 106,
+            spacing: 15,
+            radius: 50,
         },
 
     ],
@@ -42,18 +43,21 @@ export default function TripsPieGraph() {
     // @ts-ignore
     return (
         <>
-            <div className='rounded-lg bg-white shadow lg:min-w-[28rem] h-full max-h-[34rem]'>
-                <div className="px-4 py-8 sm:px-6 flex w-full items-center justify-between">
+            <div className='rounded-lg bg-white shadow lg:min-w-[20] h-full max-h-[30]'>
+            <div className="sm:px-6 flex w-full items-center justify-between">
                     <h2 id="applicant-information-title" className="text-xl font-bold leading-6">
                         Trips Completed
-                    </h2>
-                    <ThisWeek/>
+                    </h2> 
+                    <div className='text-sm flex items-center'>
+                                    This Week
+                                    <ChevronDownIcon className='ml-2 h-4 w-4'/>
+                                </div>
                 </div>
-                <div className=" px-4 py-5 sm:px-6 flex flex-col items-center justify-center relative h-[24rem]">
+                <div className="flex flex-col items-center justify-center relative">
                     <div className='font-extrabold text-3xl absolute pl-4'>
                         20%
                     </div>
-                    <Doughnut id='pp' data={data} options={options} updateMode="default" className='!bg-white '/>
+                    <Doughnut id='pp' data={data} options={options}  className='!bg-white '/>
                     <div className='w-56 text-center text-lg absolute bottom-2'>
                         Number of trips Completed this Month
                     </div>

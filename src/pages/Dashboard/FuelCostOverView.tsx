@@ -15,7 +15,7 @@ ChartJS.register(
     Tooltip,
 );
 
-export  const options = {
+export const options = {
     responsive: true,
     plugins: {
         legend: {
@@ -45,17 +45,19 @@ const data = {
             '#165DFF',
         ],
 
-        borderWidth: 0
+        borderWidth: 0, 
+        barThickness: 25,
+        maxBarThickness: 25,
     }]
 };
 export default function FuelCostOverView(){
     return(
         <>
-            <div className="w-1/2 mt-8 grid max-w-3xl lg:max-w-7xl mr-4">
+            <div className="w-1/2 mt-8 grid max-w-3xl lg:max-w-7xl">
                 <div className="space-y-6 ">
                     <section aria-labelledby="applicant-information-title">
                         <div className="bg-white shadow sm:rounded-lg">
-                            <div className="px-4 py-5 sm:px-6 flex w-full items-center justify-between">
+                            <div className="px-4 py-4 sm:px-6 flex w-full items-center justify-between">
                                 <h2 id="applicant-information-title" className="text-lg font-bold leading-6">
                                      Fuel Cost
                                 </h2>
@@ -64,7 +66,7 @@ export default function FuelCostOverView(){
                                     <ChevronDownIcon className='ml-2 h-4 w-4'/>
                                 </div>
                             </div>
-                            <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
+                            <div className="border-t border-gray-200   px-4 sm:px-6 items-center">
                                 <div className='my-6 flex'>
                                     <div>
                                         <div className='text-sm'>Average Fuel Consumption</div>
@@ -77,8 +79,10 @@ export default function FuelCostOverView(){
                                         <div className='text-xl font-extrabold'>524K</div>
                                     </div>
 
+                                </div>  
+                                <div className='py-2'>
+                                <Bar options={options} data={data} height={170} width={400} />
                                 </div>
-                                <Bar options={options} data={data} />
                             </div>
                         </div>
                     </section>

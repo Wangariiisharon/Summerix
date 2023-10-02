@@ -186,7 +186,7 @@ export default function TripsComponent() {
                   className='w-full'
                 /> 
                 </div>
-                    <div className='flex fixed right-0'>
+                    <div className='flex fixed right-4'>
                         <Button className='bg-d-green text-white text-sm flex w-[140px] h-[38px] items-center justify-center uppercase rounded'
                                 handleClick={handleAddTrip}>
                             <>

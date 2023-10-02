@@ -23,7 +23,9 @@ export default function Departments(){
     const handleAdd = () => { 
         setOpen(true)
     }  
-    const handleReset = () => {
+    const handleReset = () => { 
+        setOpen(false)
+
 
     }
     const handleSubmit = async (values: { name: any; members: any;}) => { 
