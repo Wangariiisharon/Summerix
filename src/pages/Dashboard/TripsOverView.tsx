@@ -26,7 +26,7 @@ const trips = [
 export default function TripsOverView(){
     return(
         <>
-        <div className='rounded-lg bg-white shadowlg:min-w-[20] h-full max-h-[30]'>
+        <div className='rounded-lg bg-white shadowlg:min-w-[20] h-full max-h-[24]'>
             <div className="px-4 pt-8 sm:px-6   ">
                 <h2 id="applicant-information-title" className="text-xl font-bold leading-6">
                     Trips

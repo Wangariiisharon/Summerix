@@ -46,7 +46,7 @@ export default function DashboardComponent() {
                 </div>
                 <div className='flex w-full justify-between mt-8 '>
                     <TripsPieGraph/>
-                    <TripsOverView/>
+                    {/* <TripsOverView/> */}
                     <ClientsOverView/>
                 </div>
                 <div className='flex w-full mt-8'>

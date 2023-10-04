@@ -78,9 +78,9 @@ export default function Vehicles(){
     const handleReset = () => {
         setOpen(false)
     }
-    const handleSubmit = async (values: { name: any; make_and_model: any; cargo_capacity: any; lisence_plate: any;vehicle_type: any; color: any;supplier: any;availability_status:any;fuel_budget:any}) => {
+    const handleSubmit = async (values: { cargo_capacity: any; lisence_plate: any;vehicle_type: any; color: any;availability_status:any}) => {
         console.log("Submitted Values:", values); 
-        console.log("Supplier:", values.supplier);
+        // console.log("Supplier:", values.supplier);
     
         try {
             if (!values) {
@@ -88,7 +88,7 @@ export default function Vehicles(){
                 return;
             }
     
-            if (!values.name || !values.make_and_model || !values.cargo_capacity || !values.lisence_plate||!values.vehicle_type||!values.color||!values.supplier||!values.availability_status||!values.fuel_budget) {
+            if ( !values.cargo_capacity || !values.lisence_plate||!values.vehicle_type||!values.color||!values.availability_status) {
                 console.error('Required form fields are missing');
                 return;
             } 
@@ -96,18 +96,18 @@ export default function Vehicles(){
 
     
             const VehicleData = {
-                name: values.name,
-                make_and_model: values.make_and_model,
+                // name: values.name,
+                // make_and_model: values.make_and_model,
                 cargo_capacity: values.cargo_capacity,
                 lisence_plate: values.lisence_plate,
                 vehicle_type:values.vehicle_type,
                 color:values.color,
                 status:true, 
                 archive:false , 
-                supplier:values.supplier,  
+                // supplier:values.supplier,  
                 registration_date:registration_date,   
                 availability_status:values.availability_status,
-                fuel_budget:values.fuel_budget
+                // fuel_budget:values.fuel_budget
 
 
             };
@@ -296,15 +296,15 @@ export default function Vehicles(){
                     </div>
                     <Formik
                     initialValues={{
-                        name: "",
-                        make_and_model: "",
+                        // name: "",
+                        // make_and_model: "",
                         cargo_capacity: "",
                         lisence_plate: "",
                         vehicle_type: "",
                         color: "", 
                         supplier: "",  
                         availability_status:"", 
-                        fuel_budget:0
+                        // fuel_budget:0
 
 
                                       }}
@@ -318,7 +318,7 @@ export default function Vehicles(){
                     <Form>
                         <div className=''>
                             <div className='flex w-full justify-between'>
-                            <label className="block">
+                            {/* <label className="block">
                              <label className="form-label">NAME</label>
                              <Field
                               type="text"
@@ -326,8 +326,8 @@ export default function Vehicles(){
                               value={values.name}
                               className="form-input bg-grey w-48"
                             />
-                             </label>
-                             <label className="block">
+                             </label> */}
+                             {/* <label className="block">
                              <label className="form-label">MAKE AND MODEL</label>
                               <Field
                               type="text"
@@ -335,7 +335,7 @@ export default function Vehicles(){
                               value={values.make_and_model}
                               className="form-input bg-grey w-48"
                               />
-                            </label>                           
+                            </label>                            */}
                              </div>
                             <div className='flex w-full justify-between mt-8'>
                             <label className="block">
@@ -379,7 +379,7 @@ export default function Vehicles(){
                             </div> 
                             <div className='flex w-full justify-between mt-8'>
                   
-                             <label className="block">
+                             {/* <label className="block">
                              <label className="form-label">SUPPLIER</label>
                 
                                       <Field as="select" name="supplier"                               
@@ -394,7 +394,7 @@ export default function Vehicles(){
 
                                      </Field>
 
-                            </label>   
+                            </label>    */}
                             <label className="block">
                              <label className="form-label">AVAILABILITY STATUS</label>
                 
@@ -410,7 +410,7 @@ export default function Vehicles(){
                             </label>                         
                              </div> 
                              <div className='flex w-full justify-between mt-8'>
-                            <label className="block">
+                            {/* <label className="block">
                             <label className="form-label">Fuel Budget</label>
                             <Field
                              type="text"
@@ -418,7 +418,7 @@ export default function Vehicles(){
                              value={values.fuel_budget}
                              className="form-input bg-grey w-48"
                             />
-                             </label>                                                          
+                             </label>                                                           */}
                             </div> 
                             <div className='flex w-full justify-end mt-24 '>
                                 <Button className='text-blue text-xl mr-32' handleClick={handleReset}>Reset</Button>
