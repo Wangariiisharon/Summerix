@@ -25,7 +25,7 @@ import { deleteDoc, doc } from 'firebase/firestore';
 
 
 
-const Headers = ["DRIVER ID", "DRIVER", "MOBILE", "VEHICLE TYPE","TRIPS "]
+const Headers = ["DRIVER ID", "DRIVER", "MOBILE", "VEHICLE TYPE"]
 
 export default function Drivers(){
     const [open,setOpen]=useState(false) 
@@ -38,14 +38,12 @@ export default function Drivers(){
         name: "",
         phonenumber: "",
         email_adress: "",
-        gender: "",
         country: "",
         city: "",
         vehicle_type: "",
         model: "",
         year: "",
         number: "", 
-        completedTrips:0 
       });
     const router=useRouter()
 
@@ -62,7 +60,8 @@ export default function Drivers(){
       }; 
    
 
-    const handleSubmit = async (values: { name: any; phonenumber: any; email_adress: any; gender: any;country: any; city: any;vehicle_type: any;model: any;year: any;number: any;completedTrips: any;profile: any; }) => { 
+    const handleSubmit = async (values: { name: any; phonenumber: any; email_adress: any;country: any; city: any;vehicle_type: any;model: any;year: any;number: any;profile: any;id: any; good_conduct: File | null,        
+    }) => { 
             console.log("Submitted Values:", values);
         
             try {
@@ -72,7 +71,7 @@ export default function Drivers(){
                     return;
                 }
         
-                if (!values.name || !values.phonenumber || !values.email_adress || !values.gender||!values.country||!values.city||!values.vehicle_type||!values.model||!values.year||!values.number||!values.completedTrips) {
+                if (!values.name || !values.phonenumber || !values.email_adress || !values.country||!values.city||!values.vehicle_type||!values.model||!values.year||!values.number) {
                     console.error('Required form fields are missing');
                     console.log("Submitted Values:", values);
 
@@ -80,7 +79,18 @@ export default function Drivers(){
                     return;
                 } 
                 
-                let profileImageUrl = '';
+                let idImageUrl = ''; 
+                if (values.id) {
+                    const storage = getStorage(firebaseApp);
+                    const storageRef = ref(storage, `id_images/${values.id.name}`);
+                    
+                    await uploadBytes(storageRef, values.id);
+                    idImageUrl = await getDownloadURL(storageRef);
+                    console.log('ID Image URL:', idImageUrl);
+
+                }  
+
+                let profileImageUrl = ''; 
                 if (values.profile) {
                     const storage = getStorage(firebaseApp);
                     const storageRef = ref(storage, `profile_images/${values.profile.name}`);
@@ -89,23 +99,34 @@ export default function Drivers(){
                     profileImageUrl = await getDownloadURL(storageRef);
                     console.log('Profile Image URL:', profileImageUrl);
 
+                } 
+                let pdfFileUrl = '';
+                if (values.good_conduct) { 
+                    const storage = getStorage(firebaseApp);
+                    const pdfStorageRef = ref(storage, `good_conduct/${values.good_conduct.name}`);
+                    await uploadBytes(pdfStorageRef, values.good_conduct);
+                    pdfFileUrl = await getDownloadURL(pdfStorageRef);
+                    console.log('Good Conduct File URL:', pdfFileUrl);
                 }
+            
          
 
                 const DriversData = {
                     name: values.name,
                     phonenumber: values.phonenumber,
                     email_adress: values.email_adress,
-                    gender: values.gender,
                     country:values.country,
                     city:values.city,
                     vehicle_type:values.vehicle_type,
                     model:values.model,
                     year:values.year,
                     number:values.number,
-                    profile:profileImageUrl, 
-                    completedTrips:values.completedTrips, 
-                    archive:false,
+                    profile:profileImageUrl,  
+                    id:idImageUrl,  
+                    archive:false, 
+                    good_conduct:pdfFileUrl
+                    // completedTrips:values.completedTrips, 
+
 
 
                 };
@@ -147,14 +168,12 @@ export default function Drivers(){
             name: driver.name,
             phonenumber: driver.phonenumber,
             email_adress: driver.email_adress,
-            gender: driver.gender,
             country:driver.country,
             city:driver.city,
             vehicle_type:driver.vehicle_type,
             model:driver.model,
             year:driver.year,
             number:driver.number,  
-            completedTrips: driver.completedTrips 
 
         });
         setEditModalOpen(true);
@@ -171,14 +190,14 @@ export default function Drivers(){
         name: any,
         phonenumber: any,
         email_adress: any,
-        gender: any,
+        // gender: any,
         country:any,
         city:any,
         vehicle_type:any,
         model:any,
         year:any,
         number:any, 
-        completedTrips:any
+        // completedTrips:any
       }) => { 
         if (!selectedDriver) {
             console.error("No selected vehicle to update");
@@ -197,17 +216,13 @@ export default function Drivers(){
             !values.name ||
             !values.phonenumber ||
             !values.email_adress ||
-            !values.gender ||
             !values.vehicle_type ||
             !values.country||
             !values.city||
             !values.model||
             !values.year||
-            !values.number|| 
-            !values.completedTrips
-
-
-
+            !values.number
+            // !values.completedTrips
           )  {
             console.error("Required form fields are missing");
             return;
@@ -221,14 +236,13 @@ export default function Drivers(){
             name: values.name,
             phonenumber: values.phonenumber,
             email_adress: values.email_adress,
-            gender: values.gender,
             country:values.country,
             city:values.city,
             vehicle_type:values.vehicle_type,
             model:values.model,
             year:values.year,
             number:values.number,
-            completedTrips:values.completedTrips,
+            // completedTrips:values.completedTrips,
 
           });
       
@@ -240,14 +254,13 @@ export default function Drivers(){
                   name: values.name,
                   phonenumber: values.phonenumber,
                   email_adress: values.email_adress,
-                  gender: values.gender,
                   country:values.country,
                   city:values.city,
                   vehicle_type:values.vehicle_type,
                   model:values.model,
                   year:values.year,
                   number:values.number, 
-                  completedTrips:values.completedTrips,
+                //   completedTrips:values.completedTrips,
 
                 }
               : driver
@@ -295,7 +308,7 @@ export default function Drivers(){
                 <div className='p-5'>
                     <div className='flex w-full h-full justify-between items-center mb-12'>
                         <div className='text-xl font-semibold '>
-                            New Truck
+                            New Driver
                         </div>
                         <Button className='bg-red-50 h-12 w-12 flex items-center justify-center rounded-full' handleClick={handleReset}>
                             <XMarkIcon className='h-6 w-6 text-red-400'/>
@@ -313,9 +326,9 @@ export default function Drivers(){
                         model: "",
                         year: "",
                         number: "", 
-                        completedTrips:0,
-                        profile: null 
-
+                        profile: null, 
+                        id: null ,
+                        good_conduct: null, 
 
                                       }}
                         // onSubmit={(values) => handleSubmit(values)}   
@@ -357,38 +370,29 @@ export default function Drivers(){
                              value={values.email_adress}
                              className="form-input bg-grey w-48"
                             />
-                             </label>                                
+                             </label>  
                              <label className="block">
-                             <label className="form-label">GENDER</label>
-                             <Field
-                             type="text"
-                             name="gender"
-                             value={values.gender}
-                             className="form-input bg-grey w-48"
-                            />
-                            </label>                            
-                            </div>
-                            <div className='flex w-full justify-between mt-8'>
-                            <label className="block">
-                            <label className="form-label">COUNTRY</label>
+                            <label className="form-label">NATIONALITY</label>
                             <Field
                              type="text"
                              name="country"
                              value={values.country}
                              className="form-input bg-grey w-48"
                             />
-                             </label>                                
+                             </label>                                  
+
+                            </div>
+                            <div className='flex w-full justify-between mt-8'>
+                             
                              <label className="block">
-                             <label className="form-label">CITY</label>
+                             <label className="form-label">ADDRESS</label>
                              <Field
                              type="text"
                              name="city"
                              value={values.city}
                              className="form-input bg-grey w-48"
                             />
-                            </label>                            
-                            </div> 
-                            <div className='flex w-full justify-between mt-8'>
+                            </label>   
                             <label className="block">
                             <label className="form-label">VEHICLE TYPE</label>
                             <Field
@@ -397,7 +401,10 @@ export default function Drivers(){
                              value={values.vehicle_type}
                              className="form-input bg-grey w-48"
                             />
-                             </label>                                
+                             </label>                             
+                            </div> 
+                            <div className='flex w-full justify-between mt-8'>
+                             
                              <label className="block">
                              <label className="form-label">MODEL</label>
                              <Field
@@ -406,9 +413,7 @@ export default function Drivers(){
                              value={values.model}
                              className="form-input bg-grey w-48"
                             />
-                            </label>                            
-                            </div>
-                            <div className='flex w-full justify-between mt-8'>
+                            </label>  
                             <label className="block">
                             <label className="form-label">YEAR</label>
                             <Field
@@ -417,7 +422,10 @@ export default function Drivers(){
                              value={values.year}
                              className="form-input bg-grey w-48"
                             />
-                             </label>                                
+                             </label>                             
+                            </div>
+                            <div className='flex w-full justify-between mt-8'>
+                              
                              <label className="block">
                              <label className="form-label">NUMBER</label>
                              <Field
@@ -426,30 +434,53 @@ export default function Drivers(){
                              value={values.number}
                              className="form-input bg-grey w-48"
                             />
-                            </label>                            
-                            </div>
-                            <div className='flex w-full justify-between mt-8'>
-                            <label className="block">
-                             <label className="form-label">PROFILE</label>
-                             <Field name="profile">
+                            </label>  
+                             
+                          <label className="block">
+                             <label className="form-label">ID</label>
+                             <Field name="id">
                             {({ field, form }:any) => (
                             <ImageInput
                             selectedImage={field.value}
-                            onSelectImage={(file) => form.setFieldValue('profile', file)}
+                            onSelectImage={(file) => form.setFieldValue('id', file)}
                                />
                             )}
                            </Field>
-
-                          </label> 
+                          </label>  
+                            
+                            </div>
+                            <div className='flex w-full justify-between mt-8'>
+ 
                           <label className="block">
-                             <label className="form-label">COMPLETED TRIPS</label>
-                             <Field
-                             type="number"
-                             name="completedTrips"
-                             value={values.completedTrips}
-                             className="form-input bg-grey w-48"
-                            />
-                            </label>  
+                             <label className="form-label">PROFILE</label>
+                             <Field name="profile" >
+                            {({ field, form }:any) => (
+                            <ImageInput
+                            selectedImage={field.value}
+                            onSelectImage={(file) => form.setFieldValue('profile', file)} 
+                               />
+                            )}
+
+                           </Field>
+
+                          </label>   
+                          <label className="block">
+                          <label className="form-label">GOOD CONDUCT</label>
+                          <Field name="good_conduct">
+                             {({ field, form }: any) => (
+                             <input
+                            type="file"
+                            accept=".pdf"
+                           onChange={(event) => {
+                           const file = event.currentTarget?.files?.[0];
+                            if (file) {
+                          form.setFieldValue('good_conduct', file);
+                          }
+                         }}
+                        />
+                        )}
+                    </Field>
+                    </label>
                             </div>
                             <div className='flex w-full justify-end mt-24 '>
                                 <Button className='text-blue text-xl mr-32' handleClick={handleReset}>Reset</Button>
@@ -519,7 +550,7 @@ export default function Drivers(){
                                            className="form-input bg-grey w-48"
                                           />
                                            </label>                                
-                                           <label className="block">
+                                           {/* <label className="block">
                                            <label className="form-label">GENDER</label>
                                            <Field
                                            type="text"
@@ -527,7 +558,7 @@ export default function Drivers(){
                                            value={values.gender}
                                            className="form-input bg-grey w-48"
                                           />
-                                          </label>                            
+                                          </label>                             */}
                                           </div>
                                           <div className='flex w-full justify-between mt-8'>
                                           <label className="block">
@@ -738,7 +769,6 @@ const updateDriverStatusInDatabase = async (driverId: string, newStatus: boolean
                                         </BodyCell>
                                         <BodyCell>{drivers.phonenumber}</BodyCell>
                                         <BodyCell>{drivers.vehicle_type}</BodyCell>
-                                        <BodyCell>{drivers.completedTrips}</BodyCell>
                                         <td className="relative whitespace-nowrap pt-6 pl-3 pr-4 text-right text-sm font-medium sm:pr-0 flex justify-around"> 
                                         <div  onClick={()=>handleEditClick(drivers)}>
                                             <EditBtn/>

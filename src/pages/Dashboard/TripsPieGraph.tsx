@@ -43,7 +43,7 @@ export default function TripsPieGraph() {
     // @ts-ignore
     return (
         <>
-            <div className='rounded-lg bg-white shadow lg:min-w-[20] h-full max-h-[30]'>
+            <div className='rounded-lg bg-white shadow lg:min-w-[20] h-full max-h-[24]'>
             <div className="sm:px-6 flex w-full items-center justify-between">
                     <h2 id="applicant-information-title" className="text-xl font-bold leading-6">
                         Trips Completed
