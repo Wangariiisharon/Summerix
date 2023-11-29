@@ -103,11 +103,10 @@ export default function ClientsComponent() {
             console.error('Error adding Client:', error);
         } 
     }  
-
     return (
         <SiteLayout>
             <div>
-                <div className='flex items-center justify-between'>
+                {/* <div className='flex items-center justify-between'>
                 <p className="text-lg font-nunito font-bold mt-2 ml-5">Clients</p>
                     <div className='flex mt-2'>
                         <Button className='bg-white w-25 h-30 px-3 text-sm uppercase flex items-center rounded font-semibold'
@@ -150,9 +149,6 @@ export default function ClientsComponent() {
                                 Add Client
                             </>
                         </Button> 
-                        {/* <div className='ml-2'>
-                            <AddButton name='Add Trip' handleAddClick={handleAddTrip}/>
-                            </div> */}
                     </div>
                 </div>
 
@@ -185,7 +181,6 @@ export default function ClientsComponent() {
                                       }}
                         onSubmit={(values) => handleAddClient(values)}  
   
-                        // onSubmit={(values) => handleEditSubmit(values)}
 
 
                         >
@@ -206,7 +201,6 @@ export default function ClientsComponent() {
         
                             <div className='flex w-full justify-end mt-24 '>
                                 <Button className='text-blue text-xl mr-32' handleClick={handleJobCardReset}>Reset</Button>
-                                {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
                                 <button type='submit' >Save</button>
                             </div>
 
@@ -215,7 +209,7 @@ export default function ClientsComponent() {
                      )}
                     </Formik>
                 </div>
-            </FormModal> 
+            </FormModal>  */}
             </div>
             </SiteLayout>   
             
@@ -240,67 +234,68 @@ export function ClientsTable({ clients,filteredClients }: ClientsTableProps) {
     //     setSearchQuery(query);
     //   }
 
-    return (
-        <div className="px-4 sm:px-6 lg:px-8">
-            <div className="mt-8 flow-root">
-                <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                    <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                        <table className="min-w-full divide-y divide-gray-300">
-                            <thead>
-                            <tr>
-                                <th
-                                    scope="col"
-                                    className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left  font-semibold  sm:pl-0"
-                                >
-                                    Client ID
-                                </th>
-                                <th
-                                    scope="col"
-                                    className="whitespace-nowrap px-2 py-3.5 text-left  font-semibold "
-                                >
-                                    Name
-                                </th>
-                                <th
-                                    scope="col"
-                                    className="whitespace-nowrap px-2 py-3.5 text-left  font-semibold "
-                                >
-                                    Expenses
-                                </th>
-                                <th
-                                    scope="col"
-                                    className="whitespace-nowrap px-2 py-3.5 text-left  font-semibold "
-                                >
-                                    Profit
-                                </th>
+    return ( 
+        <div></div>
+        // <div className="px-4 sm:px-6 lg:px-8">
+        //     <div className="mt-8 flow-root">
+        //         <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+        //             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+        //                 <table className="min-w-full divide-y divide-gray-300">
+        //                     <thead>
+        //                     <tr>
+        //                         <th
+        //                             scope="col"
+        //                             className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left  font-semibold  sm:pl-0"
+        //                         >
+        //                             Client ID
+        //                         </th>
+        //                         <th
+        //                             scope="col"
+        //                             className="whitespace-nowrap px-2 py-3.5 text-left  font-semibold "
+        //                         >
+        //                             Name
+        //                         </th>
+        //                         <th
+        //                             scope="col"
+        //                             className="whitespace-nowrap px-2 py-3.5 text-left  font-semibold "
+        //                         >
+        //                             Expenses
+        //                         </th>
+        //                         <th
+        //                             scope="col"
+        //                             className="whitespace-nowrap px-2 py-3.5 text-left  font-semibold "
+        //                         >
+        //                             Profit
+        //                         </th>
 
-                            </tr>
-                            </thead>
-                            <tbody  className="divide-y divide-gray-200  bg-[#FAFAFB]">
-                            {filteredClients.map((client,index) => { 
-                                     return( 
-                                        <Fragment key={index}>  
-                                    <div className="w-full mb-2 font-nunito font-regular"></div>
+        //                     </tr>
+        //                     </thead>
+        //                     <tbody  className="divide-y divide-gray-200  bg-[#FAFAFB]">
+        //                     {filteredClients.map((client,index) => { 
+        //                              return( 
+        //                                 <Fragment key={index}>  
+        //                             <div className="w-full mb-2 font-nunito font-regular"></div>
 
-                                <tr key={client.id}  className='my-2 border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mt-2 h-10 font-nunito font-regular'>
-                                    <td className="whitespace-nowrap pl-4 pr-3 py-4 text-d-blue sm:pl-0">{client.id}</td>
-                                    <td className="whitespace-nowrap px-2 py-2  font-medium ">
-                                        {client.name}
-                                    </td>
-                                    <td className="whitespace-nowrap px-2 py-2  ">Ksh.250000</td>
-                                    <td className="whitespace-nowrap px-2 py-2  ">Ksh.250000</td>
+        //                         <tr key={client.id}  className='my-2 border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mt-2 h-10 font-nunito font-regular'>
+        //                             <td className="whitespace-nowrap pl-4 pr-3 py-4 text-d-blue sm:pl-0">{client.id}</td>
+        //                             <td className="whitespace-nowrap px-2 py-2  font-medium ">
+        //                                 {client.name}
+        //                             </td>
+        //                             <td className="whitespace-nowrap px-2 py-2  ">Ksh.250000</td>
+        //                             <td className="whitespace-nowrap px-2 py-2  ">Ksh.250000</td>
 
 
-                                </tr> 
-                                </Fragment>
+        //                         </tr> 
+        //                         </Fragment>
 
-                            ) 
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+        //                     ) 
+        //                         })}
+        //                     </tbody>
+        //                 </table>
+        //             </div>
+        //         </div>
+        //     </div>
+        // </div>
  )
 }
 

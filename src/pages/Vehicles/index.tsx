@@ -9,14 +9,12 @@ import {Input, Submit} from "@/components/Forms/input";
 import SiteLayout from "@/Layout/SiteLayout";
 import {XMarkIcon} from "@heroicons/react/24/outline";
 import { Tab } from "@headlessui/react";
-// import { MaintananceTable } from "./maintanance";
-import { DocumentData, collection, getDocs } from "firebase/firestore";
+import { DocumentData, collection, query, where, getDocs } from "firebase/firestore";
 import { fbDb } from "@/firebase/configs"; 
 import { parseISO, format } from 'date-fns';
 import Maintenance from "./maintanance";
 import VehicleAllocation from "./vehicle_allocation";
-
-
+import { useRouter } from "next/router";
 
 
 const Headers = [
@@ -40,50 +38,68 @@ const Headers = [
         name: "Maintenance",
         active: false
     },
-    {
-        name: "Vehicle Allocation",
-        active: false
-    },
 ]
-
 
 export default function VehiclesComponent() {
     const [open, setOpen] = useState(false)
     const [selectedTab, setSelectedTab] = useState<number>(0); 
     const [fetchedVehicles, setFetchedVehicles] = useState<DocumentData[]>([]);  
-
-
-    const handleAddClick = () => {
-        setOpen(true)
-    }
-    const handleSubmit = () => {
-        //validate form
-        setOpen(false)
-        //submit form
-    }
-    const handleReset = () => {
-        setOpen(false)
-    } 
+    const [vehicleTrips, setVehicleTrips] = useState<Record<string, number>>({}); // To store the trip counts for each vehicle
+ 
     useEffect(() => {
-        const fetchedVehicles = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(fbDb, 'vehicles'));
-                const vehiclesData: DocumentData[] = [];
-                querySnapshot.forEach((doc) => {
-                    const vehicle = {
-                        id: doc.id,
-                        ...doc.data()
-                    };
-                    vehiclesData.push(vehicle);
-                });
-                setFetchedVehicles(vehiclesData);
-            } catch (error) {
-                console.error('Error fetching Vehicles:', error);
-            }
+        const fetchVehicles = async () => {
+          try {
+            const querySnapshot = await getDocs(collection(fbDb, 'vehicles'));
+            const vehiclesData: DocumentData[] = [];
+            querySnapshot.forEach((doc) => {
+              const vehicle = {
+                id: doc.id,
+                ...doc.data(),
+              };
+              vehiclesData.push(vehicle);
+            });
+            setFetchedVehicles(vehiclesData);
+          } catch (error) {
+            console.error('Error fetching Vehicles:', error);
+          }
         };
     
-        fetchedVehicles();
-    }, []);
+        const fetchTripsAndCount = async () => {
+            try {
+              const querySnapshot = await getDocs(collection(fbDb, 'trips'));
+          
+              const tripsData: DocumentData[] = [];
+              const updatedVehicleTrips: Record<string, number> = {};
+              const recentTrips: Record<string, DocumentData> = {};
+          
+              querySnapshot.forEach((doc) => {
+                const trip = doc.data();
+                const vehicle = trip.vehicle;
+          
+                // Initialize the trip count for each vehicle
+                if (!updatedVehicleTrips[vehicle]) {
+                  updatedVehicleTrips[vehicle] = 0;
+                }
+          
+                // Increment the trip count for the vehicle
+                updatedVehicleTrips[vehicle]++;
+          
+                // Check if the trip is the most recent for the vehicle
+                if (!recentTrips[vehicle] || trip.start_time > recentTrips[vehicle].start_time) {
+                  recentTrips[vehicle] = trip;
+                }
+              });
+          
+              setVehicleTrips(updatedVehicleTrips);
+              console.log('Most recent trips:', recentTrips);
+            } catch (error) {
+              console.error('Error fetching Trips:', error);
+            }
+          };
+    
+        fetchVehicles();
+        fetchTripsAndCount();
+      }, []);
 
 
 
@@ -117,47 +133,34 @@ export default function VehiclesComponent() {
                     <Tab.Panels>
                         <Tab.Panel>
                         <div  className="max-h-[500px] overflow-y-auto">
-                        <DummyTable selectedTab={selectedTab} vehicles={fetchedVehicles} />
-
+                        <DummyTable selectedTab={selectedTab} vehicles={fetchedVehicles} vehicleTrips={vehicleTrips} />
                             </div>
                         </Tab.Panel>
                         <Tab.Panel>
                         <div  className="max-h-[500px] overflow-y-auto">
-                        <DummyTable selectedTab={selectedTab} vehicles={fetchedVehicles} />
-
+                        <DummyTable selectedTab={selectedTab} vehicles={fetchedVehicles} vehicleTrips={vehicleTrips}/>
                             </div>
                         </Tab.Panel>
                         <Tab.Panel>
                         <div  className="max-h-[500px] overflow-y-auto">
-                        <DummyTable selectedTab={selectedTab} vehicles={fetchedVehicles} />
-
+                        <DummyTable selectedTab={selectedTab} vehicles={fetchedVehicles} vehicleTrips={vehicleTrips}/>
                             </div>
                         </Tab.Panel>
                         <Tab.Panel>
                         <div  className="max-h-[500px] overflow-y-auto">
-                        <DummyTable selectedTab={selectedTab} vehicles={fetchedVehicles} />
-
+                        <DummyTable selectedTab={selectedTab} vehicles={fetchedVehicles} vehicleTrips={vehicleTrips}/>
                             </div>
                         </Tab.Panel>
                         <Tab.Panel>
                         <div  className="max-h-[500px] overflow-y-auto">
                         <Maintenance />
-
                             </div>
                         </Tab.Panel>
-                        <Tab.Panel>
-                        <div  className="max-h-[500px] overflow-y-auto">
-                        <VehicleAllocation/>
-
-                            </div>
-                        </Tab.Panel>
-
                     </Tab.Panels>
                 </Tab.Group> 
                 </div> 
                 <div>
                 </div>
-            
             </div>
 
             </SiteLayout>   
@@ -169,22 +172,29 @@ export default function VehiclesComponent() {
 
 interface VehiclesTableProps {
     selectedTab: number;  
-    vehicles: DocumentData[];
+    vehicles: DocumentData[]; 
+    vehicleTrips: Record<string, number>;
 
 }
 
-export function DummyTable({ selectedTab,vehicles }: VehiclesTableProps) {
-        console.log("VehiclesTable Rendering with selectedTab:", selectedTab);
+export function DummyTable({ selectedTab,vehicles,vehicleTrips }: VehiclesTableProps) { 
+    console.log('Vehicle Trips:', vehicleTrips);
+
+        console.log("VehiclesTable Rendering with selectedTab:", selectedTab); 
+        const Headers = ["License Plate ", "Status", "Registration","Trips Completed"]
+
 
     const filteredVehicles = vehicles.filter(vehicles =>
         selectedTab === 0 ||
         (selectedTab === 1 && vehicles.availability_status === 'On Route') ||
         (selectedTab === 2 && vehicles.availability_status === 'Available') ||
-        (selectedTab === 3 && vehicles.availability_status === 'Out Of Service') ||
-        (selectedTab === 4 && vehicles ) ||
-        (selectedTab === 5 && vehicles )
-    );
-
+        (selectedTab === 3 && vehicles.availability_status === 'Out Of Service ') ||
+        (selectedTab === 4 && vehicles ) 
+    );  
+    const router=useRouter()
+    const handleVehicleClick = (vehicle: any) => {
+        router.push(`/Vehicles//vehiclesDetails?id=${vehicle.id}`);
+      };  
     console.log("Filtered Vehicles:", filteredVehicles); 
     return ( 
         <div className="bg-[#FAFAFB] h-400 w-100%">
@@ -197,85 +207,60 @@ export function DummyTable({ selectedTab,vehicles }: VehiclesTableProps) {
                                 <tr>
                                     <th
                                         scope="col"
-                                        className="whitespace-nowrap  p-2 text-center align-middle   text-left font-semibold sm:pl-0"
+                                        className="whitespace-nowrap px-2 py-3.5 text-left  font-semibold"
                                     >
-                                        Vehicle ID
-                                    </th>
+                                     License Plate                                    
+                                     </th>
+                           
                                     <th
                                         scope="col"
-                                        className="whitespace-nowrap  p-2 text-center align-middle  text-left font-semibold"
-                                    >
-                                        Name
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="whitespace-nowrap  p-2 text-center align-middle  text-left font-semibold"
+                                        className="whitespace-nowrap px-2 py-3.5 text-left  font-semibold"
                                     >
                                         Status
                                     </th>
                                     <th
                                         scope="col"
-                                        className="whitespace-nowrap  p-2 text-center align-middle  text-left font-semibold"
+                                        className="whitespace-nowrap px-2 py-3.5 text-left  font-semibold"
                                     >
                                         Registration Date
                                     </th>
+                
                                     <th
                                         scope="col"
-                                        className="whitespace-nowrap  p-2 text-center align-middle  text-left font-semibold"
-                                    >
-                                        Supplier
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="whitespace-nowrap  p-2 text-center align-middle text-left font-semibold"
-                                    >
-                                        Fuel 
-                                        {/* Consumptions */}
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="whitespace-nowrap  p-2 text-center align-middle  text-left font-semibold"
+                                        className="whitespace-nowrap px-2 py-3.5 text-left  font-semibold"
                                     >
                                         Trips Completed
                                     </th>
-                                    <th scope="col" className="relative p-2  text-center align-middle whitespace-nowrap  sm:pr-0">
+                                    <th scope="col" className="whitespace-nowrap px-2 py-3.5 text-left  font-semibold">
                                         <span className="sr-only"></span>
                                     </th>
                                 </tr>
                             </thead>
  
                             <tbody  className="divide-y divide-gray-200  bg-[#FAFAFB]">
-                            {filteredVehicles.map((vehicle, index) => {  
+                            {filteredVehicles.map((vehicle, index) => {   
                                 const { seconds } = vehicle.registration_date; 
-                                const updatedDate = new Date(seconds * 1000);
+                                const updatedDate = new Date(seconds * 1000); 
+                                const tripsCompleted = vehicleTrips[vehicle.lisence_plate] || 0; // Get the trip count for the vehicle
+
                                 return( 
                                     // <tr className='border-solid border-2 border-[#D9E2F6] h-10 font-nunito font-regular'>
                                     <Fragment key={index}>  
                                     <div className="w-full mb-2 font-nunito font-regular"></div>
-                                    <tr key={vehicle.id} className='my-2 border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>
-                                        <td className="whitespace-nowrap text-center align-middle  pl-4 pr-3 !pt-2 text-d-blue sm:pl-0">{vehicle.id}</td>
-                                        <td className="whitespace-nowrap px-2 p-2 text-left text-center align-middle pt-4 font-medium ">
-                                            {vehicle.name}
-                                        </td>
-                                        <td className="whitespace-nowrap p-2 text-left px-2 pt-2 relative">
-                                        <div className={`rounded-full inline-block text-sm	 h-8 absolute transform -translate-y-1/2 ${vehicle.availability_status === 'Available' ? 'bg-[#E2E9FB] text-[#0068DD]' : (vehicle.availability_status === 'On Route' ? 'bg-[#B9F3EE] text-[#076960]' : 'bg-[#EAEAEA] text-[#364250]')}`} style={{ width: `${vehicle.availability_status.length * 8}px`, left: '-8px' }}>
+                                    <tr key={vehicle.id} className='my-2 border-solid border-2  bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>  
+                                        <td className="whitespace-nowrap py-2 pl-4 pr-3  text-d-blue sm:pl-0"  onClick={() => handleVehicleClick(vehicle)}>{vehicle.lisence_plate}</td>
+                                        <td className="whitespace-nowrap px-2 py-2 relative">
+                                        <div className={`rounded-full inline-block text-sm h-8 absolute transform -translate-y-1/2 ${vehicle.availability_status === 'Available' ? 'bg-[#E2E9FB] text-[#0068DD]' : (vehicle.availability_status === 'On Route' ? 'bg-[#B9F3EE] text-[#076960]' : 'bg-[#EAEAEA] text-[#364250]')}`} style={{ width: `${vehicle.availability_status.length * 7}px`, left: '-8px' }}>
                                                 <span className="absolute inset-0 flex items-center justify-center">
                                                     {vehicle.availability_status}
                                                 </span>
                                             </div> 
                                             </td> 
     
-                                            <td className="whitespace-nowrap p-2 text-left  px-2 pt-4">
+                                            <td className="whitespace-nowrap px-2 py-2 ">
                                             {format(updatedDate, 'MM/dd/yy')}
                                            </td>
-                                        <td className="whitespace-nowrap p-2  text-left px-2 pt-4">{vehicle.supplier}</td>
-                                        <td className="whitespace-nowrap p-2 text-center align-middle text-left pt-4">{vehicle.fuel_budget}</td>
-                                        <td className="whitespace-nowrap p-2 text-center align-middle  text-left pt-4 text-lg font-bold text-black">{vehicle.trips} Trips</td>
-                                        {/* <td className="relative  p-2 text-center align-middle whitespace-nowrap pt-6 pl-3 pr-4 text-right text-sm font-medium sm:pr-0 flex justify-around">
-                                            <EditBtn />
-                                            <DeleteBtn />
-                                            <div className='h-12'></div>
-                                        </td> */}
+                                        <td className="whitespace-nowrap px-2 py-2 text-lg font-bold text-black">{tripsCompleted} Trips</td>
                                     </tr> 
                                     </Fragment>
 

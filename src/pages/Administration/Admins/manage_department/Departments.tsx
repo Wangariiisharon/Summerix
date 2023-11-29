@@ -3,14 +3,15 @@ import {Fragment, SetStateAction, useEffect, useState} from "react";
 import {AddButton, Button} from "@/components/Buttons";
 import Table, {DummyTable} from "@/components/Table/Table";
 import { CheckCircleIcon, XCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { BodyCell, HeaderCell } from "../../../components/Table/Cells";
-import { TableBody } from "../../../components/Table/Row";
-import { DocumentData, addDoc, collection, getDocs } from "firebase/firestore";
+import { BodyCell, HeaderCell } from "../../../../components/Table/Cells";
+import { TableBody } from "../../../../components/Table/Row";
+import { DocumentData, addDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { fbDb } from "@/firebase/configs";
 import { FormModal } from "@/components/Modals/FormModal";
-import { Field, Form, Formik } from "formik"; 
+import { Formik, Field, Form } from 'formik/dist/index';
 import { formatDistanceToNow } from 'date-fns'; 
 import ViewMenu from "./viewMenu"
+import toast from "react-hot-toast";
 
 
 const Headers = ["DEPARTMENT ID", "NAME","UPDATED"]
@@ -28,35 +29,33 @@ export default function Departments(){
 
 
     }
-    const handleSubmit = async (values: { name: any; members: any;}) => { 
+    const handleSubmit = async (values: { name: any;}) => { 
         console.log("Submitted Values:", values);
     
         try {
             
-            if (!values) {
-                console.error('Form values are undefined');
-                return;
-            }
-    
-            if (!values.name || !values.members ) {
+            if (!values.name) {
                 console.error('Required form fields are missing');
-                console.log("Submitted Values:", values);
-
-                
+                console.log("Submitted Values:", values);  
+                return;
+            }  
+            const existingDepartmentQuery = query(collection(fbDb, 'departments'), where('name', '==', values.name));
+            const existingAdminSnapshot = await getDocs(existingDepartmentQuery);
+    
+            if (!existingAdminSnapshot.empty) {
+                console.error('Group with this name already exists'); 
+                // toast.error('User with this email already exists');  
+                toast.error(`A Group with the name '${values.name}' already exists`);
                 return;
             } 
-            
 
+    
             const updated = new Date();
-
-
             const DepartmentsData = {
                 name: values.name,
-                members: values.members,
+                // members: values.members,
                 updated: updated,  
-                status:true,
-
-             
+                status:true,      
             };
     
             const docRef = await addDoc(collection(fbDb, 'departments'), DepartmentsData);
@@ -68,20 +67,17 @@ export default function Departments(){
         } 
 } 
     useEffect(() => {
+
         const fetchedDepartments = async () => {
             try {
                 const querySnapshot = await getDocs(collection(fbDb, 'departments'));
-                const departmentsData: DocumentData[] = [];
-                querySnapshot.forEach((doc) => {
-                    const department = {
-                        id: doc.id,
-                        ...doc.data()
-                    };
-                    departmentsData.push(department);
-                });
+                const departmentsData = querySnapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
                 setFetchedDepartments(departmentsData);
             } catch (error) {
-                console.error('Error fetching Drivers:', error);
+                console.error('Error fetching Departments:', error);
             }
         };
     
@@ -132,7 +128,7 @@ export default function Departments(){
                     <Formik
                     initialValues={{
                         name: "",
-                        members: 0,
+                        // members: 0,
 
                                       }}
                         onSubmit={(values) => {
@@ -154,7 +150,7 @@ export default function Departments(){
                               className="form-input bg-grey w-48"
                             />
                              </label>
-                             <label className="block">
+                             {/* <label className="block">
                              <label className="form-label">Members</label>
                               <Field
                               type="number"
@@ -162,14 +158,14 @@ export default function Departments(){
                               value={values.members}
                               className="form-input bg-grey w-48"
                               />
-                            </label>                           
+                            </label>                            */}
                              </div>
               
 
    
                             <div className='flex w-full justify-end mt-24 '>
-                                <Button className='text-blue text-xl mr-32' handleClick={handleReset}>Reset</Button>
-                                <button type='submit' >Save</button>
+                                <Button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32' handleClick={handleReset}>Reset</Button>
+                                <button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4' type='submit' >Save</button>
                             </div>
 
                         </div>
@@ -192,7 +188,17 @@ interface VehiclesTableProps {
     updateFetchedDepartments: (updatedDepartments: DocumentData[]) => void; 
 }
 
-export function DepartmentsTable({ departments,updateFetchedDepartments }: VehiclesTableProps) { 
+export function DepartmentsTable({ departments,updateFetchedDepartments }: VehiclesTableProps) {  
+    const handleDeactivate = (id: string) => {
+        // Implement your deactivation logic here
+        console.log(`Deactivating department with ID: ${id}`);
+    
+        // Filter out the deactivated department from the list
+        const updatedDepartments = departments.filter((department) => department.id !== id);
+    
+        // Update the state with the filtered list of departments
+        updateFetchedDepartments(updatedDepartments);
+      };
 
   
     return (
@@ -215,16 +221,17 @@ export function DepartmentsTable({ departments,updateFetchedDepartments }: Vehic
                     <TableBody>
                         {departments.map((departments, index) => {
                         const { seconds } = departments.updated; 
-                        const updatedDate = new Date(seconds * 1000);
+                        const updatedDate = new Date(seconds * 1000); 
+                        const departmentId = `D${(index + 1).toString().padStart(3, '0')}`;
+                        console.log("Vehicle ID",departmentId); 
 
                             return (
                                 <Fragment key={index}>
                                    <div className="w-full mb-2"></div>
                                     <tr className='border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] h-10 font-nunito font-regular' >
                                         <td className="whitespace-nowrap flex flex-row  pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0 font-nunito font-regular">
-                                            {departments.id}  <ViewMenu departmentId={departments.id} />
+                                            {departmentId}  <ViewMenu departmentId={departments.id} onDeactivate={() => handleDeactivate(departments.id)}/>
                                             {/* router.push(`/Administration/manage_roles/assignRole?id=${admin.id}`); */}
-
                                         </td>
                                         <BodyCell>
                                         {departments.name}

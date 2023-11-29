@@ -4,7 +4,7 @@ import { Tab } from "@headlessui/react";
 import  { fbDb } from "@/firebase/configs";
 import { getDocs, collection, DocumentData, addDoc, Timestamp } from "firebase/firestore";
 import {  format } from 'date-fns';
-import Jobcard from "./jobcard"; 
+import Jobcard from "../Administration/Users/jobcard"; 
 import NotAssigned from './not_assigned';
 
 

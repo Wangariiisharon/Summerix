@@ -11,11 +11,11 @@ import {Input, Submit} from "@/components/Forms/input";
 import SiteLayout from "@/Layout/SiteLayout";
 import {PlusIcon, XMarkIcon} from "@heroicons/react/24/outline";
 import { Tab } from "@headlessui/react";
-import Planned from "./jobcard";
+import Planned from "../Administration/Users/jobcard";
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import { getDocs, collection, DocumentData, addDoc, Timestamp } from "firebase/firestore";
 import { parseISO, format } from 'date-fns';
-import Jobcard from "./jobcard"; 
+import Jobcard from "../Administration/Users/jobcard"; 
 import { serverTimestamp } from 'firebase/firestore'
 import { Field, Formik,Form } from "formik";
 import { AnyCnameRecord } from "dns";

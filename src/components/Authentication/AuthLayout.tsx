@@ -10,7 +10,7 @@ export default function AuthLayout({ children }: Props) {
       <div className="hidden w-2/5 bg-primary  md:block">
         <div className="flex h-screen w-full">
             <Image
-          src="/truckit.png"
+          src="/Group 1000023202041.png"
           alt="Truck It"
           width={600}
           height={600} 
@@ -22,7 +22,7 @@ export default function AuthLayout({ children }: Props) {
       <div className="w-full m-auto max-w-sm md:mx-40">
         <header className="ml-6 m-auto gap-2">
           <Image
-            src="/logo.png"
+            src="/Group 1000002033.png"
             alt="company logo image"
             width={120}
             height={32}

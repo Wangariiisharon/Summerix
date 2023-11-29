@@ -414,4 +414,5 @@ export function ClientsTable() {
             </div>
         </div>
  )
-}
+} 
+

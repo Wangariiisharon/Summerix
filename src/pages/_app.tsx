@@ -2,6 +2,9 @@ import { AuthProvider } from "@/components/Authentication/AuthProvider";
 import Head from "next/head";
 import { Toaster } from "react-hot-toast";
 import "@/globals.css";
+import React from "react";
+import { BrowserRouter as Router } from 'react-router-dom'; // Import BrowserRouter
+
 export default function MyApp({ Component, pageProps }: any) {
   return (
     <>
@@ -12,10 +15,10 @@ export default function MyApp({ Component, pageProps }: any) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" />
       </Head>
-      {/* <AuthProvider> */}
+        <AuthProvider>
         <Component {...pageProps} />
-      {/* </AuthProvider> */}
+        </AuthProvider>
       <Toaster />
     </>
   );
-}    
+}

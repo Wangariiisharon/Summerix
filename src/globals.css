@@ -62,8 +62,16 @@
 .submit{
   @apply w-full mx-auto p-2 rounded-md outline-none bg-blue-600 text-white
 } 
+/* Media query for larger screens */
+}  
+.Tab.List {
+  justify-start: center; /* Default behavior for small screens */
+}
 
-
+@media (min-width: full) {
+  .Tab.List {
+    justify-between: center; /* Tabs fill available space on larger screens */
+  }
 }
 
 

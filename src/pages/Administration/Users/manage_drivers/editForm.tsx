@@ -1,7 +1,7 @@
 import { collection, doc, getDoc, getFirestore, setDoc, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import firebaseApp, { fbDb } from '@/firebase/configs';
-import { Field, Form, Formik } from "formik";
+import { Formik, Field, Form } from 'formik/dist/index';
 
 
 
@@ -233,7 +233,7 @@ type DriverData = {
                 </label> */}
               </div>
               <div className="my-5 flex justify-center">
-                <button type="submit" className="btn btn-primary w-72 px-5"  >
+                <button type="submit" className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center py-4 px-4 mr-4' >
                   <i className="fas fa-sign-in-alt mr-2"></i> Edit details 
                 </button>
               </div>

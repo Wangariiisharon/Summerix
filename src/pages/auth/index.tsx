@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AuthLayout from "../../components/Authentication/AuthLayout";
 import Seo from "../../components/Seo";
 import firebaseApp from "../../firebase/configs"
-import { getAuth } from "firebase/auth";
+import { getAuth, isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { Field, Form, Formik } from "formik";
 import Link from "next/link";
@@ -12,11 +12,49 @@ import { fbDb } from "@/firebase/configs";
 import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore"; 
 import bcrypt from 'bcryptjs';     
 
-import { FirebaseError } from "firebase/app";
-import { log } from "console";
 
 export default function LoginPage() {
-  const router = useRouter();
+  const router = useRouter(); 
+
+  
+  useEffect(() => {
+    const handleSignInWithEmailLink = async () => {
+      const auth = getAuth(firebaseApp);
+
+      // Check if the URL is a valid sign-in link
+      if (isSignInWithEmailLink(auth, window.location.href)) {
+        let email = window.localStorage.getItem('emailForSignIn');
+
+        // Handle the case where email is null
+        if (!email) {
+          // Prompt the user to enter their email if it's not stored in local storage
+          email = window.prompt('Please provide your email for confirmation');
+        }
+
+        // Check again if email is still null before proceeding
+        if (email) {
+          // Complete the sign-in process
+          try {
+            await signInWithEmailLink(auth, email, window.location.href);
+
+            // Clear the email from storage (optional)
+            window.localStorage.removeItem('emailForSignIn');
+            console.log('Successfully signed in');
+
+            // Redirect or perform other necessary actions after successful sign-in
+            router.push('/Dashboard');
+          } catch (error) {
+            // Handle the sign-in error
+            console.error('Sign-in with email link failed:', error);
+            toast.error('Sign-in failed. Please try again.');
+          }
+        }
+      }
+    };
+
+    // Call the function to handle sign-in with email link
+    handleSignInWithEmailLink();
+  }, []); 
 
   const doGoogleSignIn = async () => {
 
@@ -32,44 +70,32 @@ export default function LoginPage() {
 
     } catch (error) {    
       console.error('DO GOOGLE SIGN-IN ERROR:', error);
-      toast.error('Google Sign-In failed. Please try again.');
+      toast.error('Google Sign-In failed. Please try again.'); 
+
     }
   }; 
 
-  
-
-  const doLogin = async (formValues: { email: any; password: any; }) => { 
+  const doLogin = async (formValues: { email: string; password: string; }) => {
     try {
-      const { email, password } = formValues; 
+      const { email, password } = formValues;
+      console.log("FormValues", formValues);
   
-      const adminQuery = query(collection(fbDb, 'admins'), where('email', '==', email));
-      const adminQuerySnapshot = await getDocs(adminQuery); 
-      
+      const auth = getAuth();
   
-      if (!adminQuerySnapshot.empty) {
-        const adminDoc = adminQuerySnapshot.docs[0];
-        const storedHashedPassword = adminDoc.data().passwordHash; 
+      // Use Firebase Authentication to sign in
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
   
-        const isPasswordCorrect = await bcrypt.compare(password, storedHashedPassword); 
-        
-  
-        if (isPasswordCorrect) {
-          // const fbAuth = getAuth(firebaseApp);
-          // await signInWithEmailAndPassword(fbAuth, email, password);
-  
-          router.push('/Administration');
-        } else {
-          toast.error('Invalid credentials');
-        }
+      if (user) {
+        router.push('/Dashboard');
       } else {
-        toast.error('User not found');
+        toast.error('Invalid credentials');
       }
     } catch (error) {
       console.error('Login error:', error);
       toast.error('Login failed. Please try again.');
     }
   };
-  
   
   return (
     <main className="">
@@ -94,7 +120,7 @@ export default function LoginPage() {
                   <Field 
                     required
                     type="email"
-                    name="email"
+                    name="email" 
                     value={values.email}
                     className="form-input"
                   />
@@ -104,7 +130,7 @@ export default function LoginPage() {
                   <Field 
                     required
                     type="password"
-                    name="password"
+                    name="password" 
                     value={values.password}
                     className="form-input"
                   />
@@ -117,7 +143,6 @@ export default function LoginPage() {
                 </div> 
               <div className="my-5 flex justify-center">
                   <button type="submit" className="btn font-inter font-medium rounded-md btn-primary w-72 px-5">
-                    {/* <i className="fas fa-sign-in-alt mr-2"></i>  */}
                     Submit
                   </button> 
                 </div>

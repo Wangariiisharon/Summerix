@@ -1,24 +1,23 @@
 import {Header} from "@/components/Headers";
 import {Tab} from "@headlessui/react";
 import {Fragment} from "react";
-import Admins from "./manage_admins/Admins";
-import Cities from "./manage_cities/Cities";
-import Vehicles from "./manage_vehicles/Vehicles";
-import Drivers from "./manage_drivers/Drivers";
-import Roles from "./manage_roles/Roles";
-import Departments from "./manage_department/Departments";
+import Admins from "./Admins/manage_admins/Admins"; 
+import AdminsComponent from "./Admins";
+import UsersComponent from "./Users";
+
+import Cities from "./Users/manage_cities/Cities";
+import Vehicles from "./Users/manage_vehicles/Vehicles";
+import Drivers from "./Users/manage_drivers/Drivers";
+import Roles from "./Admins/manage_roles/Roles";
+import Departments from "./Admins/manage_department/Departments";
 import SiteLayout from "@/Layout/SiteLayout";
 import Profile from "../Profile" 
 import HamburgerMenu from "@/components/hamburgerMenu"; 
-import AssignRole from "./manage_roles/assignRole";
+import AssignRole from "./Admins/manage_roles/assignRole";
 
 const tabs = [
     {name: 'Manage Users', href: '#', current: false},
-    {name: 'Manage Client', href: '#', current: false},
-    {name: 'Manage Vehicles', href: '#', current: true},
-    {name: 'Manage Driver', href: '#', current: false},
-    {name: 'Manage Role', href: '#', current: false},
-    {name: 'Manage Department', href: '#', current: false},
+    {name: 'Manage Operations', href: '#', current: false},
 ]
 
 function classNames(...classes: any) {
@@ -39,12 +38,12 @@ export default function AdministrationComponent() {
 
                     <div className='mt-10'>
                         <Tab.Group>
-                            <Tab.List className='w-full bg-[#FAFAFB] font-nunito flex justify-around mb-3'> 
+                            <Tab.List className='w-full bg-[#FAFAFB] font-nunito flex justify-start mb-3'> 
                                 {tabs.map((tab, index) => {
                                      return (
                                         <Fragment key={index}>
                                             <Tab className='ui-selected:border-b-4 border-d-green outline-none
-                                             ui-selected:text-d-green text-sm font-nunito font-bold uppercase flex flex-row'>
+                                             ui-selected:text-d-green text-sm font-nunito font-bold uppercase flex flex-row ml-10'>
                                                 {tab.name}
                                             </Tab>
                                         </Fragment>
@@ -54,22 +53,10 @@ export default function AdministrationComponent() {
                             </Tab.List>
                             <Tab.Panels className=' bg-[#FAFAFB] h-full'>
                                 <Tab.Panel className='h-full'>
-                                    <Admins/>
+                                    <AdminsComponent/>
                                 </Tab.Panel>
                                 <Tab.Panel className='h-full'>
-                                    <Cities/>
-                                </Tab.Panel>
-                                <Tab.Panel className='h-full'>
-                                    <Vehicles/>
-                                </Tab.Panel>
-                                <Tab.Panel className='h-full'>
-                                    <Drivers/>
-                                </Tab.Panel>
-                                <Tab.Panel className='h-full'>
-                                    <Roles/>
-                                </Tab.Panel > 
-                                <Tab.Panel className='h-full'>
-                                    <Departments/>
+                                    <UsersComponent/>
                                 </Tab.Panel>
                             </Tab.Panels>
                         </Tab.Group>

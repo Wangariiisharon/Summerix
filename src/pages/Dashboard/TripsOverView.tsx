@@ -1,32 +1,74 @@
+import { fbDb } from "@/firebase/configs";
 import {ChevronRightIcon, SignalIcon} from "@heroicons/react/20/solid";
+import { getDocs, collection, DocumentData } from "firebase/firestore";
+import { useEffect, useState } from "react";
 
 
+export default function TripsOverView(){  
+    const [fetchedTrips, setFetchedTrips]=useState<DocumentData[]>([]);   
+    useEffect(() => {
+        const fetchTrips = async () => {
+          try {
+            const querySnapshot = await getDocs(collection(fbDb, 'trips'));
+            const tripsData: DocumentData[] = [];
+    
+            querySnapshot.forEach((doc) => {
+              const trip = {
+                id: doc.id,
+                ...doc.data(),
+              };
+              tripsData.push(trip);
+            });
+    
+            setFetchedTrips(tripsData);
+          } catch (error) {
+            console.error('Error fetching Trips:', error);
+          }
+        };
+    
+        fetchTrips();
+      }, []);
+      const currentDate=new Date().toISOString();
+      const liveTripsCount = fetchedTrips.filter(
+        (trip) =>
+           currentDate >= trip.start_time && currentDate < trip.end_time
+
+      ).length;
+    
+      const scheduledTripsCount = fetchedTrips.filter(
+        (trip) => trip.start_time > new Date().toISOString()
+      ).length;
+    
+      const completedTripsCount = fetchedTrips.filter(
+        (trip) =>
+          trip.start_time <= new Date().toISOString() &&
+          trip.end_time <= new Date().toISOString()
+      ).length; 
+      console.log("Live Trips Count",liveTripsCount); 
+      console.log("Scheduled Trips Count",scheduledTripsCount);
+      console.log("Completed Trips Count",completedTripsCount);
+
+      
 const trips = [
     {
         name: 'Live Trips',
-        title: '158',
+        title: liveTripsCount,
     },
     {
         name: 'Scheduled',
-        title: '158',
+        title: scheduledTripsCount,
         color: 'light-yellow'
     },
     {
         name: 'Completed',
-        title: '158',
+        title: completedTripsCount,
 
     },
-    {
-        name: 'Incomplete',
-        title: '158',
-    },
-
 ]
-
-export default function TripsOverView(){
+    
     return(
         <>
-        <div className='rounded-lg bg-white shadowlg:min-w-[20] h-full max-h-[24]'>
+        <div className='rounded-lg w-1/3 bg-white shadowlg:min-w-1/3 h-full max-h-[24]'>
             <div className="px-4 pt-8 sm:px-6   ">
                 <h2 id="applicant-information-title" className="text-xl font-bold leading-6">
                     Trips
