@@ -1,31 +1,28 @@
 import {Header, HeaderBar} from "@/components/Headers";
-import {AddButton, Button, DeleteBtn, EditBtn} from "@/components/Buttons";
+import {AddButton, Button, DeleteBtn, EditBtn} from "@/components/Buttons"; 
+import {PlusIcon, XMarkIcon} from "@heroicons/react/24/outline";
 import {headers} from "next/headers";
 import {DummyTable} from "@/components/Table/Table";
 import {FormEvent, Fragment, ReactNode, useEffect, useState} from "react";
-import {FormModal} from "@/components/Modals/FormModal";
+import {FormModal} from "@/components/Modals/FormModal"; 
+import { Field, Formik,Form } from "formik";
 import {Input, Submit} from "@/components/Forms/input";
 import SiteLayout from "@/Layout/SiteLayout";
-import {PlusIcon, XMarkIcon} from "@heroicons/react/24/outline";
 import { Tab } from "@headlessui/react";
-import Planned from "./jobcard";
+import Planned from "../Administration/Users/jobcard";
 import firebaseApp, { fbDb } from "@/firebase/configs";
-import { getDocs, collection, DocumentData, addDoc, Timestamp } from "firebase/firestore";
+import { getDocs, collection, DocumentData, addDoc, Timestamp, updateDoc, doc } from "firebase/firestore";
 import { parseISO, format } from 'date-fns';
-import Jobcard from "./jobcard"; 
+import Jobcard from "../Administration/Users/jobcard"; 
 import { serverTimestamp } from 'firebase/firestore'
-import { Field, Formik,Form } from "formik";
 import { AnyCnameRecord } from "dns";
+import { FirebaseStorage, getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+import ImageInput from "@/components/ImageInputs"; 
+import { toast } from 'react-hot-toast';
 
-
-const tabs = [
-    {name: 'PLANNED', href: '#', current: false},
-    {name: 'HISTORY', href: '#', current: false},
-    {name: 'JOB CARD', href: '#', current: false},
-] 
-
-
-
+function classNames(...classes: string[]) {
+    return classes.filter(Boolean).join(' ');
+}
 export default function Maintenance() {
     const [open, setOpen] = useState(false)
     const [selectedTab, setSelectedTab] = useState<number>(0); 
@@ -33,11 +30,15 @@ export default function Maintenance() {
     const [vehicleNames, setVehicleNames] = useState<string[]>([]); 
     const [jobcards, setjobcards] = useState<string[]>([]); 
     const [drivers, setdrivers] = useState<string[]>([]);
-
     const [showAddJobcardModal, setShowAddJobcardModal] = useState(false);
     const [showScheduleMaintenanceModal, setShowScheduleMaintenanceModal] = useState(false);
+    const [selectedTabIndex, setSelectedTabIndex] = useState(0);
 
-  
+    const MaintainanceTabs = [
+      { name: 'PLANNED', href: '#', current: selectedTabIndex === 0 },
+      { name: 'HISTORY', href: '#', current: selectedTabIndex === 1 },
+
+    ];
     const handleAddClick = () => {   
         setOpen(true)
     }
@@ -45,7 +46,8 @@ export default function Maintenance() {
         setShowAddJobcardModal(false)
     } 
     const handleMaintenanceReset = () => {
-        setShowScheduleMaintenanceModal(false)
+        setShowScheduleMaintenanceModal(false) 
+        setOpen(false)
     }   
     const handleTabClick = (index:any) => {
         setSelectedTab(index);
@@ -59,7 +61,7 @@ export default function Maintenance() {
         const fetchVehicleNames = async () => {
             try {
                 const querySnapshot = await getDocs(collection(fbDb, 'vehicles'));
-                const names = querySnapshot.docs.map(doc => doc.data().name);
+                const names = querySnapshot.docs.map(doc => doc.data().lisence_plate);
                 setVehicleNames(names);
             } catch (error) {
                 console.error('Error fetching Vehicle names:', error);
@@ -122,7 +124,8 @@ export default function Maintenance() {
             }
     
             if (!values.name) {
-                console.error('Required form fields are missing');
+                console.error('Required form fields are missing'); 
+                toast.error('Required form fields are missing');
                 return;
             } 
 
@@ -140,7 +143,7 @@ export default function Maintenance() {
         } 
     } 
     
-    const handleScheduleMaintanace = async (values: { requested_by: any; cost:any; remarks:any;vehicle:any; job_cards:any; date:any}) => {  
+    const handleScheduleMaintanace = async (values: { requested_by: any; cost:any; remarks:any;vehicle:any; job_cards:any; date:any; serial_number:any; part:any ; broken_partImage:any}) => {  
         setShowScheduleMaintenanceModal(true);
         setShowAddJobcardModal(false);  
         setOpen(true);
@@ -161,7 +164,16 @@ export default function Maintenance() {
 
             const dateObj = new Date(values.date +"T00:00:00");  
             const timestamp=Timestamp.fromDate(dateObj)
+            let brokenPartImageUrl = ''; 
+            if (values.broken_partImage) {
+                const storage = getStorage(firebaseApp);
+                const storageRef = ref(storage, `broken_partImage/${values.broken_partImage.name}`);
+                
+                await uploadBytes(storageRef, values.broken_partImage);
+                brokenPartImageUrl = await getDownloadURL(storageRef);
+                console.log('Broken Part Image URL:', brokenPartImageUrl);
 
+            } 
 
             const maintenanceData = {
                 requested_by: values.requested_by, 
@@ -169,48 +181,24 @@ export default function Maintenance() {
                 date: timestamp, 
                 cost: values.cost,  
                 job_cards: values.job_cards,
-                remarks: values.remarks,
+                remarks: values.remarks, 
+                serial_number: values.serial_number,
+                part: values.part,
+                broken_partImage: brokenPartImageUrl,
             };
-    
             const docRef = await addDoc(collection(fbDb, 'maintenance'), maintenanceData);
             console.log('Jobcard added with ID: ', docRef.id);
-    
             setOpen(false);
         } catch (error) {
             console.error('Error adding jobcard:', error);
-        } 
+        }  
+        setShowScheduleMaintenanceModal(false);
     }
-
-
-    
-
-
     return (
         <>
             <div className=''>
-                {/* <div className=''>
-                    <div className='flex flex row w-full  fixed top-12'>  
-                    <div className=''>
-                    <AddButton name="Add JOB CARD" handleAddClick={handleAddClick}/>
-                    </div>
-                    <div className=' ml-10'>
-                    <AddButton name="Add Vehicle" handleAddClick={handleAddClick}/>
-                    </div>
-                    </div>
-
-                </div> */} 
                 <div className="flex flex-row fixed top-12 right-10">  
-                <div>  
-                {/* <AddButton name="JOB CARD" handleAddClick={handleAddClick}/> */} 
-                <Button
-                className='rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2 mt-2'
-                handleClick={handleAddJobcard}>
-               <PlusIcon className='h-6 w-6 mr-2' />
-                ADD JOB CARD
-              </Button>
-                </div>  
                 <div className="ml-2"> 
-                {/* <AddButton name="Add Vehicle" handleAddClick={handleAddClick}/> */} 
                 <Button
                 className='rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4  mr-2 mt-2'
                 handleClick={handleScheduleMaintanace}>
@@ -218,52 +206,31 @@ export default function Maintenance() {
                  Schedule Maintenance
               </Button>
                 </div>
-
-
-
                 </div>
                 <div className='mt-4'> 
                 <Tab.Group>
-                <Tab.List className='w-full bg-[#FAFAFB] font-nunito flex justify-start mb-3'> 
-                                {tabs.map((tab, index) => {
-                                     return (
-                                        <Fragment key={index}>
-                                            <Tab
-                                        className='ui-selected:border-b-4 border-d-green outline-none
-                                        ui-selected:text-d-green text-sm font-nunito font-bold uppercase flex flex-row ml-10'  
-                                        onClick={() => {
-                                            console.log("Tab Clicked", index);
-                                            setSelectedTab(index);
-                                          }}
-                                        >
-                                        {tab.name}
-                                    </Tab>
-                                        </Fragment>
-                                    )
-                                })}
-
-                            </Tab.List>
+                <Tab.List className="w-full bg-[#FAFAFB] font-nunito flex justify-start mb-3">
+                        {MaintainanceTabs.map((tab, index) => (
+                      <Fragment key={index}>
+                  <Tab
+                    className={classNames(
+                      'border-d-green outline-none text-sm font-nunito font-bold uppercase flex flex-row ml-10',
+                      tab.current ? 'ui-selected border-b-4 ui-selected:text-d-green' : ''
+                    )}
+                    onClick={() => setSelectedTabIndex(index)}
+                  >
+                    {tab.name}
+                  </Tab>
+                   </Fragment>
+                            ))}
+                       </Tab.List>
                     <Tab.Panels>
-                        <Tab.Panel>
-                        <div  className="max-h-[500px] overflow-y-auto">
-                        <MaintananceTable selectedTab={selectedTab} maintananceList={fetchedMaintanance}  />
-
-                            </div>
+                    <Tab.Panel className={classNames(selectedTabIndex === 0 ? 'ui-selected border-b-4' : '', 'h-full')}>
+                        <MaintananceTable selectedTab={selectedTabIndex} maintananceList={fetchedMaintanance}  />
                         </Tab.Panel>
-                        <Tab.Panel>
-                        <div  className="max-h-[500px] overflow-y-auto">
-                        <MaintananceTable selectedTab={selectedTab} maintananceList={fetchedMaintanance}  />
-
-                            </div>
+                        <Tab.Panel className={classNames(selectedTabIndex === 0 ? 'ui-selected border-b-4' : '', 'h-full')}>
+                        <MaintananceTable selectedTab={selectedTabIndex} maintananceList={fetchedMaintanance}  />
                         </Tab.Panel>
-                        <Tab.Panel>
-                        <div  className="max-h-[500px] overflow-y-auto">
-                        <Jobcard />
-                            </div>
-                        </Tab.Panel>
-       
-                
-
                     </Tab.Panels>
                 </Tab.Group> 
                 </div> 
@@ -271,60 +238,6 @@ export default function Maintenance() {
                 </div>
             
             </div>
-
-            <FormModal open={showAddJobcardModal} setOpen={setShowAddJobcardModal}>
-                <div className='p-8'>
-                    <div className='flex w-full h-full justify-between items-center mb-12'>
-                        <div className='text-xl font-semibold '> 
-                        ADD JOBCARD
-                        </div>
-                        <Button className='bg-red-50 h-12 w-12 flex items-center justify-center rounded-full' handleClick={handleJobCardReset}>
-                            <XMarkIcon className='h-6 w-6 text-red-400'/>
-                        </Button>
-                    </div>
-
-                    <Formik
-                    initialValues={{
-                        name: "",
-            
-                                      }}
-                        onSubmit={(values) => handleAddJobcard(values)}  
-  
-                        // onSubmit={(values) => handleEditSubmit(values)}
-
-
-                        >
-                       {({ values }) => (
-                    <Form>
-                        <div className=''>
-                            <div className='flex w-full justify-between'>
-                            <label className="block">
-                             <label className="form-label">NAME</label>
-                             <Field
-                              type="text"
-                              name="name"
-                              value={values.name}
-                              className="form-input bg-grey w-48"
-                            />
-                             </label>                         
-                             </div>
-     
-             
-                           
-        
-                            <div className='flex w-full justify-end mt-24 '>
-                                <Button className='text-blue text-xl mr-32' handleClick={handleJobCardReset}>Reset</Button>
-                                {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
-                                <button type='submit' >Save</button>
-                            </div>
-
-                        </div>
-                    </Form>
-                     )}
-                    </Formik>
-                </div>
-            </FormModal> 
-
 
             <FormModal open={showScheduleMaintenanceModal} setOpen={setShowScheduleMaintenanceModal}>
                 <div className='p-8'>
@@ -344,7 +257,12 @@ export default function Maintenance() {
                         cost:"", 
                         job_cards: "", 
                         remarks: "", 
-                        date: "",
+                        date: "",  
+                        part: "", 
+                        serial_number: "", 
+                        broken_partImage: null,
+
+
             
                                       }}
                         onSubmit={(values) => handleScheduleMaintanace(values)}  
@@ -418,16 +336,50 @@ export default function Maintenance() {
                              className="form-input bg-grey w-48"
                             />
                             </label> 
-                                </div>   
+                                </div>    
+                                <div className='flex w-full justify-between  mt-8'> 
                              <label className="block mt-8">
                              <label className="form-label">COST</label>
                              <Field
                              type="number"
-                             name="cost"
+                             name="cost" 
+                             placeholder="Ksh"
                              value={values.cost}
                              className="form-input bg-grey w-48"
-                            />
+                            /> 
+                            </label> 
+                            <label className="block mt-8">
+                             <label className="form-label">PART</label>
+                             <Field
+                             type="text"
+                             name="part"
+                             value={values.part}
+                             className="form-input bg-grey w-48"
+                            /> 
                             </label>  
+                            </div> 
+                            <div className='flex w-full justify-between  mt-8'>  
+                            <label className="block mt-8">
+                             <label className="form-label">SERIAL NUMBER</label>
+                             <Field
+                             type="text"
+                             name="serial_number"
+                             value={values.serial_number}
+                             className="form-input bg-grey w-48"
+                            /> 
+                            </label>   
+                            <label className="block ml-24 mt-8">
+                             <label className="form-label">BROKEN PART</label>
+                             <Field name="broken_partImage">
+                            {({ field, form }:any) => (
+                            <ImageInput
+                            selectedImage={field.value}
+                            onSelectImage={(file) => form.setFieldValue('broken_partImage', file)} 
+                               />
+                            )}
+                           </Field>
+                          </label>   
+                            </div> 
                             <label className="block mt-8">
                             <label className="form-label">REMARKS</label>
                             <Field
@@ -437,15 +389,10 @@ export default function Maintenance() {
                              className="form-input bg-grey w-96 h-20"
                             />
                             </label>                      
-     
-             
-                           
-        
                             <div className='flex w-full justify-end mt-24 '>
-                                <Button className='text-blue text-xl mr-32' handleClick={handleMaintenanceReset}>Reset</Button>
-                                <button type='submit' >Save</button>
+                                <button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32' onClick={handleMaintenanceReset}>Reset</button>
+                                <button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4' type='submit' >Save</button>
                             </div>
-
                         </div>
                     </Form>
                      )}
@@ -532,19 +479,7 @@ export function MaintananceTable({ selectedTab,maintananceList }: VehiclesTableP
                                     >
                                         COST
                                     </th>
-                                    <th
-                                        scope="col"
-                                        className="whitespace-nowrap px-2 py-3.5 text-left font-semibold"
-                                    > 
-                                    
 
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="whitespace-nowrap px-2 py-3.5 text-left font-semibold"
-                                    >
-                                        ACTION 
-                                    </th>
                                     <th scope="col" className="relative whitespace-nowrap py-3.5 pl-3 pr-4 sm:pr-0">
                                         <span className="sr-only"></span>
                                     </th>
@@ -572,20 +507,11 @@ export function MaintananceTable({ selectedTab,maintananceList }: VehiclesTableP
                                         <td className="whitespace-nowrap px-2  pt-4 font-medium ">
                                         {format(updatedDate, 'MM/dd/yy')}
                                         </td>
-                               
                                         <td className="whitespace-nowrap px-2 pt-4">{maintenance.job_cards}</td>
                                         <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">{maintenance.requested_by}</td>
                                         <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">{maintenance.cost}</td>
                                         <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">
-                                        Details <i className="fa-solid fa-angle-down"></i>
                                          </td>
-
-                                        <td className="whitespace-nowrap pl-8 pt-4 ">  
-                                        :
-                                        {/* <i className="fa-light fa-ellipsis-vertical"></i>                                            */}
-                                         </td>
-
-                           
                                     </tr> 
                                     </Fragment>
 
@@ -599,6 +525,8 @@ export function MaintananceTable({ selectedTab,maintananceList }: VehiclesTableP
         </div>
     )
 }
+
+
 
 
 

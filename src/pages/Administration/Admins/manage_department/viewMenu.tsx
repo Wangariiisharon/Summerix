@@ -8,10 +8,12 @@ import { Button } from '@/components/Buttons';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 
 interface ViewMenuProps {
-  departmentId: string;
+  departmentId: string; 
+  onDeactivate: (id: string) => void; // Callback function for handling deactivation
+
 }
 
-export default function ViewMenu({ departmentId }: ViewMenuProps) {
+export default function ViewMenu({ departmentId,onDeactivate }: ViewMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [isRenameFormOpen, setIsRenameFormOpen] = useState(false);
@@ -42,6 +44,13 @@ export default function ViewMenu({ departmentId }: ViewMenuProps) {
     } catch (error) {
       console.error('Error updating department name:', error);
     }
+  }; 
+
+  const handleDeactivate = ( ) => {
+    // Call the onDeactivate callback to handle deactivation
+    onDeactivate(departmentId);
+    // Close the menu after deactivating
+    setIsOpen(false);
   };
 
   return (
@@ -51,23 +60,22 @@ export default function ViewMenu({ departmentId }: ViewMenuProps) {
       </div>
       {isOpen && (
         <ul className="flex flex-col menu absolute bg-white shadow-md p-2">
-          <li className="cursor-pointer text-[#000000]">
-            <Link href={`/Administration/manage_department/viewDepatment?id=${departmentId}`}>
+          {/* <li className="cursor-pointer text-[#000000]">
+            <Link href={`/Administration/Admins/manage_department/viewDepatment?id=${departmentId}`}>
               View
             </Link>
-          </li>
+          </li> */}
           <li className="cursor-pointer text-[#000000]">
             {/* Call handleRename to open the RenameForm */}
             <button onClick={handleRename}>Rename</button>
           </li>
           <li>
-            <Link className="cursor-pointer text-[#000000]" href="./Deactivate">
+            <button className="cursor-pointer text-[#000000]" onClick={handleDeactivate}>
               Deactivate
-            </Link>
+            </button>
           </li>
         </ul>
       )}
-      {/* Render the FormModal component */}
       {isRenameFormOpen && (
         <FormModal open={isRenameFormOpen} setOpen={setIsRenameFormOpen}>
           {/* Place your form elements inside the FormModal */}

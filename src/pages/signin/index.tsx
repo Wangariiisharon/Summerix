@@ -4,16 +4,15 @@ import Seo from "../../components/Seo";
 import firebaseApp from "../../firebase/configs"
 import { getAuth } from "firebase/auth";
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { Field, Form, Formik } from "formik";
+// import { Field, Form, Formik } from "formik";
+import { Formik, Field, Form } from 'formik/dist/index';
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { toast } from 'react-hot-toast';
 import { fbDb } from "@/firebase/configs";
 import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore"; 
 import bcrypt from 'bcryptjs';     
-
 import { FirebaseError } from "firebase/app";
-import { log } from "console";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,28 +37,31 @@ export default function LoginPage() {
 
   
 
-  const doLogin = async (formValues: { email: any; password: any; }) => { 
+  const doLogin = async (formValues: { email: string; password: string; }) => { 
     try {
       const { email, password } = formValues; 
+      console.log("FormValues",formValues);
+      
   
       const adminQuery = query(collection(fbDb, 'admins'), where('email', '==', email));
       const adminQuerySnapshot = await getDocs(adminQuery); 
-      
   
       if (!adminQuerySnapshot.empty) {
         const adminDoc = adminQuerySnapshot.docs[0];
-        const storedHashedPassword = adminDoc.data().passwordHash; 
+        const storedHashedPassword = adminDoc.data().passwordHash;
   
-        const isPasswordCorrect = await bcrypt.compare(password, storedHashedPassword); 
-        
+        if (typeof password === 'string' && typeof storedHashedPassword === 'string') {
+          const isPasswordCorrect = await bcrypt.compare(password, storedHashedPassword); 
+          console.log('isPasswordCorrect:', isPasswordCorrect);
+
   
-        if (isPasswordCorrect) {
-          // const fbAuth = getAuth(firebaseApp);
-          // await signInWithEmailAndPassword(fbAuth, email, password);
-  
-          router.push('/Administration');
+          if (isPasswordCorrect) {
+            router.push('/Dashboard');
+          } else {
+            toast.error('Invalid credentials');
+          }
         } else {
-          toast.error('Invalid credentials');
+          toast.error('Invalid password data');
         }
       } else {
         toast.error('User not found');
@@ -69,6 +71,7 @@ export default function LoginPage() {
       toast.error('Login failed. Please try again.');
     }
   };
+  
   
   
   return (
@@ -94,7 +97,8 @@ export default function LoginPage() {
                   <Field 
                     required
                     type="email"
-                    name="email"
+                    name="email" 
+                    // autoComplete="email"
                     value={values.email}
                     className="form-input"
                   />
@@ -104,7 +108,8 @@ export default function LoginPage() {
                   <Field 
                     required
                     type="password"
-                    name="password"
+                    name="password" 
+                    // autoComplete="current-password"
                     value={values.password}
                     className="form-input"
                   />
@@ -117,7 +122,6 @@ export default function LoginPage() {
                 </div> 
               <div className="my-5 flex justify-center">
                   <button type="submit" className="btn font-inter font-medium rounded-md btn-primary w-72 px-5">
-                    {/* <i className="fas fa-sign-in-alt mr-2"></i>  */}
                     Submit
                   </button> 
                 </div>

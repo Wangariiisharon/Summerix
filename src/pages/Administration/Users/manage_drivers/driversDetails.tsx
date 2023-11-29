@@ -1,4 +1,4 @@
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, getDocs,query,collection,where } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { fbDb } from '@/firebase/configs';
@@ -27,6 +27,8 @@ const DriverDetailsPage: React.FC = () => {
   const router = useRouter();
   const { id } = router.query;
   const [driverDetails, setDriverDetails] = useState<DriverDetailsProps['driver'] | null>(null);
+  const [tripCount, setTripCount] = useState<number>(0);
+
 
   useEffect(() => {
     const fetchDriverDetails = async () => {
@@ -38,6 +40,13 @@ const DriverDetailsPage: React.FC = () => {
           if (driverDocSnap.exists()) {
             const driverData = driverDocSnap.data() as DriverDetailsProps['driver'];
             setDriverDetails(driverData);
+
+            // Query trips for the specific driver
+            const tripsQuerySnapshot = await getDocs(query(collection(fbDb, 'trips'), where('requested_by', '==', driverDocRef)));
+
+            // Get the number of trips
+            const numberOfTrips = tripsQuerySnapshot.size;
+            setTripCount(numberOfTrips);
           } else {
             console.log('Driver not found');
           }
@@ -56,25 +65,16 @@ const DriverDetailsPage: React.FC = () => {
 
   return (  
     <SiteLayout> 
-            <div className="w-full flex flex-row bg-[#FFFFFF] fixed top-0 h-10">   
-            <div className="flex justify-center">
-            <div className="ml-7 flex justify-center"><HamburgerMenu/></div> 
-            <div> 
-            <img src="Frame 13.png" className="fixed right-14 w-8" alt="Notification" /> 
-            <img src="Ellipse 1.png" className=" w-9 fixed right-4 pl-2" alt="" />
 
-            </div> 
-            </div>   
-            </div>
     <p className=' ml-10 font-bold mt-8 p-4'>Driver</p>
 
     <div className='ml-10 flex flex-row'> 
-<div className="max-w-sm rounded-md flex justify-center items-center
- overflow-hidden shadow-lg">
-  <div className="px-6 py-4">
-  <div className=" border-2 w-36 h-36 border-gray-400 rounded-full text-xl mb-2">
-  <img className='w-full h-full rounded-full' src={driverDetails.profile} alt="Driver Profile" />
-</div>
+     <div className="max-w-sm rounded-md bg-white flex justify-center items-center
+      overflow-hidden shadow-sm	">
+     <div className="px-6 py-4">
+      <div className=" border-2 w-36 h-36 border-[#B6D1F9] rounded-full text-xl mb-2">
+      <img className='w-full h-full rounded-full' src={driverDetails.profile} alt="Driver Profile" />
+       </div>
 
     <p className="text-gray-700 text-sm"> 
       <p className='p-2'>Name: {driverDetails.name}</p>
@@ -86,17 +86,18 @@ const DriverDetailsPage: React.FC = () => {
    
 <div className='flex justify-between'> 
 <div className='flex flex-col'> 
-<div className="max-w-sm rounded-md ml-20 overflow-hidden shadow-lg">
+<div className="max-w-sm rounded-md bg-white ml-20 overflow-hidden shadow-sm">
   <div className="px-6 py-4">
     <p className="text-gray-700 mt-6 font-bold text-xl"> 
-    <p>Completed Trips: {driverDetails.completedTrips}</p></p> 
+    <p>Completed Trips: {tripCount}</p></p> 
     <div className="px-6 pt-4 pb-2">
     <span className="inline-block px-3 py-1 text-sm font-semibold text-gray-700 mt-12 mb-2">Number of trips completed</span>
+    {tripCount}
   </div>
   </div> 
 </div>
 
-<div className="max-w-sm rounded-md ml-20 overflow-hidden shadow-lg">
+<div className="max-w-sm rounded-md ml-20 overflow-hidden mt-2 shadow-sm bg-white">
   <div className="px-6 py-4"> 
   <div className='divide-y divide-[#D9E2F6]'>
     <p className="text-gray-700 mt-6 font-bold text-xl"> 
@@ -123,7 +124,7 @@ const DriverDetailsPage: React.FC = () => {
 
 
 <div className='flex flex-col'>
-<div className="max-w-sm rounded-md ml-5 overflow-hidden shadow-lg">
+<div className="max-w-sm rounded-md ml-5 overflow-hidden shadow-sm bg-white">
   <div className="px-6 py-4"> 
   <p className='font-semibold'>Vehicle Info</p> 
   <div className='flex justify-between'>
@@ -151,17 +152,17 @@ const DriverDetailsPage: React.FC = () => {
   </div> 
 </div> 
 
-<div className="max-w-sm rounded-md ml-5 overflow-hidden shadow-lg">
-<div className="px-6 py-4"> 
-<p className='font-semibold'>Additional Info</p> 
+<div className="max-w-sm rounded-md ml-5 mt-2 overflow-hidden shadow-sm bg-white">
+<div className="px-2 py-4"> 
+<p className='font-semibold mt-2'>Additional Info</p> 
 <div className='flex justify-between'>
   <p className="text-gray-700 text-sm mt-6"> 
   <p className='text-sm text-black'>Country</p>
-   {driverDetails.country}
+  <p className='text-sm font-bold text-black'> {driverDetails.country} , {driverDetails.city}</p>
   </p>  
-  <p className="text-gray-700 ml-8 text-sm mt-6"> 
-  <p className='text-sm text-black'>Vehicle model</p>
-  {driverDetails.model}    
+  <p className="text-gray-700 ml-10 text-sm mt-6"> 
+  <p className='text-sm text-black '>Vehicle model</p>
+ <p  className='text-sm font-bold text-black'>{driverDetails.model} </p>    
   </p>
   </div> 
   <div className='flex justify-between'> 

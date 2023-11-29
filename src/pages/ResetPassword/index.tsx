@@ -1,30 +1,52 @@
 import AuthLayout from "@/components/Authentication/AuthLayout";
 import Seo from "@/components/Seo";
-import firebaseApp from "@/firebase/configs"
+import firebaseApp, { fbDb } from "@/firebase/configs"
 import { getAuth } from "firebase/auth";
 import { sendPasswordResetEmail } from "firebase/auth";
-import { Field, Form, Formik } from "formik";
+import { Formik, Field, Form } from 'formik/dist/index';
 import { useRouter } from "next/router";
 import { toast } from 'react-hot-toast';
 import Image from "next/image";
+import { updateDoc, doc, collection, getDocs, query, where } from "firebase/firestore";
+import bcrypt from 'bcryptjs';
 
 export default function ResetPassword() {
     const router = useRouter();
   
-    const doResetPassword = async (values: { email: any; }) => {  
+
+
+    const doResetPassword = async (values: { email: string }) => {
       const { email } = values;
-      const auth = getAuth();
-  
+    
       try {
+        const auth = getAuth();
         await sendPasswordResetEmail(auth, email);
-        toast.success('Password reset email sent successfully.'); 
-        router.push('/Dashboard')
+    
+        // No need to hash the new password here; Firebase handles the reset process
+    
+        // Retrieve the user ID or document ID based on the email
+        const adminQuery = query(collection(fbDb, 'admins'), where('email', '==', email));
+        const adminQuerySnapshot = await getDocs(adminQuery);
+    
+        if (!adminQuerySnapshot.empty) {
+          const adminDoc = adminQuerySnapshot.docs[0];
+          const userId = adminDoc.id;
+    
+          // No need to hash the new password here; Firebase has already updated it
+    
+          toast.success('Password reset email sent successfully.');
+          router.push('/auth');
+        } else {
+          toast.error('User not found');
+        }
       } catch (error) {
         console.error('RESET PASSWORD ERROR:', error);
         toast.error('Error sending password reset email.');
       }
     };
-
+    
+    
+    
   return (
     <main className="">
       <Seo title="Reset Password" />
@@ -34,7 +56,7 @@ export default function ResetPassword() {
           initialValues={{
             email: ""
           }}
-          onSubmit={(values) => doResetPassword(values)}
+          onSubmit={(values: { email: string; }) => doResetPassword(values)}
         >
           {({ errors, values }) => ( 
             <>

@@ -76,8 +76,8 @@ export function Cards({ name, icon, amount}:Props) {
                         <div className="flex rounded-full h-10  w-10">
                              <CardIcon src={icon} alt={name}/> 
                          </div>
-                             <dl>
-                                 <dt className="truncate font-extrabold ">{amount}</dt>
+                             <dl className="px-4 py-2">
+                                 <dt className="truncate font-extrabold  ">{amount}</dt>
                                  <dd>
                                      <div className="text-sm font-medium text-f-black">{name}</div>
                                  </dd>

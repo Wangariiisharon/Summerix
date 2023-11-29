@@ -1,4 +1,7 @@
-import {CardIcon} from "@/components/images";
+import {CardIcon} from "@/components/images"; 
+import { DocumentData, collection, getDocs } from "firebase/firestore";
+import { fbDb } from "@/firebase/configs"; 
+import { useState ,useEffect} from "react";
 
 const people = [
     {
@@ -38,9 +41,47 @@ const people = [
             'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
     },
 
-    // More people...
-]
-export default function OnRoute(){
+] 
+
+export default function OnRoute(){ 
+    const [fetchedTrips, setFetchedTrips]=useState<DocumentData[]>([]);   
+
+    // @ts-ignore 
+    useEffect(() => {
+        const fetchTrips = async () => {
+            try {
+                const querySnapshot = await getDocs(collection(fbDb, 'trips'));
+                const tripsData: DocumentData[] = [];
+
+                const currentDate = new Date(); // Get the current date and time
+
+                querySnapshot.forEach((doc) => {
+                    const trip = doc.data();
+
+                    // Parse the start_time and end_time from the trip data
+                    const startTime = new Date(trip.start_time.toDate());
+                    const endTime = new Date(trip.end_time.toDate());
+
+                    // Check if the current date is between start_time and end_time
+                    if (currentDate >= startTime && currentDate <= endTime) {
+                        tripsData.push({
+                            id: doc.id,
+                            ...trip,
+                        });
+                    }
+                });
+
+                setFetchedTrips(tripsData);
+            } catch (error) {
+                console.error('Error fetching Trips:', error);
+            }
+        };
+
+        fetchTrips();
+    }, []);
+
+ 
+    
     return(
         <>
         <div className='bg-white shadow rounded-lg w-2/3 mr-2'>
@@ -72,22 +113,25 @@ export default function OnRoute(){
                                 </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 bg-white">
-                                {people.map((person) => (
-                                    <tr key={person.email} className='font-bold'>
+                                {fetchedTrips.map((trips,index) => (
+                                    <tr key={index} className='font-bold'>
                                         <td className="whitespace-nowrap py-4 pl-4 pr-3  sm:pl-0">
                                             <div className="flex items-center">
                                                 <div className="h-10 w-10 flex-shrink-0">
-                                                    <CardIcon src='/icons/truckIcon.png' alt="truck"/>
+                                                <span className="fa-stack fa-lg">
+                                                 <i className="fa fa-circle fa-stack-2x text-[#F2F2F2]" aria-hidden="true"></i>
+                                                <i className="fa fa-truck fa-stack-1x fa-inverse text-[#0C0C0C]" aria-hidden="true"></i> 
+                                                </span>                                                 
                                                 </div>
                                                 <div className="ml-4">
-                                                    <div className="font-bold ">{person.name}</div>
+                                                    <div className="font-bold ">{trips.pick_up_location}</div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-4  ">
-                                            <div className="">{person.title}</div>
+                                            <div className="">{trips.drop_off_location}</div>
                                         </td>
-                                        <td className="whitespace-nowrap px-3 py-4">{person.role}</td>
+                                        <td className="whitespace-nowrap px-3 py-4">{trips.vehicle}</td>
 
                                         <td className="whitespace-nowrap px-3 py-4  ">
                                               <span className="inline-flex rounded-full bg-pill-green

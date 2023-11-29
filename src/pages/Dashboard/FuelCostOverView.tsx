@@ -14,7 +14,6 @@ ChartJS.register(
     BarElement,
     Tooltip,
 );
-
 export const options = {
     responsive: true,
     plugins: {
@@ -27,7 +26,6 @@ export const options = {
         },
     },
 };
-
 const labels = ['Truck A', 'Truck B', 'Truck C', 'Truck D', 'Truck E', 'Truck F', 'Truck G'];
 
 const data = {
@@ -78,7 +76,6 @@ export default function FuelCostOverView(){
                                         <div className='text-sm'>Fuel Cost</div>
                                         <div className='text-xl font-extrabold'>524K</div>
                                     </div>
-
                                 </div>  
                                 <div className='py-2'>
                                 <Bar options={options} data={data} height={170} width={400} />

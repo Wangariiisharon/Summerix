@@ -2,8 +2,8 @@ import {Tab} from "@headlessui/react";
 import {Fragment, useEffect, useState} from "react";
 import {AddButton, DeleteBtn, EditBtn} from "@/components/Buttons";
 import Table, {DummyTable} from "@/components/Table/Table";
-import { HeaderCell, BodyCell } from "../../../components/Table/Cells";
-import { TableBody } from "../../../components/Table/Row";
+import { HeaderCell, BodyCell } from "../../../../components/Table/Cells";
+import { TableBody } from "../../../../components/Table/Row";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/router"; 
 import { DocumentData, collection, getDocs } from 'firebase/firestore';
@@ -31,20 +31,15 @@ export default function Roles(){
         const fetchAdmins = async () => {
             try {
                 const querySnapshot = await getDocs(collection(fbDb, 'admins'));
-                const adminsData: DocumentData[] = [];
-                querySnapshot.forEach((doc) => {
-                    const admin = {
-                        id: doc.id,
-                        ...doc.data()
-                    };
-                    adminsData.push(admin);
-                });
+                const adminsData = querySnapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
                 setFetchedAdmins(adminsData);
             } catch (error) {
                 console.error('Error fetching admins:', error);
             }
         };
-    
         fetchAdmins();
     }, []);
     
@@ -131,7 +126,7 @@ export function RolesTable({ selectedTab,admins }: RolesTableProps) {
 
     console.log("Filtered Vehicles:", filteredAdmins);
 const handleReasign = (admin:any) => { 
-    router.push(`/Administration/manage_roles/assignRole?id=${admin.id}`);
+    router.push(`/Administration/Admins/manage_roles/assignRole?id=${admin.id}`);
 
     }
     return (
@@ -152,7 +147,9 @@ const handleReasign = (admin:any) => {
                     </tr>
                     </thead>
                     <TableBody>
-                    {filteredAdmins.map((admin, index) => {
+                    {filteredAdmins.map((admin, index) => { 
+                        //  const userId = `U${(index + 1).toString().padStart(3, '0')}`;
+                        //      console.log("Vehicle ID",userId); 
                          return (
                                 <Fragment key={index}>
                                     <div className="w-full mb-2"></div>

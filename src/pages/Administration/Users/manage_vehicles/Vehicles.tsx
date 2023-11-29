@@ -4,43 +4,29 @@ import {AddButton, Button, DeleteBtn, EditBtn} from "@/components/Buttons";
 import Table, {DummyTable} from "@/components/Table/Table";
 import { HeaderCell, BodyCell } from "@/components/Table/Cells";
 import { TableBody } from "@/components/Table/Row";
-import { Field, Form, Formik } from "formik";
+import { Formik, Field, Form } from 'formik/dist/index';
 import { FormModal } from "@/components/Modals/FormModal";
-import { XMarkIcon } from "@heroicons/react/24/outline";
-import { getFirestore, collection, doc, setDoc, addDoc,getDocs, DocumentData, deleteDoc } from 'firebase/firestore';
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { getFirestore, collection, doc, setDoc, addDoc,getDocs, DocumentData, deleteDoc, getDoc, updateDoc, query, where } from 'firebase/firestore';
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import { useRouter } from "next/router";
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import SiteLayout from "@/Layout/SiteLayout";  
+import { toast } from 'react-hot-toast';
 
 
-import SiteLayout from "@/Layout/SiteLayout"; 
-
-
-
-
-
-
-
-
-
-
-// export const tabs = [
-//     {name: "All"},
-//     {name: "Active"},
-//     {name: "InActive"},
-
-// ]
-const Headers = ["VEHICLE ID", "NAME", "LISENCE PLATE"]
-
-
-
+const Headers = ["VEHICLE ID", "VEHICLE TYPE", "LICENSE PLATE"]
 export default function Vehicles(){
     const [open,setOpen]=useState(false)  
     const [editModalOpen, setEditModalOpen] = useState(false); 
     const [selectedVehicle, setSelectedVehicle] = useState<DocumentData | null>(null); 
     const [selectedTab, setSelectedTab] = useState<number>(0); 
-    const [fetchedVehicles, setFetchedVehicles] = useState<DocumentData[]>([]);  
+    const [fetchedVehicles, setFetchedVehicles] = useState<DocumentData[]>([]);   
+    const [fetchedCompanies, setFetchedCompanies] = useState<DocumentData[]>([]);   
+    const [showAllocateModal, setShowAllocateModal] = useState(false); 
+    const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
+    const [companies, setCompanies] = useState<string[]>([]); 
     const [editFormInitialValues, setEditFormInitialValues] = useState({
         name: '',
         make_and_model: '',
@@ -50,7 +36,12 @@ export default function Vehicles(){
         color: '',
       });
 
+      const handleAllocateReset = () => {
+        setShowAllocateModal(false)  
+        setOpen(false) 
 
+
+    } 
       const handleEditClick = (vehicle: DocumentData) => {
         setSelectedVehicle(vehicle);
         setEditFormInitialValues({
@@ -70,83 +61,206 @@ export default function Vehicles(){
         setEditModalOpen(false); 
     };
 
-
-
+    const handleAllocateVehicles = () => {  
+      setOpen(true) 
+      setShowAllocateModal(true);
+      setShowAddVehicleModal(false); 
+  } 
     const handleAddVehicles = () => { 
-        setOpen(true)
+        setOpen(true) 
+        setShowAddVehicleModal(true);
+        setShowAllocateModal(false); 
     } 
     const handleReset = () => {
-        setOpen(false)
+        setOpen(false) 
+        setShowAddVehicleModal(false);
     }
-    const handleSubmit = async (values: { cargo_capacity: any; lisence_plate: any;vehicle_type: any; color: any;availability_status:any}) => {
-        console.log("Submitted Values:", values); 
-        // console.log("Supplier:", values.supplier);
-    
-        try {
-            if (!values) {
-                console.error('Form values are undefined');
-                return;
-            }
-    
-            if ( !values.cargo_capacity || !values.lisence_plate||!values.vehicle_type||!values.color||!values.availability_status) {
-                console.error('Required form fields are missing');
-                return;
-            } 
-            const registration_date = new Date();
+    const handleSubmit = async (values: { cargo_capacity: any; lisence_plate: any; vehicle_type: any; color: any; availability_status: any;fuel_budget:any; }) => {
+      // Check if values are undefined
+      if (!values) {
+        console.error('Form values are undefined');
+        return;
+      }
+      if (!values.cargo_capacity || !values.lisence_plate || !values.vehicle_type || !values.color || !values.availability_status||!values.fuel_budget) {
+        console.error('Required form fields are missing');
+        toast.error('Required form fields are missing');
+        return;
+      }
+      const registration_date = new Date();
+      const licensePlate = values.lisence_plate;
+      const vehiclesCollection = collection(fbDb, 'vehicles');
+      const querySnapshot = await getDocs(query(vehiclesCollection, where('lisence_plate', '==', licensePlate)));
+  
+      if (!querySnapshot.empty) {
+        console.error('A vehicle with this license plate already exists');
+        // toast.error('A vehicle with this license plate already exists'); 
+        toast.error(`A vehicle with the license plate '${values.lisence_plate}' already exists`);
+      } else {
+        const VehicleData = {
+          cargo_capacity: values.cargo_capacity,
+          lisence_plate: values.lisence_plate,
+          vehicle_type: values.vehicle_type,
+          color: values.color,
+          status: true,
+          archive: false,
+          registration_date: registration_date,
+          availability_status: values.availability_status,
+          fuel_budget:values.fuel_budget
+        };
+  
+        const docRef = await addDoc(vehiclesCollection, VehicleData);
+        console.log('Vehicle added with ID: ', docRef.id);
+      }
+      setOpen(false); 
+      setShowAddVehicleModal(false);
 
-    
-            const VehicleData = {
-                // name: values.name,
-                // make_and_model: values.make_and_model,
-                cargo_capacity: values.cargo_capacity,
-                lisence_plate: values.lisence_plate,
-                vehicle_type:values.vehicle_type,
-                color:values.color,
-                status:true, 
-                archive:false , 
-                // supplier:values.supplier,  
-                registration_date:registration_date,   
-                availability_status:values.availability_status,
-                // fuel_budget:values.fuel_budget
-
-
-            };
-    
-            const docRef = await addDoc(collection(fbDb, 'vehicles'), VehicleData);
-            console.log('Vehicle added with ID: ', docRef.id);
-    
-            setOpen(false);
-        } catch (error) {
-            console.error('Error adding Vehicle:', error);
-        } 
     } 
-    useEffect(() => {
-        const fetchedVehicles = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(fbDb, 'vehicles'));
-                const vehiclesData: DocumentData[] = [];
-                querySnapshot.forEach((doc) => {
-                    const vehicle = {
-                        id: doc.id,
-                        ...doc.data()
-                    };
-                    vehiclesData.push(vehicle);
-                });
-                setFetchedVehicles(vehiclesData);
-            } catch (error) {
-                console.error('Error fetching Vehicles:', error);
+    interface CompanyData {
+      name: string;
+      vehicle?: string[]; // Assuming 'vehicle' is an array of strings
+    }
+    const handleAllocateSubmit = async (values: { vehicle: string; company: string }) => {
+      console.log("Submitted Values:", values);
+      try {
+        if (!values) {
+          console.error('Form values are undefined');
+          return;
+        }
+    
+        if (!values.vehicle || !values.company) {
+          console.error('Required form fields are missing');
+          return;
+        }
+    
+        const registration_date = new Date();
+    
+        // Check if the vehicle is already allocated to a company
+        const vehicleAllocationsCollectionRef = collection(fbDb, 'vehicleAllocations');
+        const vehicleQuerySnapshot = await getDocs(vehicleAllocationsCollectionRef);
+    
+        const isVehicleAlreadyAllocated = vehicleQuerySnapshot.docs.some((doc) => {
+          const allocationData = doc.data();
+          return allocationData.vehicle === values.vehicle;
+        });
+    
+        if (isVehicleAlreadyAllocated) {
+          const allocatedCompany = vehicleQuerySnapshot.docs.find((doc) => {
+            const allocationData = doc.data() as { vehicle: string; name: string };
+            return allocationData.vehicle === values.vehicle;
+          });
+        
+          if (allocatedCompany) {
+            console.error('Vehicle is already allocated to ' + allocatedCompany.data().name);
+            toast.error('Vehicle is already allocated to ' + allocatedCompany.data().name);
+          } else {
+            console.error('Vehicle is already allocated to an unknown company');
+            toast.error('Vehicle is already allocated to an unknown company');
+          }
+          return;
+        }
+        
+        
+        
+    
+        const companiesCollectionRef = collection(fbDb, 'companies');
+        const querySnapshot = await getDocs(companiesCollectionRef);
+    
+        let companyDocRef;
+        let allocated = false;
+    
+        querySnapshot.forEach((doc) => {
+          const companyData = doc.data() as CompanyData;
+          console.log('Company Data:', companyData);
+          if (companyData.name === values.company) {
+            companyDocRef = doc.ref;
+            if (companyData.vehicle && companyData.vehicle.includes(values.vehicle)) {
+              console.error('Vehicle already allocated to this company');
+              toast.error('Vehicle already allocated to this company.');
+              allocated = true;
             }
+          }
+        });
+    
+        if (allocated) {
+          return;
+        }
+    
+        if (companyDocRef) {
+          const companySnapshot = await getDoc(companyDocRef);
+          const existingCompanyData = companySnapshot.data() as CompanyData;
+    
+          const existingVehicles = existingCompanyData.vehicle || [];
+          existingVehicles.push(values.vehicle);
+    
+          // Update the company document with the added vehicle
+          await updateDoc(companyDocRef, {
+            vehicle: existingVehicles,
+          });
+    
+          console.log('Vehicle added to company:', values.company);
+        } else {
+          console.error('Company not found:', values.company);
+          toast.error('Company not found: ' + values.company);
+          return;
+        }
+    
+        const AllocationData = {
+          vehicle: values.vehicle,
+          name: values.company,
         };
     
-        fetchedVehicles();
+        const docRef = await addDoc(collection(fbDb, 'vehicleAllocations'), AllocationData);
+        console.log('Allocation added with ID: ', docRef.id);
+    
+      } catch (error) {
+        console.error('Error allocating Vehicle:', error);
+        toast.error('Error allocating Vehicle: ' + error);
+      }  
+      setOpen(false);
+      setShowAllocateModal(false);
+    }
+    
+    
+    
+    
+     
+    useEffect(() => {       
+      const fetchedVehicles = async () => {
+        try {
+            const querySnapshot = await getDocs(collection(fbDb, 'vehicles'));
+            const vehiclesData = querySnapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setFetchedVehicles(vehiclesData);
+        } catch (error) {
+            console.error('Error fetching Vehicles:', error);
+        }
+    };
+      
+      const fetchedCompanies = async () => {
+        try {
+            const querySnapshot = await getDocs(collection(fbDb, 'companies'));
+            const companiesData = querySnapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setFetchedCompanies(companiesData);
+        } catch (error) {
+            console.error('Error fetching Companies:', error);
+        }
+    };
+  
+        fetchedVehicles();          
+        fetchedCompanies(); 
+        console.log(fetchedCompanies);
+
     }, []);
     
     const updateFetchedVehicles = (updatedDrivers: SetStateAction<DocumentData[]>) => {
         setFetchedVehicles(updatedDrivers);
     };  
     const handleEditSubmit = async (values: {
-        name: any;
-        make_and_model: any;
         cargo_capacity: any;
         lisence_plate: any;
         vehicle_type: any;
@@ -166,8 +280,6 @@ export default function Vehicles(){
           }
       
           if (
-            !values.name ||
-            !values.make_and_model ||
             !values.cargo_capacity ||
             !values.lisence_plate ||
             !values.vehicle_type ||
@@ -180,8 +292,6 @@ export default function Vehicles(){
           // Update the vehicle data in the database using the selectedVehicle.id
           const vehicleRef = doc(fbDb, "vehicles", selectedVehicle.id);
           await setDoc(vehicleRef, {
-            name: values.name,
-            make_and_model: values.make_and_model,
             cargo_capacity: values.cargo_capacity,
             lisence_plate: values.lisence_plate,
             vehicle_type: values.vehicle_type,
@@ -193,8 +303,6 @@ export default function Vehicles(){
             vehicle.id === selectedVehicle.id
               ? {
                   ...vehicle,
-                  name: values.name,
-                  make_and_model: values.make_and_model,
                   cargo_capacity: values.cargo_capacity,
                   lisence_plate: values.lisence_plate,
                   vehicle_type: values.vehicle_type,
@@ -215,7 +323,7 @@ export default function Vehicles(){
     
     return (
         <>
-            <div className='mt-8 bg-[#FAFAFB] '>
+            <div className='mt-8  h-full bg-[#FAFAFB] '>
                 <Tab.Group>
                     <div className='flex w-full justify-end'>
                         <div className='bg-[#FAFAFB] '>
@@ -240,8 +348,18 @@ export default function Vehicles(){
                         </div>
            
                         <div className='flex justify-end text-base mr-2'>
-                          <div className='ml-2'>
-                            <AddButton name="Add Vehicle" handleAddClick={handleAddVehicles}/>
+                          <div className='ml-2 flex flex-row'>
+                            <AddButton name="Add Vehicle" handleAddClick={handleAddVehicles}/> 
+                            <div className="ml-2">
+                              <Button
+                               className='rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2 '
+                               handleClick={handleAllocateVehicles}>
+                              <PlusIcon className='h-6 w-6 mr-2' />
+                              Allocate Vehicle
+                              </Button>
+                               </div>  
+
+
                             </div>
                         </div>
 
@@ -249,42 +367,39 @@ export default function Vehicles(){
 
                     <Tab.Panels>
                         <Tab.Panel>
-                        <div  className="max-h-[500px] bg-[#FAFAFB] overflow-y-auto"> 
-                        {/* <DriversTable drivers={fetchedDrivers} updateFetchedVehicles={updateFetchedVehicles} /> */}
-
-
+                        <div  className="h-full bg-[#FAFAFB] overflow-y-auto"> 
                         <VehiclesTable
                 selectedTab={selectedTab}
                 vehicles={fetchedVehicles}
                 updateFetchedVehicles={updateFetchedVehicles}
-                handleEditClick={handleEditClick} // Pass the function as a prop
+                handleEditClick={handleEditClick}      
             />
                             </div>
                         </Tab.Panel>
                         <Tab.Panel>
-                        <div  className="max-h-[500px] bg-[#FAFAFB] overflow-y-auto">
+                        <div  className="h-full bg-[#FAFAFB] overflow-y-auto">
                         <VehiclesTable
                 selectedTab={selectedTab}
                 vehicles={fetchedVehicles}
                 updateFetchedVehicles={updateFetchedVehicles}
-                handleEditClick={handleEditClick} // Pass the function as a prop
+                handleEditClick={handleEditClick} 
             />
                             </div>
                         </Tab.Panel>
                         <Tab.Panel>
-                        <div  className="bg-[#FAFAFB] overflow-y-auto">
+                        <div  className=" h-full bg-[#FAFAFB] overflow-y-auto">
                         <VehiclesTable
                 selectedTab={selectedTab}
                 vehicles={fetchedVehicles}
                 updateFetchedVehicles={updateFetchedVehicles}
-                handleEditClick={handleEditClick} // Pass the function as a prop
+                handleEditClick={handleEditClick} 
             />
                             </div>
                         </Tab.Panel>
                     </Tab.Panels>
                 </Tab.Group>  
                 <div>
-            <FormModal open={open} setOpen={setOpen}>
+            <FormModal open={showAddVehicleModal} setOpen={setShowAddVehicleModal}>
                 <div className='p-5'>
                     <div className='flex w-full h-full justify-between items-center mb-12'>
                         <div className='text-xl font-semibold '>
@@ -297,14 +412,12 @@ export default function Vehicles(){
                     <Formik
                     initialValues={{
                         // name: "",
-                        // make_and_model: "",
                         cargo_capacity: "",
                         lisence_plate: "",
                         vehicle_type: "",
                         color: "", 
-                        supplier: "",  
                         availability_status:"", 
-                        // fuel_budget:0
+                        fuel_budget:0
 
 
                                       }}
@@ -318,24 +431,7 @@ export default function Vehicles(){
                     <Form>
                         <div className=''>
                             <div className='flex w-full justify-between'>
-                            {/* <label className="block">
-                             <label className="form-label">NAME</label>
-                             <Field
-                              type="text"
-                              name="name"
-                              value={values.name}
-                              className="form-input bg-grey w-48"
-                            />
-                             </label> */}
-                             {/* <label className="block">
-                             <label className="form-label">MAKE AND MODEL</label>
-                              <Field
-                              type="text"
-                              name="make_and_model"
-                              value={values.make_and_model}
-                              className="form-input bg-grey w-48"
-                              />
-                            </label>                            */}
+
                              </div>
                             <div className='flex w-full justify-between mt-8'>
                             <label className="block">
@@ -348,7 +444,7 @@ export default function Vehicles(){
                             />
                              </label>                                
                              <label className="block">
-                             <label className="form-label">LISENCE PLATE</label>
+                             <label className="form-label">LICENSE PLATE</label>
                              <Field
                              type="text"
                              name="lisence_plate"
@@ -378,23 +474,16 @@ export default function Vehicles(){
                             </label>                            
                             </div> 
                             <div className='flex w-full justify-between mt-8'>
-                  
-                             {/* <label className="block">
-                             <label className="form-label">SUPPLIER</label>
-                
-                                      <Field as="select" name="supplier"                               
-                                      value={values.supplier} 
-                                      className="form-input bg-grey w-48"
-                                      >
-                                      <option value="Ultra">Ultra</option>
-                                      <option value="Shell">Shell</option>
-                                      <option value="Mandela">Mandela</option> 
-                                      <option value="Runway Traders">Runway Traders</option>
-                                      <option value="Others">Others</option>
-
-                                     </Field>
-
-                            </label>    */}
+                            <label className="block">
+                            <label className="form-label">Fuel Budget</label>
+                            <Field
+                             type="text"
+                             name="fuel_budget"
+                             placeholder="Liters"
+                             value={values.fuel_budget}
+                             className="form-input bg-grey w-48"
+                            />
+                             </label> 
                             <label className="block">
                              <label className="form-label">AVAILABILITY STATUS</label>
                 
@@ -409,21 +498,11 @@ export default function Vehicles(){
 
                             </label>                         
                              </div> 
-                             <div className='flex w-full justify-between mt-8'>
-                            {/* <label className="block">
-                            <label className="form-label">Fuel Budget</label>
-                            <Field
-                             type="text"
-                             name="fuel_budget"
-                             value={values.fuel_budget}
-                             className="form-input bg-grey w-48"
-                            />
-                             </label>                                                           */}
-                            </div> 
+                                                         
                             <div className='flex w-full justify-end mt-24 '>
-                                <Button className='text-blue text-xl mr-32' handleClick={handleReset}>Reset</Button>
+                                <Button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32' handleClick={handleReset}>Reset</Button>
                                 {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
-                                <button type='submit' >Save</button>
+                                <button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4' type='submit' >Save</button>
                             </div>
 
                         </div>
@@ -431,8 +510,7 @@ export default function Vehicles(){
                      )}
                     </Formik>
                 </div>
-            </FormModal>
-
+            </FormModal>  
             </div> 
             <div>
                  {/*Edit Form modal goes Here  */} 
@@ -444,7 +522,7 @@ export default function Vehicles(){
                         <div className='text-xl font-semibold '>
                             Edit Truck Details
                         </div>
-                        <Button className='bg-red-50 h-12 w-12 flex items-center justify-center rounded-full' handleClick={handleReset}>
+                        <Button className='bg-red-50 h-12 w-12 flex items-center justify-center rounded-full'  handleClick={handleEditModalClose}>
                             <XMarkIcon className='h-6 w-6 text-red-400'/>
                         </Button>
                     </div>
@@ -458,26 +536,6 @@ export default function Vehicles(){
             {({ values }) => (
                     <Form>
                     <div className=''>
-                        <div className='flex w-full justify-between'>
-                        <label className="block">
-                         <label className="form-label">NAME</label>
-                         <Field
-                          type="text"
-                          name="name"
-                          value={values.name}
-                          className="form-input bg-grey w-48"
-                        />
-                         </label>
-                         <label className="block">
-                         <label className="form-label">MAKE AND MODEL</label>
-                          <Field
-                          type="text"
-                          name="make_and_model"
-                          value={values.make_and_model}
-                          className="form-input bg-grey w-48"
-                          />
-                        </label>                           
-                         </div>
                         <div className='flex w-full justify-between mt-8'>
                         <label className="block">
                         <label className="form-label"> CARGO CAPACITY</label>
@@ -519,9 +577,9 @@ export default function Vehicles(){
                         </label>                            
                         </div>
                         <div className='flex w-full justify-end mt-24 '>
-                            <Button className='text-blue text-xl mr-32' handleClick={handleEditModalClose}>Reset</Button>
+                            <Button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32' handleClick={handleEditModalClose}>Reset</Button>
                             {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
-                            <button type='submit' >Save</button>
+                            <button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4' type='submit' >Save</button>
                         </div>
 
                     </div>
@@ -534,7 +592,79 @@ export default function Vehicles(){
             )}
                  </div>
 
-                
+                 <FormModal open={showAllocateModal} setOpen={setShowAllocateModal}>
+                <div className='p-8'>
+                    <div className='flex w-full h-full justify-between items-center mb-12'>
+                        <div className='text-xl font-semibold '> 
+                         ALLOCATE VEHICLE
+                        </div>
+                        <Button className='bg-red-50 h-12 w-12 flex items-center justify-center rounded-full' handleClick={handleAllocateReset}>
+                            <XMarkIcon className='h-6 w-6 text-red-400'/>
+                        </Button>
+                    </div>
+
+                    <Formik
+                    initialValues={{
+                      vehicle: "", 
+                      company: "",
+            
+                                      }}
+                        onSubmit={(values) => handleAllocateSubmit(values)}  
+                        >
+                       {({ values }) => (
+                    <Form>
+                        <div className=''>
+                            <div className='flex w-full justify-between'>
+                            <label className="block">
+                             <label className="form-label">VEHICLE</label>.
+                             <Field
+                             as="select"
+                            name="vehicle"  
+                           value={values.vehicle}
+                           className="form-input bg-grey w-48" 
+
+                         >
+                         {fetchedVehicles.map((vehicle, index) => (
+                        <option key={index} value={vehicle.lisence_plate}>
+                         {vehicle.lisence_plate}
+                       </option>
+                        ))}
+                        </Field> 
+                        </label>   
+
+                        <label className="block">
+                        <label className="form-label">CLASS</label>.
+                         <Field
+                           as="select"
+                           name="company"  
+                           value={values.company}
+                           className="form-input bg-grey w-48" 
+                         >
+                         {fetchedCompanies.map((company, index) => (
+                        <option key={index} value={company.name}>
+                         {company.name}
+                       </option>
+                        ))}
+                        </Field> 
+                        </label>    
+
+                             </div>
+     
+             
+                           
+        
+                            <div className='flex w-full justify-end mt-24 '>
+                                <Button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32' handleClick={handleAllocateReset}>Reset</Button>
+                                {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
+                                <button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4' type='submit' >Save</button>
+                            </div>
+
+                        </div>
+                    </Form>
+                     )}
+                    </Formik>
+                </div>
+            </FormModal>  
 
             </div>
         </>
@@ -602,7 +732,7 @@ export default function Vehicles(){
       
         return (
           <>
-            <div className="bg-[#FAFAFB] h-400 w-100%">
+            <div className="bg-[#FAFAFB] h-full w-100%">
               <Table>
                 <>
                   <thead>
@@ -617,21 +747,18 @@ export default function Vehicles(){
                     </tr>
                   </thead>
                   <TableBody>
-                    {sortedVehicles.map((vehicle, index) => {
+                    {sortedVehicles.map((vehicle, index) => { 
+                            const vehicleId = `V${(index + 1).toString().padStart(3, '0')}`;
+                            console.log("Vehicle ID",vehicleId);
                       return (
                         <Fragment key={index}>
                           <div className="w-full mb-2 font-nunito font-regular"></div>
                           <tr className="border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular">
                             <td className="whitespace-nowrap pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0">
-                              {vehicle.id}
+                              {vehicleId}
                             </td>
-                            <BodyCell>{vehicle.name}</BodyCell>
-                            <BodyCell>{vehicle.lisence_plate}</BodyCell>
-                            <BodyCell>
-                              <>
-                                {/* Render any other data here */}
-                              </>
-                            </BodyCell>
+                            <BodyCell>{vehicle.vehicle_type}</BodyCell>
+                            <BodyCell>{vehicle.lisence_plate}</BodyCell> 
                             <td className="relative whitespace-nowrap pt-6 pl-3 pr-4 text-right text-sm font-medium sm:pr-0 flex justify-around">
                               <div onClick={() => handleEditClick(vehicle)}>
                                 <EditBtn />

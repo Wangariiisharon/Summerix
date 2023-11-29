@@ -20,35 +20,6 @@ export default function AddAdminComponent(){
         setOpen(false)
     }
     const handleSubmit = async (values: { firstname: any; lastname: any; email: any; phonenumber: any; }) => {
-        // try {
-        //     if (!values) {
-        //         console.error('Form values are undefined');
-        //         return;
-        //     }
-
-        //     // Ensure that the required properties exist in the values object
-        //     if (!values.firstname || !values.lastname || !values.email || !values.phonenumber) {
-        //         console.error('Required form fields are missing');
-        //         return;
-        //     }
-
-        //     const adminData = {
-        //         firstname: values.firstname,
-        //         lastname: values.lastname,
-        //         email: values.email,
-        //         phonenumber: values.phonenumber,
-        //     };
-
-        //     // Add the admin data to the Firestore collection
-        //     const docRef = await addDoc(collection(fbDb, 'admin'), adminData);
-        //     console.log('Admin added with ID: ', docRef.id);
-
-        //     // Close the modal after submitting
-        //     setOpen(false);
-        // } catch (error) {
-        //     // Handle error (show error toast or message)
-        //     console.error('Error adding admin:', error);
-        // }
     };
     
     

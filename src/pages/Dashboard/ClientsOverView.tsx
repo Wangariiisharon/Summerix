@@ -41,7 +41,7 @@ const people = [
 export default function ClientsOverView() {
     return (
         <>
-            <div className=" grid lg:min-w-[28] h-full max-h-[24]">
+            <div className=" grid lg:min-w-1/3 h-full max-h-[24]">
                 <div className="space-y-6 ">
                     <section aria-labelledby="applicant-information-title">
                         <div className="bg-white shadow sm:rounded-lg">

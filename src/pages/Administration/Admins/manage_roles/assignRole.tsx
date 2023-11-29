@@ -154,9 +154,8 @@ export default function AssignRole(){
 
           </div> 
           </div>   
-          <div className='flex'>
-      {/* <div className='mt-10 ml-5 w-1/3'>  */}
-      <div className="mt-10 ml-5 w-1/3">
+          <div className='flex flex-row'>
+      <div className="mt-10 ml-5 w-2/5">
 
         <div className='shadow-md bg-[#FFFFFF] rounded-md '>
           <div className='flex flex-row divide-y divide-solid flex space-x-20'>
@@ -173,8 +172,7 @@ export default function AssignRole(){
           </div>
         </div>
       </div>  
-      {/* <div className='mt-10 w-1/3 fixed right-10'> */} 
-      <div className="mt-10 w-1/3 fixed right-10">
+      <div className="mt-7 w-2/5 ml-32 ">
         <div className='shadow-md bg-[#FFFFFF] rounded-md'>
           <div className='flex flex-row divide-y divide-solid mt-4'>
             <p className='text-base font-nunito font-bold ml-2 mr-20 mt-2'>Permisions</p>
