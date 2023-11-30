@@ -14,7 +14,7 @@ import { FormModal } from "@/components/Modals/FormModal";
 import { Formik, Field, Form } from 'formik/dist/index';
 import toast from "react-hot-toast";
 
-const Headers = ["CLIENT ID", "NAME", "EXPENSES", "PROFIT"]
+const Headers = ["CLIENT ID", "NAME"]
 export default function Cities(){
     const handleAdd = () => {
     } 
@@ -54,6 +54,11 @@ export default function Cities(){
     
         fetchedClients();
     }, []);   
+    function generateUserId(adminCount: number) {
+        // Customize this logic based on your requirements
+        return `C${adminCount.toString().padStart(3, '0')}`;
+    }
+
     const handleAddClient = async (values: { name: any;}) => { 
         setOpen(true)
         console.log("Submitted Values:", values);  
@@ -81,6 +86,8 @@ export default function Cities(){
     
             const clientsData = {
                 name: values.name,
+                clientId: generateUserId(fetchedClients.length + 1), 
+
             };
     
             const docRef = await addDoc(collection(fbDb, 'clients'), clientsData);
@@ -279,13 +286,13 @@ function CitiesTable({ clients, }: ClientsTableProps) {
                                     <div className='w-full mb-2'></div>
                                     <tr className='border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>
                                     <td className="whitespace-nowrap  pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0 font-nunito font-regular ">
-                                            {clientId}
+                                            {clients.clientId}
                                         </td>
                                         <BodyCell>
                                             {clients.name}
                                         </BodyCell>
-                                        <BodyCell>Ksh 250000</BodyCell>
-                                        <BodyCell>Ksh 250000</BodyCell> 
+                                        {/* <BodyCell>Ksh 250000</BodyCell> */}
+                                        {/* <BodyCell>Ksh 250000</BodyCell>  */}
                                         <div className='h-10'></div>
     
                                     </tr> 

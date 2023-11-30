@@ -465,7 +465,7 @@ export function TripsTable({ selectedTab,trips,filteredTrips,handleEditClick }: 
       const currentDate = new Date();   
       const filteredAllocation = filteredTrips.filter((trip: any) => {   
 
-        const maintenanceDate = new Date(trip.start_time.seconds * 1000);
+        const maintenanceDate = new Date(trip?.start_time?.seconds * 1000);
     
         if (selectedTab === 0) {
           // Show all trips for the first tab
@@ -562,24 +562,12 @@ export function TripsTable({ selectedTab,trips,filteredTrips,handleEditClick }: 
                             </thead>
                             <tbody className="divide-y divide-gray-200  bg-[#FAFAFB]">
                             {filteredAllocation.map((trip,index) => {  
-                            const vehicle = trip.vehicle; // Assuming trip.vehicle contains the vehicle identifier
-                            const currentMonth = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(new Date());
-                          // Determine the months the trip spans
-                           const startMonth = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(trip.start_time.toDate());
-                           const endMonth = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(trip.end_time.toDate());
 
-                          // Update trip count and month for the vehicle
-                           const tripCount = (tripsPerVehicle[vehicle]?.count || 0) + calculateTripCount(startMonth, endMonth, currentMonth);
-                           const lastMonth = endMonth; // Assuming the last month is the end month of the trip
-                           tripsPerVehicle[vehicle] = { count: tripCount, lastMonth };
-                       // Format the trip ID
-                           const formattedTripCount = tripCount.toString().padStart(2, '0');
-                           const tripId = `${lastMonth} ${formattedTripCount} ${vehicle}`;
                                      return( 
                                         <Fragment key={index}>  
                                      <div className="w-full mb-2 font-nunito font-regular"></div>
-                                <tr key={tripId} className='my-2 border-solid border-2  bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>
-                                    <td className="whitespace-nowrap py-2 pl-4 pr-3  text-d-blue sm:pl-0"  onClick={() => handleTripClick(trip)}>{tripId}</td>
+                                <tr key={trip.tripId} className='my-2 border-solid border-2  bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>
+                                    <td className="whitespace-nowrap py-2 pl-4 pr-3  text-d-blue sm:pl-0"  onClick={() => handleTripClick(trip)}>{trip.tripId}</td>
                                     <td className="whitespace-nowrap px-2 py-4">
                                     {trip.vehicle}                                   
                                      </td>
@@ -587,7 +575,9 @@ export function TripsTable({ selectedTab,trips,filteredTrips,handleEditClick }: 
                                     <td className="whitespace-nowrap px-2 py-2  ">{trip.pick_up_location}</td>
                                     {/* <td className="whitespace-nowrap px-2 py-2  ">100KM</td> */}
                                     <td className="whitespace-nowrap px-2 py-2">
-                                   {calculateHourDifference(trip.start_time.toDate(), trip.end_time.toDate())} Hours
+                                   {/* {calculateHourDifference(trip.start_time.toDate(), trip.end_time.toDate())} Hours */}
+                                   {trip.start_time?.toDate && trip.end_time?.toDate && calculateHourDifference(trip.start_time.toDate(), trip.end_time.toDate())} Hours
+
                                     </td>
                                     <td className="whitespace-nowrap px-2 py-2   text-black">Ksh {trip.dealValue}</td>
                                     <td className="whitespace-nowrap py-2 px-2 text-left font-medium">

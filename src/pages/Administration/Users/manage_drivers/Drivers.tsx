@@ -63,7 +63,30 @@ export default function Drivers(){
         console.log("Search Query:", query);
         setSearchQuery(query);
       }; 
-   
+
+      useEffect(() => {
+ 
+        const fetchedDrivers = async () => {
+            try {
+                const querySnapshot = await getDocs(collection(fbDb, 'drivers'));
+                const driversData = querySnapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setfetchedDrivers(driversData);
+            } catch (error) {
+                console.error('Error fetching Drivers:', error);
+            }
+        };
+    
+    
+        fetchedDrivers();
+    }, []); 
+    function generateUserId(adminCount: number) {
+        // Customize this logic based on your requirements
+        return `D${adminCount.toString().padStart(3, '0')}`;
+    }
+
 
     const handleSubmit = async (values: { name: any; phonenumber: any; email_adress: any;country: any; city: any;vehicle_type: any;model: any;year: any;number: any;profile: any;identity_card: any; good_conduct: File | null,        
     }) => { 
@@ -130,7 +153,9 @@ export default function Drivers(){
                     identity_card:idImageUrl,  
                     archive:false, 
                     good_conduct:pdfFileUrl,
-                    registration_date: registration_date
+                    registration_date: registration_date,
+                    driversId: generateUserId(fetchedDrivers.length + 1), 
+
                 };
         
                 const docRef = await addDoc(collection(fbDb, 'drivers'), DriversData);
@@ -141,24 +166,7 @@ export default function Drivers(){
                 console.error('Error adding Driver:', error);
             } 
     } 
-    useEffect(() => {
  
-        const fetchedDrivers = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(fbDb, 'drivers'));
-                const driversData = querySnapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                setfetchedDrivers(driversData);
-            } catch (error) {
-                console.error('Error fetching Drivers:', error);
-            }
-        };
-    
-    
-        fetchedDrivers();
-    }, []); 
     const updateFetchedDrivers = (updatedDrivers: SetStateAction<DocumentData[]>) => {
         setfetchedDrivers(updatedDrivers);
     };
@@ -665,7 +673,7 @@ const updateDriverStatusInDatabase = async (driverId: string, newStatus: boolean
                                     <div className='w-full mb-2'></div>
                                     <tr key={index}  className='border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular '>
                                         <td className="whitespace-nowrap  pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0 font-nunito font-regular" onClick={() => handleDriverClick(drivers)}>
-                                        {driverId}  
+                                        {drivers.driversId}  
                                         </td>
                                         <BodyCell>
                                         {drivers.name}
