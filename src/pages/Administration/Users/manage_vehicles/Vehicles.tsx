@@ -7,7 +7,7 @@ import { TableBody } from "@/components/Table/Row";
 import { Formik, Field, Form } from 'formik/dist/index';
 import { FormModal } from "@/components/Modals/FormModal";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { getFirestore, collection, doc, setDoc, addDoc,getDocs, DocumentData, deleteDoc, getDoc, updateDoc, query, where } from 'firebase/firestore';
+import { getFirestore, collection, doc, setDoc, addDoc,getDocs, DocumentData, getDoc, updateDoc, query, where } from 'firebase/firestore';
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import { useRouter } from "next/router";
 import Select, { SelectChangeEvent } from '@mui/material/Select';

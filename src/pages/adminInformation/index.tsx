@@ -6,11 +6,12 @@ import { fbDb } from "@/firebase/configs";
 import { Formik, Field, Form } from 'formik/dist/index';
 import { useRouter } from "next/router";
 import { toast } from 'react-hot-toast';
-import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, DocumentData, getDocs } from 'firebase/firestore';
 import Link from "next/link";
-import { useState } from "react"; 
+import { useEffect, useState } from "react"; 
 import bcrypt from 'bcryptjs';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+
 
 
 
@@ -19,6 +20,8 @@ export default function AdminInformation() {
     const router = useRouter();
     const [isCheckboxChecked, setIsCheckboxChecked] = useState(false); 
     const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
+    const [fetchedAdmins, setFetchedAdmins] = useState<DocumentData[]>([]);   
+
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -33,7 +36,30 @@ export default function AdminInformation() {
 
     const handleCheckboxChange = (event: { target: { checked: boolean | ((prevState: boolean) => boolean); }; }) => {
       setIsCheckboxChecked(event.target.checked);
-    };
+    }; 
+
+    useEffect(() => {
+      const fetchAdmins = async () => {
+          try {
+              const querySnapshot = await getDocs(collection(fbDb, 'admins'));
+              const adminsData = querySnapshot.docs.map((doc) => ({
+                  id: doc.id,
+                  ...doc.data()
+              }));
+              setFetchedAdmins(adminsData);
+          } catch (error) {
+              console.error('Error fetching admins:', error);
+          }
+      };
+  
+      fetchAdmins();
+  }, []);  
+
+  
+  function generateUserId(adminCount: number) {
+    // Customize this logic based on your requirements
+    return `U${adminCount.toString().padStart(3, '0')}`;
+}
 
 
 
@@ -72,6 +98,7 @@ export default function AdminInformation() {
     
         const data = {
           userId, // You can store the UID in your Firestore document
+          adminId: generateUserId(fetchedAdmins.length + 1),
           firstname,
           lastname,
           email,
