@@ -73,5 +73,54 @@
     justify-between: center; /* Tabs fill available space on larger screens */
   }
 }
+/* Your existing styles */
+/* Your existing styles */
 
+/* Media query for screens smaller than 640px */
+@media (max-width: 640px) {
+  .form-input,
+  .form-textarea,
+  .searchbar,
+  .searchBarContainer,
+  .btn-google,
+  .btn-flex {
+    /* Adjust styles for smaller screens */
+    /* For example: */
+    font-size: 14px;
+    padding: 8px;
+  }
+}
 
+/* Media query for screens between 641px and 768px */
+@media (min-width: 641px) and (max-width: 768px) {
+  .form-input,
+  .form-textarea,
+  .searchbar,
+  .searchBarContainer,
+  .btn-google,
+  .btn-flex {
+    /* Adjust styles for medium-sized screens */
+    /* For example: */
+    font-size: 14px;
+    padding: 8px;
+  }
+}
+
+/* Media query for screens larger than 768px */
+@media (min-width: 769px) {
+  .form-input,
+  .form-textarea,
+  .searchbar,
+  .searchBarContainer,
+  .btn-google,
+  .btn-flex {
+    /* Adjust styles for larger screens */
+    /* For example: */
+    font-size: 14px;
+    padding: 8px;
+  }
+}
+
+/* Additional media queries as needed */
+
+/* Your existing styles */

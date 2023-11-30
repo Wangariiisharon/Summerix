@@ -109,7 +109,9 @@ const navigation = [
         <div className="flex flex-row">
           <div
             ref={drawerRef}
-            className={`flex flex-col bg-d-blue h-screen overflow-y-auto px-6 lg:w-72 ${isDrawerOpen ? 'lg:w-72 h-screen' : 'hidden'}`}
+            // className={`flex flex-col bg-d-blue h-screen overflow-y-auto px-6 lg:w-72 ${isDrawerOpen ? 'lg:w-72 h-screen' : 'hidden'}`}
+            className={`flex flex-col bg-d-blue h-screen overflow-y-auto px-6 lg:w-72 sm:w-60 ${isDrawerOpen ? 'lg:w-72 h-screen' : 'hidden'}`}
+
           >
             <div className="flex h-16 py-3 pb-4 shrink-0 items-center">
               <DashLogo /> 
@@ -156,9 +158,11 @@ const navigation = [
           </div> 
           <div className="bg-[#F34C4C]"></div>
           <div className={`flex flex-row fixed top-0 h-10 bg-[#FFFFFF] flex items-center shadow-inner ${isDrawerOpen ? 'fixed left-72 w-full' : 'w-full'}`}>
-          <div className={`ml-4 lg:fixed ${isDrawerOpen ? 'fixed left-72 ml-16' : 'fixed left-7'} cursor-pointer`} onClick={toggleSidebar}>
+          {/* <div className={`ml-4 lg:fixed ${isDrawerOpen ? 'fixed left-72 ml-16' : 'fixed left-7'} cursor-pointer`} onClick={toggleSidebar}> */}
+          <div className={`ml-4 ${isDrawerOpen ? 'fixed left-72 ml-16 lg:fixed' : 'fixed left-7'} cursor-pointer`} onClick={toggleSidebar}>
           <i className="fa fa-bars" aria-hidden="true"></i>
-        </div> 
+        </div>  
+
           <div className='mb-6'>
           <img src="Frame 13.png" className="fixed right-14 w-8" alt="" />
           {/* <img src="Ellipse 1.png" className="w-9 fixed right-4 pl-2" alt="" /> */} 

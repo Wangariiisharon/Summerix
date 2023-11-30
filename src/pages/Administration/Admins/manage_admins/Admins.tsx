@@ -66,6 +66,10 @@ export default function Admins() {
     const handleReset = () => {
         setOpen(false)
     }
+    function generateUserId(adminCount: number) {
+        // Customize this logic based on your requirements
+        return `U${adminCount.toString().padStart(3, '0')}`;
+    }
     const handleSubmit = async (values: { firstname: any; lastname: any; email: any; phonenumber: any; super_admin: boolean; invitationSent: boolean }) => {
         console.log("Submitted Values:", values);
     
@@ -94,6 +98,7 @@ export default function Admins() {
             }
     
             const adminData = {
+                adminId: generateUserId(filteredAdmins.length + 1),
                 firstname: values.firstname,
                 lastname: values.lastname,
                 email: values.email,
@@ -509,7 +514,7 @@ export function AdminsTable({ selectedTab,updateFetchedAdmins,handleEditClick,ad
             <div className='w-full mb-2'></div>
                 <tr className='border-solid border-2 border-[#D9E2F6] h-10 font-nunito font-regular'>
                     <td className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0">
-                        {userId}
+                        {admin.adminId}
                     </td> 
                     <BodyCell>
                         {`${admin.firstname} ${admin.lastname}`}

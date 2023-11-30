@@ -20,27 +20,27 @@ export default function LoginPage() {
   useEffect(() => {
     const handleSignInWithEmailLink = async () => {
       const auth = getAuth(firebaseApp);
-
+  
       // Check if the URL is a valid sign-in link
       if (isSignInWithEmailLink(auth, window.location.href)) {
         let email = window.localStorage.getItem('emailForSignIn');
-
+  
         // Handle the case where email is null
         if (!email) {
           // Prompt the user to enter their email if it's not stored in local storage
           email = window.prompt('Please provide your email for confirmation');
         }
-
+  
         // Check again if email is still null before proceeding
         if (email) {
           // Complete the sign-in process
           try {
             await signInWithEmailLink(auth, email, window.location.href);
-
+  
             // Clear the email from storage (optional)
             window.localStorage.removeItem('emailForSignIn');
             console.log('Successfully signed in');
-
+  
             // Redirect or perform other necessary actions after successful sign-in
             router.push('/Dashboard');
           } catch (error) {
@@ -51,11 +51,12 @@ export default function LoginPage() {
         }
       }
     };
-
+  
     // Call the function to handle sign-in with email link
     handleSignInWithEmailLink();
-  }, []); 
-
+  }, []);
+  
+  
   const doGoogleSignIn = async () => {
 
     const fbAuth = getAuth(firebaseApp);

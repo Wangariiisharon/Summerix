@@ -85,8 +85,8 @@ export default function DashboardComponent() {
   
     const cards = [
       { amount: overallEarnings.toString(), href: '#', icon: '/icons/cashIcon.png', name: 'Overall Earnings' },
-      { amount: earningsPerTruck.toString(), href: '#', icon: '/icons/cardIcon.png', name: 'Earnings per truck' },
-      { amount: trucksAvailable.toString(), href: '#', icon: '/icons/bluetruckIcon.png', name: 'Trucks Available' },
+      { amount: earningsPerTruck.toString(), href: '#', icon: '/icons/cashIcon.png', name: 'Earnings per truck' },
+      { amount: trucksAvailable.toString(), href: '#', icon: '/icons/cashIcon.png', name: 'Trucks Available' },
     ];
     return (
         <SiteLayout>

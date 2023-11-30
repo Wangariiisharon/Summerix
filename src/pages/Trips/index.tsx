@@ -300,6 +300,24 @@ export default function TripsComponent() {
         }
       }; 
    
+// Assuming tripsPerVehicle is a global variable to keep track of trip counts
+const tripsPerVehicle: Record<string, { count: number; lastMonth: string }> = {};
+const currentMonth = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(new Date());
+
+// Function to calculate the trip count for a given month and vehicle
+function calculateTripCount(vehicle: string, startMonth: string): number {
+  const vehicleTrips = tripsPerVehicle[vehicle];
+
+  if (vehicleTrips && vehicleTrips.lastMonth === startMonth) {
+    // If the vehicle has trips in the start month, return the count
+    return vehicleTrips.count + 1; // Include the current trip in the count
+  }
+
+  // If no trips for the start month, return 1 for the current trip
+  return 1;
+}
+
+
     const handleSubmit = async (values: { requested_by: string; pick_up_location: string; drop_off_location: string; vehicle: string; start_time: string; end_time: string; cargo_type: string; cargo_quantity: string; memo: string; company: string; client: string; dealValue: number;}) => {
         setOpen(false); 
         console.log("Submitted Values:", values);
@@ -309,7 +327,7 @@ export default function TripsComponent() {
                 return;
             }
     
-            if (!values.requested_by || !values.vehicle || !values.pick_up_location || !values.drop_off_location || !values.start_time || !values.end_time || !values.cargo_type || !values.cargo_quantity || !values.company||values.client||values.dealValue      
+            if (!values.requested_by || !values.vehicle || !values.pick_up_location || !values.drop_off_location || !values.start_time || !values.end_time || !values.cargo_type || !values.cargo_quantity || !values.company||!values.client||!values.dealValue      
             ) {
                 console.error('Required form fields are missing');
                 return;
@@ -330,7 +348,26 @@ export default function TripsComponent() {
             if (!selectedDriver) {
                 console.error('Selected driver or vehicle not found');
                 return;
-            }
+            } 
+
+            const startMonth = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(startDateObj);
+            const endMonth = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(endDateObj);
+        
+            
+            // const tripCount = (tripsPerVehicle[values.vehicle]?.count || 0) + calculateTripCount(values.vehicle, currentMonth);
+            // const lastMonth = endMonth;
+            // tripsPerVehicle[values.vehicle] = { count: tripCount, lastMonth };
+        
+            // // Format the trip ID
+            // const formattedTripCount = tripCount.toString().padStart(2, '0');
+            // const tripId = `${lastMonth} ${formattedTripCount} ${values.vehicle}`;
+         const tripCount = (tripsPerVehicle[values.vehicle]?.count || 0) + calculateTripCount(values.vehicle, startMonth);
+         const lastMonth = startMonth;
+    
+    // ... your other code ...
+
+                const formattedTripCount = tripCount.toString().padStart(2, '0');
+               const tripId = `${lastMonth} ${formattedTripCount} ${values.vehicle}`;
     
             const maintenanceData = {
                 requested_by: {
@@ -338,6 +375,7 @@ export default function TripsComponent() {
                     name: selectedDriver.name,
                     phonenumber: selectedDriver.phonenumber
                 },
+                tripId: tripId,
                 vehicle:values.vehicle,
                 start_time: startTimestamp,
                 end_time: endTimestamp, 

@@ -117,7 +117,8 @@ export default function Drivers(){
                     console.log('Good Conduct File URL:', pdfFileUrl);
                 }
             
-         
+                const registration_date = new Date();
+
 
                 const DriversData = {
                     name: values.name,
@@ -125,18 +126,11 @@ export default function Drivers(){
                     email_adress: values.email_adress,
                     country:values.country,
                     city:values.city,
-                    vehicle_type:values.vehicle_type,
-                    model:values.model,
-                    year:values.year,
-                    number:values.number,
                     profile:profileImageUrl,  
                     identity_card:idImageUrl,  
                     archive:false, 
-                    good_conduct:pdfFileUrl
-                    // completedTrips:values.completedTrips, 
-
-
-
+                    good_conduct:pdfFileUrl,
+                    registration_date: registration_date
                 };
         
                 const docRef = await addDoc(collection(fbDb, 'drivers'), DriversData);
@@ -428,6 +422,24 @@ export default function Drivers(){
                            const file = event.currentTarget?.files?.[0];
                             if (file) {
                           form.setFieldValue('good_conduct', file);
+                          }
+                         }}
+                        />
+                        )}
+                    </Field>
+                    </label> 
+
+                    <label className="block">
+                          <label className="form-label">ID</label>
+                          <Field name="identity_card">
+                             {({ field, form }: any) => (
+                             <input
+                            type="file"
+                            accept=".pdf"
+                           onChange={(event) => {
+                           const file = event.currentTarget?.files?.[0];
+                            if (file) {
+                          form.setFieldValue('identity_card', file);
                           }
                          }}
                         />
