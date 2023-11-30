@@ -418,7 +418,7 @@ export function MaintananceTable({ selectedTab,maintananceList }: VehiclesTableP
         const currentDate = new Date();
 
         const filteredMaintenance = maintananceList.filter((maintenance: any) => {
-            const maintenanceDate = new Date(maintenance.date.seconds * 1000);
+            const maintenanceDate = new Date(maintenance?.date?.seconds * 1000);
     
             if (selectedTab === 0) {
                 // Show items with dates that are yet to reach (future dates)

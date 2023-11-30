@@ -27,7 +27,8 @@ interface TripDetailsProps {
       cargo_quantity: number; 
       depature_city: string;  
       arrival_city: string; 
-      memo: string; 
+      memo: string;
+      tripId: string; 
       trip_status:string;
       vehicle: {
         id: string;
@@ -99,13 +100,12 @@ export default function ViewTrip() {
 
   return ( 
     <SiteLayout> 
-    <p className='font-bold text-sm mt-4'>{id}</p> 
+    <p className='font-bold text-sm mt-4'>{tripDetails.tripId}</p> 
     <div className='flex flex-row'>   
 
     <div className=' w-2/5 bg-white shadow rounded-md flex flex-col'>   
     <p className='text-sm mt-2 ml-2 font-bold'>Trip Details</p>  
     <div className='flex flex-row ml-6'>
-     {/* <i className="fa fa-arrows-v fa-3x" aria-hidden="true"></i>    */}
      <Image
       src="/Route Marker.png"
       width={8}

@@ -9,7 +9,7 @@ import {Fragment, SetStateAction, useEffect, useState} from "react";
 // import SearchBar from "../../components/Forms/input"
 import SiteLayout from "@/Layout/SiteLayout";
 import { fbDb } from "@/firebase/configs";
-import { getDocs, collection, DocumentData, Timestamp, addDoc, doc, setDoc } from "firebase/firestore";
+import { getDocs, collection, DocumentData, Timestamp, addDoc , doc, setDoc, query, where } from "firebase/firestore";
 import { Field,Formik,Form,useFormik,FormikHelpers } from "formik";  
 import  setFieldValue from "formik";  
 import { Tab } from "@headlessui/react";
@@ -21,7 +21,13 @@ import { AnyIfEmpty } from "react-redux";
 import { ErrorMessage } from 'formik'; 
 import exportDataToCSV  from "../../components/Exports/tripsExport";   
 import toast from "react-hot-toast";
+import { startOfMonth, endOfMonth, format } from 'date-fns';
+
 // Update the import path
+
+interface TripCounts {
+    [key: string]: number;
+}
 
 const tabs = [ 
   { key: 'all', name: 'All' },
@@ -317,89 +323,105 @@ function calculateTripCount(vehicle: string, startMonth: string): number {
   return 1;
 }
 
+const tripCounts: { [key: string]: { month: string; counts: { [vehicle: string]: number } } } = {};
 
-    const handleSubmit = async (values: { requested_by: string; pick_up_location: string; drop_off_location: string; vehicle: string; start_time: string; end_time: string; cargo_type: string; cargo_quantity: string; memo: string; company: string; client: string; dealValue: number;}) => {
-        setOpen(false); 
-        console.log("Submitted Values:", values);
-        try {
-            if (!values) {
-                console.error('Form values are undefined');
-                return;
-            }
-    
-            if (!values.requested_by || !values.vehicle || !values.pick_up_location || !values.drop_off_location || !values.start_time || !values.end_time || !values.cargo_type || !values.cargo_quantity || !values.company||!values.client||!values.dealValue      
-            ) {
-                console.error('Required form fields are missing');
-                return;
-            }
-    
-            const startDateObj = new Date(values.start_time + "T00:00:00");
-            const endDateObj = new Date(values.end_time + "T00:00:00");
-    
-            const startTimestamp = Timestamp.fromDate(startDateObj);
-            const endTimestamp = Timestamp.fromDate(endDateObj);
-    
-            // Find the selected driver based on the provided name
-            const selectedDriver = drivers.find(driver => driver.name === values.requested_by);
-    
-            // Find the selected vehicle based on the provided license plate
-            // const selectedVehicle = vehicles.find(vehicle => vehicle.lisence_plate === values.vehicle);
-    
-            if (!selectedDriver) {
-                console.error('Selected driver or vehicle not found');
-                return;
-            } 
+const generateTripId = async (vehicle: string, start_time: string) => {
+  try {
+    const startDateObj = new Date(start_time + "T00:00:00");
+    const startOfMonthDate = startOfMonth(startDateObj);
+    const endOfMonthDate = endOfMonth(startDateObj);
 
-            const startMonth = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(startDateObj);
-            const endMonth = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(endDateObj);
-        
-            
-            // const tripCount = (tripsPerVehicle[values.vehicle]?.count || 0) + calculateTripCount(values.vehicle, currentMonth);
-            // const lastMonth = endMonth;
-            // tripsPerVehicle[values.vehicle] = { count: tripCount, lastMonth };
-        
-            // // Format the trip ID
-            // const formattedTripCount = tripCount.toString().padStart(2, '0');
-            // const tripId = `${lastMonth} ${formattedTripCount} ${values.vehicle}`;
-         const tripCount = (tripsPerVehicle[values.vehicle]?.count || 0) + calculateTripCount(values.vehicle, startMonth);
-         const lastMonth = startMonth;
-    
-    // ... your other code ...
+    // Query Firestore to get the number of trips for the selected vehicle in the current month
+    const tripsQuery = query(
+      collection(fbDb, 'trips'),
+      where('vehicle', '==', vehicle),
+      where('start_time', '>=', startOfMonthDate),
+      where('start_time', '<=', endOfMonthDate)
+    );
 
-                const formattedTripCount = tripCount.toString().padStart(2, '0');
-               const tripId = `${lastMonth} ${formattedTripCount} ${values.vehicle}`;
-    
-            const maintenanceData = {
-                requested_by: {
-                    id: selectedDriver.id,
-                    name: selectedDriver.name,
-                    phonenumber: selectedDriver.phonenumber
-                },
-                tripId: tripId,
-                vehicle:values.vehicle,
-                start_time: startTimestamp,
-                end_time: endTimestamp, 
-                pick_up_location: values.pick_up_location,
-                drop_off_location: values.drop_off_location,
-                cargo_type: values.cargo_type,
-                cargo_quantity: values.cargo_quantity,
-                memo: values.memo,
-                company: values.company,  
-                trip_status:"", 
-                client:values.client, 
-                dealValue: values.dealValue,
- 
-            };
+    const tripsSnapshot = await getDocs(tripsQuery);
+    const numberOfTrips = tripsSnapshot.size + 1; // Increment by 1
 
-    
-            const docRef = await addDoc(collection(fbDb, 'trips'), maintenanceData);
-            console.log('Trip added with ID: ', docRef.id);
-    
-            setOpen(false);
-        } catch (error) {
-            console.error('Error adding Trip:', error);
+
+    const formattedMonth = format(startDateObj, 'MMM');
+    const tripId = `${formattedMonth} ${numberOfTrips.toString().padStart(2, '0')} ${vehicle}`;
+    return tripId;
+  } catch (error) {
+    console.error('Error generating tripId:', error);
+    throw error;
+  }
+};
+
+
+
+const handleSubmit = async (values: { requested_by: string; pick_up_location: string; drop_off_location: string; vehicle: string; start_time: string; end_time: string; cargo_type: string; cargo_quantity: string; memo: string; company: string; client: string; dealValue: number;}) => {
+    setOpen(false); 
+    console.log("Submitted Values:", values);
+    try {
+        if (!values) {
+            console.error('Form values are undefined');
+            return;
         }
-    }   
+
+        if (!values.requested_by || !values.vehicle || !values.pick_up_location || !values.drop_off_location || !values.start_time || !values.end_time || !values.cargo_type || !values.cargo_quantity || !values.company||!values.client||!values.dealValue) {
+            console.error('Required form fields are missing');
+            return;
+        } 
+            // Query Firestore to get the number of trips for the selected vehicle
+        const tripsQuery = query(collection(fbDb, 'trips'), where('vehicle', '==', values.vehicle));
+        const tripsSnapshot = await getDocs(tripsQuery);
+       const numberOfTrips = tripsSnapshot.size;
+
+    console.log(`Number of trips for ${values.vehicle}: ${numberOfTrips}`);
+
+        const startDateObj = new Date(values.start_time + "T00:00:00");
+        const endDateObj = new Date(values.end_time + "T00:00:00");
+
+        const startTimestamp = Timestamp.fromDate(startDateObj);
+        const endTimestamp = Timestamp.fromDate(endDateObj);
+
+        // Find the selected driver based on the provided name
+        const selectedDriver = drivers.find(driver => driver.name === values.requested_by);
+
+        if (!selectedDriver) {
+            console.error('Selected driver or vehicle not found');
+            return;
+        } 
+
+
+        const tripId = await generateTripId(values.vehicle, values.start_time);
+
+
+        const maintenanceData = {
+            requested_by: {
+                id: selectedDriver.id,
+                name: selectedDriver.name,
+                phonenumber: selectedDriver.phonenumber
+            },
+            tripId: tripId,
+            vehicle: values.vehicle,
+            start_time: startTimestamp,
+            end_time: endTimestamp, 
+            pick_up_location: values.pick_up_location,
+            drop_off_location: values.drop_off_location,
+            cargo_type: values.cargo_type,
+            cargo_quantity: values.cargo_quantity,
+            memo: values.memo,
+            company: values.company,  
+            trip_status:"", 
+            client: values.client, 
+            dealValue: values.dealValue,
+        };
+
+        const docRef = await addDoc(collection(fbDb, 'trips'), maintenanceData);
+        console.log('Trip added with ID: ', docRef.id);
+
+        setOpen(false);
+    } catch (error) {
+        console.error('Error adding Trip:', error);
+    }
+};
+
     const handleCompanyChange = (selectedCompanyName: SetStateAction<string>) => {
       setSelectedCompany(selectedCompanyName);
     };
@@ -428,20 +450,20 @@ function calculateTripCount(vehicle: string, startMonth: string): number {
     const countTrips = (selectedTab: number) => {
       switch (selectedTab) {
         case 0:
-          // Count all trips
+          // Count all trips`w
           return filteredTrips.length;
         case 1:
           // Count trips where the current date is within the trip's start and end times
           return filteredTrips.filter((trip) => {
-            const startTime = new Date(trip.start_time.seconds * 1000);
-            const endTime = new Date(trip.end_time.seconds * 1000);
+            const startTime = new Date(trip?.start_time?.seconds * 1000);
+            const endTime = new Date(trip?.end_time?.seconds * 1000);
             return currentDate >= startTime && currentDate < endTime;
           }).length;
         case 2:
         case 3:
           // Count trips where the current date is greater than the trip's end time
           return filteredTrips.filter((trip) => {
-            const endTime = new Date(trip.end_time.seconds * 1000);
+            const endTime = new Date(trip?.end_time?.seconds * 1000);
             return currentDate > endTime;
           }).length;
         default:
@@ -506,7 +528,7 @@ function calculateTripCount(vehicle: string, startMonth: string): number {
                  <div className='flex w-full flex-row mt-6'>  
                 <div className=" ml-5 w-full">
                 <SearchBar
-                  placeholder='Search  for track Delivery status, destination '
+                  placeholder='Search  Trips '
                   value={searchQuery}
                   onChange={handleSearchChange} 
                   className='w-96'
@@ -988,8 +1010,8 @@ interface TripsPerVehicle {
       const tripsPerVehicle: TripsPerVehicle = {};
       const currentDate = new Date();
       const filteredAllocation = filteredTrips.filter(trip => {
-        const startTime = new Date(trip.start_time.seconds * 1000);
-        const endTime = new Date(trip.end_time.seconds * 1000);
+        const startTime = new Date(trip?.start_time?.seconds * 1000);
+        const endTime = new Date(trip?.end_time?.seconds * 1000);
       
         switch (selectedTab) {
           case 0:
@@ -1120,9 +1142,9 @@ interface TripsPerVehicle {
                                      return( 
                                         <Fragment key={index}>  
                                      <div className="w-full mb-2 font-nunito font-regular"></div>
-                                   <tr key={tripId} className='my-2 border-solid border-2  bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>
+                                   <tr key={trip.tripId} className='my-2 border-solid border-2  bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>
                                     <td className="whitespace-nowrap py-2 pl-4 pr-3  text-d-blue sm:pl-0"  onClick={() => handleTripClick(trip)}>
-                                      {tripId}
+                                      {trip.tripId}
                                       </td>
                                     <td className="whitespace-nowrap px-2 py-2 ">
                                     {trip.vehicle}                                   

@@ -74,7 +74,12 @@ export default function Vehicles(){
     const handleReset = () => {
         setOpen(false) 
         setShowAddVehicleModal(false);
-    }
+    } 
+    function generateUserId(adminCount: number) {
+      // Customize this logic based on your requirements
+      return `V${adminCount.toString().padStart(3, '0')}`;
+  }
+  
     const handleSubmit = async (values: { cargo_capacity: any; lisence_plate: any; vehicle_type: any; color: any; availability_status: any;fuel_budget:any; }) => {
       // Check if values are undefined
       if (!values) {
@@ -105,7 +110,9 @@ export default function Vehicles(){
           archive: false,
           registration_date: registration_date,
           availability_status: values.availability_status,
-          fuel_budget:values.fuel_budget
+          fuel_budget:values.fuel_budget,
+          vehiclesId: generateUserId(fetchedVehicles.length + 1), 
+
         };
   
         const docRef = await addDoc(vehiclesCollection, VehicleData);
@@ -755,7 +762,7 @@ export default function Vehicles(){
                           <div className="w-full mb-2 font-nunito font-regular"></div>
                           <tr className="border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular">
                             <td className="whitespace-nowrap pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0">
-                              {vehicleId}
+                              {vehicle.vehiclesId}
                             </td>
                             <BodyCell>{vehicle.vehicle_type}</BodyCell>
                             <BodyCell>{vehicle.lisence_plate}</BodyCell> 

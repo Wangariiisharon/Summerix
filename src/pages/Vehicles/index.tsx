@@ -250,11 +250,17 @@ export function DummyTable({ selectedTab,vehicles,vehicleTrips }: VehiclesTableP
                                     <tr key={vehicle.id} className='my-2 border-solid border-2  bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>  
                                         <td className="whitespace-nowrap py-2 pl-4 pr-3  text-d-blue sm:pl-0"  onClick={() => handleVehicleClick(vehicle)}>{vehicle.lisence_plate}</td>
                                         <td className="whitespace-nowrap px-2 py-2 relative">
-                                        <div className={`rounded-full inline-block text-sm h-8 absolute transform -translate-y-1/2 ${vehicle.availability_status === 'Available' ? 'bg-[#E2E9FB] text-[#0068DD]' : (vehicle.availability_status === 'On Route' ? 'bg-[#B9F3EE] text-[#076960]' : 'bg-[#EAEAEA] text-[#364250]')}`} style={{ width: `${vehicle.availability_status.length * 7}px`, left: '-8px' }}>
+                                        {/* <div className={`rounded-full inline-block text-sm h-8 absolute transform -translate-y-1/2 ${vehicle.availability_status === 'Available' ? 'bg-[#E2E9FB] text-[#0068DD]' : (vehicle.availability_status === 'On Route' ? 'bg-[#B9F3EE] text-[#076960]' : 'bg-[#EAEAEA] text-[#364250]')}`} style={{ width: `${vehicle.availability_status.length * 7}px`, left: '-8px' }}>
                                                 <span className="absolute inset-0 flex items-center justify-center">
                                                     {vehicle.availability_status}
                                                 </span>
-                                            </div> 
+                                            </div>  */} 
+                                             <div className={`rounded-full inline-block text-sm h-8 absolute transform -translate-y-1/2 ${vehicle?.availability_status === 'Available' ? 'bg-[#E2E9FB] text-[#0068DD]' : (vehicle?.availability_status === 'On Route' ? 'bg-[#B9F3EE] text-[#076960]' : 'bg-[#EAEAEA] text-[#364250]')}`} style={{ width: `${(vehicle?.availability_status?.length || 0) * 7}px`, left: '-8px' }}>
+  <span className="absolute inset-0 flex items-center justify-center">
+    {vehicle?.availability_status}
+  </span>
+</div>
+
                                             </td> 
     
                                             <td className="whitespace-nowrap px-2 py-2 ">

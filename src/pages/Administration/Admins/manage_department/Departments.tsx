@@ -29,6 +29,28 @@ export default function Departments(){
 
 
     }
+    useEffect(() => {
+
+        const fetchedDepartments = async () => {
+            try {
+                const querySnapshot = await getDocs(collection(fbDb, 'departments'));
+                const departmentsData = querySnapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setFetchedDepartments(departmentsData);
+            } catch (error) {
+                console.error('Error fetching Departments:', error);
+            }
+        };
+    
+        fetchedDepartments();
+    }, []);  
+    function generateUserId(adminCount: number) {
+        // Customize this logic based on your requirements
+        return `D${adminCount.toString().padStart(3, '0')}`;
+    }
+
     const handleSubmit = async (values: { name: any;}) => { 
         console.log("Submitted Values:", values);
     
@@ -52,8 +74,8 @@ export default function Departments(){
     
             const updated = new Date();
             const DepartmentsData = {
+                departmentId: generateUserId(fetchedDepartments.length + 1),
                 name: values.name,
-                // members: values.members,
                 updated: updated,  
                 status:true,      
             };
@@ -66,23 +88,7 @@ export default function Departments(){
             console.error('Error adding Driver:', error);
         } 
 } 
-    useEffect(() => {
 
-        const fetchedDepartments = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(fbDb, 'departments'));
-                const departmentsData = querySnapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                setFetchedDepartments(departmentsData);
-            } catch (error) {
-                console.error('Error fetching Departments:', error);
-            }
-        };
-    
-        fetchedDepartments();
-    }, []);  
     const updatefetchedDepartments = (updatedDepartments: SetStateAction<DocumentData[]>) => {
         setFetchedDepartments(updatedDepartments);
     };
@@ -220,9 +226,16 @@ export function DepartmentsTable({ departments,updateFetchedDepartments }: Vehic
                     </thead>
                     <TableBody>
                         {departments.map((departments, index) => {
-                        const { seconds } = departments.updated; 
-                        const updatedDate = new Date(seconds * 1000); 
-                        const departmentId = `D${(index + 1).toString().padStart(3, '0')}`;
+                        // const { seconds } = departments.updated; 
+                        const { seconds } = departments?.updated || {}; // Use optional chaining
+                        if (seconds !== undefined) {
+                            const updatedDate = new Date(seconds * 1000);
+                            const departmentId = `D${(index + 1).toString().padStart(3, '0')}`;
+                            console.log("Vehicle ID", departmentId);
+
+                        // const updatedDate = new Date(seconds * 1000); 
+                        // const departmentId = `D${(index + 1).toString().padStart(3, '0')}`; 
+                        
                         console.log("Vehicle ID",departmentId); 
 
                             return (
@@ -230,7 +243,7 @@ export function DepartmentsTable({ departments,updateFetchedDepartments }: Vehic
                                    <div className="w-full mb-2"></div>
                                     <tr className='border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] h-10 font-nunito font-regular' >
                                         <td className="whitespace-nowrap flex flex-row  pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0 font-nunito font-regular">
-                                            {departmentId}  <ViewMenu departmentId={departments.id} onDeactivate={() => handleDeactivate(departments.id)}/>
+                                            {departments.departmentId}  <ViewMenu departmentId={departments.id} onDeactivate={() => handleDeactivate(departments.id)}/>
                                             {/* router.push(`/Administration/manage_roles/assignRole?id=${admin.id}`); */}
                                         </td>
                                         <BodyCell>
@@ -244,6 +257,7 @@ export function DepartmentsTable({ departments,updateFetchedDepartments }: Vehic
                                     </tr>
                                 </Fragment>
                             )
+                        }
                         })}
                     </TableBody>
                 </>
