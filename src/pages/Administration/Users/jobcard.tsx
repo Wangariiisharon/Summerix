@@ -1,5 +1,5 @@
 import { fbDb } from '@/firebase/configs';
-import { DocumentData, addDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { DocumentData, addDoc, collection, getDocs, getFirestore, onSnapshot, query, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react' 
 import { parseISO, format } from 'date-fns';
 import {AddButton, Button, DeleteBtn, EditBtn} from "@/components/Buttons"; 
@@ -7,34 +7,68 @@ import {PlusIcon, XMarkIcon} from "@heroicons/react/24/outline";
 import {FormModal} from "@/components/Modals/FormModal"; 
 import { Formik, Field, Form } from 'formik/dist/index';
 import { toast } from 'react-hot-toast';
+import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
 
 
 
 export default function Jobcard() { 
     const [open, setOpen] = useState(false)
     const [jobcards, setjobcards] = useState<string[]>([]); 
-
     const [showAddJobcardModal, setShowAddJobcardModal] = useState(false);
     const [showScheduleMaintenanceModal, setShowScheduleMaintenanceModal] = useState(false);
-  const [fetchedJobcards, setfetchedJobcards]=useState<DocumentData[]>([]);   
-  useEffect(() => {
+  const [fetchedJobcards, setfetchedJobcards]=useState<DocumentData[]>([]);    
+
+  const {organisationId} = useAuthContext(); 
+  console.log("Jobcards Organisation ID:", organisationId);
   
-    const fetchedJobcards = async () => {
-        try {
-            const querySnapshot = await getDocs(collection(fbDb, 'jobcard'));
-            const jobcardData = querySnapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setfetchedJobcards(jobcardData);
-        } catch (error) {
-            console.error('Error fetching Jobcards:', error);
-        }
-    };
+//   useEffect(() => {
+  
+//     const fetchedJobcards = async () => {
+//         try {
+//             const querySnapshot = await getDocs(collection(fbDb, 'jobcard'));
+//             const jobcardData = querySnapshot.docs.map((doc) => ({
+//                 id: doc.id,
+//                 ...doc.data()
+//             }));
+//             setfetchedJobcards(jobcardData);
+//         } catch (error) {
+//             console.error('Error fetching Jobcards:', error);
+//         }
+//     };
     
 
-    fetchedJobcards();
-}, []);  
+//     fetchedJobcards();
+// }, []);   
+      useEffect(() => {
+        const fetchedJobcards = async () => { 
+        const db = getFirestore();
+
+      try {
+      if (organisationId) {
+      const q = query(collection(db, 'jobcard'), where('organisationId', '==', organisationId));
+
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const jobcardData = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+     }));
+     setfetchedJobcards(jobcardData);
+     });
+
+     return () => unsubscribe(); 
+
+    } else {
+    console.error('Organisation ID is not available.');
+    }  
+   } catch (error) {
+   console.error('Error fetching Jobcards:', error);
+     }
+     };
+    fetchedJobcards(); 
+
+}, [organisationId]);  
+
+
 const handleJobCardReset = () => {
     setShowAddJobcardModal(false) 
     setOpen(false)
@@ -72,7 +106,8 @@ const handleAddJobcard = async (values: { name: any }) => {
   
       const JobcardData = {
         name: values.name,
-        status: true,
+        status: true, 
+        organisationId: organisationId,
       };
   
       const docRef = await addDoc(jobcardCollection, JobcardData);

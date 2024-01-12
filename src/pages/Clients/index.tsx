@@ -8,9 +8,9 @@ import SiteLayout from "@/Layout/SiteLayout";
 import { FormModal } from "@/components/Modals/FormModal";
 import { Formik, Field,Form } from "formik";
 import { fbDb } from "@/firebase/configs"; 
-import SearchBar from "../../components/Forms/input"
+import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
 
-import { DocumentData, addDoc, collection, getDocs } from "firebase/firestore";
+import { DocumentData, addDoc, collection, getDocs, getFirestore, onSnapshot, query, where } from "firebase/firestore";
 
 
 
@@ -25,6 +25,9 @@ export default function ClientsComponent() {
     const [open, setOpen] = useState(false)
     const [searchQuery, setSearchQuery] = useState(""); 
     const [fetchedClients, setfetchedClients]=useState<DocumentData[]>([]);  
+    
+    const {organisationId}=useAuthContext() 
+    
 
  
 
@@ -38,11 +41,7 @@ export default function ClientsComponent() {
         const nameMatch = fullName.includes(searchQuery.toLowerCase());
           return nameMatch;
       });
-    //   const filteredDrivers = drivers.filter((drivers) => { 
-
-    //     const fullName = `${drivers.name}`.toLowerCase();
-    //     return fullName.includes(searchQuery.toLowerCase());
-    //   });   
+   
     const handleClick = () => {
     }
     const handleSearch = () => {
@@ -52,28 +51,37 @@ export default function ClientsComponent() {
     const handleJobCardReset = () => {
         setOpen(false)
     }  
-    useEffect(() => { 
-        const fetchedClients = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(fbDb, 'clients'));  
-                console.log(querySnapshot);
-                const clientsData: DocumentData[] = []; 
-                console.log(clientsData);
-                
-                querySnapshot.forEach((doc) => {
-                    const trips = {
-                        id: doc.id,
-                        ...doc.data()
-                    };
-                    clientsData.push(trips);
-                });
-                setfetchedClients(clientsData);
-            } catch (error) {
-                console.error('Error fetching Clients:', error);
-            }
-        };
-        fetchedClients();
-    }, []);  
+   
+
+
+    useEffect(() => {
+        const fetchedClients = async () => { 
+                const db = getFirestore();
+    
+          try {
+            // Ensure organisationId is available before making the query
+            if (organisationId) {
+           const q = query(collection(db, 'clients'), where('organisationId', '==', organisationId));
+    
+          const unsubscribe = onSnapshot(q, (querySnapshot) => {
+          const clientsData = querySnapshot.docs.map((doc) => ({
+           id: doc.id,
+           ...doc.data(),
+           }));
+           setfetchedClients(clientsData);
+          });
+    
+           return () => unsubscribe(); 
+    
+            } else {
+              console.error('Organisation ID is not available.');
+            }  
+          } catch (error) {
+            console.error('Error fetching Clients:', error);
+          }
+            };
+            fetchedClients();
+             }, [organisationId]);
     const handleAddClient = async (values: { name: any;}) => { 
         setOpen(true)
         console.log("Submitted Values:", values);  

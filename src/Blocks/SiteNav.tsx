@@ -19,7 +19,8 @@ interface User {
   lastname: string;
 }
 interface AuthContext {
-  currentUser: User | null;
+  currentUser: User | null; 
+  organisationId: string | null; 
 }
 export function classNames(...classes: Array<string>) {
   return classes.filter(Boolean).join(' ');
@@ -33,9 +34,10 @@ export default function SiteNav({ children }: Props) {
   // const { currentUser } = useAuthContext(); 
   const [userInitials, setUserInitials] = useState<string>('');  // Add this line to declare userInitials as a state variable
 
-   const { currentUser } = useAuthContext() as AuthContext;
- 
-  console.log("Current User",currentUser);
+  const { currentUser, organisationId } = useAuthContext() as AuthContext;
+  console.log("Organisation ID SiteNav", organisationId);
+  console.log("Current User SiteNav",currentUser);
+
   
   useEffect(() => {
     const fetchAdmin = async () => {

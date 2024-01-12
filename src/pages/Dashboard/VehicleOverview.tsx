@@ -3,9 +3,11 @@ import {Chart as ChartJS, ArcElement, Tooltip, ScriptableContext} from 'chart.js
 import {ChevronDownIcon} from "@heroicons/react/24/solid";
 import {AnyObject} from "chart.js/dist/types/basic";
 import {FormEvent, Fragment, useEffect, useState} from "react";
-import { DocumentData, collection, getDocs } from "firebase/firestore";
+import { DocumentData, collection, getDocs, query, where } from "firebase/firestore";
 import { fbDb } from "@/firebase/configs"; 
-import { log } from 'console';
+import { log } from 'console'; 
+import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+
 
 ChartJS.register(ArcElement, Tooltip);
 
@@ -24,29 +26,31 @@ interface dataset {
 
 export default function VehicleOverview() {  
     const [fetchedVehicles, setFetchedVehicles] = useState<DocumentData[]>([]);  
+    const {organisationId}=useAuthContext() 
 
     useEffect(() => {
         const fetchedVehicles = async () => {
             try {
-                const querySnapshot = await getDocs(collection(fbDb, 'vehicles'));
-                const vehiclesData: DocumentData[] = [];
-                querySnapshot.forEach((doc) => {
-                    const vehicle = {
-                        id: doc.id,
-                        ...doc.data()
-                    };
-                    vehiclesData.push(vehicle);
-                });
-                setFetchedVehicles(vehiclesData); 
-                console.log("Dashboard Fetched Vehicles",vehiclesData);
-                
-
+              // Ensure organisationId is available before making the query
+              if (organisationId) {
+                const q = query(collection(fbDb, 'vehicles'), where('organisationId', '==', organisationId));
+                const querySnapshot = await getDocs(q);
+      
+                const vehiclesData = querySnapshot.docs.map((doc) => ({
+                  id: doc.id,
+                  ...doc.data()
+                }));
+                setFetchedVehicles(vehiclesData);
+              } else {
+                // Handle the case when organisationId is not available
+                console.error('Organisation ID is not available.');
+              }  
             } catch (error) {
-                console.error('Error fetching Vehicles:', error);
+              console.error('Error fetching Vehicles:', error);
             }
-        };
+          };
         fetchedVehicles();
-    }, []); 
+    }, [organisationId]); 
 const allVehicles= fetchedVehicles.length 
 console.log("All Vehicles",allVehicles);
 

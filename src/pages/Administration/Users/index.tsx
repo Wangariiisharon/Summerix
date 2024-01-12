@@ -3,7 +3,8 @@ import {Tab} from "@headlessui/react";
 import {Fragment} from "react";
 import Admins from "../Admins/manage_admins/Admins";
 import Cities from "./manage_cities/Cities";
-import Vehicles from "./manage_vehicles/Vehicles";
+import Vehicles from "./manage_vehicles/Vehicles"; 
+import Class from "./manage_class/class";
 import Drivers from "./manage_drivers/Drivers";
 import Roles from "../Admins/manage_roles/Roles";
 import Departments from "../Admins/manage_department/Departments";
@@ -19,11 +20,12 @@ function classNames(...classes: string[]) {
 export default function UsersComponent() {
     const [selectedTabIndex, setSelectedTabIndex] = useState(0);
 
-    const operationsTabs = [
-      { name: 'Vehicles', href: '#', current: selectedTabIndex === 0 },
-      { name: 'Drivers', href: '#', current: selectedTabIndex === 1 },
-      { name: 'Clients', href: '#', current: selectedTabIndex === 2 },
-      { name: 'Job Cards', href: '#', current: selectedTabIndex === 3 },
+    const operationsTabs = [ 
+      { name: 'Class', href: '#', current: selectedTabIndex === 0 },
+      { name: 'Vehicles', href: '#', current: selectedTabIndex === 1 },
+      { name: 'Drivers', href: '#', current: selectedTabIndex === 2 },
+      { name: 'Clients', href: '#', current: selectedTabIndex === 3 },
+      { name: 'Job Cards', href: '#', current: selectedTabIndex === 4},
     ];
 
     return (
@@ -47,6 +49,9 @@ export default function UsersComponent() {
   ))}
 </Tab.List>
             <Tab.Panels className="bg-[#FAFAFB] h-full">
+            <Tab.Panel className={classNames(selectedTabIndex === 0 ? 'ui-selected border-b-4' : '', 'h-full')}>
+              <Class />
+              </Tab.Panel>
               <Tab.Panel className={classNames(selectedTabIndex === 0 ? 'ui-selected border-b-4' : '', 'h-full')}>
               <Vehicles />
               </Tab.Panel>

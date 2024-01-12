@@ -2,9 +2,7 @@ import 'firebase/firestore';
 import AuthLayout from "@/components/Authentication/AuthLayout";
 import Seo from "@/components/Seo";
 import firebaseApp, { fbDb } from '@/firebase/configs';
-
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-
 import { Field, Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { toast } from 'react-hot-toast';

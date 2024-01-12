@@ -5,49 +5,64 @@ import Table, {DummyTable} from "@/components/Table/Table";
 import { CheckCircleIcon, XCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { BodyCell, HeaderCell } from "../../../../components/Table/Cells";
 import { TableBody } from "../../../../components/Table/Row";
-import { DocumentData, addDoc, collection, getDocs, query, where } from "firebase/firestore";
+import { DocumentData, addDoc, collection, getDocs, getFirestore, onSnapshot, query, where } from "firebase/firestore";
 import { fbDb } from "@/firebase/configs";
 import { FormModal } from "@/components/Modals/FormModal";
 import { Formik, Field, Form } from 'formik/dist/index';
 import { formatDistanceToNow } from 'date-fns'; 
 import ViewMenu from "./viewMenu"
-import toast from "react-hot-toast";
+import toast from "react-hot-toast"; 
+import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+
 
 
 const Headers = ["DEPARTMENT ID", "NAME","UPDATED"]
-
-
 export default function Departments(){ 
     const [open,setOpen]=useState(false) 
     const [selectedTab, setSelectedTab] = useState<number>(0); 
-    const [fetchedDepartments, setFetchedDepartments] = useState<DocumentData[]>([]); 
+    const [fetchedDepartments, setFetchedDepartments] = useState<DocumentData[]>([]);  
+    
+    const { organisationId } = useAuthContext();
+    console.log("Departments Organisation ID:", organisationId);
+
+
     const handleAdd = () => { 
         setOpen(true)
     }  
     const handleReset = () => { 
         setOpen(false)
-
-
     }
-    useEffect(() => {
 
-        const fetchedDepartments = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(fbDb, 'departments'));
-                const departmentsData = querySnapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                setFetchedDepartments(departmentsData);
-            } catch (error) {
-                console.error('Error fetching Departments:', error);
-            }
+    useEffect(() => {
+        const fetchedDepartments = async () => { 
+                const db = getFirestore();
+
+          try {
+            if (organisationId) {
+         const q = query(collection(db, 'departments'), where('organisationId', '==', organisationId));
+
+       const unsubscribe = onSnapshot(q, (querySnapshot) => {
+         const departmentsData = querySnapshot.docs.map((doc) => ({
+           id: doc.id,
+           ...doc.data(),
+         }));
+         setFetchedDepartments(departmentsData);
+       });
+
+      return () => unsubscribe(); 
+
+            } else {
+              console.error('Organisation ID is not available.');
+            }  
+          } catch (error) {
+            console.error('Error fetching Departments:', error);
+          }
         };
-    
         fetchedDepartments();
-    }, []);  
+}, [organisationId]);  
+
+
     function generateUserId(adminCount: number) {
-        // Customize this logic based on your requirements
         return `D${adminCount.toString().padStart(3, '0')}`;
     }
 
@@ -77,7 +92,8 @@ export default function Departments(){
                 departmentId: generateUserId(fetchedDepartments.length + 1),
                 name: values.name,
                 updated: updated,  
-                status:true,      
+                status:true, 
+                organisationId: organisationId      
             };
     
             const docRef = await addDoc(collection(fbDb, 'departments'), DepartmentsData);
@@ -156,19 +172,7 @@ export default function Departments(){
                               className="form-input bg-grey w-48"
                             />
                              </label>
-                             {/* <label className="block">
-                             <label className="form-label">Members</label>
-                              <Field
-                              type="number"
-                              name="members"
-                              value={values.members}
-                              className="form-input bg-grey w-48"
-                              />
-                            </label>                            */}
                              </div>
-              
-
-   
                             <div className='flex w-full justify-end mt-24 '>
                                 <Button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32' handleClick={handleReset}>Reset</Button>
                                 <button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4' type='submit' >Save</button>

@@ -8,11 +8,14 @@ import { TableBody } from "../../../../components/Table/Row";
 import SearchBar from "../../../../components/Forms/input"
 import Link from "next/link";
 import DashboardComponent from "../../../Dashboard"
-import { fbDb } from "@/firebase/configs";
-import { DocumentData, getDocs, collection, addDoc, query, where } from "firebase/firestore";
+import firebaseApp, { fbDb } from "@/firebase/configs";
+import { DocumentData, getDocs, collection, addDoc, query, where, getFirestore, onSnapshot } from "firebase/firestore";
 import { FormModal } from "@/components/Modals/FormModal";
 import { Formik, Field, Form } from 'formik/dist/index';
-import toast from "react-hot-toast";
+import toast from "react-hot-toast"; 
+import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+
 
 const Headers = ["CLIENT ID", "NAME"]
 export default function Cities(){
@@ -20,7 +23,11 @@ export default function Cities(){
     } 
     const [searchQuery, setSearchQuery] = useState(""); 
     const [fetchedClients, setfetchedClients]=useState<DocumentData[]>([]);   
-    const [open, setOpen] = useState(false)
+    const [open, setOpen] = useState(false) 
+
+   const {organisationId} = useAuthContext(); 
+   console.log(" Clienst Organisation ID:", organisationId);
+   
 
     const handleReset = () => {
         setOpen(false)
@@ -36,30 +43,42 @@ export default function Cities(){
         const nameMatch = fullName.includes(searchQuery.toLowerCase());
           return nameMatch;
       });
-  
+     
+useEffect(() => {
+    const fetchedClients = async () => { 
+            const db = getFirestore();
 
-    useEffect(() => { 
-        const fetchedClients = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(fbDb, 'clients'));
-                const clientsData = querySnapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                setfetchedClients(clientsData);
-            } catch (error) {
-                console.error('Error fetching Clients:', error);
-            }
+      try {
+        // Ensure organisationId is available before making the query
+        if (organisationId) {
+       const q = query(collection(db, 'clients'), where('organisationId', '==', organisationId));
+
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const departmentsData = querySnapshot.docs.map((doc) => ({
+       id: doc.id,
+       ...doc.data(),
+       }));
+     setfetchedClients(departmentsData);
+      });
+
+     return () => unsubscribe(); 
+
+        } else {
+          console.error('Organisation ID is not available.');
+        }  
+      } catch (error) {
+        console.error('Error fetching Clients:', error);
+      }
         };
-    
-        fetchedClients();
-    }, []);   
+       fetchedClients();
+         }, [organisationId]); 
+         
     function generateUserId(adminCount: number) {
         // Customize this logic based on your requirements
         return `C${adminCount.toString().padStart(3, '0')}`;
     }
 
-    const handleAddClient = async (values: { name: any;}) => { 
+    const handleAddClient = async (values: { name: any; address: any; contact_details: any; representative_address: any; client_details: any;}) => { 
         setOpen(true)
         console.log("Submitted Values:", values);  
 
@@ -70,7 +89,7 @@ export default function Cities(){
                 return;
             }
     
-            if (!values.name) {
+            if (!values.name||!values.address||!values.contact_details||!values.representative_address||!values.client_details) {
                 console.error('Required form fields are missing');
                 return;
             }  
@@ -81,12 +100,28 @@ export default function Cities(){
               console.error('This Client Already Exists'); 
               toast.error(`A Client with the name '${values.name}' already exists`);
               return;
-            }
+            } 
+
+            let clientDetailsImageUrl = '';  
+            if (values.client_details) {
+                const storage = getStorage(firebaseApp);
+                const storageRef = ref(storage, `client_details/${values.client_details.name}`);
+                
+                await uploadBytes(storageRef, values.client_details);
+                clientDetailsImageUrl = await getDownloadURL(storageRef);
+                console.log('Client Details URL:', clientDetailsImageUrl);
+
+            } 
 
     
             const clientsData = {
-                name: values.name,
+                name: values.name, 
+                address: values.address,
+                contact_details: values.contact_details,
+                representative_address: values.representative_address, 
+                client_details: clientDetailsImageUrl,
                 clientId: generateUserId(fetchedClients.length + 1), 
+                organisationId: organisationId,
 
             };
     
@@ -114,11 +149,9 @@ export default function Cities(){
                                 Add Client
                             </>
                         </Button>  
-            </div>
+                     </div>
 
                         </div>
-
-
 
                     </div>
 
@@ -141,14 +174,13 @@ export default function Cities(){
 
                     <Formik
                     initialValues={{
-                        name: "",
-            
+                        name: "", 
+                        address: "",
+                        contact_details: "", 
+                        representative_address: "", 
+                        client_details: null,
                                       }}
                         onSubmit={(values) => handleAddClient(values)}  
-  
-                        // onSubmit={(values) => handleEditSubmit(values)}
-
-
                         >
                        {({ values }) => (
                     <Form>
@@ -162,7 +194,57 @@ export default function Cities(){
                               value={values.name}
                               className="form-input bg-grey w-48"
                             />
-                             </label>                         
+                             </label>   
+
+                            <label className="block">
+                             <label className="form-label">Address</label>
+                             <Field
+                              type="text"
+                              name="address"
+                              value={values.address}
+                              className="form-input bg-grey w-48"
+                            />
+                             </label>                        
+                             </div> 
+                             <div className='flex w-full justify-between mt-8'>
+                            <label className="block">
+                             <label className="form-label">CONTACT DETAILS</label>
+                             <Field
+                              type="text"
+                              name="contact_details"
+                              value={values.contact_details}
+                              className="form-input bg-grey w-48"
+                            />
+                             </label>   
+
+                            <label className="block">
+                             <label className="form-label">REPRESENTATIVE ADDRESS</label>
+                             <Field
+                              type="text"
+                              name="representative_address"
+                              value={values.representative_address}
+                              className="form-input bg-grey w-48"
+                            />
+                             </label>                        
+                             </div> 
+
+                             <div className='flex w-full justify-between mt-8'>
+                             <label className="block">
+                             <label className="form-label">CLIENT DETAILS</label>
+                             <Field name="client_details" >
+                            {({ field, form }:any) => (
+                            <input 
+                            type="file"
+                           onChange={(event) => {
+                           const file = event.currentTarget?.files?.[0];
+                            if (file) {
+                          form.setFieldValue('client_details', file);
+                          }
+                         }} 
+                               />
+                            )}
+                           </Field>
+                          </label>                           
                              </div>
         
                             <div className='flex w-full justify-end mt-24 '>

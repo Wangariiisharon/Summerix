@@ -9,7 +9,7 @@ import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { FormModal } from "@/components/Modals/FormModal";
 import { Formik, Field, Form } from 'formik/dist/index';
 import ImageInput from '@/components/ImageInputs';
-import { getFirestore, collection, setDoc, addDoc,getDocs, DocumentData, query, where } from 'firebase/firestore';
+import { getFirestore, collection, setDoc, addDoc,getDocs, DocumentData, query, where, onSnapshot } from 'firebase/firestore';
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import 'firebase/firestore';
 import 'firebase/storage';
@@ -19,15 +19,9 @@ import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
 import { useRouter } from 'next/router'; 
 import { deleteDoc, doc } from 'firebase/firestore'; 
 import exportDriverDataToCSV  from "../../../../components/Exports/driversExport";   
-import { toast } from 'react-hot-toast';
-
-
-
-
-
-
-
-
+import { toast } from 'react-hot-toast'; 
+import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+import { AnyIfEmpty } from "react-redux";
 
 const Headers = ["DRIVER ID", "NAME", "MOBILE", "NATIONALITY"]
 
@@ -50,7 +44,10 @@ export default function Drivers(){
       }); 
     const [isExporting, setIsExporting] = useState(false);
 
-    const router=useRouter()
+    const router=useRouter() 
+    const {organisationId} = useAuthContext(); 
+    console.log("Drivers Organisation ID:", organisationId);
+    
 
     const handleAddDriver = () => { 
         setOpen(true)
@@ -64,31 +61,42 @@ export default function Drivers(){
         setSearchQuery(query);
       }; 
 
-      useEffect(() => {
- 
-        const fetchedDrivers = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(fbDb, 'drivers'));
-                const driversData = querySnapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                setfetchedDrivers(driversData);
-            } catch (error) {
-                console.error('Error fetching Drivers:', error);
-            }
-        };
-    
-    
-        fetchedDrivers();
-    }, []); 
+
+useEffect(() => {
+  const fetchedDrivers = async () => { 
+          const db = getFirestore();
+
+    try {
+      // Ensure organisationId is available before making the query
+      if (organisationId) {
+     const q = query(collection(db, 'drivers'), where('organisationId', '==', organisationId));
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const driversData = querySnapshot.docs.map((doc) => ({
+     id: doc.id,
+     ...doc.data(),
+     }));
+     setfetchedDrivers(driversData);
+    });
+
+     return () => unsubscribe(); 
+
+      } else {
+        console.error('Organisation ID is not available.');
+      }  
+    } catch (error) {
+      console.error('Error fetching Drivers:', error);
+    }
+      };
+      fetchedDrivers();
+       }, [organisationId]); 
     function generateUserId(adminCount: number) {
         // Customize this logic based on your requirements
         return `D${adminCount.toString().padStart(3, '0')}`;
     }
 
 
-    const handleSubmit = async (values: { name: any; phonenumber: any; email_adress: any;country: any; city: any;vehicle_type: any;model: any;year: any;number: any;profile: any;identity_card: any; good_conduct: File | null,        
+    const handleSubmit = async (values: { name: any; phonenumber: any; email_adress: any;country: any; city: any;vehicle_type: any;model: any;year: any;number: any;profile: any;identity_card: any; good_conduct: any,        
     }) => { 
             console.log("Submitted Values:", values);
         
@@ -154,7 +162,8 @@ export default function Drivers(){
                     archive:false, 
                     good_conduct:pdfFileUrl,
                     registration_date: registration_date,
-                    driversId: generateUserId(fetchedDrivers.length + 1), 
+                    driversId: generateUserId(fetchedDrivers.length + 1),  
+                    organisationId: organisationId,
 
                 };
         
@@ -597,14 +606,7 @@ export function DriversTable({ drivers,updateFetchedDrivers, handleEditClick }: 
         const fullName = `${drivers.name}`.toLowerCase();
         return fullName.includes(searchQuery.toLowerCase());
       });  
-    //   const filteredDrivers = drivers.filter(driver => {
-    //     const isArchived = driver.archive === false;
-      
-    //     const fullName = driver.name.toLowerCase();
-    //     const includesSearchQuery = fullName.includes(searchQuery.toLowerCase());
-      
-    //     return isArchived && includesSearchQuery;
-    //   }); 
+
 
     const sortedDrivers = [...filteredDrivers].sort((a, b) => {
         if (a.archive && !b.archive) {

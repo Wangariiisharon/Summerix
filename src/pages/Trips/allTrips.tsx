@@ -9,13 +9,15 @@ import {Fragment, useEffect, useState} from "react";
 import SearchBar from "../../components/Forms/input"
 import SiteLayout from "@/Layout/SiteLayout";
 import { fbDb } from "@/firebase/configs";
-import { getDocs, collection, DocumentData, Timestamp, addDoc, doc, setDoc } from "firebase/firestore";
+import { getDocs, collection, DocumentData, Timestamp, addDoc, doc, setDoc, query, where } from "firebase/firestore";
 import { Field,Formik,Form} from "formik";  
 import  setFieldValue from "formik";  
 import { Tab } from "@headlessui/react";
 import Maintenance from "../Vehicles/maintanance";
 import VehicleAllocation from "../Vehicles/vehicle_allocation";
-import { useRouter } from "next/router";
+import { useRouter } from "next/router"; 
+import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+
 
 
 const tabs = [
@@ -56,8 +58,10 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
         { name: 'UPCOMING TRIPS', href: '#', current: selectedTabIndex === 1 },
       ];
     
-
-    const router=useRouter()  
+    const router=useRouter()   
+    const {organisationId}= useAuthContext() 
+    console.log("AllTrips Page OrganisationId: ", organisationId);
+    
     const handleEditClick = (trip: DocumentData) => {
         setSelectedTrip(trip);
         setEditFormInitialValues({
@@ -172,63 +176,87 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
     useEffect(() => { 
         const fetchDrivers = async () => {
             try {
-                const querySnapshot = await getDocs(collection(fbDb, 'drivers'));
+              // Ensure organisationId is available before making the query
+              if (organisationId) {
+                const q = query(collection(fbDb, 'drivers'), where('organisationId', '==', organisationId));
+                const querySnapshot = await getDocs(q);
                 const driverDetails = querySnapshot.docs.map(doc => {
-                    const data = doc.data();
-                    return {
-                        id: doc.id,
-                        name: data.name,
-                        phonenumber: data.phonenumber,  
-                    };
-                });
-                setDrivers(driverDetails);
-            } catch (error) {
-                console.error('Error fetching Drivers:', error);
-            }
-        };
-        
+                const data = doc.data();
+                return {
+                id: doc.id,
+                name: data.name,
+                phonenumber: data.phonenumber,  
+               };
+               });
+               setDrivers(driverDetails); 
 
+              } else {
+                // Handle the case when organisationId is not available
+                console.error('Organisation ID is not available for fetching Vehicle names.');
+              }
+            } catch (error) {
+              console.error('Error fetching Drivers:', error);
+            }
+          };
+ 
         const fetchVehicleDetails = async () => {
             try {
-                const querySnapshot = await getDocs(collection(fbDb, 'vehicles'));
-                const vehicleDetails = querySnapshot.docs.map(doc => {
-                    const data = doc.data();
-                    return {
-                        id: doc.id,
-                        name: data.name,
-                        availability_status: data.availability_status,
-                        lisence_plate: data.lisence_plate
-                    };
-                });
-                setVehicles(vehicleDetails);
+              // Ensure organisationId is available before making the query
+              if (organisationId) {
+                const q = query(collection(fbDb, 'vehicles'), where('organisationId', '==', organisationId));
+                const querySnapshot = await getDocs(q);
+             const vehicleDetails = querySnapshot.docs.map(doc => {
+             const data = doc.data();
+             return {
+                id: doc.id,
+                name: data.name,
+                availability_status: data.availability_status,
+                lisence_plate: data.lisence_plate
+              };
+             });
+           setVehicles(vehicleDetails);
+
+              } else {
+                // Handle the case when organisationId is not available
+                console.error('Organisation ID is not available for fetching Vehicles .');
+              }
             } catch (error) {
-                console.error('Error fetching Vehicle details:', error);
+              console.error('Error fetching Vehicles:', error);
             }
-        };
+          };
+        
 
         const fetchedTrips = async () => {
             try {
-                const querySnapshot = await getDocs(collection(fbDb, 'trips'));  
-                console.log(querySnapshot);
-                const tripsData: DocumentData[] = []; 
-                console.log(tripsData);
-                
-                querySnapshot.forEach((doc) => {
-                    const trips = {
-                        id: doc.id,
-                        ...doc.data()
-                    };
-                    tripsData.push(trips);
-                });
-                setfetchedTrips(tripsData);
+              // Ensure organisationId is available before making the query
+              if (organisationId) {
+                const q = query(collection(fbDb, 'trips'), where('organisationId', '==', organisationId));
+                const querySnapshot = await getDocs(q);
+                   const tripsData: DocumentData[] = []; 
+                   console.log(tripsData);
+        
+                  querySnapshot.forEach((doc) => {
+                  const trips = {
+                  id: doc.id,
+                  ...doc.data()
+                  };
+                 tripsData.push(trips);
+                 });
+                  setfetchedTrips(tripsData);
+
+              } else {
+                // Handle the case when organisationId is not available
+                console.error('Organisation ID is not available for fetching Trips .');
+              }
             } catch (error) {
-                console.error('Error fetching Trips:', error);
+              console.error('Error fetching Trips:', error);
             }
-        };
+          };
+
         fetchedTrips();
         fetchVehicleDetails(); 
         fetchDrivers();
-    }, []);  
+    }, [organisationId]);  
     return (
             <div>
             <div className="flex flex-col">

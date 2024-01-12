@@ -1,61 +1,54 @@
 import {ChevronRightIcon, SignalIcon} from "@heroicons/react/20/solid";
-import { DocumentData, collection, getDocs } from "firebase/firestore";
+import { DocumentData, collection, getDocs, query, where } from "firebase/firestore";
 import { fbDb } from "@/firebase/configs";  
-import {FormEvent, Fragment, useEffect, useState} from "react";
+import {FormEvent, Fragment, useEffect, useState} from "react"; 
+import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
 
 
-const people = [
-    {
-        name: 'Vehicle out of service',
-        title: '25',
-        department: '',
-        email: '',
-        role: '',
-        image:
-            'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    },
 
-    // More people...
-]
+
 interface VehicleData {
     id: string;
     availability_status: string;  
-    // pick_up_location: string;
-    // drop_off_location: string; 
 
-     // Add other properties as needed
-    // Add other properties specific to your vehicle data
 }
 export default function OutOfService() {  
-    const [fetchedVehicles, setFetchedVehicles] = useState<VehicleData[]>([]);
+    const [fetchedVehicles, setFetchedVehicles] = useState<VehicleData[]>([]);  
+    const {organisationId}=useAuthContext()
 
     useEffect(() => {
-        const fetchVehicles = async () => {
+        const fetchVehicles = async () => { 
+
             try {
-                const querySnapshot = await getDocs(collection(fbDb, 'vehicles'));
-                const vehiclesData: VehicleData[] = [];
-
-                querySnapshot.forEach((doc) => {
-                    const vehicle = {
-                        id: doc.id,
-                        availability_status: doc.data().availability_status,
-
-                        ...doc.data()
-                    };
-                    // Check if the vehicle's status is "Out Of Service"
-                    if (vehicle.availability_status === 'Out Of Service') {
-                        vehiclesData.push(vehicle);
-                    }
-                });
-
-                setFetchedVehicles(vehiclesData);
+                if (organisationId){ 
+                    const q = query(collection(fbDb, 'vehicles'), where('organisationId', '==', organisationId));
+                    const querySnapshot = await getDocs(q);              
+                   const vehiclesData: VehicleData[] = [];
+      
+                    querySnapshot.forEach((doc) => {
+                        const vehicle = {
+                            id: doc.id,
+                            availability_status: doc.data().availability_status,
+      
+                            ...doc.data()
+                        };
+                        // Check if the vehicle's status is "Out Of Service"
+                        if (vehicle.availability_status === 'Out Of Service') {
+                            vehiclesData.push(vehicle);
+                        }
+                    });
+      
+                    setFetchedVehicles(vehiclesData);
+                  } else{ 
+                      console.error('Organisation ID is not available.');
+                  }
             } catch (error) {
                 console.error('Error fetching Vehicles:', error);
             }
         };
 
         fetchVehicles();
-    }, []); 
+    }, [organisationId]); 
     const outOfService=fetchedVehicles.length
     return (
         <> 
