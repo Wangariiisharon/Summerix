@@ -9,7 +9,7 @@ import {Fragment, useEffect, useState} from "react";
 import SearchBar from "../../components/Forms/input"
 import SiteLayout from "@/Layout/SiteLayout";
 import { fbDb } from "@/firebase/configs";
-import { getDocs, collection, DocumentData, Timestamp, addDoc, doc, setDoc, query, where } from "firebase/firestore";
+import { getDocs, collection, DocumentData, Timestamp, addDoc, doc, setDoc, query, where, getFirestore, onSnapshot } from "firebase/firestore";
 import { Field,Formik,Form} from "formik";  
 import  setFieldValue from "formik";  
 import { Tab } from "@headlessui/react";
@@ -226,32 +226,31 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
           };
         
 
-        const fetchedTrips = async () => {
-            try {
-              // Ensure organisationId is available before making the query
-              if (organisationId) {
-                const q = query(collection(fbDb, 'trips'), where('organisationId', '==', organisationId));
-                const querySnapshot = await getDocs(q);
-                   const tripsData: DocumentData[] = []; 
-                   console.log(tripsData);
-        
-                  querySnapshot.forEach((doc) => {
-                  const trips = {
-                  id: doc.id,
-                  ...doc.data()
-                  };
-                 tripsData.push(trips);
-                 });
-                  setfetchedTrips(tripsData);
+          const fetchedTrips = async () => { 
+            const db = getFirestore();
 
-              } else {
-                // Handle the case when organisationId is not available
-                console.error('Organisation ID is not available for fetching Trips .');
-              }
-            } catch (error) {
-              console.error('Error fetching Trips:', error);
-            }
-          };
+           try {
+           if (organisationId) {
+          const q = query(collection(db, 'trips'), where('organisationId', '==', organisationId));
+
+         const unsubscribe = onSnapshot(q, (querySnapshot) => {
+         const tripsData = querySnapshot.docs.map((doc) => ({
+         id: doc.id,
+         ...doc.data(),
+         }));
+        setfetchedTrips(tripsData);
+         });
+
+         return () => unsubscribe(); 
+
+         } else {
+           console.error('Organisation ID is not available.');
+         }  
+       } catch (error) {
+         console.error('Error fetching Trips:', error);
+       }
+     };
+    
 
         fetchedTrips();
         fetchVehicleDetails(); 
