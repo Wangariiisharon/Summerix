@@ -3,49 +3,52 @@ import {ThisWeek} from "@/pages/Dashboard/index";
 import {Chart as ChartJS, ArcElement, Tooltip, ScriptableContext} from 'chart.js';
 import {AnyObject} from "chart.js/dist/types/basic";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
-import { DocumentData, collection, getDocs } from "firebase/firestore";
+import { DocumentData, collection, getDocs, query, where } from "firebase/firestore";
 import { fbDb } from "@/firebase/configs"; 
-import {Fragment, SetStateAction, useEffect, useState} from "react";
+import {Fragment, SetStateAction, useEffect, useState} from "react"; 
+import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+
 
 
 ChartJS.register(ArcElement, Tooltip);
 
 
 export default function TripsPieGraph() {
-    const [fetchedTrips, setfetchedTrips]=useState<DocumentData[]>([]);   
+    const [fetchedTrips, setfetchedTrips]=useState<DocumentData[]>([]);    
+    const {organisationId}=useAuthContext()
 
     // @ts-ignore 
     useEffect(() => { 
         const fetchedTrips = async () => {
             try {
-                const querySnapshot = await getDocs(collection(fbDb, 'trips'));  
-                console.log(querySnapshot);
-                const tripsData: DocumentData[] = []; 
-                console.log(tripsData);
-                
-                querySnapshot.forEach((doc) => {
-                    const trips = {
-                        id: doc.id,
-                        ...doc.data()
-                    };
-                    tripsData.push(trips);
-                });
-                setfetchedTrips(tripsData);
+              // Ensure organisationId is available before making the query
+              if (organisationId) {
+                const q = query(collection(fbDb, 'trips'), where('organisationId', '==', organisationId));
+                const querySnapshot = await getDocs(q);
+                   const tripsData: DocumentData[] = []; 
+                   console.log(tripsData);
+        
+                  querySnapshot.forEach((doc) => {
+                  const trips = {
+                  id: doc.id,
+                  ...doc.data()
+                  };
+                 tripsData.push(trips);
+                 });
+                  setfetchedTrips(tripsData);
+      
+              } else {
+                // Handle the case when organisationId is not available
+                console.error('Organisation ID is not available for fetching Trips .');
+              }
             } catch (error) {
-                console.error('Error fetching Trips:', error);
+              console.error('Error fetching Trips:', error);
             }
-        }; 
-  
+          };
+      
         fetchedTrips();
-    }, []); 
-    // const allTrips = fetchedTrips.length;
-    // console.log("All Trips", allTrips);
-    // const currentDate = Date.now(); 
-    // const passedTripsCount = fetchedTrips.filter((trip) => trip.start_time < currentDate || trip.end_time < currentDate).length;
-    // console.log("Passed trips count", passedTripsCount);
-    // const completedPercentage = allTrips > 0 ? (passedTripsCount / allTrips) : 0;
-    // console.log("completedPercentage", completedPercentage);
-    // const percentage = completedPercentage * 100;
+    }, [organisationId]); 
+ 
     const currentDate = Date.now();
     const completedTripsCount = fetchedTrips.filter(
       (trip) => trip.start_time < currentDate && trip.end_time < currentDate

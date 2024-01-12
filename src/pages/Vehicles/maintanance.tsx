@@ -11,7 +11,7 @@ import SiteLayout from "@/Layout/SiteLayout";
 import { Tab } from "@headlessui/react";
 import Planned from "../Administration/Users/jobcard";
 import firebaseApp, { fbDb } from "@/firebase/configs";
-import { getDocs, collection, DocumentData, addDoc, Timestamp, updateDoc, doc } from "firebase/firestore";
+import { getDocs, collection, DocumentData, addDoc, Timestamp, updateDoc, doc, query, where, getFirestore, onSnapshot } from "firebase/firestore";
 import { parseISO, format } from 'date-fns';
 import Jobcard from "../Administration/Users/jobcard"; 
 import { serverTimestamp } from 'firebase/firestore'
@@ -19,6 +19,8 @@ import { AnyCnameRecord } from "dns";
 import { FirebaseStorage, getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import ImageInput from "@/components/ImageInputs"; 
 import { toast } from 'react-hot-toast';
+import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+
 
 function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ');
@@ -33,116 +35,106 @@ export default function Maintenance() {
     const [showAddJobcardModal, setShowAddJobcardModal] = useState(false);
     const [showScheduleMaintenanceModal, setShowScheduleMaintenanceModal] = useState(false);
     const [selectedTabIndex, setSelectedTabIndex] = useState(0);
-
+    
+    const {organisationId}= useAuthContext() 
+    console.log("Maintanance Page OrganisationId: ", organisationId);
+    
     const MaintainanceTabs = [
       { name: 'PLANNED', href: '#', current: selectedTabIndex === 0 },
       { name: 'HISTORY', href: '#', current: selectedTabIndex === 1 },
 
     ];
-    const handleAddClick = () => {   
-        setOpen(true)
-    }
-    const handleJobCardReset = () => {
-        setShowAddJobcardModal(false)
-    } 
+   
     const handleMaintenanceReset = () => {
         setShowScheduleMaintenanceModal(false) 
         setOpen(false)
     }   
-    const handleTabClick = (index:any) => {
-        setSelectedTab(index);
-    };  
     const handleDropdownClick = (event: { stopPropagation: () => void; }) => {
         event.stopPropagation();
     };
 
 
-    useEffect(() => { 
+    useEffect(() => {
         const fetchVehicleNames = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(fbDb, 'vehicles'));
-                const names = querySnapshot.docs.map(doc => doc.data().lisence_plate);
-                setVehicleNames(names);
-            } catch (error) {
-                console.error('Error fetching Vehicle names:', error);
+          try {
+            if (organisationId) {
+              const q = query(collection(fbDb, 'vehicles'), where('organisationId', '==', organisationId));
+              const querySnapshot = await getDocs(q);
+              const names = querySnapshot.docs.map(doc => doc.data().lisence_plate);
+              setVehicleNames(names);
+            } else {
+              // Handle the case when organisationId is not available
+              console.error('Organisation ID is not available for fetching Vehicle names.');
             }
-        }; 
+          } catch (error) {
+            console.error('Error fetching Vehicle names:', error);
+          }
+        };
+      
         const fetchJobCard = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(fbDb, 'jobcard'));
-                const names = querySnapshot.docs.map(doc => doc.data().name);
-                setjobcards(names);
-            } catch (error) {
-                console.error('Error fetching JobCard names:', error);
+          try {
+            if (organisationId) {
+              const q = query(collection(fbDb, 'jobcard'), where('organisationId', '==', organisationId));
+              const querySnapshot = await getDocs(q);
+              const names = querySnapshot.docs.map(doc => doc.data().name);
+              setjobcards(names);
+            } else {
+              console.error('Organisation ID is not available for fetching JobCard names.');
             }
-        }; 
+          } catch (error) {
+            console.error('Error fetching JobCard names:', error);
+          }
+        };
+      
         const fetchDriver = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(fbDb, 'drivers'));
-                const names = querySnapshot.docs.map(doc => doc.data().name);
-                setdrivers(names);
-            } catch (error) {
-                console.error('Error fetching Vehicle names:', error);
+          try {
+            if (organisationId) {
+              const q = query(collection(fbDb, 'drivers'), where('organisationId', '==', organisationId));
+              const querySnapshot = await getDocs(q);
+              const names = querySnapshot.docs.map(doc => doc.data().name);
+              setdrivers(names);
+            } else {
+              // Handle the case when organisationId is not available
+              console.error('Organisation ID is not available for fetching Driver names.');
             }
+          } catch (error) {
+            console.error('Error fetching Driver names:', error);
+          }
         };
-  
-        const fetchedMaintanance = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(fbDb, 'maintenance'));
-                const maintenanceData: DocumentData[] = []; 
-                console.log(maintenanceData);
-                
-                querySnapshot.forEach((doc) => {
-                    const maintenance = {
-                        id: doc.id,
-                        ...doc.data()
-                    };
-                    maintenanceData.push(maintenance);
-                });
-                setFetchedMaintanance(maintenanceData);
-            } catch (error) {
-                console.error('Error fetching maintenance:', error);
-            }
-        };
-        fetchVehicleNames(); 
-        fetchDriver();
-        fetchedMaintanance(); 
-        fetchJobCard();  
-    }, []); 
-
-    const handleAddJobcard = async (values: { name: any;}) => { 
-        setShowAddJobcardModal(true);
-        setShowScheduleMaintenanceModal(false); 
-        setOpen(true)
-        console.log("Submitted Values:", values);  
-
-    
+      
+        const fetchedMaintenance = async () => { 
+          const db = getFirestore();
+ 
         try {
-            if (!values) {
-                console.error('Form values are undefined');
-                return;
-            }
-    
-            if (!values.name) {
-                console.error('Required form fields are missing'); 
-                toast.error('Required form fields are missing');
-                return;
-            } 
+       if (organisationId) {
+       const q = query(collection(db, 'maintenance'), where('organisationId', '==', organisationId));
+ 
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+       const maintenanceData = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      }));
+       setFetchedMaintanance(maintenanceData);
+      });
+ 
+       return () => unsubscribe(); 
+ 
+       } else {
+         console.error('Organisation ID is not available.');
+       }  
+     } catch (error) {
+       console.error('Error fetching Maintanance:', error);
+    }
+  };
+      
+        fetchVehicleNames();
+        fetchDriver();
+        fetchJobCard();
+        fetchedMaintenance();
+      }, [organisationId]);  
 
-    
-            const JobcardData = {
-                name: values.name,
-            };
-    
-            const docRef = await addDoc(collection(fbDb, 'jobcard'), JobcardData);
-            console.log('Jobcard added with ID: ', docRef.id);
-    
-            setOpen(false);
-        } catch (error) {
-            console.error('Error adding jobcard:', error);
-        } 
-    } 
-    
+
+
     const handleScheduleMaintanace = async (values: { requested_by: any; cost:any; remarks:any;vehicle:any; job_cards:any; date:any; serial_number:any; part:any ; broken_partImage:any}) => {  
         setShowScheduleMaintenanceModal(true);
         setShowAddJobcardModal(false);  
@@ -184,7 +176,8 @@ export default function Maintenance() {
                 remarks: values.remarks, 
                 serial_number: values.serial_number,
                 part: values.part,
-                broken_partImage: brokenPartImageUrl,
+                broken_partImage: brokenPartImageUrl, 
+                organisationId:organisationId
             };
             const docRef = await addDoc(collection(fbDb, 'maintenance'), maintenanceData);
             console.log('Jobcard added with ID: ', docRef.id);
@@ -194,7 +187,8 @@ export default function Maintenance() {
         }  
         setShowScheduleMaintenanceModal(false);
     }
-    return (
+
+    return (  
         <>
             <div className=''>
                 <div className="flex flex-row fixed top-12 right-10">  

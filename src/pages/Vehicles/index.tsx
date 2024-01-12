@@ -14,7 +14,9 @@ import { fbDb } from "@/firebase/configs";
 import { parseISO, format } from 'date-fns';
 import Maintenance from "./maintanance";
 import VehicleAllocation from "./vehicle_allocation";
-import { useRouter } from "next/router";
+import { useRouter } from "next/router"; 
+import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+
 
 
 const Headers = [
@@ -45,25 +47,36 @@ export default function VehiclesComponent() {
     const [selectedTab, setSelectedTab] = useState<number>(0); 
     const [fetchedVehicles, setFetchedVehicles] = useState<DocumentData[]>([]);  
     const [vehicleTrips, setVehicleTrips] = useState<Record<string, number>>({}); // To store the trip counts for each vehicle
- 
-    useEffect(() => {
-        const fetchVehicles = async () => {
-          try {
-            const querySnapshot = await getDocs(collection(fbDb, 'vehicles'));
-            const vehiclesData: DocumentData[] = [];
-            querySnapshot.forEach((doc) => {
-              const vehicle = {
-                id: doc.id,
-                ...doc.data(),
-              };
-              vehiclesData.push(vehicle);
-            });
-            setFetchedVehicles(vehiclesData);
-          } catch (error) {
-            console.error('Error fetching Vehicles:', error);
-          }
-        };
+    const {organisationId}=useAuthContext() 
+    console.log("Vehicles Page page OrganisationId",organisationId);
     
+
+    useEffect(() => {
+
+        
+
+        const fetchVehicles = async () => {
+            try {
+              // Ensure organisationId is available before making the query
+              if (organisationId) {
+                const q = query(collection(fbDb, 'vehicles'), where('organisationId', '==', organisationId));
+                const querySnapshot = await getDocs(q);
+      
+                const vehiclesData = querySnapshot.docs.map((doc) => ({
+                  id: doc.id,
+                  ...doc.data()
+                }));
+                setFetchedVehicles(vehiclesData);
+              } else {
+                // Handle the case when organisationId is not available
+                console.error('Organisation ID is not available.');
+              }  
+            } catch (error) {
+              console.error('Error fetching Vehicles:', error);
+            }
+          };
+
+
         const fetchTripsAndCount = async () => {
             try {
               const querySnapshot = await getDocs(collection(fbDb, 'trips'));
@@ -99,7 +112,7 @@ export default function VehiclesComponent() {
     
         fetchVehicles();
         fetchTripsAndCount();
-      }, []);
+      }, [organisationId]);
 
 
 

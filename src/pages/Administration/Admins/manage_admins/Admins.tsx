@@ -14,10 +14,9 @@ import { FormModal } from "@/components/Modals/FormModal";
 import { Formik, Field, Form } from 'formik/dist/index';
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import { User, createUserWithEmailAndPassword, getAuth,sendSignInLinkToEmail} from 'firebase/auth';
-import { getFirestore, collection, doc, setDoc,updateDoc,addDoc,query,getDocs,where, DocumentData } from 'firebase/firestore'; 
+import { getFirestore, collection, doc, setDoc,updateDoc,addDoc,query,getDocs,where, DocumentData, getDoc, onSnapshot } from 'firebase/firestore'; 
 import { toast } from 'react-hot-toast';
-import { Switch } from "@headlessui/react"; 
-import ImageInput from '../../../../components/ImageInputs';
+import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
 
 
 
@@ -39,8 +38,11 @@ export default function Admins() {
         status:true,
 
       });
-    const router=useRouter()
- 
+    const router=useRouter()  
+    const { organisationId } = useAuthContext();
+    console.log("Admins Organisation ID:", organisationId);
+    
+
     const handleSearchChange = (e:any) => {
         const query = e.target.value;
         console.log("Search Query:", query);
@@ -70,8 +72,13 @@ export default function Admins() {
         // Customize this logic based on your requirements
         return `U${adminCount.toString().padStart(3, '0')}`;
     }
+    const auth = getAuth(firebaseApp); 
+    // const user = currentUser(auth);
+    const user = auth.currentUser; 
+    const inviterUid = user ? user.uid : null;
     const handleSubmit = async (values: { firstname: any; lastname: any; email: any; phonenumber: any; super_admin: boolean; invitationSent: boolean }) => {
         console.log("Submitted Values:", values);
+        console.log("User", user);
     
         try {
             if (!values) {
@@ -83,32 +90,71 @@ export default function Admins() {
                 console.error('Required form fields are missing');
                 return;
             }
+
+            const auth = getAuth(firebaseApp);
+
+          // Create the user with email and password
+
+        // Retrieve the UID
+        //  const authUid = userCredential.user.uid;
+         
+           const userCredential = await createUserWithEmailAndPassword(auth, values.email, "Random");
+           const authUid = userCredential.user.uid;
+
     
             // Check if user with the given email already exists
             const existingAdminQuery = query(collection(fbDb, 'admins'), where('email', '==', values.email));
             const existingAdminSnapshot = await getDocs(existingAdminQuery);
     
             if (!existingAdminSnapshot.empty) {
-                console.error('User with this email already exists'); 
-                toast.error('User with this email already exists');  
+                console.error('User with this email already exists');
+                toast.error('User with this email already exists');
                 toast.error(`A User with the Email '${values.email}' already exists`);
-
-
+    
                 return;
+            } 
+
+    
+            let organisationId; // Declare organisationId here
+    
+            // Assuming 'inviters' is the collection where inviter data is stored
+            const inviterQuery = query(collection(fbDb, 'admins'), where('userId', '==', inviterUid));
+            const inviterSnapshot = await getDocs(inviterQuery);
+    
+            console.log('Inviter Snapshot:', inviterSnapshot);
+    
+            if (!inviterSnapshot.empty) {
+                // The inviter's data is found
+                const inviterData = inviterSnapshot.docs[0].data();
+    
+                // Access the organisationId from inviterData
+                organisationId = inviterData.organisationId;
+    
+                // Now you can use organisationId as needed
+                console.log('Organisation ID:', organisationId);
+            } else {
+                // Inviter not found
+                console.error('Inviter not found');
             }
     
             const adminData = {
-                adminId: generateUserId(filteredAdmins.length + 1),
+                adminId: generateUserId(filteredAdmins.length + 1), 
                 firstname: values.firstname,
                 lastname: values.lastname,
                 email: values.email,
                 phonenumber: values.phonenumber,
                 status: true,
                 super_admin: values.super_admin,
+                inviterUid: inviterUid,
+                organisationId: organisationId,
+                userId: authUid
+                
+
             };
     
             const docRef = await addDoc(collection(fbDb, 'admins'), adminData);
             console.log('Admin added with ID: ', docRef.id);
+
     
             if (!values.invitationSent) {
                 // Authentication
@@ -116,7 +162,7 @@ export default function Admins() {
     
                 // Send invitation email
                 const actionCodeSettings = {
-                    url: `https://truckit-bonq6jlwi-truckit.vercel.app/auth?adminId=${docRef.id}`,
+                    url: `localhost:3000/auth?adminId=${docRef.id}`,
                     handleCodeInApp: true,
                 };
     
@@ -137,22 +183,59 @@ export default function Admins() {
         }
     };
     
-    useEffect(() => {
-        const fetchAdmins = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(fbDb, 'admins'));
-                const adminsData = querySnapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                setFetchedAdmins(adminsData);
-            } catch (error) {
-                console.error('Error fetching admins:', error);
-            }
-        };
+
+    // useEffect(() => {
+    //     const db = getFirestore();
+        
+    //     // Ensure organisationId is available before making the query
+    //     if (organisationId) {
+    //       const q = query(collection(db, 'admins'), where('organisationId', '==', organisationId));
     
-        fetchAdmins();
-    }, []);  
+    //       const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    //         const adminsData = querySnapshot.docs.map((doc) => ({
+    //           id: doc.id,
+    //           ...doc.data(),
+    //         }));
+    //         setFetchedAdmins(adminsData);
+    //       });
+    
+    //       return () => unsubscribe(); // Unsubscribe when the component unmounts or organisationId changes
+    //     } else {
+    //       // Handle the case when organisationId is not available
+    //       console.error('Organisation ID is not available.');
+    //     }
+    //   }, [organisationId]); 
+
+
+
+      useEffect(() => {
+        const fetchedAdmins = async () => { 
+                const db = getFirestore();
+    
+          try {
+            // Ensure organisationId is available before making the query
+            if (organisationId) {
+           const q = query(collection(db, 'admins'), where('organisationId', '==', organisationId));
+    
+          const unsubscribe = onSnapshot(q, (querySnapshot) => {
+          const adminsData = querySnapshot.docs.map((doc) => ({
+           id: doc.id,
+           ...doc.data(),
+           }));
+           setFetchedAdmins(adminsData);
+          });
+    
+           return () => unsubscribe(); 
+    
+            } else {
+              console.error('Organisation ID is not available.');
+            }  
+          } catch (error) {
+            console.error('Error fetching Admins:', error);
+          }
+            };
+            fetchedAdmins();
+             }, [organisationId]); 
     
     const updateFetchedAdmins = (updatedAdmins: SetStateAction<DocumentData[]>) => {
         setFetchedAdmins(updatedAdmins);

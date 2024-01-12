@@ -1,33 +1,44 @@
 import { fbDb } from "@/firebase/configs";
 import {ChevronRightIcon, SignalIcon} from "@heroicons/react/20/solid";
-import { getDocs, collection, DocumentData } from "firebase/firestore";
+import { getDocs, collection, DocumentData, query, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
+import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+
 
 
 export default function TripsOverView(){  
     const [fetchedTrips, setFetchedTrips]=useState<DocumentData[]>([]);   
+    const {organisationId}=useAuthContext()
     useEffect(() => {
         const fetchTrips = async () => {
-          try {
-            const querySnapshot = await getDocs(collection(fbDb, 'trips'));
-            const tripsData: DocumentData[] = [];
+          try { 
+            if (organisationId){  
+                const q= query(collection(fbDb, 'trips'), where('organisationId', '==', organisationId)); 
+                const querySnapshot = await getDocs(q); 
+
+                const tripsData: DocumentData[] = [];
     
-            querySnapshot.forEach((doc) => {
-              const trip = {
-                id: doc.id,
-                ...doc.data(),
-              };
-              tripsData.push(trip);
-            });
-    
-            setFetchedTrips(tripsData);
+                querySnapshot.forEach((doc) => {
+                  const trip = {
+                    id: doc.id,
+                    ...doc.data(),
+                  };
+                  tripsData.push(trip);
+                });
+        
+                setFetchedTrips(tripsData);
+
+            } else{
+               console.log("Organisation ID is not available for fetching Trips .");   
+            }
+
           } catch (error) {
             console.error('Error fetching Trips:', error);
           }
         };
     
         fetchTrips();
-      }, []);
+      }, [organisationId]);
       const currentDate=new Date().toISOString();
       const liveTripsCount = fetchedTrips.filter(
         (trip) =>

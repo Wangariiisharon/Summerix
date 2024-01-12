@@ -9,7 +9,7 @@ import {Fragment, SetStateAction, useEffect, useState} from "react";
 // import SearchBar from "../../components/Forms/input"
 import SiteLayout from "@/Layout/SiteLayout";
 import { fbDb } from "@/firebase/configs";
-import { getDocs, collection, DocumentData, Timestamp, addDoc , doc, setDoc, query, where } from "firebase/firestore";
+import { getDocs, collection, DocumentData, Timestamp, addDoc , doc, setDoc, query, where, getFirestore, onSnapshot } from "firebase/firestore";
 import { Field,Formik,Form,useFormik,FormikHelpers } from "formik";  
 import  setFieldValue from "formik";  
 import { Tab } from "@headlessui/react";
@@ -22,6 +22,8 @@ import { ErrorMessage } from 'formik';
 import exportDataToCSV  from "../../components/Exports/tripsExport";   
 import toast from "react-hot-toast";
 import { startOfMonth, endOfMonth, format } from 'date-fns';
+import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+
 
 // Update the import path
 
@@ -86,6 +88,9 @@ export default function TripsComponent() {
         trip_status: "", 
       });
     const router=useRouter() 
+    const {organisationId}=useAuthContext()  
+    console.log("OrganisationId on Trips page:",organisationId);
+    
     const handleSearchChange = (e:any) => {
         const query = e.target.value;
         console.log("Search Query:", query);
@@ -121,25 +126,34 @@ export default function TripsComponent() {
     };
     useEffect(() => { 
       const fetchDrivers = async () => {
-          try {
-              const querySnapshot = await getDocs(collection(fbDb, 'drivers'));
-              const driverDetails = querySnapshot.docs.map(doc => {
-                  const data = doc.data();
-                  return {
-                      id: doc.id,
-                      name: data.name,
-                      phonenumber: data.phonenumber,  
-                  };
-              });
-              setDrivers(driverDetails);
-          } catch (error) {
-              console.error('Error fetching Drivers:', error);
-          }
-      }; 
-      
-      const fetchedClients = async () => {
         try {
-            const querySnapshot = await getDocs(collection(fbDb, 'clients'));  
+          // Ensure organisationId is available before making the query
+          if (organisationId) {
+            const q = query(collection(fbDb, 'drivers'), where('organisationId', '==', organisationId));
+            const querySnapshot = await getDocs(q);
+            const driverDetails = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+            id: doc.id,
+            name: data.name,
+            phonenumber: data.phonenumber,  
+           };
+           });
+           setDrivers(driverDetails); 
+
+          } else {
+            // Handle the case when organisationId is not available
+            console.error('Organisation ID is not available for fetching Vehicle names.');
+          }
+        } catch (error) {
+          console.error('Error fetching Drivers:', error);
+        }
+      };
+      const fetchedClients = async () => {
+        try { 
+          if (organisationId){ 
+            const q = query(collection(fbDb, 'clients'), where('organisationId', '==', organisationId)); 
+            const querySnapshot = await getDocs(q);
             console.log(querySnapshot);
             const clientsData: DocumentData[] = []; 
             console.log(clientsData);
@@ -152,34 +166,46 @@ export default function TripsComponent() {
                 clientsData.push(clients);
             });
             setfetchedClients(clientsData);
+
+          } else{ 
+            console.error('Organisation ID is not available for fetching Trips .');
+          }
+
         } catch (error) {
             console.error('Error fetching Clients:', error);
         }
     }; 
-      const fetchedTrips = async () => {
-          try {
-              const querySnapshot = await getDocs(collection(fbDb, 'trips'));  
-              console.log(querySnapshot);
-              const tripsData: DocumentData[] = []; 
-              console.log(tripsData);
-              
-              querySnapshot.forEach((doc) => {
-                  const trips = {
-                      id: doc.id,
-                      ...doc.data()
-                  };
-                  tripsData.push(trips);
-              });
-              setfetchedTrips(tripsData); 
-              console.log("tripsData",tripsData);
-              
-          } catch (error) {
-              console.error('Error fetching Trips:', error);
-          }
-      }; 
-      const fetchedCompanies = async () => {
-        try {
-          const querySnapshot = await getDocs(collection(fbDb, 'companies'));
+     const fetchedTrips = async () => { 
+            const db = getFirestore();
+
+       try {
+        if (organisationId) {
+      const q = query(collection(db, 'trips'), where('organisationId', '==', organisationId));
+
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const tripsData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setfetchedTrips(tripsData);
+     });
+
+     return () => unsubscribe(); 
+
+         } else {
+           console.error('Organisation ID is not available.');
+         }  
+       } catch (error) {
+         console.error('Error fetching Trips:', error);
+       }
+     };
+    
+
+    const fetchedCompanies = async () => {
+      try { 
+        if (organisationId) {  
+          const q = query(collection(fbDb, 'classes'), where('organisationId', '==', organisationId)); 
+          const querySnapshot = await getDocs(q);
           const companyDetails = querySnapshot.docs.map(doc => {
             const data = doc.data();
             return {
@@ -193,17 +219,51 @@ export default function TripsComponent() {
             setSelectedCompany(companyDetails[0].name); // Set the first company as the default selected company
             setSelectedCompanyVehicles(companyDetails[0].vehicle); // Set its vehicles
           }
-        } catch (error) {
-          console.error('Error fetching Vehicle details:', error);
+
+        } else {
+          // Handle the case when organisationId is not available
+          console.error('Organisation ID is not available for fetching Companies .');
         }
+
+      } catch (error) {
+        console.error('Error fetching Company details:', error);
       }
+    }
       fetchedTrips(); 
       fetchedClients();
       fetchDrivers(); 
       fetchedCompanies(); 
-  }, []); 
+  }, [organisationId]); 
   console.log(selectedCompanyVehicles,"SelectedCompanyVehicles"); 
-  console.log(selectedCompany,"SelectedCompany");
+  console.log(selectedCompany,"SelectedCompany"); 
+
+
+//   useEffect(() => {
+//     const fetchedTrips = async () => { 
+//             const db = getFirestore();
+
+//       try {
+//         if (organisationId) {
+//      const q = query(collection(db, 'trips'), where('organisationId', '==', organisationId));
+
+//    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+//      const tripsData = querySnapshot.docs.map((doc) => ({
+//        id: doc.id,
+//        ...doc.data(),
+//      }));
+//      setfetchedTrips(tripsData);
+//    });
+
+//   return () => unsubscribe(); 
+
+//         } else {
+//           console.error('Organisation ID is not available.');
+//         }  
+//       } catch (error) {
+//         console.error('Error fetching Trips:', error);
+//       }
+//     };
+// }, [organisationId]); 
 
 
     const handleEditClick = (trip: DocumentData) => {
@@ -410,7 +470,8 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
             company: values.company,  
             trip_status:"", 
             client: values.client, 
-            dealValue: values.dealValue,
+            dealValue: values.dealValue, 
+            organisationId:organisationId
         };
 
         const docRef = await addDoc(collection(fbDb, 'trips'), maintenanceData);

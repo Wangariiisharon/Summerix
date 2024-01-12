@@ -1,56 +1,21 @@
 import {CardIcon} from "@/components/images"; 
-import { DocumentData, collection, getDocs } from "firebase/firestore";
+import { DocumentData, collection, getDocs, query, where } from "firebase/firestore";
 import { fbDb } from "@/firebase/configs"; 
-import { useState ,useEffect} from "react";
+import { useState ,useEffect} from "react"; 
+import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
 
-const people = [
-    {
-        name: 'Mombasa Kilifi',
-        title: 'Kampala',
-        department: '',
-        email: '',
-        role: 'AB1234',
-        image:
-            'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    },
-    {
-        name: 'Mombasa Kilifi',
-        title: 'Kampala',
-        department: '',
-        email: '',
-        role: 'AB1234',
-        image:
-            'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    },
-    {
-        name: 'Mombasa Kilifi',
-        title: 'Kampala',
-        department: '',
-        email: '',
-        role: 'AB1234',
-        image:
-            'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    },
-    {
-        name: 'Mombasa Kilifi',
-        title: 'Kampala',
-        department: '',
-        email: '',
-        role: 'AB1234',
-        image:
-            'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    },
 
-] 
 
 export default function OnRoute(){ 
     const [fetchedTrips, setFetchedTrips]=useState<DocumentData[]>([]);   
-
+    const {organisationId}=useAuthContext() 
+    
     // @ts-ignore 
     useEffect(() => {
-        const fetchTrips = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(fbDb, 'trips'));
+        const fetchTrips = async () => { 
+            if (organisationId){ 
+               const q = query(collection(fbDb, 'trips'), where('organisationId', '==', organisationId)); 
+                const querySnapshot = await getDocs(q); 
                 const tripsData: DocumentData[] = [];
 
                 const currentDate = new Date(); // Get the current date and time
@@ -72,13 +37,22 @@ export default function OnRoute(){
                 });
 
                 setFetchedTrips(tripsData);
+
+
+
+            } else{ 
+                console.log("Organisation ID is not available for fetching Trips .");
+                
+            }
+            try {
+
             } catch (error) {
                 console.error('Error fetching Trips:', error);
             }
         };
 
         fetchTrips();
-    }, []);
+    }, [organisationId]);
 
  
     

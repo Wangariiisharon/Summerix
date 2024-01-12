@@ -12,7 +12,9 @@ import {Header} from "@/components/Headers";
 import {Fragment, useState,useEffect} from "react";
 import {ChevronDownIcon} from "@heroicons/react/24/solid";
 import { fbDb } from "@/firebase/configs";
-import { DocumentData, getDocs, collection } from "firebase/firestore";
+import { DocumentData, getDocs, collection, query, where } from "firebase/firestore"; 
+import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+
 
 
 export default function DashboardComponent() {
@@ -20,60 +22,71 @@ export default function DashboardComponent() {
     const [fetchedVehicles, setFetchedVehicles] = useState<DocumentData[]>([]);
     const [overallEarnings, setOverallEarnings] = useState<number>(0);
     const [earningsPerTruck, setEarningsPerTruck] = useState<number>(0);
-    const [trucksAvailable, setTrucksAvailable] = useState<number>(0);
-  
+    const [trucksAvailable, setTrucksAvailable] = useState<number>(0); 
+
+    const {organisationId}=useAuthContext() 
+    console.log("Dashboard organisationId:", organisationId);
+    
+
     useEffect(() => {
       const fetchData = async () => {
-        try {
-          const tripsQuerySnapshot = await getDocs(collection(fbDb, 'trips'));
-          const tripsData: DocumentData[] = [];
+        try { 
+          if (organisationId){  
+            const q = query(collection(fbDb, 'trips'), where('organisationId', '==', organisationId));
+            const tripsQuerySnapshot = await getDocs(q);
+            const tripsData: DocumentData[] = [];
   
-          tripsQuerySnapshot.forEach((doc) => {
-            const trip = {
-              id: doc.id,
-              ...doc.data(),
-            };
-            tripsData.push(trip);
-          });
-  
-          setFetchedTrips(tripsData);
-  
-          const vehiclesQuerySnapshot = await getDocs(collection(fbDb, 'vehicles'));
-          const vehiclesData: DocumentData[] = [];
-  
-          vehiclesQuerySnapshot.forEach((doc) => {
-            const vehicle = {
-              id: doc.id,
-              ...doc.data(),
-            };
-            vehiclesData.push(vehicle);
-          });
-  
-          setFetchedVehicles(vehiclesData);
-          const totalVehicles = vehiclesData.length;
-
-          // Calculate overall earnings
-          const totalDealValue = tripsData.reduce((acc, trip) => {
-            const dealValue = parseFloat(trip.dealValue); // Convert to a floating-point number
-            return !isNaN(dealValue) ? acc + dealValue : acc; // Add to the accumulator if it's a valid number
-          }, 0);
-          
-          // Round down the totalDealValue to remove decimals
-          const roundedTotalDealValue = Math.floor(totalDealValue);
-          setOverallEarnings(roundedTotalDealValue);
-                     // Calculate earnings per truck
-          const earningsPerTruckValue = totalVehicles > 0 ? totalDealValue / totalVehicles : 0;
-                   // Round down the earningsPerTruckValue to remove decimals
-          const roundedEarningsPerTruck = Math.floor(earningsPerTruckValue);
-
-          setEarningsPerTruck(isNaN(roundedEarningsPerTruck) ? 0 : roundedEarningsPerTruck);
-
-          const vehiclesOnTrip = tripsData.map(trip => trip.vehicleId);
-          const vehiclesOutOfService = vehiclesData.filter(vehicle => vehicle.outOfService).map(vehicle => vehicle.id);
+            tripsQuerySnapshot.forEach((doc) => {
+              const trip = {
+                id: doc.id,
+                ...doc.data(),
+              };
+              tripsData.push(trip);
+            });
     
-          // Calculate available trucks
-          const availableTrucks = totalVehicles - vehiclesOnTrip.length - vehiclesOutOfService.length;
-          setTrucksAvailable(availableTrucks);
+            setFetchedTrips(tripsData); 
+            const vq = query(collection(fbDb, 'vehicles'), where('organisationId', '==', organisationId)); 
+            const vehiclesQuerySnapshot = await getDocs(vq);
+            const vehiclesData: DocumentData[] = [];
+  
+            vehiclesQuerySnapshot.forEach((doc) => {
+              const vehicle = {
+                id: doc.id,
+                ...doc.data(),
+              };
+              vehiclesData.push(vehicle);
+            });
+    
+            setFetchedVehicles(vehiclesData); 
+
+            const totalVehicles = vehiclesData.length;
+
+            // Calculate overall earnings
+            const totalDealValue = tripsData.reduce((acc, trip) => {
+              const dealValue = parseFloat(trip.dealValue); // Convert to a floating-point number
+              return !isNaN(dealValue) ? acc + dealValue : acc; // Add to the accumulator if it's a valid number
+            }, 0);
+            
+            // Round down the totalDealValue to remove decimals
+            const roundedTotalDealValue = Math.floor(totalDealValue);
+            setOverallEarnings(roundedTotalDealValue);
+                       // Calculate earnings per truck
+            const earningsPerTruckValue = totalVehicles > 0 ? totalDealValue / totalVehicles : 0;
+                     // Round down the earningsPerTruckValue to remove decimals
+            const roundedEarningsPerTruck = Math.floor(earningsPerTruckValue);
+  
+            setEarningsPerTruck(isNaN(roundedEarningsPerTruck) ? 0 : roundedEarningsPerTruck);
+  
+            const vehiclesOnTrip = tripsData.map(trip => trip.vehicleId);
+            const vehiclesOutOfService = vehiclesData.filter(vehicle => vehicle.outOfService).map(vehicle => vehicle.id);
+      
+            // Calculate available trucks
+            const availableTrucks = totalVehicles - vehiclesOnTrip.length - vehiclesOutOfService.length;
+            setTrucksAvailable(availableTrucks);
+
+          } else{
+            console.error('Organisation ID is not available.');
+          }
 
         } catch (error) {
           console.error('Error fetching data:', error);
@@ -81,7 +94,7 @@ export default function DashboardComponent() {
       };
   
       fetchData();
-    }, []);
+    }, [organisationId]);
   
     const cards = [
       { amount: overallEarnings.toString(), href: '#', icon: '/icons/cashIcon.png', name: 'Overall Earnings' },

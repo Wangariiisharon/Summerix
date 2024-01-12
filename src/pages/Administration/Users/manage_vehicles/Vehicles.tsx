@@ -7,13 +7,15 @@ import { TableBody } from "@/components/Table/Row";
 import { Formik, Field, Form } from 'formik/dist/index';
 import { FormModal } from "@/components/Modals/FormModal";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { getFirestore, collection, doc, setDoc, addDoc,getDocs, DocumentData, getDoc, updateDoc, query, where } from 'firebase/firestore';
+import { getFirestore, collection, doc, setDoc, addDoc,getDocs, DocumentData, getDoc, updateDoc, query, where, onSnapshot } from 'firebase/firestore';
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import { useRouter } from "next/router";
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import SiteLayout from "@/Layout/SiteLayout";  
 import { toast } from 'react-hot-toast';
+import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+
 
 
 const Headers = ["VEHICLE ID", "VEHICLE TYPE", "LICENSE PLATE"]
@@ -35,12 +37,12 @@ export default function Vehicles(){
         vehicle_type: '',
         color: '',
       });
-
+    
+      const {organisationId} = useAuthContext(); 
+      console.log(" Vehicles Organisation ID:", organisationId);
       const handleAllocateReset = () => {
         setShowAllocateModal(false)  
         setOpen(false) 
-
-
     } 
       const handleEditClick = (vehicle: DocumentData) => {
         setSelectedVehicle(vehicle);
@@ -80,13 +82,13 @@ export default function Vehicles(){
       return `V${adminCount.toString().padStart(3, '0')}`;
   }
   
-    const handleSubmit = async (values: { cargo_capacity: any; lisence_plate: any; vehicle_type: any; color: any; availability_status: any;fuel_budget:any; }) => {
+    const handleSubmit = async (values: { cargo_capacity: any; lisence_plate: any; vehicle_type: any; }) => {
       // Check if values are undefined
       if (!values) {
         console.error('Form values are undefined');
         return;
       }
-      if (!values.cargo_capacity || !values.lisence_plate || !values.vehicle_type || !values.color || !values.availability_status||!values.fuel_budget) {
+      if (!values.cargo_capacity || !values.lisence_plate || !values.vehicle_type) {
         console.error('Required form fields are missing');
         toast.error('Required form fields are missing');
         return;
@@ -105,13 +107,12 @@ export default function Vehicles(){
           cargo_capacity: values.cargo_capacity,
           lisence_plate: values.lisence_plate,
           vehicle_type: values.vehicle_type,
-          color: values.color,
           status: true,
           archive: false,
           registration_date: registration_date,
-          availability_status: values.availability_status,
-          fuel_budget:values.fuel_budget,
+          availability_status: "Available",
           vehiclesId: generateUserId(fetchedVehicles.length + 1), 
+          organisationId: organisationId,
 
         };
   
@@ -169,7 +170,7 @@ export default function Vehicles(){
         
         
     
-        const companiesCollectionRef = collection(fbDb, 'companies');
+        const companiesCollectionRef = collection(fbDb, 'classes');
         const querySnapshot = await getDocs(companiesCollectionRef);
     
         let companyDocRef;
@@ -232,29 +233,50 @@ export default function Vehicles(){
     
      
     useEffect(() => {       
-      const fetchedVehicles = async () => {
+
+      const fetchedVehicles = async () => { 
+              const db = getFirestore();
+    
         try {
-            const querySnapshot = await getDocs(collection(fbDb, 'vehicles'));
-            const vehiclesData = querySnapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setFetchedVehicles(vehiclesData);
+          if (organisationId) {
+         const q = query(collection(db, 'vehicles'), where('organisationId', '==', organisationId));
+    
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const vehiclesData = querySnapshot.docs.map((doc) => ({
+         id: doc.id,
+         ...doc.data(),
+         }));
+         setFetchedVehicles(vehiclesData);
+        });
+    
+         return () => unsubscribe(); 
+    
+          } else {
+            console.error('Organisation ID is not available.');
+          }  
         } catch (error) {
-            console.error('Error fetching Vehicles:', error);
+          console.error('Error fetching Vehicles:', error);
         }
-    };
-      
+          };
+
       const fetchedCompanies = async () => {
         try {
-            const querySnapshot = await getDocs(collection(fbDb, 'companies'));
-            const companiesData = querySnapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data()
+          if (organisationId){ 
+            const q = query(collection(fbDb, 'classes'), where('organisationId', '==', organisationId));
+            const querySnapshot = await getDocs(q);
+  
+            const classData = querySnapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data()
             }));
-            setFetchedCompanies(companiesData);
+            setFetchedCompanies(classData);
+
+          }else{
+            console.error('Organisation ID is not available.');
+          }
+
         } catch (error) {
-            console.error('Error fetching Companies:', error);
+          console.error('Error fetching Classes:', error);
         }
     };
   
@@ -262,7 +284,7 @@ export default function Vehicles(){
         fetchedCompanies(); 
         console.log(fetchedCompanies);
 
-    }, []);
+    }, [organisationId]);
     
     const updateFetchedVehicles = (updatedDrivers: SetStateAction<DocumentData[]>) => {
         setFetchedVehicles(updatedDrivers);
@@ -271,7 +293,6 @@ export default function Vehicles(){
         cargo_capacity: any;
         lisence_plate: any;
         vehicle_type: any;
-        color: any;
       }) => { 
         if (!selectedVehicle) {
             console.error("No selected vehicle to update");
@@ -289,8 +310,7 @@ export default function Vehicles(){
           if (
             !values.cargo_capacity ||
             !values.lisence_plate ||
-            !values.vehicle_type ||
-            !values.color
+            !values.vehicle_type 
           ) {
             console.error("Required form fields are missing");
             return;
@@ -302,7 +322,6 @@ export default function Vehicles(){
             cargo_capacity: values.cargo_capacity,
             lisence_plate: values.lisence_plate,
             vehicle_type: values.vehicle_type,
-            color: values.color,
           });
       
           // Update the local fetchedVehicles state
@@ -313,7 +332,6 @@ export default function Vehicles(){
                   cargo_capacity: values.cargo_capacity,
                   lisence_plate: values.lisence_plate,
                   vehicle_type: values.vehicle_type,
-                  color: values.color,
                 }
               : vehicle
           );
@@ -333,27 +351,7 @@ export default function Vehicles(){
             <div className='mt-8  h-full bg-[#FAFAFB] '>
                 <Tab.Group>
                     <div className='flex w-full justify-end'>
-                        <div className='bg-[#FAFAFB] '>
-                            {/* <Tab.List>
-                                {tabs.map((tab, index) => {
-                                    return (
-                                        <Fragment key={index}>
-                                    <Tab
-                                        className='ui-selected:bg-d-green h-8 w-32  ui-not-selected:bg-[#FFFFFF] text-sm uppercase'
-                                        onClick={() => {
-                                            console.log("Tab Clicked", index);
-                                            setSelectedTab(index);
-                                          }}
-                                        >
-                                        {tab.name}
-                                    </Tab>
-                                        </Fragment>
-                                    )
-                                })
-                                }
-                            </Tab.List> */}
-                        </div>
-           
+  
                         <div className='flex justify-end text-base mr-2'>
                           <div className='ml-2 flex flex-row'>
                             <AddButton name="Add Vehicle" handleAddClick={handleAddVehicles}/> 
@@ -422,16 +420,8 @@ export default function Vehicles(){
                         cargo_capacity: "",
                         lisence_plate: "",
                         vehicle_type: "",
-                        color: "", 
-                        availability_status:"", 
-                        fuel_budget:0
-
-
                                       }}
                         onSubmit={(values) => handleSubmit(values)}  
-  
-                        // onSubmit={(values) => handleEditSubmit(values)}
-
 
                         >
                        {({ values }) => (
@@ -440,6 +430,27 @@ export default function Vehicles(){
                             <div className='flex w-full justify-between'>
 
                              </div>
+                            <div className='flex w-full justify-between mt-8'> 
+                            <label className="block">
+                             <label className="form-label">LICENSE PLATE</label>
+                             <Field
+                             type="text"
+                             name="lisence_plate"
+                             value={values.lisence_plate}
+                             className="form-input bg-grey w-48"
+                            />
+                            </label>  
+
+                            <label className="block">
+                            <label className="form-label">VEHICLE TYPE</label>
+                            <Field
+                             type="text"
+                             name="vehicle_type"
+                             value={values.vehicle_type}
+                             className="form-input bg-grey w-48"
+                            />
+                             </label>                                                            
+                            </div>
                             <div className='flex w-full justify-between mt-8'>
                             <label className="block">
                             <label className="form-label"> CARGO CAPACITY</label>
@@ -450,61 +461,9 @@ export default function Vehicles(){
                              className="form-input bg-grey w-48"
                             />
                              </label>                                
-                             <label className="block">
-                             <label className="form-label">LICENSE PLATE</label>
-                             <Field
-                             type="text"
-                             name="lisence_plate"
-                             value={values.lisence_plate}
-                             className="form-input bg-grey w-48"
-                            />
-                            </label>                            
-                            </div>
-                            <div className='flex w-full justify-between mt-8'>
-                            <label className="block">
-                            <label className="form-label">VEHICLE TYPE</label>
-                            <Field
-                             type="text"
-                             name="vehicle_type"
-                             value={values.vehicle_type}
-                             className="form-input bg-grey w-48"
-                            />
-                             </label>                                
-                             <label className="block">
-                             <label className="form-label">COLOR</label>
-                             <Field
-                             type="text"
-                             name="color"
-                             value={values.color}
-                             className="form-input bg-grey w-48"
-                            />
-                            </label>                            
+                                           
                             </div> 
-                            <div className='flex w-full justify-between mt-8'>
-                            <label className="block">
-                            <label className="form-label">Fuel Budget</label>
-                            <Field
-                             type="text"
-                             name="fuel_budget"
-                             placeholder="Liters"
-                             value={values.fuel_budget}
-                             className="form-input bg-grey w-48"
-                            />
-                             </label> 
-                            <label className="block">
-                             <label className="form-label">AVAILABILITY STATUS</label>
-                
-                                      <Field as="select" name="availability_status"                               
-                                      value={values.availability_status} 
-                                      className="form-input bg-grey w-48"
-                                      >
-                                      <option value="Available">Available</option>
-                                      <option value="On Route">On Route</option>
-                                      <option value="Out Of Service	">Out Of Service	</option> 
-                                     </Field>
-
-                            </label>                         
-                             </div> 
+                           
                                                          
                             <div className='flex w-full justify-end mt-24 '>
                                 <Button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32' handleClick={handleReset}>Reset</Button>
@@ -543,7 +502,17 @@ export default function Vehicles(){
             {({ values }) => (
                     <Form>
                     <div className=''>
-                        <div className='flex w-full justify-between mt-8'>
+                        <div className='flex w-full justify-between mt-8'> 
+                        <label className="block">
+                         <label className="form-label">LICENSE PLATE</label>
+                         <Field
+                         type="text"
+                         name="lisence_plate"
+                         value={values.lisence_plate}
+                         className="form-input bg-grey w-48"
+                        />
+                        </label> 
+
                         <label className="block">
                         <label className="form-label"> CARGO CAPACITY</label>
                         <Field
@@ -552,16 +521,7 @@ export default function Vehicles(){
                          value={values.cargo_capacity}
                          className="form-input bg-grey w-48"
                         />
-                         </label>                                
-                         <label className="block">
-                         <label className="form-label">LICENSE PLATE</label>
-                         <Field
-                         type="text"
-                         name="lisence_plate"
-                         value={values.lisence_plate}
-                         className="form-input bg-grey w-48"
-                        />
-                        </label>                            
+                         </label>                                                           
                         </div>
                         <div className='flex w-full justify-between mt-8'>
                         <label className="block">
@@ -572,16 +532,7 @@ export default function Vehicles(){
                          value={values.vehicle_type}
                          className="form-input bg-grey w-48"
                         />
-                         </label>                                
-                         <label className="block">
-                         <label className="form-label">COLOR</label>
-                         <Field
-                         type="text"
-                         name="color"
-                         value={values.color}
-                         className="form-input bg-grey w-48"
-                        />
-                        </label>                            
+                         </label>                                                           
                         </div>
                         <div className='flex w-full justify-end mt-24 '>
                             <Button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32' handleClick={handleEditModalClose}>Reset</Button>
@@ -695,10 +646,7 @@ export default function Vehicles(){
         const rowsPerPage = 3;
       
         const activeVehicles = vehicles.filter((vehicle) => vehicle.status);
-      
-        // const filteredNonArchivedVehicles = vehicles.filter((vehicle) => vehicle.archive); 
-        // console.log("These are the filteredNonArchivedVehicles",filteredNonArchivedVehicles)
-      
+            
         // Sort vehicles to put archived vehicles at the bottom
         const sortedVehicles = [...vehicles].sort((a, b) => {
           if (a.archive && !b.archive) {
@@ -755,8 +703,6 @@ export default function Vehicles(){
                   </thead>
                   <TableBody>
                     {sortedVehicles.map((vehicle, index) => { 
-                            const vehicleId = `V${(index + 1).toString().padStart(3, '0')}`;
-                            console.log("Vehicle ID",vehicleId);
                       return (
                         <Fragment key={index}>
                           <div className="w-full mb-2 font-nunito font-regular"></div>

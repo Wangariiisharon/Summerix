@@ -105,11 +105,15 @@ export default function AdminInformation() {
           phonenumber,
           status: true,
           superadmin: true,
+          organisationId
         };
     
         await setDoc(docRef, data);
     
-        router.push(`/Administration`);
+        router.push(`/Administration`); 
+        // router.push(`/Administration?organisationId=${organisationId}`);
+
+
       } catch (error) {
         console.error('ACCOUNT CREATION ERROR:', error);
         toast.error('Please enter the correct auth details.');
