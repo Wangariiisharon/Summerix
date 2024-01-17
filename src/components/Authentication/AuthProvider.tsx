@@ -9,7 +9,9 @@ const AuthContext = createContext({
   isAuthenticated: false,
   currentUser: null,
   userId: null as string | null,
-  organisationId: null as string | null, // Add organisationId to the context
+  organisationId: null as string | null, // Add organisationId to the context 
+  userData: null as any, // Add userData to the context
+
 });
 
 type Props = {
@@ -20,7 +22,9 @@ export function AuthProvider({ children }: Props) {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-  const [organisationId, setOrganisationId] = useState<string | null>(null); // State for organisationId
+  const [organisationId, setOrganisationId] = useState<string | null>(null); // State for organisationId 
+  const [userData, setUserData] = useState<any>(null); // State for userData
+
 
   const router = useRouter();
 
@@ -46,7 +50,9 @@ export function AuthProvider({ children }: Props) {
           
             if (!querySnapshot.empty) {
               const userDocSnapshot = querySnapshot.docs[0]; // Assuming there is only one document for a given user
-              const userData = userDocSnapshot.data();
+              const userData = userDocSnapshot.data(); 
+              setUserData(userData);
+
               console.log('Additional user details from Firestore:', userData);
               console.log('Organisation ID:', userData.organisationId);
           
@@ -77,7 +83,7 @@ export function AuthProvider({ children }: Props) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ currentUser, isAuthenticated, userId, organisationId }}>
+    <AuthContext.Provider value={{ currentUser, isAuthenticated, userId, organisationId,userData }}>
       {children}
     </AuthContext.Provider>
   );

@@ -11,7 +11,7 @@ import SiteLayout from "@/Layout/SiteLayout";
 import { Tab } from "@headlessui/react";
 import Planned from "../Administration/Users/jobcard";
 import firebaseApp, { fbDb } from "@/firebase/configs";
-import { getDocs, collection, DocumentData, addDoc, Timestamp, updateDoc, doc, query, where, getFirestore, onSnapshot } from "firebase/firestore";
+import { getDocs, collection, DocumentData, addDoc, Timestamp, updateDoc, doc, query, where, getFirestore, onSnapshot, getDoc } from "firebase/firestore";
 import { parseISO, format } from 'date-fns';
 import Jobcard from "../Administration/Users/jobcard"; 
 import { serverTimestamp } from 'firebase/firestore'
@@ -24,6 +24,14 @@ import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthPr
 
 function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ');
+} 
+interface UserData {
+  email: string; 
+  super_admin: boolean;
+} 
+interface AuthContextData {
+  organisationId: string;
+  userData: UserData;
 }
 export default function Maintenance() {
     const [open, setOpen] = useState(false)
@@ -34,10 +42,23 @@ export default function Maintenance() {
     const [drivers, setdrivers] = useState<string[]>([]);
     const [showAddJobcardModal, setShowAddJobcardModal] = useState(false);
     const [showScheduleMaintenanceModal, setShowScheduleMaintenanceModal] = useState(false);
-    const [selectedTabIndex, setSelectedTabIndex] = useState(0);
-    
-    const {organisationId}= useAuthContext() 
+    const [selectedTabIndex, setSelectedTabIndex] = useState(0); 
+    const [approvalCount, setApprovalCount] = useState(0);
+   const [checkboxState, setCheckboxState] = useState<boolean[]>([]);
+   const [checkedIndexes, setCheckedIndexes] = useState<number[]>([]);
+
+
+
+    const { organisationId, userData } = useAuthContext() as AuthContextData; 
     console.log("Maintanance Page OrganisationId: ", organisationId);
+    console.log("Maintanance Page UserData: ", userData);
+
+
+    const isSuperAdmin = userData?.super_admin;
+    const approvedBy = userData?.email;
+
+    console.log("Maintanance Super Admin: ", isSuperAdmin);
+    
     
     const MaintainanceTabs = [
       { name: 'PLANNED', href: '#', current: selectedTabIndex === 0 },
@@ -135,59 +156,124 @@ export default function Maintenance() {
 
 
 
+
     const handleScheduleMaintanace = async (values: { requested_by: any; cost:any; remarks:any;vehicle:any; job_cards:any; date:any; serial_number:any; part:any ; broken_partImage:any}) => {  
-        setShowScheduleMaintenanceModal(true);
-        setShowAddJobcardModal(false);  
-        setOpen(true);
+      setShowScheduleMaintenanceModal(true);
+      setShowAddJobcardModal(false);  
+      setOpen(true);
+  
+  
+      console.log("Submitted Values:", values); 
+  
+      try {
+          if (!values) {
+              console.error('Form values are undefined');
+              return;
+          }
+  
+          if (!values.requested_by||!values.vehicle||!values.cost||!values.job_cards||!values.remarks||!values.date) {
+              console.error('Required form fields are missing');
+              return;
+          } 
+  
+          const dateObj = new Date(values.date +"T00:00:00");  
+          const timestamp=Timestamp.fromDate(dateObj)
+          let brokenPartImageUrl = ''; 
+          if (values.broken_partImage) {
+              const storage = getStorage(firebaseApp);
+              const storageRef = ref(storage, `broken_partImage/${values.broken_partImage.name}`);
+              
+              await uploadBytes(storageRef, values.broken_partImage);
+              brokenPartImageUrl = await getDownloadURL(storageRef);
+              console.log('Broken Part Image URL:', brokenPartImageUrl);
+  
+          } 
+  
+          const maintenanceData = {
+              requested_by: values.requested_by, 
+              vehicle: values.vehicle, 
+              date: timestamp, 
+              cost: values.cost,  
+              job_cards: values.job_cards,
+              remarks: values.remarks, 
+              serial_number: values.serial_number,
+              part: values.part,
+              status:"Pending",
+              broken_partImage: brokenPartImageUrl, 
+              organisationId:organisationId
+          };
+          const docRef = await addDoc(collection(fbDb, 'maintenance'), maintenanceData);
+          console.log('Jobcard added with ID: ', docRef.id);
+          setOpen(false);
+      } catch (error) {
+          console.error('Error adding jobcard:', error);
+      }  
+      setShowScheduleMaintenanceModal(false);
+  }   
 
+const handleCheckboxClick = async (index: number) => {
+  const documentId = fetchedMaintanance[index].id;
+  const maintenanceDocRef = doc(fbDb, 'maintenance', documentId);
 
-        console.log("Submitted Values:", values); 
-    
-        try {
-            if (!values) {
-                console.error('Form values are undefined');
-                return;
-            }
-    
-            if (!values.requested_by||!values.vehicle||!values.cost||!values.job_cards||!values.remarks||!values.date) {
-                console.error('Required form fields are missing');
-                return;
-            } 
+  try { 
+    if (checkedIndexes.includes(index)) {
+      console.log('Checkbox already checked.');  
+      toast.error('Checkbox already checked.');
+      return;
+    }  
+    setCheckedIndexes([...checkedIndexes, index]);
 
-            const dateObj = new Date(values.date +"T00:00:00");  
-            const timestamp=Timestamp.fromDate(dateObj)
-            let brokenPartImageUrl = ''; 
-            if (values.broken_partImage) {
-                const storage = getStorage(firebaseApp);
-                const storageRef = ref(storage, `broken_partImage/${values.broken_partImage.name}`);
-                
-                await uploadBytes(storageRef, values.broken_partImage);
-                brokenPartImageUrl = await getDownloadURL(storageRef);
-                console.log('Broken Part Image URL:', brokenPartImageUrl);
+    // Get the current approvalCount and approvedBy array from Firestore
+    const docSnapshot = await getDoc(maintenanceDocRef);
 
-            } 
+    if (docSnapshot && docSnapshot.exists()) {
+      const currentApprovalCount = docSnapshot.data()?.approvalCount || 0;
+      const approvedByArray = docSnapshot.data()?.approvedBy || [];
 
-            const maintenanceData = {
-                requested_by: values.requested_by, 
-                vehicle: values.vehicle, 
-                date: timestamp, 
-                cost: values.cost,  
-                job_cards: values.job_cards,
-                remarks: values.remarks, 
-                serial_number: values.serial_number,
-                part: values.part,
-                broken_partImage: brokenPartImageUrl, 
-                organisationId:organisationId
-            };
-            const docRef = await addDoc(collection(fbDb, 'maintenance'), maintenanceData);
-            console.log('Jobcard added with ID: ', docRef.id);
-            setOpen(false);
-        } catch (error) {
-            console.error('Error adding jobcard:', error);
-        }  
-        setShowScheduleMaintenanceModal(false);
+      // Check if the user has already approved
+      if (!approvedByArray.includes(userData.email)) {
+        // Update the approvalCount and add the user email to approvedBy array in Firestore
+        await updateDoc(maintenanceDocRef, {
+          approvalCount: currentApprovalCount + 1,
+          approvedBy: [...approvedByArray, userData.email],
+        });
+
+        // Check if the approval count reaches 3
+        if (currentApprovalCount + 1 === 3) {
+          // Perform the logic to update the status to "Approved"
+          await updateStatusToApproved(documentId);
+        }
+      } else {
+        console.log('User has already approved.');
+      }
+    } else {
+      console.error('Document not found or does not exist.');
     }
+  } catch (error) {
+    console.error('Error updating approval count:', error);
+  }
+};
 
+  const updateStatusToApproved = async (documentId: string) => {
+  try {
+     const maintenanceDocRef = doc(fbDb, 'maintenance', documentId);
+     const docSnapshot = await getDoc(maintenanceDocRef);
+
+     if (docSnapshot && docSnapshot.exists()) {
+        const currentApprovalCount = docSnapshot.data()?.approvalCount || 0;
+
+        if (currentApprovalCount === 3) {
+           // Update the status to "Approved" in Firestore
+           await updateDoc(maintenanceDocRef, { status: 'Approved',approvedBy:approvedBy });
+        }
+     } else {
+        console.error('Document not found or does not exist.');
+     }
+  } catch (error) {
+     console.error('Error updating status to Approved:', error);
+  }
+};
+  
     return (  
         <>
             <div className=''>
@@ -219,11 +305,11 @@ export default function Maintenance() {
                             ))}
                        </Tab.List>
                     <Tab.Panels>
-                    <Tab.Panel className={classNames(selectedTabIndex === 0 ? 'ui-selected border-b-4' : '', 'h-full')}>
-                        <MaintananceTable selectedTab={selectedTabIndex} maintananceList={fetchedMaintanance}  />
+                    <Tab.Panel className={classNames(selectedTabIndex === 0 ? 'ui-selected border-b-4' : '', 'h-full')}> 
+                        <MaintananceTable selectedTab={selectedTabIndex} maintananceList={fetchedMaintanance} isSuperAdmin={isSuperAdmin} handleCheckboxClick={handleCheckboxClick} checkboxState={checkboxState}  />
                         </Tab.Panel>
                         <Tab.Panel className={classNames(selectedTabIndex === 0 ? 'ui-selected border-b-4' : '', 'h-full')}>
-                        <MaintananceTable selectedTab={selectedTabIndex} maintananceList={fetchedMaintanance}  />
+                        <MaintananceTable selectedTab={selectedTabIndex} maintananceList={fetchedMaintanance} isSuperAdmin={isSuperAdmin} handleCheckboxClick={handleCheckboxClick} checkboxState={checkboxState}   />
                         </Tab.Panel>
                     </Tab.Panels>
                 </Tab.Group> 
@@ -255,13 +341,8 @@ export default function Maintenance() {
                         part: "", 
                         serial_number: "", 
                         broken_partImage: null,
-
-
-            
                                       }}
                         onSubmit={(values) => handleScheduleMaintanace(values)}  
-  
-
 
                         >
                        {({ values }) => (
@@ -402,15 +483,19 @@ export default function Maintenance() {
 
 interface VehiclesTableProps {
     selectedTab: number;  
-    maintananceList:DocumentData
+    maintananceList:DocumentData 
+    isSuperAdmin:boolean  
+    handleCheckboxClick:any 
+    checkboxState: any; // Add this line
 }
-
-export function MaintananceTable({ selectedTab,maintananceList }: VehiclesTableProps) {
+export function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,handleCheckboxClick,checkboxState}: VehiclesTableProps) { 
+        const [userApproves, setUserApproves] = useState(false);
+        const [fetchedMaintanance, setFetchedMaintanance]=useState<DocumentData[]>([]);  
         console.log("MaintananceTable Rendering with selectedTab:", selectedTab); 
-        console.log("Mainanace list", maintananceList);
+        console.log("Mainanace list", maintananceList); 
         
         const currentDate = new Date();
-
+  
         const filteredMaintenance = maintananceList.filter((maintenance: any) => {
             const maintenanceDate = new Date(maintenance?.date?.seconds * 1000);
     
@@ -423,9 +508,10 @@ export function MaintananceTable({ selectedTab,maintananceList }: VehiclesTableP
             }
     
             return true;
-        });
-        
-    
+        });  
+   
+
+
 
     console.log("Filtered Vehicles:", filteredMaintenance); 
     return (
@@ -440,7 +526,6 @@ export function MaintananceTable({ selectedTab,maintananceList }: VehiclesTableP
                                       scope="col"
                                       className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left font-semibold sm:pl-0" 
                                     > 
-                                       TRUCK  
 
                                     </th>
                                     <th
@@ -494,9 +579,7 @@ export function MaintananceTable({ selectedTab,maintananceList }: VehiclesTableP
                                       <i className="fa fa-circle fa-stack-2x text-[#F2F2F2]" aria-hidden="true"></i>
                                       <i className="fa fa-truck fa-stack-1x fa-inverse text-[#0C0C0C]" aria-hidden="true"></i> 
                                       </span>
-
                                        </td>
-                    
                                         <td className="whitespace-nowrap pl-4 pr-3 !pt-4 text-d-blue sm:pl-0">{maintenance.vehicle}</td>
                                         <td className="whitespace-nowrap px-2  pt-4 font-medium ">
                                         {format(updatedDate, 'MM/dd/yy')}
@@ -504,11 +587,18 @@ export function MaintananceTable({ selectedTab,maintananceList }: VehiclesTableP
                                         <td className="whitespace-nowrap px-2 pt-4">{maintenance.job_cards}</td>
                                         <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">{maintenance.requested_by}</td>
                                         <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">{maintenance.cost}</td>
-                                        <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">
+                                        <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]"> 
+                                        {maintenance.status}
                                          </td>
+                                         <td>
+                                         <input
+                                             type="checkbox"
+                                             checked={checkboxState[index]}
+                                             onChange={() => handleCheckboxClick(index)}
+                                            />
+                                          </td>  
                                     </tr> 
                                     </Fragment>
-
                             )
                         })}
                             </tbody>

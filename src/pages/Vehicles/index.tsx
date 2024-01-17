@@ -1,7 +1,6 @@
 import {Header, HeaderBar} from "@/components/Headers";
 import {AddButton, Button, DeleteBtn, EditBtn} from "@/components/Buttons";
 import {headers} from "next/headers";
-// import {DummyTable} from "@/components/Table/Table";
 import {FormEvent, Fragment, useEffect, useState} from "react";
 import {FormModal} from "@/components/Modals/FormModal";
 import {Form} from "@/components/Forms/Form";

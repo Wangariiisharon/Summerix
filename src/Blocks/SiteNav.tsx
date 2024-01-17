@@ -84,13 +84,13 @@ export default function SiteNav({ children }: Props) {
   }, [currentUser]);
   
 
-const isSuperAdmin = adminDetails?.superadmin; 
+const isSuperAdmin = adminDetails?.super_admin; 
 console.log("Admin Details",adminDetails); 
 
 
 const navigation = [
   { name: 'Dashboard', href: '/Dashboard', icon: HomeIcon, current: true,visible: true },
-  { name: 'Administration', href: '/Administration', icon: UsersIcon, current: false,  visible:true},
+  { name: 'Administration', href: '/Administration', icon: UsersIcon, current: false,  visible:isSuperAdmin},
   { name: 'Vehicles', href: '/Vehicles', icon: FolderIcon, current: false, visible: true },
   { name: 'Trips', href: '/Trips', icon: CalendarIcon, current: false, visible: true },
   { name: 'Report', href: '/Clients', icon: DocumentDuplicateIcon, current: false, visible: true },
@@ -111,14 +111,11 @@ const navigation = [
         <div className="flex flex-row">
           <div
             ref={drawerRef}
-            // className={`flex flex-col bg-d-blue h-screen overflow-y-auto px-6 lg:w-72 ${isDrawerOpen ? 'lg:w-72 h-screen' : 'hidden'}`}
             className={`flex flex-col bg-d-blue h-screen overflow-y-auto px-6 lg:w-72 sm:w-60 ${isDrawerOpen ? 'lg:w-72 h-screen' : 'hidden'}`}
 
           >
             <div className="flex h-16 py-3 pb-4 shrink-0 items-center">
               <DashLogo /> 
-
-              {/* Group 1000002034 */}
             </div>
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-7">
