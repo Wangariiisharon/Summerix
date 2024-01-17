@@ -104,7 +104,7 @@ export default function AdminInformation() {
           email,
           phonenumber,
           status: true,
-          superadmin: true,
+          super_admin: true,
           organisationId
         };
     
