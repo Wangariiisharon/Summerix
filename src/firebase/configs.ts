@@ -2,6 +2,8 @@
 // import { initializeApp, getApps } from "firebase/app";
 // import { getAuth ,onAuthStateChanged} from "firebase/auth";
 // import { getFirestore, Timestamp } from "firebase/firestore";
+// import { getMessaging } from 'firebase/messaging'; // Add this import
+
 
 // const apps = getApps();
 
@@ -28,7 +30,9 @@
 // // console.log('firebaseApp:', firebaseApp);
 
 // // export const fbAuth = getAuth(firebaseApp);
-// export const fbDb = getFirestore(firebaseApp);
+// export const fbDb = getFirestore(firebaseApp); 
+// const messaging = getMessaging(firebaseApp);
+// export { messaging };
 // export const fromMillis = Timestamp.fromMillis;
 
 // export default firebaseApp;
@@ -39,6 +43,8 @@ import 'firebase/auth';
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, Timestamp } from 'firebase/firestore';
+import { getMessaging } from 'firebase/messaging'; // Add this import
+
 
 const apps = getApps();
 
@@ -63,6 +69,8 @@ if (!apps.length || apps.length === 0) {
 
 const firebaseApp = getApps()[0];
 export const fbDb = getFirestore(firebaseApp);
+// const messaging = getMessaging(firebaseApp);
+// export { messaging };
 export const fromMillis = Timestamp.fromMillis;
 
 export default firebaseApp;

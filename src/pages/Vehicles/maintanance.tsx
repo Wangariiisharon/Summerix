@@ -19,6 +19,7 @@ import { AnyCnameRecord } from "dns";
 import { FirebaseStorage, getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import ImageInput from "@/components/ImageInputs"; 
 import { toast } from 'react-hot-toast';
+import  Notifications from "./notifications"
 import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
 
 
@@ -171,23 +172,24 @@ export default function Maintenance() {
               return;
           }
   
-          if (!values.requested_by||!values.vehicle||!values.cost||!values.job_cards||!values.remarks||!values.date) {
+          if (!values.requested_by||!values.vehicle||!values.cost||!values.job_cards||!values.remarks||!values.date||!values.broken_partImage) {
               console.error('Required form fields are missing');
               return;
           } 
   
           const dateObj = new Date(values.date +"T00:00:00");  
           const timestamp=Timestamp.fromDate(dateObj)
-          let brokenPartImageUrl = ''; 
-          if (values.broken_partImage) {
+ 
+          let brokenPartImageUrl = '';  
+          if (values.broken_partImage ) {
               const storage = getStorage(firebaseApp);
               const storageRef = ref(storage, `broken_partImage/${values.broken_partImage.name}`);
               
               await uploadBytes(storageRef, values.broken_partImage);
               brokenPartImageUrl = await getDownloadURL(storageRef);
               console.log('Broken Part Image URL:', brokenPartImageUrl);
-  
-          } 
+
+          }  
   
           const maintenanceData = {
               requested_by: values.requested_by, 
@@ -203,10 +205,20 @@ export default function Maintenance() {
               organisationId:organisationId
           };
           const docRef = await addDoc(collection(fbDb, 'maintenance'), maintenanceData);
-          console.log('Jobcard added with ID: ', docRef.id);
+          console.log('Maintenance added with ID: ', docRef.id); 
+
+          const notificationData = {
+            title: 'New Maintenance Request',
+            message: 'New maintenance request added by ' + values.requested_by + '.', // Customize the message as needed
+            timestamp: Timestamp.now(),
+            maintenanceId: docRef.id,
+            read:false
+          };
+          await addDoc(collection(fbDb, 'notifications'), notificationData);
+          console.log('Notification added');
           setOpen(false);
       } catch (error) {
-          console.error('Error adding jobcard:', error);
+          console.error('Error adding Maintenance:', error);
       }  
       setShowScheduleMaintenanceModal(false);
   }   
@@ -329,7 +341,6 @@ const handleCheckboxClick = async (index: number) => {
                             <XMarkIcon className='h-6 w-6 text-red-400'/>
                         </Button>
                     </div>
-
                     <Formik
                     initialValues={{
                         requested_by: "",  
@@ -345,7 +356,7 @@ const handleCheckboxClick = async (index: number) => {
                         onSubmit={(values) => handleScheduleMaintanace(values)}  
 
                         >
-                       {({ values }) => (
+                       {({ values, setFieldValue}) => (
                     <Form>
                         <div className=''>
                             <div className='flex w-full justify-between'>
@@ -443,17 +454,23 @@ const handleCheckboxClick = async (index: number) => {
                              className="form-input bg-grey w-48"
                             /> 
                             </label>   
-                            <label className="block ml-24 mt-8">
-                             <label className="form-label">BROKEN PART</label>
-                             <Field name="broken_partImage">
-                            {({ field, form }:any) => (
-                            <ImageInput
-                            selectedImage={field.value}
-                            onSelectImage={(file) => form.setFieldValue('broken_partImage', file)} 
-                               />
-                            )}
-                           </Field>
-                          </label>   
+
+                          <label className="block ml-24 mt-8">
+                          <label className="form-label">BROKEN PART</label>
+                          <Field name="broken_partImage">
+                             {({ field, form }: any) => (
+                             <input
+                            type="file"
+                           onChange={(event) => {
+                           const file = event.currentTarget?.files?.[0];
+                            if (file) {
+                          form.setFieldValue('broken_partImage', file);
+                          }
+                         }}
+                        />
+                        )}
+                    </Field>
+                    </label>  
                             </div> 
                             <label className="block mt-8">
                             <label className="form-label">REMARKS</label>
@@ -604,13 +621,12 @@ export function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,hand
                             </tbody>
                         </table>
                     </div>
+                    <div className="fixed bottom-0 right-0">
+                    <Notifications/>
+                    </div>
                 </div>
             </div>
         </div>
     )
 }
-
-
-
-
 

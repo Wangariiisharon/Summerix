@@ -180,7 +180,6 @@ useEffect(() => {
           end_time: doc.data().end_time,
           vehicle: doc.data().vehicle,  // Include the vehicle data in the trip object
           requested_by: doc.data().requested_by,
-          // ...other trip data
         };
         tripsData.push(trip);
       });

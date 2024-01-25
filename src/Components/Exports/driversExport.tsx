@@ -2,7 +2,7 @@ import firebaseApp, { fbDb } from "@/firebase/configs";
 import { getDocs, collection, DocumentData, where, query } from "firebase/firestore";
 import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
 
-export default async function exportDriverDataToCSV() {
+export default async function ExportDriverDataToCSV() {
   const { organisationId } = useAuthContext();
 
   try {
