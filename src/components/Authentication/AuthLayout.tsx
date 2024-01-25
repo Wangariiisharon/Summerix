@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+
 interface Props {
   children: any;
 }
@@ -9,14 +10,14 @@ export default function AuthLayout({ children }: Props) {
     <div className="flex flex-row w-full h-full min-h-screen">
       <div className="hidden w-2/5 bg-primary  md:block">
         <div className="flex h-screen w-full">
-            <Image
-          src="/Group 1000023202041.png"
+             <Image
+          src="/truckMate.png"
           alt="Truck It"
           width={600}
           height={600} 
           priority={true} 
-          />
-          {/* </div> */}
+          /> 
+       
         </div>
       </div>
       <div className="w-full m-auto max-w-sm md:mx-40">
@@ -30,12 +31,12 @@ export default function AuthLayout({ children }: Props) {
         </header> 
 
         {children}
-{/* 
+
         <footer className="mt-10 grid gap-2 text-gray-400 text-xs">
           <div className="text-center">
             &copy; {new Date().getFullYear()}  
           </div>
-        </footer> */}
+        </footer>
       </div>
     </div>
   );

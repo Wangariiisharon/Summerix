@@ -1,5 +1,5 @@
 import darkLogo from '../../../public/Darklogo.png'
-import dashlogo from '../../../public/dashlogo.png'
+import dashlogo from '../../../public/dashlogo.png' 
 
 
 import Image from "next/image";
@@ -19,4 +19,4 @@ export function DashLogo(){
     return (
         <Image src={dashlogo} alt={'logo'} priority={true}/>
     )
-}
+} 

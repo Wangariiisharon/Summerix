@@ -18,7 +18,7 @@ import DriverDetails from './driversDetails';
 import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
 import { useRouter } from 'next/router'; 
 import { deleteDoc, doc } from 'firebase/firestore'; 
-import exportDriverDataToCSV  from "../../../../components/Exports/driversExport";   
+import ExportDriverDataToCSV  from "../../../../components/Exports/driversExport";   
 import { toast } from 'react-hot-toast'; 
 import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
 import { AnyIfEmpty } from "react-redux";
@@ -115,8 +115,7 @@ useEffect(() => {
                 const existingDriverQuery = await getDocs(query(collection(fbDb, 'drivers'), where('email_adress', '==', values.email_adress)));
                 if (!existingDriverQuery.empty) {
                   console.error('A driver with this email already exists'); 
-                //   toast.error('A driver with this email already exists');
-                toast.error(`A Driver with the Email '${values.email_adress}' already exists`);
+                  toast.error(`A Driver with the Email '${values.email_adress}' already exists`);
                   return;
                 }
                 let idImageUrl = '';  
@@ -271,7 +270,7 @@ useEffect(() => {
         setIsExporting(true);
     
         try {
-          const csvData = await exportDriverDataToCSV();
+          const csvData = await ExportDriverDataToCSV();
     
           // Create a blob and initiate the download
           const blob = new Blob([csvData], { type: "text/csv" });
@@ -345,7 +344,6 @@ useEffect(() => {
                         profile: null, 
                         identity_card: null ,
                         good_conduct: null, 
-
                                       }}
                         // onSubmit={(values) => handleSubmit(values)}   
                         onSubmit={(values) => {

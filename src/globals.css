@@ -6,6 +6,31 @@
   .form-label {
     @apply block mb-1 text-gray-600 text-xs;
   }
+  /* Notification.module.css */
+
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 300px;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.visible {
+  opacity: 1;
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
 
   .form-input,
   .form-textarea {
