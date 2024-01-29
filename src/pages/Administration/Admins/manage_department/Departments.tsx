@@ -97,7 +97,9 @@ export default function Departments(){
             };
     
             const docRef = await addDoc(collection(fbDb, 'departments'), DepartmentsData);
-            console.log('Department added with ID: ', docRef.id);
+            console.log('Department added with ID: ', docRef.id); 
+            toast.success("Department Successfully Added.");
+
     
             setOpen(false);
         } catch (error) {

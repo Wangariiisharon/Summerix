@@ -153,7 +153,9 @@ export default function Admins() {
             };
     
             const docRef = await addDoc(collection(fbDb, 'admins'), adminData);
-            console.log('Admin added with ID: ', docRef.id);
+            console.log('Admin added with ID: ', docRef.id); 
+            toast.success("Admin Successfully Added.");
+
 
     
             if (!values.invitationSent) {

@@ -158,71 +158,74 @@ export default function Maintenance() {
 
 
 
-    const handleScheduleMaintanace = async (values: { requested_by: any; cost:any; remarks:any;vehicle:any; job_cards:any; date:any; serial_number:any; part:any ; broken_partImage:any}) => {  
-      setShowScheduleMaintenanceModal(true);
-      setShowAddJobcardModal(false);  
-      setOpen(true);
-  
-  
-      console.log("Submitted Values:", values); 
-  
-      try {
-          if (!values) {
-              console.error('Form values are undefined');
-              return;
-          }
-  
-          if (!values.requested_by||!values.vehicle||!values.cost||!values.job_cards||!values.remarks||!values.date||!values.broken_partImage) {
-              console.error('Required form fields are missing');
-              return;
-          } 
-  
-          const dateObj = new Date(values.date +"T00:00:00");  
-          const timestamp=Timestamp.fromDate(dateObj)
- 
-          let brokenPartImageUrl = '';  
-          if (values.broken_partImage ) {
-              const storage = getStorage(firebaseApp);
-              const storageRef = ref(storage, `broken_partImage/${values.broken_partImage.name}`);
-              
-              await uploadBytes(storageRef, values.broken_partImage);
-              brokenPartImageUrl = await getDownloadURL(storageRef);
-              console.log('Broken Part Image URL:', brokenPartImageUrl);
+      const handleScheduleMaintanace = async (values: { requested_by: any; cost:any; remarks:any;vehicle:any; job_cards:any; date:any; serial_number:any; part:any ; broken_partImage:any}) => {  
+        setShowScheduleMaintenanceModal(true);
+        setShowAddJobcardModal(false);  
+        setOpen(true);
+        
+        console.log("Submitted Values:", values); 
+        
+        try {
+            if (!values) {
+                console.error('Form values are undefined');
+                return;
+            }
+        
+            if (!values.requested_by||!values.vehicle||!values.cost||!values.job_cards||!values.remarks||!values.date||!values.broken_partImage) {
+                console.error('Required form fields are missing');
+                return;
+            } 
+        
+            const dateObj = new Date(values.date +"T00:00:00");  
+            const timestamp=Timestamp.fromDate(dateObj)
+       
+            let brokenPartImageUrl = '';  
+            if (values.broken_partImage ) {
+                const storage = getStorage(firebaseApp);
+                const storageRef = ref(storage, `broken_partImage/${values.broken_partImage.name}`);
+                
+                await uploadBytes(storageRef, values.broken_partImage);
+                brokenPartImageUrl = await getDownloadURL(storageRef);
+                console.log('Broken Part Image URL:', brokenPartImageUrl);
+      
+            }  
+        
+            const maintenanceData = { 
+                requested_by: values.requested_by, 
+                vehicle: values.vehicle, 
+                date: timestamp, 
+                cost: values.cost,  
+                job_cards: values.job_cards,
+                remarks: values.remarks, 
+                serial_number: values.serial_number,
+                part: values.part,
+                status:"Pending",
+                broken_partImage: brokenPartImageUrl, 
+                organisationId:organisationId,
+                notificationNeedsDisplay: true // Add this   n line
+            };
+            const docRef = await addDoc(collection(fbDb, 'maintenance'), maintenanceData);
+            console.log('Maintenance added with ID: ', docRef.id); 
+            toast.success("Maintenance Request Successfully Added.");
 
-          }  
-  
-          const maintenanceData = {
-              requested_by: values.requested_by, 
-              vehicle: values.vehicle, 
-              date: timestamp, 
-              cost: values.cost,  
-              job_cards: values.job_cards,
-              remarks: values.remarks, 
-              serial_number: values.serial_number,
-              part: values.part,
-              status:"Pending",
-              broken_partImage: brokenPartImageUrl, 
-              organisationId:organisationId
-          };
-          const docRef = await addDoc(collection(fbDb, 'maintenance'), maintenanceData);
-          console.log('Maintenance added with ID: ', docRef.id); 
-
-          const notificationData = {
-            title: 'New Maintenance Request',
-            message: 'New maintenance request added by ' + values.requested_by + '.', // Customize the message as needed
-            timestamp: Timestamp.now(),
-            maintenanceId: docRef.id,
-            read:false
-          };
-          await addDoc(collection(fbDb, 'notifications'), notificationData);
-          console.log('Notification added');
-          setOpen(false);
-      } catch (error) {
-          console.error('Error adding Maintenance:', error);
-      }  
-      setShowScheduleMaintenanceModal(false);
-  }   
-
+      
+            const notificationData = {
+              title: 'New Maintenance Request',
+              message: 'New maintenance request added by ' + values.requested_by + '.', // Customize the message as needed
+              timestamp: Timestamp.now(),
+              maintenanceId: docRef.id,
+              read:false,
+              needsDisplay: true // Add this line
+            };
+            await addDoc(collection(fbDb, 'notifications'), notificationData);
+            console.log('Notification added');
+            setOpen(false);
+        } catch (error) {
+            console.error('Error adding Maintenance:', error);
+        }
+        
+        setShowScheduleMaintenanceModal(false);
+      }
 const handleCheckboxClick = async (index: number) => {
   const documentId = fetchedMaintanance[index].id;
   const maintenanceDocRef = doc(fbDb, 'maintenance', documentId);
@@ -230,7 +233,7 @@ const handleCheckboxClick = async (index: number) => {
   try { 
     if (checkedIndexes.includes(index)) {
       console.log('Checkbox already checked.');  
-      toast.error('Checkbox already checked.');
+      toast.error('Checkbox already checked.'); 
       return;
     }  
     setCheckedIndexes([...checkedIndexes, index]);
@@ -266,7 +269,7 @@ const handleCheckboxClick = async (index: number) => {
   }
 };
 
-  const updateStatusToApproved = async (documentId: string) => {
+const updateStatusToApproved = async (documentId: string) => {
   try {
      const maintenanceDocRef = doc(fbDb, 'maintenance', documentId);
      const docSnapshot = await getDoc(maintenanceDocRef);
@@ -369,7 +372,8 @@ const handleCheckboxClick = async (index: number) => {
                          className="form-input bg-grey w-96" 
                          onClick={handleDropdownClick}
 
-                         >
+                         > 
+                        <option value="">Select Maintenance Type</option>
                         {jobcards.map((job_cards, index) => (
                         <option key={index} value={job_cards}>
                          {job_cards}
@@ -386,8 +390,8 @@ const handleCheckboxClick = async (index: number) => {
                            value={values.vehicle}
                          className="form-input bg-grey w-96" 
                          onClick={handleDropdownClick}
-
-                         >
+                         > 
+                        <option value="">Select a Vehicle</option>
                         {vehicleNames.map((vehicle, index) => (
                         <option key={index} value={vehicle}>
                          {vehicle}
@@ -405,7 +409,8 @@ const handleCheckboxClick = async (index: number) => {
                          className="form-input bg-grey w-48" 
                          onClick={handleDropdownClick}
 
-                         >
+                         > 
+                         <option value="">Select a Driver</option>
                         {drivers.map((requested_by, index) => (
                         <option key={index} value={requested_by}>
                          {requested_by}

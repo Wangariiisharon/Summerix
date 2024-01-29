@@ -32,7 +32,9 @@ export default function CreateAccount() {
       } else {
         // If the organization doesn't exist, save it
         const docRef = await addDoc(organizationsCollection, formValues);
-        console.log('Document written with ID: ', docRef.id);
+        console.log('Document written with ID: ', docRef.id); 
+        toast.success("Organisation Successfully Added.");
+
 
         router.push(`/adminInformation?organisationId=${encodeURIComponent(docRef.id)}`);
       }

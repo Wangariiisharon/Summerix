@@ -360,9 +360,11 @@ export default function TripsComponent() {
           );
           setfetchedTrips(updatedVehicles);
           setSelectedTrip(null);
-          setEditModalOpen(false);
+          setEditModalOpen(false); 
+          toast.success("Trip Successfully Updated.");
+
         } catch (error) {
-          console.error("Error updating Admin:", error);
+          console.error("Error updating trip:", error);
         }
       }; 
    
@@ -475,11 +477,14 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
         };
 
         const docRef = await addDoc(collection(fbDb, 'trips'), maintenanceData);
-        console.log('Trip added with ID: ', docRef.id);
+        console.log('Trip added with ID: ', docRef.id); 
+        toast.success("Trip Successfully Added.");
+
 
         setOpen(false);
     } catch (error) {
-        console.error('Error adding Trip:', error);
+        console.error('Error adding Trip:', error); 
+        toast.error("Error adding Trip. Please try again.");
     }
 };
 
@@ -760,7 +765,7 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                              }} 
                              className="form-input bg-grey w-48"
                                 >
-                              {/* <option value="">Select a company</option> */}
+                              <option value="">Select a company</option>
                               {companies.map((company, index) => (
                               <option key={index} value={company.name}>
                               {company.name}
@@ -775,7 +780,8 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                               name="client"  
                              value={values.client}
                              className="form-input bg-grey w-48"
-                            >
+                            > 
+                            <option value="">Select a Client</option>
                            {fetchedClients.map((client, index) => (
                            <option key={index} value={client.name}>
                            {client.name}   
@@ -793,7 +799,8 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                               name="requested_by"  
                              value={values.requested_by}
                              className="form-input bg-grey w-48"
-                            >
+                            > 
+                            <option value="">Select a Driver</option>
                            {drivers.map((driver, index) => (
                            <option key={index} value={driver.name}>
                            {driver.name}   

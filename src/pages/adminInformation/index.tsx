@@ -108,8 +108,9 @@ export default function AdminInformation() {
           organisationId
         };
     
-        await setDoc(docRef, data);
-    
+        await setDoc(docRef, data); 
+        toast.success("Account Successfully Created.");
+  
         router.push(`/Administration`); 
         // router.push(`/Administration?organisationId=${organisationId}`);
 

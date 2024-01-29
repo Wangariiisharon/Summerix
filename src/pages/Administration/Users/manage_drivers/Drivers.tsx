@@ -1,27 +1,23 @@
 import {Tab} from "@headlessui/react";
-import {ChangeEvent, ChangeEventHandler, FormEvent, Fragment, SetStateAction, useEffect, useState} from "react";
-import {AddButton, Button, DeleteBtn, EditBtn} from "@/components/Buttons";
-import Table, {DummyTable} from "@/components/Table/Table";
+import {Fragment, SetStateAction, useEffect, useState} from "react";
+import {AddButton, Button, EditBtn} from "@/components/Buttons";
+import Table from "@/components/Table/Table";
 import { HeaderCell, BodyCell } from "@/components/Table/Cells";
 import { TableBody } from "@/components/Table/Row";
 import SearchBar from "@/components/Forms/input"
 import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { FormModal } from "@/components/Modals/FormModal";
 import { Formik, Field, Form } from 'formik/dist/index';
-import ImageInput from '@/components/ImageInputs';
 import { getFirestore, collection, setDoc, addDoc,getDocs, DocumentData, query, where, onSnapshot } from 'firebase/firestore';
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import 'firebase/firestore';
 import 'firebase/storage';
-import Link from "next/link";
-import DriverDetails from './driversDetails';
 import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
 import { useRouter } from 'next/router'; 
-import { deleteDoc, doc } from 'firebase/firestore'; 
+import {  doc } from 'firebase/firestore'; 
 import ExportDriverDataToCSV  from "../../../../components/Exports/driversExport";   
 import { toast } from 'react-hot-toast'; 
-import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
-import { AnyIfEmpty } from "react-redux";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 
 const Headers = ["DRIVER ID", "NAME", "MOBILE", "NATIONALITY"]
 
@@ -44,7 +40,6 @@ export default function Drivers(){
       }); 
     const [isExporting, setIsExporting] = useState(false);
 
-    const router=useRouter() 
     const {organisationId} = useAuthContext(); 
     console.log("Drivers Organisation ID:", organisationId);
     
@@ -232,8 +227,6 @@ useEffect(() => {
             console.error("Required form fields are missing");
             return;
           } 
- 
- 
 
           // Update the vehicle data in the database using the selectedVehicle.id
           const vehicleRef = doc(fbDb, "drivers", selectedDriver.id);
