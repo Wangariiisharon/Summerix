@@ -8,7 +8,7 @@ interface Props {
 export default function AuthLayout({ children }: Props) {
   return (
     <div className="flex flex-row w-full h-full min-h-screen">
-      <div className="hidden w-2/5 bg-primary  md:block">
+      <div className="w-2/5 bg-primary  md:block">
         <div className="flex h-screen w-full">
              <Image
           src="/truckMate.png"

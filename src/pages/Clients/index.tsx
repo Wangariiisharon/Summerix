@@ -11,6 +11,7 @@ import { fbDb } from "@/firebase/configs";
 import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
 
 import { DocumentData, addDoc, collection, getDocs, getFirestore, onSnapshot, query, where } from "firebase/firestore";
+import toast from "react-hot-toast";
 
 
 
@@ -104,7 +105,9 @@ export default function ClientsComponent() {
             };
     
             const docRef = await addDoc(collection(fbDb, 'clients'), clientsData);
-            console.log('Client added with ID: ', docRef.id);
+            console.log('Client added with ID: ', docRef.id); 
+            toast.success("Client Successfully Added.");
+
     
             setOpen(false);
         } catch (error) {

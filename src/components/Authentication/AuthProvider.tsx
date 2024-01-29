@@ -11,7 +11,6 @@ const AuthContext = createContext({
   userId: null as string | null,
   organisationId: null as string | null, // Add organisationId to the context 
   userData: null as any, // Add userData to the context
-
 });
 
 type Props = {

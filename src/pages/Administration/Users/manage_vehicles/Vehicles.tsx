@@ -581,7 +581,8 @@ export default function Vehicles(){
                            value={values.vehicle}
                            className="form-input bg-grey w-48" 
 
-                         >
+                         > 
+                        <option value="">Select a Vehicle</option>
                          {fetchedVehicles.map((vehicle, index) => (
                         <option key={index} value={vehicle.lisence_plate}>
                          {vehicle.lisence_plate}
@@ -597,7 +598,9 @@ export default function Vehicles(){
                            name="company"  
                            value={values.company}
                            className="form-input bg-grey w-48" 
-                         >
+                         > 
+                        <option value="">Select Class</option>
+
                          {fetchedCompanies.map((company, index) => (
                         <option key={index} value={company.name}>
                          {company.name}
