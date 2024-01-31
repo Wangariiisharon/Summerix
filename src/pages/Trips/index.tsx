@@ -736,7 +736,7 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
 
                              <div className='flex w-full justify-between  mt-8'>  
                               <label className="block">
-                             <label className="form-label">CLASS</label>.
+                             <label className="form-label">CLASS</label>
                              <Field
                              as="select"
                               name="company"
@@ -810,7 +810,7 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                          </Field> 
                              </label>  
                              <label className="block">
-                             <label className="form-label">VEHICLE</label>.
+                             <label className="form-label">VEHICLE</label>
                              <Field
                                as="select"
                                name="vehicle"
@@ -829,7 +829,7 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                              </div>  
                              <div className="mt-8"> 
                              <label className="block mt-8">
-                             <label className="form-label">Deal Value</label>
+                             <label className="form-label">DEAL VALUE</label>
                              <Field
                              type="number"
                              name="dealValue"
@@ -840,11 +840,11 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                             </label>  
                             </div> 
 
-                            <p className="mt-5 font-semibold"> Cargo</p>  
+                            <p className="mt-5 font-semibold"> CARGO</p>  
                             <div className='flex w-full justify-between'> 
   
                              <label className="block mt-8">
-                             <label className="form-label">Cargo Type</label>
+                             <label className="form-label">CARGO TYPE</label>
                              <Field
                              type="text"
                              name="cargo_type"
@@ -853,7 +853,7 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                             />
                             </label>  
                             <label className="block mt-8">
-                             <label className="form-label">Container Number</label>
+                             <label className="form-label">CONTAINER NUMBER</label>
                              <Field
                              type="text"
                              name="cargo_quantity"
@@ -863,7 +863,7 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                             </label> 
                             </div>  
                             <label className="block mt-8">
-                            <label className="form-label">Memo</label>
+                            <label className="form-label">MEMO</label>
                             <Field
                              type="text"
                              name="memo"
@@ -976,7 +976,7 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                             <div className='flex w-full justify-between'> 
   
                              <label className="block mt-8">
-                             <label className="form-label">Cargo Type</label>
+                             <label className="form-label">CARGO TYPE</label>
                              <Field 
                              disabled
                              type="text"
@@ -986,7 +986,7 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                             />
                             </label>  
                             <label className="block mt-8">
-                             <label className="form-label">Cargo Quanitiy</label>
+                             <label className="form-label">CARGO QUANTITY</label>
                              <Field 
                              disabled
                              type="text"
@@ -1016,7 +1016,7 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
 
                             </label>    
                             <label className="block mt-8">
-                            <label className="form-label">Memo</label>
+                            <label className="form-label">MEMO</label>
                             <Field 
                              disabled
                              type="text"

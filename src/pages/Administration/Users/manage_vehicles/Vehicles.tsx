@@ -610,10 +610,6 @@ export default function Vehicles(){
                         </label>    
 
                              </div>
-     
-             
-                           
-        
                             <div className='flex w-full justify-end mt-24 '>
                                 <Button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32' handleClick={handleAllocateReset}>Reset</Button>
                                 {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
