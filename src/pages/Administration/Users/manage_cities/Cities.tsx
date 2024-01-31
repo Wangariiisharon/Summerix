@@ -197,7 +197,7 @@ useEffect(() => {
                              </label>   
 
                             <label className="block">
-                             <label className="form-label">Address</label>
+                             <label className="form-label">ADDRESS</label>
                              <Field
                               type="text"
                               name="address"
@@ -338,10 +338,10 @@ function CitiesTable({ clients, }: ClientsTableProps) {
  
 
                         {/* </div> */}
-        <div className="flex justify-end mr-20 bg-[#FAFAFB]">
+        {/* <div className="flex justify-end mr-20 bg-[#FAFAFB]">
             <p>Nairobi,Kenya</p> 
            <i className="fa fa-angle-down" aria-hidden="true"></i>
-           </div>
+           </div> */}
 
 
             <Table>

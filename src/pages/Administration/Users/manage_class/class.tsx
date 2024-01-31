@@ -151,7 +151,7 @@ export default function Class(){
                 <div className='p-8'>
                     <div className='flex w-full h-full justify-between items-center mb-12'>
                         <div className='text-xl font-semibold '> 
-                        ADD NEW CLIENT
+                        ADD NEW CLASS
                         </div>
                         <Button className='bg-red-50 h-12 w-12 flex items-center justify-center rounded-full' handleClick={handleReset}>
                             <XMarkIcon className='h-6 w-6 text-red-400'/>
@@ -262,7 +262,6 @@ function CitiesTable({ clients, }: ClientsTableProps) {
     return (
         <>
         <p className="text-lg ml-8 font-bold">Class</p>  
-        {/* <div className="fles flex-row"> */}
         <div className='flex  text-base mt-2 ml-8 w-72 searchBarContainer'>
         <SearchBar
                   placeholder='Search For Class'
@@ -274,11 +273,10 @@ function CitiesTable({ clients, }: ClientsTableProps) {
 
  
 
-                        {/* </div> */}
-        <div className="flex justify-end mr-20 bg-[#FAFAFB]">
+        {/* <div className="flex justify-end mr-20 bg-[#FAFAFB]">
             <p>Nairobi,Kenya</p> 
            <i className="fa fa-angle-down" aria-hidden="true"></i>
-           </div>
+           </div> */}
 
 
             <Table>

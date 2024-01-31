@@ -437,7 +437,7 @@ useEffect(() => {
                     </Field>
                     </label> 
 
-                    <label className="block">
+                    <label className="block ml-6">
                           <label className="form-label">ID</label>
                           <Field name="identity_card">
                              {({ field, form }: any) => (
