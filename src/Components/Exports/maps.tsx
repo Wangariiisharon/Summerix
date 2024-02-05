@@ -1,78 +1,76 @@
-import React, { useEffect, useState } from 'react';
-import { Map, GoogleApiWrapper, Marker } from 'google-maps-react';
 
-const MapContainer = ({ tripDetails, google }: any) => {
-  const mapStyles = {
-    width: '400px',
-    height: '100px',
-  };
+import React, { useState, useEffect } from 'react';
+import { GoogleMap, Marker, LoadScript } from '@react-google-maps/api';
 
-  const defaultCenter = {
-    lat: 0,
-    lng: 0,
-  };
+interface MapComponentProps {
+  dropOffLocationName: string;
+  pickUpLocationName: string;
+}
 
-  const initialLatLng = {
-    lat: 0,
-    lng: 0,
-  };
+const MapComponent: React.FC<MapComponentProps> = ({ dropOffLocationName, pickUpLocationName }) => {
+  const [dropOffLocation, setDropOffLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [pickUpLocation, setPickUpLocation] = useState<{ lat: number; lng: number } | null>(null);
 
-  const [departureLatLng, setDepartureLatLng] = useState(initialLatLng);
-  const [arrivalLatLng, setArrivalLatLng] = useState(initialLatLng);
+  useEffect(() => {   
+    const fetchCoordinates = async () => {
+      if (dropOffLocationName) {
+        const dropOffResponse = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(dropOffLocationName)}&key=AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE`
+        );
+        const dropOffData = await dropOffResponse.json();
+        if (dropOffData.results && dropOffData.results.length > 0) {
+          const { lat, lng } = dropOffData.results[0].geometry.location;
+          setDropOffLocation({ lat, lng }); 
+          console.log("dropOffLocation :",dropOffLocation);
+          
+        }
+      }
 
-  useEffect(() => {
-    const fetchLatLng = async (
-      location: string,
-      setter: React.Dispatch<React.SetStateAction<{ lat: number; lng: number }>>
-    ) => {
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${location}&key=AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE`
-      );
-      const data = await response.json();
+      if (pickUpLocationName) {
+        const pickUpResponse = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(pickUpLocationName)}&key=AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE`
+        );
+        const pickUpData = await pickUpResponse.json();
+        if (pickUpData.results && pickUpData.results.length > 0) {
+          const { lat, lng } = pickUpData.results[0].geometry.location;
+          setPickUpLocation({ lat, lng });
+          console.log("pickUpLocation :",pickUpLocation);
 
-      if (data.results.length > 0) {
-        const location = data.results[0].geometry.location;
-        setter({ lat: location.lat, lng: location.lng });
+        }
       }
     };
 
-    if (tripDetails.drop_off_location && tripDetails.pick_up_location) {
-      fetchLatLng(tripDetails.drop_off_location, setDepartureLatLng);
-      fetchLatLng(tripDetails.pick_up_location, setArrivalLatLng);
-    }
-  }, [tripDetails.drop_off_location, tripDetails.pick_up_location]);
+    fetchCoordinates();
+  }, [dropOffLocationName, pickUpLocationName]);
+
+  // Define your Google Maps API key
+  const apiKey = 'AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE';
 
   return (
-    <div style={mapStyles}>
-      <Map
-        google={google}
-        zoom={8}
-        style={{ width: '100%', height: '100%' }}
-        initialCenter={defaultCenter}
-        center={defaultCenter}
-      />
-      {tripDetails.drop_off_location && tripDetails.pick_up_location && (
-        <>
+    <LoadScript googleMapsApiKey={apiKey}>
+      <GoogleMap
+        mapContainerStyle={{ width: '100%', height: '100px' }}
+        center={{ lat: -1.286389, lng: 36.817223 }}
+        zoom={6}
+      >
+        {/* Marker for drop off location */}
+        {dropOffLocation && (
           <Marker
-            position={{
-              lat: departureLatLng.lat,
-              lng: departureLatLng.lng,
-            }}
-            label={tripDetails.drop_off_location}
+            position={dropOffLocation}
+            title="Drop Off Location"
           />
+        )}
+
+        {/* Marker for pick up location */}
+        {pickUpLocation && (
           <Marker
-            position={{
-              lat: arrivalLatLng.lat,
-              lng: arrivalLatLng.lng,
-            }}
-            label={tripDetails.pick_up_location}
+            position={pickUpLocation}
+            title="Pick Up Location"
           />
-        </>
-      )}
-    </div>
+        )}
+      </GoogleMap>
+    </LoadScript>
   );
 };
 
-export default GoogleApiWrapper({
-  apiKey: 'AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE',
-})(MapContainer);
+export default MapComponent;
