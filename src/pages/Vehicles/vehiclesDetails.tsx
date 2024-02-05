@@ -1,6 +1,6 @@
 import { DocumentData, collection, doc, getDoc, getDocs } from 'firebase/firestore';
  import { useRouter } from 'next/router';
- import React, { useEffect, useState } from 'react';
+ import React, { useEffect, useRef, useState } from 'react';
  import { fbDb } from '@/firebase/configs';
  import SiteLayout from "@/Layout/SiteLayout";
 import Link from 'next/link'; 
@@ -17,7 +17,7 @@ import {AnyObject} from "chart.js/dist/types/basic";
 import { ChevronDownIcon } from "@heroicons/react/24/outline"; 
 import { getFirestore, updateDoc } from 'firebase/firestore'; 
 import { format } from 'date-fns'; 
-import Map from '../../components/Exports/maps';
+import MapComponent from '../../components/Exports/maps';
 
 
 
@@ -91,7 +91,14 @@ export default function VehiclesDetails() {
   const [fetchedTrips, setFetchedTrips]=useState<DocumentData[]>([]);      
   const [tripDetails, setTripDetails] = useState({ start_time: 0, end_time: 0, drop_off_location: "", pick_up_location: "" ,requested_by:{name: ""}}); 
   const [open, setOpen] = useState(false);   
-  const [availabilityValue, setAvailabilityValue] = useState(70);
+  const [availabilityValue, setAvailabilityValue] = useState(70); 
+  const isMounted = useRef(true);
+
+  // useEffect(() => {
+  //   return () => {
+  //     isMounted.current = false;
+  //   };
+  // }, []);
  
   const [data, setData] = useState({
     datasets: [
@@ -211,6 +218,8 @@ useEffect(() => {
     }
   };
   
+    isMounted.current = false;
+  
 
   fetchVehiclesDetails();
 }, [id]);
@@ -220,8 +229,8 @@ useEffect(() => {
   } 
 
   const updateAvailabilityStatus = async (id: any, newAvailabilityStatus: string) => { 
+    if (isMounted.current) {
       setOpen(true);
-
     try {
       const vehicleDocRef = doc(fbDb, 'vehicles', id);
       await updateDoc(vehicleDocRef, { availability_status: newAvailabilityStatus });
@@ -229,7 +238,8 @@ useEffect(() => {
       console.log('Availability status updated successfully');
     } catch (error) {
       console.error('Error updating availability status:', error);
-    }
+    } 
+  }
   }
 
 function formatDate(timestamp:any) {
@@ -381,8 +391,12 @@ function formatYear(timestamp: any) {
       </div>
       </div> 
       <div className=''>  
-      <Map tripDetails={tripDetails} />
-      </div>
+      {/* <MapComponent
+    dropOffLocation={tripDetails.drop_off_location}
+    pickUpLocation={tripDetails.pick_up_location} />       */} 
+          <MapComponent dropOffLocationName={tripDetails.drop_off_location} pickUpLocationName={tripDetails.pick_up_location} />
+
+  </div>
         
       </div>
       </div>  
