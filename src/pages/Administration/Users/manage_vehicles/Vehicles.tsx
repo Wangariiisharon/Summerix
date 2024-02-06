@@ -582,7 +582,7 @@ export default function Vehicles(){
                            className="form-input bg-grey w-48" 
 
                          > 
-                        <option value="">Select a Vehicle</option>
+                        <option value="">Select  Vehicle</option>
                          {fetchedVehicles.map((vehicle, index) => (
                         <option key={index} value={vehicle.lisence_plate}>
                          {vehicle.lisence_plate}

@@ -51,17 +51,17 @@ export default function VehicleOverview() {
           };
         fetchedVehicles();
     }, [organisationId]); 
-const allVehicles= fetchedVehicles.length 
-console.log("All Vehicles",allVehicles);
+       const allVehicles= fetchedVehicles.length 
+       console.log("All Vehicles",allVehicles);
 
-const onRouteCount = fetchedVehicles.filter((vehicle) => vehicle.availability_status === "On Route").length;
-console.log("Vehicles On Route",onRouteCount);
+       const onRouteCount = fetchedVehicles.filter((vehicle) => vehicle.availability_status === "On Route").length;
+       console.log("Vehicles On Route",onRouteCount);
 
-const outOfServiceCount = fetchedVehicles.filter((vehicle) => vehicle.availability_status === "Out Of Service").length;
-console.log("Vehicles Out of Service",outOfServiceCount);
+       const outOfServiceCount = fetchedVehicles.filter((vehicle) => vehicle.availability_status === "Out Of Service").length;
+       console.log("Vehicles Out of Service",outOfServiceCount);
 
-const availableCount = fetchedVehicles.filter((vehicle) => vehicle.availability_status === "Available").length;
-console.log("Available Vehicles",availableCount);
+       const availableCount = fetchedVehicles.filter((vehicle) => vehicle.availability_status === "Available").length;
+       console.log("Available Vehicles",availableCount);
 
     const data:dataset = {
         datasets: [
@@ -106,7 +106,7 @@ console.log("Available Vehicles",availableCount);
                             <div className="px-4 py-4 sm:px-6 flex w-full items-center justify-between">
                                 <h2 id="applicant-information-title" className="text-lg font-bold leading-6">
                                     Vehicle Overview
-                                </h2>
+                                </h2> 
                                 <div className='text-sm flex items-center'>
                                     This Week
                                     <ChevronDownIcon className='ml-2 h-4 w-4'/>

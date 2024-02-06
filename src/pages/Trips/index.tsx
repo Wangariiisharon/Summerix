@@ -416,7 +416,7 @@ const generateTripId = async (vehicle: string, start_time: string) => {
 
 
 
-const handleSubmit = async (values: { requested_by: string; pick_up_location: string; drop_off_location: string; vehicle: string; start_time: string; end_time: string; cargo_type: string; cargo_quantity: string; memo: string; company: string; client: string; dealValue: number;}) => {
+const handleSubmit = async (values: { requested_by: string; pick_up_location: string; drop_off_location: string; vehicle: string; start_time: string; end_time: string; cargo_type: string; cargo_quantity: string; memo: string; company: string; client: string; dealValue: number;fuel:number}) => {
     setOpen(false); 
     console.log("Submitted Values:", values);
     try {
@@ -425,7 +425,7 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
             return;
         }
 
-        if (!values.requested_by || !values.vehicle || !values.pick_up_location || !values.drop_off_location || !values.start_time || !values.end_time || !values.cargo_type || !values.cargo_quantity || !values.company||!values.client||!values.dealValue) {
+        if (!values.requested_by || !values.vehicle || !values.pick_up_location || !values.drop_off_location || !values.start_time || !values.end_time || !values.cargo_type || !values.cargo_quantity || !values.company||!values.client||!values.dealValue||!values.fuel) {
             console.error('Required form fields are missing');
             return;
         } 
@@ -473,6 +473,7 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
             trip_status:"", 
             client: values.client, 
             dealValue: values.dealValue, 
+            fuel: values.fuel, 
             organisationId:organisationId
         };
 
@@ -575,18 +576,18 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                           </Tab.List>
                         </Tab.Group>  
                         <div className='flex justify-end'>
-                    <div className='flex'>
+                    {/* <div className='flex'>
                         <Button className='bg-white px-3 uppercase flex items-center rounded text-base font-semibold' handleClick={handleClick}>
                             Nairobi,Kenya
                             <ChevronDownIcon className='ml-4 h-4 w-4'/>
                         </Button>
-
+                        </div> */}
                         {/* <Button className='ml-2 bg-white px-3 uppercase flex items-center rounded text-base font-semibold' handleClick={handleClick}>
                         Today
                         <ChevronDownIcon className='ml-4 h-4 w-4'/>
                     </Button> */}
 
-                    </div>
+                    
 
                 </div> 
                         </div>
@@ -683,6 +684,8 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                         company: "", 
                         client: "", 
                         dealValue: 0, 
+                        fuel: 0, 
+
 
 
             
@@ -765,7 +768,7 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                              }} 
                              className="form-input bg-grey w-48"
                                 >
-                              <option value="">Select a company</option>
+                              <option value="">Select Class</option>
                               {companies.map((company, index) => (
                               <option key={index} value={company.name}>
                               {company.name}
@@ -781,7 +784,7 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                              value={values.client}
                              className="form-input bg-grey w-48"
                             > 
-                            <option value="">Select a Client</option>
+                            <option value="">Select Client</option>
                            {fetchedClients.map((client, index) => (
                            <option key={index} value={client.name}>
                            {client.name}   
@@ -800,7 +803,7 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                              value={values.requested_by}
                              className="form-input bg-grey w-48"
                             > 
-                            <option value="">Select a Driver</option>
+                            <option value="">Select Driver</option>
                            {drivers.map((driver, index) => (
                            <option key={index} value={driver.name}>
                            {driver.name}   
@@ -817,7 +820,7 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                                value={values.vehicle}
                                className="form-input bg-grey w-48"
                               >
-                             <option value="">Select a Vehicle</option>
+                             <option value="">Select Vehicle</option>
                              {selectedCompanyVehicles.map((vehicle, index) => (
                               <option key={index} value={vehicle}>
                               {vehicle}
@@ -827,8 +830,8 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                            </Field>
                              </label> 
                              </div>  
-                             <div className="mt-8"> 
-                             <label className="block mt-8">
+                             <div className="mt-8 flex w-full justify-between"> 
+                             <label className="block">
                              <label className="form-label">DEAL VALUE</label>
                              <Field
                              type="number"
@@ -837,7 +840,17 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                              placeholder="Ksh"
                              className="form-input bg-grey w-48"
                             />
-                            </label>  
+                            </label>   
+                            <label className="block">
+                             <label className="form-label">FUEL</label>
+                             <Field
+                             type="number"
+                             name="fuel"
+                             value={values.fuel} 
+                             placeholder="Ksh"
+                             className="form-input bg-grey w-48"
+                            />
+                            </label> 
                             </div> 
 
                             <p className="mt-5 font-semibold"> CARGO</p>  

@@ -18,6 +18,7 @@ import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { getFirestore, updateDoc } from 'firebase/firestore'; 
 import { format } from 'date-fns'; 
 import MapComponent from '../../components/Exports/maps';
+import { toast } from 'react-hot-toast';
 
 
 
@@ -94,12 +95,7 @@ export default function VehiclesDetails() {
   const [availabilityValue, setAvailabilityValue] = useState(70); 
   const isMounted = useRef(true);
 
-  // useEffect(() => {
-  //   return () => {
-  //     isMounted.current = false;
-  //   };
-  // }, []);
- 
+
   const [data, setData] = useState({
     datasets: [
       {
@@ -229,17 +225,18 @@ useEffect(() => {
   } 
 
   const updateAvailabilityStatus = async (id: any, newAvailabilityStatus: string) => { 
-    if (isMounted.current) {
-      setOpen(true);
+    setOpen(true);
+    // if (isMounted.current) {
     try {
       const vehicleDocRef = doc(fbDb, 'vehicles', id);
       await updateDoc(vehicleDocRef, { availability_status: newAvailabilityStatus });
       console.log("New AvailabilityStatus:", newAvailabilityStatus);
-      console.log('Availability status updated successfully');
+      console.log('Availability status updated successfully'); 
+      toast.success("Availability status updated successfully")
     } catch (error) {
       console.error('Error updating availability status:', error);
     } 
-  }
+  // }
   }
 
 function formatDate(timestamp:any) {
@@ -276,11 +273,12 @@ function formatYear(timestamp: any) {
     <SiteLayout>  
     <div className='flex flex-row mt-2'>
       <div className='mt-2'> 
-      <Link href="/Vehicles" className='text-xs font-inter text-[#4FD1C5]'> 
-      Back to all vehicles 
+      <Link href="/Vehicles" className='text-xs font-inter text-[#4FD1C5]'>  
+      <i className="fa fa-arrow-left" aria-hidden="true"></i>
+        Back   
       </Link>  
       </div> 
-      <div className="ml-96 justify-end right-10">  
+      <div className="flex w-11/12 justify-end">  
                 <div>  
                 <Button
                 className='rounded bg-d-green min-w-[160px] h-8 uppercase text-white text-sm font-semibold flex items-center px-4 mr-2'
@@ -292,15 +290,15 @@ function formatYear(timestamp: any) {
                 </div>   
                 </div>   
       <div className='flex flex-col mt-5'>
-      <div className='flex justify-between mt-2 h-1/6	'>  
-      <div className=' h-1/6 bg-white shadow rounded-md'>  
+      <div className='flex flex-row mt-2 w-full	h-1/6	'>  
+      <div className='w-1/2 h-1/6 bg-white shadow rounded-md'>  
       <div className='flex flex-row'> 
       <i className="fa fa-circle fa-2x text-[#D9D9D9] p-2" aria-hidden="true"></i>
       <div className='ml-6 flex flex-col'> 
         <p className='font-bold font-nunito text-sm	 text-[#030229]'>Vehicle Name</p>  
         <div className='flex flex-row text-[#030229] font-nunito'>  
         <p className='p-2 text-xs	'>{vehicleDetails.name}</p>   
-        <p className='p-2 ml-14 text-[#030229] text-sm'>Lisence Plate 
+        <p className='p-2 ml-14 text-[#030229] text-sm'>License Plate 
         <span className='ml-2 text-xs'>{vehicleDetails.lisence_plate}</span>
         </p> 
         </div>
@@ -341,7 +339,7 @@ function formatYear(timestamp: any) {
 
       </div>
       </div>  
-   <div className='bg-white shadow rounded-md ml-8 '>
+   {/* <div className='bg-white shadow rounded-md ml-8 '>
      <p className='font-bold ml-10'>Vehicle Condition</p>
       <div className="flex flex-col relative">
           <div className='!bg-white' style={{ width: '200px', height: '200px', margin: 'auto' }}>
@@ -351,9 +349,9 @@ function formatYear(timestamp: any) {
         {availabilityValue}%
         </p>
         </div>
-      </div>
+      </div> */}
 
-      <div className='bg-white h-1/6 	shadow rounded-md flex flex-col ml-8 px-2'>   
+      <div className='bg-white w-1/2 h-1/6 	shadow rounded-md flex flex-col ml-8 px-2'>   
       <div className='flex justify-between mt-2'>  
       <div className='flex flex-row ml-2'>
       <p className=''>Trip</p>  
@@ -391,11 +389,7 @@ function formatYear(timestamp: any) {
       </div>
       </div> 
       <div className=''>  
-      {/* <MapComponent
-    dropOffLocation={tripDetails.drop_off_location}
-    pickUpLocation={tripDetails.pick_up_location} />       */} 
-          <MapComponent dropOffLocationName={tripDetails.drop_off_location} pickUpLocationName={tripDetails.pick_up_location} />
-
+      <MapComponent dropOffLocationName={tripDetails.drop_off_location} pickUpLocationName={tripDetails.pick_up_location} />
   </div>
         
       </div>
@@ -419,74 +413,6 @@ function formatYear(timestamp: any) {
       </div>   
       </div>
       </div> 
-      <div className='bg-white w-1/2 h-1/6 ml-10	 shadow  rounded-md'>   
-      <p className='font-bold text-sm ml-4 py-2'> Vehicle  Details</p>  
-      <div className='border-t border-gray-200 flex flex-col'> 
-      <div className='flex justify-between py-4 ml-2'>   
-      <div className='border-solid border-2 bg-[#FEF3F2] border-[#FEF3F2] flex flex-col rounded-md px-2 ml-10'>  
-      <p className='px-2 pt-2 text-sm'>8</p> 
-      <p className='font-bold text-xs px-2 pb-2'>Overdue</p>
-      </div> 
-      <div className='border-solid border-2 border-[#D9E2F6] flex flex-col rounded-md mr-10 px-2'>  
-      <p className='px-2 pt-2 text-sm'>3</p> 
-      <p className='font-bold text-xs px-2 pb-2'>Due Soon</p>
-      </div> 
-        </div>   
-        <div className='border-t border-gray-200 flex flex-row py-2 ml-10'>    
-        {/* <i className="fa-light fa-brake-warning text-[#EF6454]"></i>   */}
-        <i className="fa-light fa-brake-warning text-[#EF6454]" aria-hidden="true"></i>
-        {/* <i className="fa fa-bandcamp" aria-hidden="true"></i> */}
-        <div className='flex flex-col'> 
-          <p className='font-bold text-xs px-2'>Brakes Repair</p> 
-          <p className='text-sm px-2'>Overdue 1000 km</p>
-        </div> 
-        <div className='ml-40'>    
-        <i className="fa-light fa-brake-warning text-[#EF6454]" aria-hidden="true"></i>
-        <div className='flex flex-col'> 
-          <p className='font-bold text-xs px-2'>Battery</p> 
-          <p className='text-sm px-2'>Overdue 1000km</p>
-        </div>
-
-        </div>   
-
-        </div>    
-
-        <div className='border-t border-gray-200 flex flex-row ml-10 py-2'>    
-        {/* <i className="fa-light fa-brake-warning text-[#EF6454]"></i>   */}
-        <i className="fa-light fa-brake-warning text-[#EF6454]" aria-hidden="true"></i>
-        {/* <i className="fa fa-bandcamp" aria-hidden="true"></i> */}
-        <div className='flex flex-col'> 
-          <p className='font-bold text-xs px-2'>Filter Replacement</p> 
-          <p className='text-sm px-2'>Overdue 1000 km</p>
-        </div> 
-        <div className='ml-40'>    
-        <i className="fa-light fa-brake-warning text-[#EF6454]" aria-hidden="true"></i>
-        <div className='flex flex-col'> 
-          <p className='font-bold text-xs px-2'>Oil</p> 
-          <p className='text-sm px-2'>Overdue 1000km</p>
-        </div>
-
-        </div>   
-
-        </div>   
-        <div className='border-t border-gray-200 flex flex-row ml-10 py-2'>    
-        {/* <i className="fa-light fa-brake-warning text-[#EF6454]"></i>   */}
-        <i className="fa-light fa-brake-warning text-[#EF6454]" aria-hidden="true"></i>
-        {/* <i className="fa fa-bandcamp" aria-hidden="true"></i> */}
-        <div className='flex flex-col'> 
-          <p className='font-bold text-xs px-2'>Rotate Tires</p> 
-          <p className='text-sm px-2'>Overdue 1000 km</p>
-        </div> 
-
-        </div>  
-
-
-
-      </div> 
-  
-
-      </div>  
-
 
       </div>   
       <FormModal open={open} setOpen={setOpen}>
@@ -533,6 +459,7 @@ function formatYear(timestamp: any) {
                                     name="availability_status"
                                     value={values.availability_status}
                                      className="form-input bg-grey w-48">
+                                    <option value="Select avalilability">Select avalilability</option>
                                    <option value="Available">Available</option>
                                   <option value="On Route">On Route</option>
                                  <option value="Out Of Service">Out Of Service</option>

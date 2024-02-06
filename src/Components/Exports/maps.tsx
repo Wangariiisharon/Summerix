@@ -42,30 +42,34 @@ const MapComponent: React.FC<MapComponentProps> = ({ dropOffLocationName, pickUp
 
     fetchCoordinates();
   }, [dropOffLocationName, pickUpLocationName]);
+   console.log("dropOffLocation Cordinates",dropOffLocation); 
+   console.log("pickUpLocation Cordinates",pickUpLocation);
 
+   
   // Define your Google Maps API key
   const apiKey = 'AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE';
 
   return (
     <LoadScript googleMapsApiKey={apiKey}>
-      <GoogleMap
+       <GoogleMap
         mapContainerStyle={{ width: '100%', height: '100px' }}
         center={{ lat: -1.286389, lng: 36.817223 }}
         zoom={6}
-      >
+      >    
+   
         {/* Marker for drop off location */}
-        {dropOffLocation && (
-          <Marker
-            position={dropOffLocation}
-            title="Drop Off Location"
-          />
-        )}
-
-        {/* Marker for pick up location */}
         {pickUpLocation && (
           <Marker
             position={pickUpLocation}
             title="Pick Up Location"
+          />
+        )}
+
+        {/* Marker for pick up location */}
+        {dropOffLocation && (
+          <Marker
+            position={dropOffLocation}
+            title="Drop Off Location"
           />
         )}
       </GoogleMap>
