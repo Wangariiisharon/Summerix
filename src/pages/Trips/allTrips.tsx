@@ -16,7 +16,8 @@ import { Tab } from "@headlessui/react";
 import Maintenance from "../Vehicles/maintanance";
 import VehicleAllocation from "../Vehicles/vehicle_allocation";
 import { useRouter } from "next/router"; 
-import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider"; 
+
 
 
 
@@ -52,6 +53,8 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
         trip_status: "", 
       }); 
       const [selectedTabIndex, setSelectedTabIndex] = useState(0);
+      const [selectedTimeRange, setSelectedTimeRange] = useState<string>('all');
+
 
       const allTripsTabs = [
         { name: 'OVERVIEW', href: '#', current: selectedTabIndex === 0 },
@@ -255,7 +258,43 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
         fetchedTrips();
         fetchVehicleDetails(); 
         fetchDrivers();
-    }, [organisationId]);  
+    }, [organisationId]);   
+
+    const filterTripsByTimeRange = (trip: DocumentData): boolean => {
+      const currentDate = new Date();
+    
+      if (selectedTimeRange === 'thisWeek') {
+        // Filter trips that occurred within the current week
+        const startOfWeek = new Date(currentDate);
+        startOfWeek.setDate(currentDate.getDate() - currentDate.getDay()); // Start of the week (Sunday)
+        startOfWeek.setHours(0, 0, 0, 0);
+    
+        const endOfWeek = new Date(currentDate);
+        endOfWeek.setDate(currentDate.getDate() + (6 - currentDate.getDay())); // End of the week (Saturday)
+        endOfWeek.setHours(23, 59, 59, 999);
+    
+        const tripDate = trip.start_time?.toDate();
+    
+        return tripDate && tripDate >= startOfWeek && tripDate <= endOfWeek;
+      }
+    
+      if (selectedTimeRange === 'thisMonth') {
+        // Filter trips that occurred within the current month
+        const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        startOfMonth.setHours(0, 0, 0, 0);
+    
+        const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+        endOfMonth.setHours(23, 59, 59, 999);
+    
+        const tripDate = trip.start_time?.toDate();
+    
+        return tripDate && tripDate >= startOfMonth && tripDate <= endOfMonth;
+      }
+    
+      // 'all' selected, no additional filtering
+      return true;
+    };
+    
     return (
             <div>
             <div className="flex flex-col">
@@ -263,7 +302,8 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
                 </div>
                 {/* <HeaderBar headers={Headers}/> */} 
                 <div className='mt-4'> 
-                <Tab.Group>
+                <Tab.Group>  
+                  <div className="flex flex-row">
                 <Tab.List className="w-full bg-[#FAFAFB] font-nunito flex justify-start mb-3">
                         {allTripsTabs.map((tab, index) => (
                       <Fragment key={index}>
@@ -275,14 +315,32 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
                     onClick={() => setSelectedTabIndex(index)}
                   >
                     {tab.name}
-                  </Tab>
+                  </Tab> 
+                
                    </Fragment>
                             ))}
-                       </Tab.List>
-                    <Tab.Panels>
+                       </Tab.List>  
+
+                    <div className='text-sm flex pr-2'> 
+                    {/* Filter by: */}
+                     <select
+                    value={selectedTimeRange}
+                    onChange={(e) => setSelectedTimeRange(e.target.value)}
+                    className="ml-2 border border-[#4FD1C5] rounded text-sm"
+                    >
+                   <option value="all">All</option>
+                   <option value="thisWeek">This Week</option>
+                   <option value="thisMonth">This Month</option>
+                   </select>
+                   </div> 
+                    
+                       </div> 
+                    <Tab.Panels> 
+         
                     <Tab.Panel className={classNames(selectedTabIndex === 0 ? 'ui-selected border-b-4' : '', 'h-full')}>
                         <div  className="max-h-[500px] overflow-y-auto">
-                        <TripsTable selectedTab={selectedTabIndex} trips={fetchedTrips} filteredTrips={filteredTrips} handleEditClick={handleEditClick}/>
+                        {/* <TripsTable selectedTab={selectedTabIndex} trips={fetchedTrips} filteredTrips={filteredTrips} handleEditClick={handleEditClick}/> */}
+                        <TripsTable selectedTab={selectedTabIndex} trips={fetchedTrips} filteredTrips={filteredTrips.filter(filterTripsByTimeRange)} handleEditClick={handleEditClick} />
 
                             </div>
                         </Tab.Panel>
@@ -291,7 +349,7 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
                         <TripsTable selectedTab={selectedTabIndex} trips={fetchedTrips} filteredTrips={filteredTrips} handleEditClick={handleEditClick} />
                             </div>
             
-                        </Tab.Panel>
+                        </Tab.Panel> 
                     </Tab.Panels>
                 </Tab.Group> 
             </div> 

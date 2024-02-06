@@ -31,7 +31,6 @@ export default function Drivers(){
         name: "",
         phonenumber: "",
         email_adress: "",
-        country: "",
         city: "",
         vehicle_type: "",
         model: "",
@@ -91,7 +90,7 @@ useEffect(() => {
     }
 
 
-    const handleSubmit = async (values: { name: any; phonenumber: any; email_adress: any;country: any; city: any;vehicle_type: any;model: any;year: any;number: any;profile: any;identity_card: any; good_conduct: any,        
+    const handleSubmit = async (values: { name: any; phonenumber: any; email_adress: any; city: any;vehicle_type: any;model: any;year: any;number: any;profile: any;identity_card: any; good_conduct: any,        
     }) => { 
             console.log("Submitted Values:", values);
         
@@ -102,7 +101,7 @@ useEffect(() => {
                     return;
                 }
         
-                if (!values.name || !values.phonenumber || !values.email_adress || !values.country||!values.city) {
+                if (!values.name || !values.phonenumber || !values.email_adress||!values.city) {
                     console.error('Required form fields are missing');
                     console.log("Submitted Values:", values);   
                     return
@@ -149,7 +148,6 @@ useEffect(() => {
                     name: values.name,
                     phonenumber: values.phonenumber,
                     email_adress: values.email_adress,
-                    country:values.country,
                     city:values.city,
                     profile:profileImageUrl,  
                     identity_card:idImageUrl,  
@@ -179,7 +177,7 @@ useEffect(() => {
             name: driver.name,
             phonenumber: driver.phonenumber,
             email_adress: driver.email_adress,
-            country:driver.country,
+            // country:driver.country,
             city:driver.city,
             vehicle_type:driver.vehicle_type,
             model:driver.model,
@@ -201,7 +199,7 @@ useEffect(() => {
         name: any,
         phonenumber: any,
         email_adress: any,
-        country:any,
+        // country:any,
         city:any,
       }) => { 
         if (!selectedDriver) {
@@ -221,7 +219,7 @@ useEffect(() => {
             !values.name ||
             !values.phonenumber ||
             !values.email_adress ||
-            !values.country||
+            // !values.country||
             !values.city
           )  {
             console.error("Required form fields are missing");
@@ -234,7 +232,7 @@ useEffect(() => {
             name: values.name,
             phonenumber: values.phonenumber,
             email_adress: values.email_adress,
-            country:values.country,
+            // country:values.country,
             city:values.city,
           });
       
@@ -246,7 +244,7 @@ useEffect(() => {
                   name: values.name,
                   phonenumber: values.phonenumber,
                   email_adress: values.email_adress,
-                  country:values.country,
+                  // country:values.country,
                   city:values.city,
                 }
               : driver
@@ -328,7 +326,7 @@ useEffect(() => {
                         phonenumber: "",
                         email_adress: "",
                         gender: "",
-                        country: "",
+                        // country: "",
                         city: "",
                         vehicle_type: "",
                         model: "",
@@ -378,7 +376,7 @@ useEffect(() => {
                              className="form-input bg-grey w-48"
                             />
                              </label>  
-                             <label className="block">
+                             {/* <label className="block">
                             <label className="form-label">NATIONALITY</label>
                             <Field
                              type="text"
@@ -386,13 +384,9 @@ useEffect(() => {
                              value={values.country}
                              className="form-input bg-grey w-48"
                             />
-                             </label>                                  
+                             </label>                                   */} 
 
-                            </div> 
-
-                            <div className='flex w-full justify-between mt-8'> 
-                             
-                             <label className="block">
+                            <label className="block">
                              <label className="form-label">ADDRESS</label>
                              <Field
                              type="text"
@@ -401,8 +395,14 @@ useEffect(() => {
                              className="form-input bg-grey w-48"
                             />
                             </label> 
-                            <label className="block ml-32">
-                             <label className="form-label">PROFILE</label>
+
+                            </div> 
+
+                            <div className='flex w-full justify-between mt-8'> 
+                             
+                         
+                            <label className="block">
+                             <label className="form-label">DRIVING LICENSE</label>
                              <Field name="profile" >
                             {({ field, form }:any) => (
                             <input 
@@ -416,10 +416,9 @@ useEffect(() => {
                                />
                             )}
                            </Field>
-                          </label>  
-                            </div> 
-                            <div className='flex w-full justify-between mt-8'>  
-                          <label className="block">
+                          </label> 
+
+                          <label className="block ml-6">
                           <label className="form-label">GOOD CONDUCT</label>
                           <Field name="good_conduct">
                              {({ field, form }: any) => (
@@ -435,23 +434,26 @@ useEffect(() => {
                         />
                         )}
                     </Field>
-                    </label> 
+                    </label>   
+                            </div> 
+                            <div className='flex w-full justify-between mt-8'>  
+                        
 
-                    <label className="block ml-6">
+                    <label className="block">
                           <label className="form-label">ID</label>
                           <Field name="identity_card">
                              {({ field, form }: any) => (
                              <input
-                            type="file"
+                            type="file"  
                             accept=".pdf"
                            onChange={(event) => {
                            const file = event.currentTarget?.files?.[0];
                             if (file) {
                           form.setFieldValue('identity_card', file);
-                          }
-                         }}
+                          }   
+                         }}  
                         />
-                        )}
+                        )} 
                     </Field>
                     </label>
                             </div>
@@ -521,20 +523,7 @@ useEffect(() => {
                                            value={values.email_adress}
                                            className="form-input bg-grey w-48"
                                           />
-                                           </label> 
-                                           <label className="block">
-                                          <label className="form-label">COUNTRY</label>
-                                          <Field
-                                           type="text"
-                                           name="country"
-                                           value={values.country}
-                                           className="form-input bg-grey w-48"
-                                          />
-                                           </label>                                
-
-                                          </div>
-                                          <div className='flex w-full justify-between mt-8'>
-                                                                    
+                                           </label>  
                                            <label className="block">
                                            <label className="form-label">CITY</label>
                                            <Field
@@ -543,8 +532,18 @@ useEffect(() => {
                                            value={values.city}
                                            className="form-input bg-grey w-48"
                                           />
-                                          </label>                            
-                                          </div> 
+                                          </label>  
+                                           {/* <label className="block"> */}
+                                          {/* <label className="form-label">COUNTRY</label>
+                                          <Field
+                                           type="text"
+                                           name="country"
+                                           value={values.country}
+                                           className="form-input bg-grey w-48"
+                                          />
+                                           </label>                                 */}
+
+                                          </div>                       
                                           <div className='flex w-full justify-end mt-24 '>
                                               <Button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32' handleClick={handleEditModalClose}>Reset</Button>
                                               {/* <Submit name="save" handleSubmit={handleSubmit}/> */}

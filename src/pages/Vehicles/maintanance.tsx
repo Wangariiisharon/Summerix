@@ -391,7 +391,7 @@ const updateStatusToApproved = async (documentId: string) => {
                          className="form-input bg-grey w-96" 
                          onClick={handleDropdownClick}
                          > 
-                        <option value="">Select a Vehicle</option>
+                        <option value="">Select Vehicle</option>
                         {vehicleNames.map((vehicle, index) => (
                         <option key={index} value={vehicle}>
                          {vehicle}
@@ -410,7 +410,7 @@ const updateStatusToApproved = async (documentId: string) => {
                          onClick={handleDropdownClick}
 
                          > 
-                         <option value="">Select a Driver</option>
+                         <option value="">Select Driver</option>
                         {drivers.map((requested_by, index) => (
                         <option key={index} value={requested_by}>
                          {requested_by}
