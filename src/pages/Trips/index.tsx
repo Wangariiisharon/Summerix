@@ -22,7 +22,10 @@ import { ErrorMessage } from 'formik';
 import exportDataToCSV  from "../../components/Exports/tripsExport";   
 import toast from "react-hot-toast";
 import { startOfMonth, endOfMonth, format } from 'date-fns';
-import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider"; 
+// import PlacesAutoComplete from "./places"; 
+import PlacesAutocomplete from 'react-places-autocomplete';
+
 
 
 // Update the import path
@@ -696,26 +699,64 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                        {({ values,setFieldValue }) => (
                     <Form>
                         <div className=''>
-                            <div className='flex w-full justify-between'>  
-                            <label className="block">
-                             <label className="form-label">PICK UP LOCATION</label>
-                             <Field
-                             type="text"
-                             name="pick_up_location"
-                             value={values.pick_up_location}
-                             className="form-input bg-grey w-48"
-                            />
-                            </label>  
-                            <label className="block">
-                             <label className="form-label">DROP OFF LOCATION</label>
-                             <Field
-                             type="text"
-                             name="drop_off_location"
-                             value={values.drop_off_location}
-                             className="form-input bg-grey w-48"
-                            />
-                            </label> 
-                             </div>  
+                        <div className='flex w-full justify-between mt-8'>
+  <label className="block">
+    <label className="form-label">PICK UP LOCATION</label>
+    <PlacesAutocomplete
+      value={values.pick_up_location}
+      onChange={(address) => setFieldValue('pick_up_location', address)}
+    >
+      {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
+        <div>
+          <input
+            {...getInputProps({
+              className: "form-input bg-grey w-48",
+              placeholder: "Enter Pick Up Location",
+            })}
+          />
+          <div>
+            {loading && <div>Loading...</div>}
+            {suggestions.map((suggestion) => (
+              <div {...getSuggestionItemProps(suggestion)}>
+                {suggestion.description}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </PlacesAutocomplete>
+  </label>
+
+  <label className="block">
+    <label className="form-label">DROP OFF LOCATION</label>
+    <PlacesAutocomplete
+      value={values.drop_off_location}
+      onChange={(address) => setFieldValue('drop_off_location', address)}
+    >
+      {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
+        <div>
+          <input
+            {...getInputProps({
+              className: "form-input bg-grey w-48",
+              placeholder: "Enter Drop Off Location",
+            })}
+          />
+          <div>
+            {loading && <div>Loading...</div>}
+            {suggestions.map((suggestion) => (
+              <div {...getSuggestionItemProps(suggestion)}>
+                {suggestion.description}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </PlacesAutocomplete>
+  </label>
+</div>
+
+
+  
                              <div className='flex w-full justify-between mt-8'>  
                             <label className="block">
                              <label className="form-label">START TIME</label>
@@ -1024,7 +1065,6 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                                       <option value="Mechanical">Mechanical</option> 
                                       <option value="Done">Done	</option> 
                                       <option value="Returning the Container">returning with Container</option>  
-
                                      </Field>
 
                             </label>    
@@ -1230,21 +1270,13 @@ interface TripsPerVehicle {
                                     <td className="whitespace-nowrap px-2 py-2 ">
                                     {trip.vehicle}                                   
                                      </td>
-                                    <td className="whitespace-nowrap px-2 py-2  ">{trip.drop_off_location}</td>
-                                    <td className="whitespace-nowrap px-2 py-2  ">{trip.pick_up_location}</td>
-                                    {/* <td className="whitespace-nowrap px-2 py-2  ">100KM</td> */}
+                                    <td className="whitespace-nowrap px-2 py-2">{trip.drop_off_location}</td>
+                                    <td className="whitespace-nowrap px-2 py-2">{trip.pick_up_location}</td>
                                     <td className="whitespace-nowrap px-2 py-2">
                                    {calculateHourDifference(trip.start_time.toDate(), trip.end_time.toDate())} Hours
                                     </td>
                                     <td className="whitespace-nowrap px-2 py-2   text-black">{trip.dealValue}</td>
-                                    {/* <td className="whitespace-nowrap py-2  px-2 text-left font-medium">
-                                        <button
-                                        className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2" 
-                                        onClick={()=>handleEditClick(trip)}
-                                        > 
-                                        Status
-                                        </button>
-                                    </td> */} 
+                                    
                                     <td className="whitespace-nowrap py-2 px-2 text-left font-medium">
                                    <button
                                      className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2" 
