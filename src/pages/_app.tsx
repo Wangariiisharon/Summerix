@@ -3,6 +3,7 @@ import Head from "next/head";
 import { Toaster } from "react-hot-toast";
 import "@/globals.css";
 import React from "react";
+import  Script  from 'next/script';
 import { BrowserRouter as Router } from 'react-router-dom'; // Import BrowserRouter
 
 export default function MyApp({ Component, pageProps }: any) {
@@ -13,7 +14,16 @@ export default function MyApp({ Component, pageProps }: any) {
         <meta name="theme-color" content="#000000" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" /> 
+        {/* <Script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE&libraries=places"
+        strategy="beforeInteractive"
+      /> */} 
+       <script
+          src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE&libraries=places"
+          async
+          defer
+        ></script>
       </Head>
         <AuthProvider>
         <Component {...pageProps} />
@@ -21,4 +31,5 @@ export default function MyApp({ Component, pageProps }: any) {
       <Toaster />
     </>
   );
-}
+} 
+

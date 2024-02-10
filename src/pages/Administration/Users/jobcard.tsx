@@ -150,12 +150,12 @@ const handleAddJobcard = async (values: { name: any }) => {
                             >
                                 NAME
                             </th>
-                            <th
+                            {/* <th
                                 scope="col"
                                 className="whitespace-nowrap px-2 py-3.5 text-left font-semibold"
                             >
                                 STATUS
-                            </th>
+                            </th> */}
              
                             {/* <th
                                 scope="col"
@@ -184,9 +184,9 @@ const handleAddJobcard = async (values: { name: any }) => {
                                </td>
             
                                 <td className="whitespace-nowrap pl-4 pr-3 !pt-4 text-d-blue sm:pl-0">{jobcard.name}</td>
-                                <td className="whitespace-nowrap px-2  pt-4 font-medium ">
+                                {/* <td className="whitespace-nowrap px-2  pt-4 font-medium ">
                                 {jobcard.status ? 'Approved' : 'Denied'}
-                                </td> 
+                                </td>  */}
                                 {/* <BodyCell>{admin.status ? 'Active' : 'Inactive'}</BodyCell>  */}
 
                        

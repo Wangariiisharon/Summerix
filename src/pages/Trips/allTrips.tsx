@@ -627,12 +627,12 @@ export function TripsTable({ selectedTab,trips,filteredTrips,handleEditClick }: 
                                 >
                                     Distance
                                 </th> */}
-                                <th
+                                {/* <th
                                     scope="col"
                                     className="whitespace-nowrap px-2 py-3.5 text-left  font-semibold "
                                 >
                                     Duration
-                                </th>
+                                </th> */}
                                 <th scope="col" className="whitespace-nowrap py-3.5 px-2 text-left pr-4 sm:pr-0">
                                     Trip Cost
                                 </th>
@@ -656,14 +656,12 @@ export function TripsTable({ selectedTab,trips,filteredTrips,handleEditClick }: 
                                     <td className="whitespace-nowrap px-2 py-4">
                                     {trip.vehicle}                                   
                                      </td>
-                                    <td className="whitespace-nowrap px-2 py-2  ">{trip.drop_off_location}</td>
-                                    <td className="whitespace-nowrap px-2 py-2  ">{trip.pick_up_location}</td>
-                                    {/* <td className="whitespace-nowrap px-2 py-2  ">100KM</td> */}
-                                    <td className="whitespace-nowrap px-2 py-2">
-                                   {/* {calculateHourDifference(trip.start_time.toDate(), trip.end_time.toDate())} Hours */}
-                                   {trip.start_time?.toDate && trip.end_time?.toDate && calculateHourDifference(trip.start_time.toDate(), trip.end_time.toDate())} Hours
-
-                                    </td>
+                                    <td className="whitespace-nowrap px-2 py-2">{trip.drop_off_location}</td>
+                                    <td className="whitespace-nowrap px-2 py-2">{trip.pick_up_location}</td>                                   
+                                     {/* <td className="whitespace-nowrap px-2 py-2  ">100KM</td> */}
+                                    {/* <td className="whitespace-nowrap px-2 py-2">
+                                         
+                                    </td> */}
                                     <td className="whitespace-nowrap px-2 py-2   text-black">Ksh {trip.dealValue}</td>
                                     <td className="whitespace-nowrap py-2 px-2 text-left font-medium">
                                    <button
