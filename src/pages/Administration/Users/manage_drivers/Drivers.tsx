@@ -32,10 +32,10 @@ export default function Drivers(){
         phonenumber: "",
         email_adress: "",
         city: "",
-        vehicle_type: "",
-        model: "",
-        year: "",
-        number: "", 
+        number: "",
+        profile:  null,
+        identity_card:null,
+        good_conduct: null,
       }); 
     const [isExporting, setIsExporting] = useState(false);
 
@@ -177,12 +177,11 @@ useEffect(() => {
             name: driver.name,
             phonenumber: driver.phonenumber,
             email_adress: driver.email_adress,
-            // country:driver.country,
             city:driver.city,
-            vehicle_type:driver.vehicle_type,
-            model:driver.model,
-            year:driver.year,
-            number:driver.number,  
+            number:driver.number, 
+            profile:driver.profile,
+            identity_card: driver.identity_card,
+            good_conduct: driver.good_conduct, 
 
         });
         setEditModalOpen(true);
@@ -194,13 +193,20 @@ useEffect(() => {
         setEditModalOpen(false); 
     };
  
-
+    const uploadImage = async (file: File, folder: string) => {
+        const storage = getStorage(firebaseApp);
+        const storageRef = ref(storage, `${folder}/${file.name}`);
+        await uploadBytes(storageRef, file);
+        return await getDownloadURL(storageRef);
+     };
     const handleEditSubmit = async (values: {
         name: any,
         phonenumber: any,
         email_adress: any,
-        // country:any,
         city:any,
+        profile: File | null,
+        identity_card: File | null,
+        good_conduct: File | null,
       }) => { 
         if (!selectedDriver) {
             console.error("No selected vehicle to update");
@@ -219,8 +225,12 @@ useEffect(() => {
             !values.name ||
             !values.phonenumber ||
             !values.email_adress ||
-            // !values.country||
-            !values.city
+            !values.city||
+            !values.profile|| 
+            !values.identity_card ||
+            !values.good_conduct
+
+
           )  {
             console.error("Required form fields are missing");
             return;
@@ -232,10 +242,13 @@ useEffect(() => {
             name: values.name,
             phonenumber: values.phonenumber,
             email_adress: values.email_adress,
-            // country:values.country,
             city:values.city,
-          });
-      
+            profile: values.profile ? await uploadImage(values.profile, 'profile_images') : selectedDriver.profile,
+            identity_card: values.identity_card ? await uploadImage(values.identity_card, 'id_images') : selectedDriver.identity_card,
+            good_conduct: values.good_conduct ? await uploadImage(values.good_conduct, 'good_conduct') : selectedDriver.good_conduct,
+
+          }); 
+        
           // Update the local fetchedVehicles state
           const updatedVehicles = fetchedDrivers.map((driver) =>
             driver.id === selectedDriver.id
@@ -244,7 +257,6 @@ useEffect(() => {
                   name: values.name,
                   phonenumber: values.phonenumber,
                   email_adress: values.email_adress,
-                  // country:values.country,
                   city:values.city,
                 }
               : driver
@@ -376,16 +388,7 @@ useEffect(() => {
                              className="form-input bg-grey w-48"
                             />
                              </label>  
-                             {/* <label className="block">
-                            <label className="form-label">NATIONALITY</label>
-                            <Field
-                             type="text"
-                             name="country"
-                             value={values.country}
-                             className="form-input bg-grey w-48"
-                            />
-                             </label>                                   */} 
-
+                          
                             <label className="block">
                              <label className="form-label">ADDRESS</label>
                              <Field
@@ -533,17 +536,84 @@ useEffect(() => {
                                            className="form-input bg-grey w-48"
                                           />
                                           </label>  
-                                           {/* <label className="block"> */}
-                                          {/* <label className="form-label">COUNTRY</label>
-                                          <Field
-                                           type="text"
-                                           name="country"
-                                           value={values.country}
-                                           className="form-input bg-grey w-48"
-                                          />
-                                           </label>                                 */}
+                                          </div> 
+                                          <div className='flex w-full justify-between mt-8'> 
+                             
+                         
+                               <label className="block">
+                              <label className="form-label">DRIVING LICENSE</label>
+                              <Field name="profile" >
+                             {({ field, form }:any) => (
+                             <input 
+                             type="file"
+                            onChange={(event) => {
+                            const file = event.currentTarget?.files?.[0];
+                             if (file) {
+                           form.setFieldValue('profile', file);
+                           }
+                          }} 
+                                />
+                             )}
+                            </Field>
+                           </label>  
 
-                                          </div>                       
+                            <label className="block ml-6">
+                           <label className="form-label">GOOD CONDUCT</label>
+                           <Field name="good_conduct">
+                              {({ field, form }: any) => (
+                              <input
+                             type="file"
+                             accept=".pdf"
+                            onChange={(event) => {
+                            const file = event.currentTarget?.files?.[0];
+                             if (file) {
+                           form.setFieldValue('good_conduct', file);
+                           }
+                          }}
+                         />
+                         )}
+                     </Field>
+                     </label>  
+
+                     {/* <label className="block ml-6">
+                     <label className="form-label">GOOD CONDUCT DOCUMENT</label>
+                      <Field
+                       type="file"
+                       name="good_conduct"
+                       className="form-input"
+                       />
+                     </label>    */}
+                             </div> 
+                             <div className='flex w-full justify-between mt-8'>  
+                         
+ 
+                     <label className="block">
+                           <label className="form-label">ID</label>
+                           <Field name="identity_card">
+                              {({ field, form }: any) => (
+                              <input
+                             type="file"  
+                             accept=".pdf"
+                            onChange={(event) => {
+                            const file = event.currentTarget?.files?.[0];
+                             if (file) {
+                           form.setFieldValue('identity_card', file);
+                           }   
+                          }}  
+                         />
+                         )} 
+                     </Field>
+                     </label> 
+
+                             {/* <label className="block">
+                              <label className="form-label">IDENTITY CARD</label>
+                             <Field
+                             type="file"
+                             name="identity_card"
+                             className="form-input"
+                             />
+                            </label> */}
+                             </div>                      
                                           <div className='flex w-full justify-end mt-24 '>
                                               <Button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32' handleClick={handleEditModalClose}>Reset</Button>
                                               {/* <Submit name="save" handleSubmit={handleSubmit}/> */}

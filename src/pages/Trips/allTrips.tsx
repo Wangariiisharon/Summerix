@@ -504,8 +504,11 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
                             />
                             </label> 
                             <div className='flex w-full justify-end mt-24 '>
-                                <Button className='text-blue text-xl mr-32' handleClick={handleReset}>Reset</Button>
-                                <button type='submit' >Save</button>
+                                {/* <Button className='text-blue text-xl mr-32' handleClick={handleReset}>Reset</Button>
+                                <button type='submit' >Save</button> */} 
+                            <Button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32' handleClick={handleReset}>Reset</Button>
+                            <button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4' type='submit' >Save</button>
+                        
                             </div>
 
                         </div>
@@ -517,12 +520,9 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
                 </FormModal>
             )}
 
-            </div>
-
-        
+            </div>  
     )
 }  
-
 interface TripsTableProps {
     selectedTab: number;  
     trips: DocumentData[]; 
