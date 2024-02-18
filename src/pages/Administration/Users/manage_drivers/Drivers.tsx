@@ -59,12 +59,10 @@ export default function Drivers(){
 useEffect(() => {
   const fetchedDrivers = async () => { 
           const db = getFirestore();
-
     try {
       // Ensure organisationId is available before making the query
       if (organisationId) {
      const q = query(collection(db, 'drivers'), where('organisationId', '==', organisationId));
-
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
     const driversData = querySnapshot.docs.map((doc) => ({
      id: doc.id,
@@ -229,8 +227,6 @@ useEffect(() => {
             !values.profile|| 
             !values.identity_card ||
             !values.good_conduct
-
-
           )  {
             console.error("Required form fields are missing");
             return;
@@ -338,7 +334,6 @@ useEffect(() => {
                         phonenumber: "",
                         email_adress: "",
                         gender: "",
-                        // country: "",
                         city: "",
                         vehicle_type: "",
                         model: "",
@@ -348,7 +343,6 @@ useEffect(() => {
                         identity_card: null ,
                         good_conduct: null, 
                                       }}
-                        // onSubmit={(values) => handleSubmit(values)}   
                         onSubmit={(values) => {
                         console.log('Form Values:', values);
 
@@ -575,14 +569,6 @@ useEffect(() => {
                      </Field>
                      </label>  
 
-                     {/* <label className="block ml-6">
-                     <label className="form-label">GOOD CONDUCT DOCUMENT</label>
-                      <Field
-                       type="file"
-                       name="good_conduct"
-                       className="form-input"
-                       />
-                     </label>    */}
                              </div> 
                              <div className='flex w-full justify-between mt-8'>  
                          
@@ -604,15 +590,6 @@ useEffect(() => {
                          )} 
                      </Field>
                      </label> 
-
-                             {/* <label className="block">
-                              <label className="form-label">IDENTITY CARD</label>
-                             <Field
-                             type="file"
-                             name="identity_card"
-                             className="form-input"
-                             />
-                            </label> */}
                              </div>                      
                                           <div className='flex w-full justify-end mt-24 '>
                                               <Button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32' handleClick={handleEditModalClose}>Reset</Button>
@@ -643,6 +620,7 @@ interface VehiclesTableProps {
     drivers: DocumentData[];
     updateFetchedDrivers: (updatedDrivers: DocumentData[]) => void; 
     handleEditClick: any
+
 
 } 
 

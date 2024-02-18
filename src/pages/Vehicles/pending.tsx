@@ -11,7 +11,7 @@ import SiteLayout from "@/Layout/SiteLayout";
 import { Tab } from "@headlessui/react";
 import Planned from "../Administration/Users/jobcard";
 import firebaseApp, { fbDb } from "@/firebase/configs";
-import { getDocs, collection, DocumentData, addDoc, Timestamp, updateDoc, doc, query, where, getFirestore, onSnapshot, getDoc } from "firebase/firestore";
+import { getDocs, collection, DocumentData, addDoc, Timestamp, updateDoc, doc, query, where, getFirestore, onSnapshot, getDoc, setDoc } from "firebase/firestore";
 import { parseISO, format } from 'date-fns';
 import Jobcard from "../Administration/Users/jobcard"; 
 import { serverTimestamp } from 'firebase/firestore'
@@ -21,7 +21,8 @@ import ImageInput from "@/components/ImageInputs";
 import { toast } from 'react-hot-toast';
 import  Notifications from "./notifications"
 import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
-import Pending from "./pending";
+import Checkbox from '@mui/material/Checkbox';
+
 
 
 function classNames(...classes: string[]) {
@@ -35,9 +36,24 @@ interface AuthContextData {
   organisationId: string;
   userData: UserData;
 }
-export default function Maintenance() {
+ 
+interface MaintenanceData {
+    id: string;
+    approvalCount: number; // Assuming it's a number, adjust the type accordingly
+    status: string; // Adjust the type accordingly
+    requested_by: any,  
+    vehicle: any,
+    cost:any, 
+    job_cards: any, 
+    remarks: any, 
+    date: any,  
+    part: any, 
+    serial_number: any, 
+    broken_partImage: null,
+  }
+export default function Pending() {
     const [open, setOpen] = useState(false)
-    const [selectedTab, setSelectedTab] = useState<number>(0); 
+    const [selectedMaintenance, setSelectedMaintenance] = useState<DocumentData | null>(null); 
     const [fetchedMaintanance, setFetchedMaintanance]=useState<DocumentData[]>([]);  
     const [vehicleNames, setVehicleNames] = useState<string[]>([]); 
     const [jobcards, setjobcards] = useState<string[]>([]); 
@@ -45,46 +61,46 @@ export default function Maintenance() {
     const [showAddJobcardModal, setShowAddJobcardModal] = useState(false);
     const [showScheduleMaintenanceModal, setShowScheduleMaintenanceModal] = useState(false);
     const [selectedTabIndex, setSelectedTabIndex] = useState(0); 
-    const [approvalCount, setApprovalCount] = useState(0);
-   const [checkboxState, setCheckboxState] = useState<boolean[]>([]);
-   const [checkedIndexes, setCheckedIndexes] = useState<number[]>([]);
+    const [checkboxState, setCheckboxState] = useState<boolean[]>([]);
+    const [checkedIndexes, setCheckedIndexes] = useState<number[]>([]);
+    const [editModalOpen, setEditModalOpen] = useState(false); 
+    const [editFormInitialValues, setEditFormInitialValues] = useState({
+        requested_by: "",  
+        vehicle: "",
+        cost:"", 
+        job_cards: "", 
+        remarks: "", 
+        date: "",  
+        part: "", 
+        status: "",	
+        serial_number: "",
+        approvalCount: 0, 
+        broken_partImage: null,
+        approvedBy:[]
+      });  
+      const [approvalCount, setApprovalCount] = useState(0); 
+     const [approvedEmails, setApprovedEmails] = useState<string[]>([]);
 
 
+      const [checked, setChecked] = useState(false);  
+        
 
     const { organisationId, userData } = useAuthContext() as AuthContextData; 
     console.log("Maintanance Page OrganisationId: ", organisationId);
     console.log("Maintanance Page UserData: ", userData);
 
-
     const isSuperAdmin = userData?.super_admin;
-    const approvedBy = userData?.email;
 
     console.log("Maintanance Super Admin: ", isSuperAdmin);
     
-    
-    // const MaintainanceTabs = [
-    //   { name: 'PLANNED', href: '#', current: selectedTabIndex === 0 },
-    //   { name: 'HISTORY', href: '#', current: selectedTabIndex === 1 },
-    //   { name: 'PENDING', href: '#', current: selectedTabIndex === 2 },
-    // ]; 
-    const MaintainanceTabs = [
-      { name: 'PLANNED', href: '#', current: selectedTabIndex === 0 },
-      { name: 'HISTORY', href: '#', current: selectedTabIndex === 1 },
-      isSuperAdmin
-        ? { name: 'PENDING', href: '#', current: selectedTabIndex === 2 }
-        : null,
-    ].filter(Boolean); // Remove null values
-    
-   
     const handleMaintenanceReset = () => {
         setShowScheduleMaintenanceModal(false) 
         setOpen(false)
     }   
     const handleDropdownClick = (event: { stopPropagation: () => void; }) => {
         event.stopPropagation();
-    };
-
-
+    }; 
+    
     useEffect(() => {
         const fetchVehicleNames = async () => {
           try {
@@ -112,7 +128,7 @@ export default function Maintenance() {
             } else {
               console.error('Organisation ID is not available for fetching JobCard names.');
             }
-          } catch (error) { 
+          } catch (error) {
             console.error('Error fetching JobCard names:', error);
           }
         };
@@ -132,31 +148,37 @@ export default function Maintenance() {
             console.error('Error fetching Driver names:', error);
           }
         };
-      
-        const fetchedMaintenance = async () => { 
-          const db = getFirestore();
- 
-        try {
-       if (organisationId) {
-       const q = query(collection(db, 'maintenance'), where('organisationId', '==', organisationId));
- 
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-       const maintenanceData = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-      }));
-       setFetchedMaintanance(maintenanceData);
-      });
- 
-       return () => unsubscribe(); 
- 
-       } else {
-         console.error('Organisation ID is not available.');
-       }  
-     } catch (error) {
-       console.error('Error fetching Maintanance:', error);
+
+const fetchedMaintenance = async () => {
+    const db = getFirestore();
+  
+    try {
+      if (organisationId) {
+        const q = query(
+          collection(fbDb, 'maintenance'),
+          where('organisationId', '==', organisationId),
+          where('status', '==', 'Pending'),
+          where('approvalCount', '<', 3)
+        );
+  
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+          const maintenanceData = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setFetchedMaintanance(maintenanceData);
+        });
+  
+        return () => unsubscribe();
+  
+      } else {
+        console.error('Organisation ID is not available.');
+      }
+    } catch (error) {
+      console.error('Error fetching Maintenance:', error);
     }
   };
+  
       
         fetchVehicleNames();
         fetchDriver();
@@ -164,232 +186,158 @@ export default function Maintenance() {
         fetchedMaintenance();
       }, [organisationId]);  
 
-      const handleScheduleMaintanace = async (values: { requested_by: any; cost:any; remarks:any;vehicle:any; job_cards:any; date:any; serial_number:any; part:any ; broken_partImage:any}) => {  
-        setShowScheduleMaintenanceModal(true);
-        setShowAddJobcardModal(false);  
-        setOpen(true);
-        
-        console.log("Submitted Values:", values); 
-        
-        try {
-            if (!values) {
-                console.error('Form values are undefined');
-                return;
-            }
-        
-            if (!values.requested_by||!values.vehicle||!values.cost||!values.job_cards||!values.remarks||!values.date||!values.broken_partImage) {
-                console.error('Required form fields are missing');
-                return;
-            } 
-        
-            const dateObj = new Date(values.date +"T00:00:00");  
-            const timestamp=Timestamp.fromDate(dateObj)
-       
-            let brokenPartImageUrl = '';  
-            if (values.broken_partImage ) {
-                const storage = getStorage(firebaseApp);
-                const storageRef = ref(storage, `broken_partImage/${values.broken_partImage.name}`);
-                
-                await uploadBytes(storageRef, values.broken_partImage);
-                brokenPartImageUrl = await getDownloadURL(storageRef);
-                console.log('Broken Part Image URL:', brokenPartImageUrl);
-      
-            }  
-        
-            const maintenanceData = {                
-                 approvalCount:0, 
-                requested_by: values.requested_by, 
-                vehicle: values.vehicle, 
-                date: timestamp, 
-                cost: values.cost,  
-                job_cards: values.job_cards,
-                remarks: values.remarks, 
-                serial_number: values.serial_number,
-                part: values.part,
-                status:"Pending",
-                broken_partImage: brokenPartImageUrl, 
-                organisationId:organisationId,
-                notificationNeedsDisplay: true // Add this   n line
-            };
-            const docRef = await addDoc(collection(fbDb, 'maintenance'), maintenanceData);
-            console.log('Maintenance added with ID: ', docRef.id); 
-            toast.success("Maintenance Request Successfully Added.");
-           // Check if the current user is a super admin 
+const handleEditModalClose = () => {
+    setSelectedMaintenance(null); 
+    setEditModalOpen(false); 
+};  
 
-         if (isSuperAdmin) {
-          const superAdminQuerySnapshot = await getDocs(query(collection(fbDb, 'admins'), where('super_admin', '==', true)));
-          const superAdmins = superAdminQuerySnapshot.docs.map(doc => doc.data().email);
+const uploadImage = async (file: File, folder: string) => {
+    const storage = getStorage(firebaseApp);
+    const storageRef = ref(storage, `${folder}/${file.name}`);
+    await uploadBytes(storageRef, file);
+    return await getDownloadURL(storageRef);
+ }; 
 
-         // Send notifications only to super admins
-      for (const superAdminEmail of superAdmins) { 
-        const sanitizedEmail = sanitizeEmailForFirestore(superAdminEmail);
-        const notificationData = {
-          title: 'New Maintenance Request',
-          message: `New maintenance request added by ${values.requested_by}.`, 
-          organisationId: organisationId,
-          timestamp: Timestamp.now(),
-          maintenanceId: docRef.id,
-          needsDisplay: true
-        };
-
-        // Add notification to each super admin's collection
-        await addDoc(collection(fbDb, 'notifications'),notificationData);
-        console.log(`Notification added for super admin: ${superAdminEmail}`);
+ const handleEditSubmit = async (values: {
+    requested_by: any,  
+    vehicle: any,
+    cost:any, 
+    job_cards: any, 
+    remarks: any, 
+    date: any,  
+    part: any, 
+    status: any, 
+    serial_number: any, 
+    approvalCount:number,
+    broken_partImage: null,
+    approvedBy: any[];
+}) => { 
+    if (!selectedMaintenance) {
+        console.error("No selected vehicle to update");
+        return;
       }
-    }
-            setOpen(false);
-        } catch (error) {
-            console.error('Error adding Notification:', error);
-        }
-        
-        setShowScheduleMaintenanceModal(false);
+
+      console.log("Edited Values:", values); 
+
+  
+    try {
+        const approvedBy = userData?.email;
+
+      if (!values) {
+        console.error("Form values are undefined");
+        return;
+      }
+  
+      if (
+        !values.requested_by||!values.vehicle||!values.cost||!values.job_cards||!values.remarks||!values.date||!values.broken_partImage
+      )  {
+        console.error("Required form fields are missing");
+        return;
       } 
 
-      const sanitizeEmailForFirestore = (email: string) => {
-        // Use Base64 encoding to handle special characters
-        const encodedEmail = btoa(email);
+      // Update the vehicle data in the database using the selectedVehicle.id
+      const vehicleRef = doc(fbDb, "maintenance", selectedMaintenance.id);
       
-        // Use the encoded email with a fixed string in the Firestore collection reference
-        return `user_${encodedEmail}`;
+      const updatedData = {
+        approvalCount: values.approvalCount + 1,
+        requested_by: values.requested_by, 
+        vehicle: values.vehicle, 
+        date: new Date(values.date.seconds * 1000),  // Convert seconds to milliseconds
+        cost: values.cost,  
+        job_cards: values.job_cards,
+        remarks: values.remarks, 
+        serial_number: values.serial_number,
+        part: values.part,
+        status: values.status,
+        approvedBy: Array.isArray(values.approvedBy)
+        ? [...values.approvedBy, approvedBy]
+        : [approvedBy],        organisationId: organisationId,
+        notificationNeedsDisplay: true,
+        broken_partImage: values.broken_partImage ? await uploadImage(values.broken_partImage, 'broken_partImage') : selectedMaintenance.broken_partImage,
       };
-          
-const handleCheckboxClick = async (index: number) => {
-  const documentId = fetchedMaintanance[index].id;
-  const maintenanceDocRef = doc(fbDb, 'maintenance', documentId);
 
-  try { 
-    if (checkedIndexes.includes(index)) {
-      console.log('Checkbox already checked.');  
-      toast.error('Checkbox already checked.'); 
-      return;
-    }  
-    setCheckedIndexes([...checkedIndexes, index]);
+      // If approvalCount is greater than or equal to three, update status to "Approved"
+    //   if (updatedData.approvalCount >= 3) {
+    //     updatedData.status = 'Approved';
+    //     updatedData.approvedBy = [...editFormInitialValues.approvedBy, approvedBy];
 
-    // Get the current approvalCount and approvedBy array from Firestore
-    const docSnapshot = await getDoc(maintenanceDocRef);
 
-    if (docSnapshot && docSnapshot.exists()) {
-      const currentApprovalCount = docSnapshot.data()?.approvalCount || 0;
-      const approvedByArray = docSnapshot.data()?.approvedBy || [];
-
-      // Check if the user has already approved
-      if (!approvedByArray.includes(userData.email)) {
-        // Update the approvalCount and add the user email to approvedBy array in Firestore
-        await updateDoc(maintenanceDocRef, {
-          approvalCount: currentApprovalCount + 1,
-          approvedBy: [...approvedByArray, userData.email],
-        });
-
-        // Check if the approval count reaches 3
-        if (currentApprovalCount + 1 === 3) {
-          // Perform the logic to update the status to "Approved"
-          await updateStatusToApproved(documentId);
-        }
-      } else {
-        console.log('User has already approved.');
-      }
+    //   } else {
+    //     updatedData.status = 'Pending';
+    //   }
+    if (updatedData.approvalCount >= 3) {
+      updatedData.status = 'Approved';
     } else {
-      console.error('Document not found or does not exist.');
+      updatedData.status = 'Pending';
     }
-  } catch (error) {
-    console.error('Error updating approval count:', error);
-  }
-};
 
-const updateStatusToApproved = async (documentId: string) => {
-  try {
-     const maintenanceDocRef = doc(fbDb, 'maintenance', documentId);
-     const docSnapshot = await getDoc(maintenanceDocRef);
+    await setDoc(vehicleRef, updatedData, { merge: true });
 
-     if (docSnapshot && docSnapshot.exists()) {
-        const currentApprovalCount = docSnapshot.data()?.approvalCount || 0;
+    setSelectedMaintenance(null);
+    setEditModalOpen(false);
+    setChecked(true);
+        
 
-        if (currentApprovalCount === 3) {
-           // Update the status to "Approved" in Firestore
-           await updateDoc(maintenanceDocRef, { status: 'Approved',approvedBy:approvedBy });
-        }
-     } else {
-        console.error('Document not found or does not exist.');
-     }
-  } catch (error) {
-     console.error('Error updating status to Approved:', error);
-  }
-};
+    } catch (error) {
+      console.error("Error updating Vehicle:", error);
+    }
+  };
+
+  const handleEditClick = (maintenance: DocumentData) => { 
+    setEditModalOpen(true); 
+    setChecked(false)
+    setSelectedMaintenance(maintenance);
+    setEditFormInitialValues({
+        requested_by:maintenance.requested_by, 
+        vehicle:maintenance.vehicle ,
+        cost:maintenance.cost, 
+        job_cards:maintenance.job_cards, 
+        remarks:maintenance.remarks,
+        date:maintenance.date, 
+        part:maintenance.part ,
+        status:maintenance.status ,
+        serial_number:maintenance.serial_number, 
+        approvalCount:maintenance.approvalCount, 
+        broken_partImage:maintenance.broken_partImage,
+        approvedBy:maintenance.approvedBy
+
+    });
+  };
   
     return (  
         <>
-            <div className=''>
+              <div className=''>
                 <div className="flex flex-row fixed top-12 right-10">  
-                <div className="ml-2"> 
-                <Button
-                className='rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4  mr-2 mt-2'
-                handleClick={handleScheduleMaintanace}>
-               <PlusIcon className='h-6 w-6 mr-2' />
-                 Schedule Maintenance
-              </Button>
-                </div>
                 </div>
                 <div className='mt-4'> 
                 <Tab.Group>
-                <Tab.List className="w-full bg-[#FAFAFB] font-nunito flex justify-start mb-3">
-  {MaintainanceTabs.filter(Boolean).map((tab, index) => (
-    <Fragment key={index}>
-      <Tab
-        className={classNames(
-          'border-d-green outline-none text-sm font-nunito font-bold uppercase flex flex-row ml-10',
-          tab?.current ? 'ui-selected border-b-4 ui-selected:text-d-green' : ''
-        )}
-        onClick={() => setSelectedTabIndex(index)}
-      >
-        {tab?.name}
-      </Tab>
-    </Fragment>
-  ))}
-</Tab.List>
-
-
                     <Tab.Panels>
                     <Tab.Panel className={classNames(selectedTabIndex === 0 ? 'ui-selected border-b-4' : '', 'h-full')}> 
-                        <MaintananceTable selectedTab={selectedTabIndex} maintananceList={fetchedMaintanance} isSuperAdmin={isSuperAdmin} handleCheckboxClick={handleCheckboxClick} checkboxState={checkboxState}  />
-                        </Tab.Panel>
-                        <Tab.Panel className={classNames(selectedTabIndex === 0 ? 'ui-selected border-b-4' : '', 'h-full')}>
-                        <MaintananceTable selectedTab={selectedTabIndex} maintananceList={fetchedMaintanance} isSuperAdmin={isSuperAdmin} handleCheckboxClick={handleCheckboxClick} checkboxState={checkboxState}   />
-                        </Tab.Panel> 
-                        <Tab.Panel>
-                        <div  className="max-h-[500px] overflow-y-auto">
-                        <Pending />
-                            </div>
+                        <MaintananceTable selectedTab={selectedTabIndex} maintananceList={fetchedMaintanance} isSuperAdmin={isSuperAdmin}  handleEditClick={handleEditClick} />
+
                         </Tab.Panel>
                     </Tab.Panels>
                 </Tab.Group> 
                 </div> 
                 <div>
                 </div>
-            </div>
+            </div>  
+            {editModalOpen && selectedMaintenance && (
 
-            <FormModal open={showScheduleMaintenanceModal} setOpen={setShowScheduleMaintenanceModal}>
+            <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
                 <div className='p-8'>
                     <div className='flex w-full h-full justify-between items-center mb-12'>
                         <div className='text-xl font-semibold '>
-                            Schedule Maintanance
+                            Edit Maintanance
                         </div>
-                        <Button className='bg-red-50 h-12 w-12 flex items-center justify-center rounded-full' handleClick={handleMaintenanceReset}>
+                        <Button className='bg-red-50 h-12 w-12 flex items-center justify-center rounded-full' handleClick={handleEditModalClose}>
                             <XMarkIcon className='h-6 w-6 text-red-400'/>
                         </Button>
                     </div>
                     <Formik
-                    initialValues={{
-                        requested_by: "",  
-                        vehicle: "",
-                        cost:"", 
-                        job_cards: "", 
-                        remarks: "", 
-                        date: "",  
-                        part: "", 
-                        serial_number: "", 
-                        broken_partImage: null,
-                                      }}
-                        onSubmit={(values) => handleScheduleMaintanace(values)}  
+                        initialValues={editFormInitialValues}
+
+                        onSubmit={(values) => handleEditSubmit(values)}  
 
                         >
                        {({ values, setFieldValue}) => (
@@ -428,9 +376,9 @@ const updateStatusToApproved = async (documentId: string) => {
                         {vehicleNames.map((vehicle, index) => (
                         <option key={index} value={vehicle}>
                          {vehicle}
-                         </option>
-                        ))}
-                        </Field>
+                       </option>
+            ))}
+        </Field>
                              </label>   
                              <div className='flex w-full justify-between  mt-8'> 
                              <label className="block">
@@ -462,7 +410,7 @@ const updateStatusToApproved = async (documentId: string) => {
                             </label> 
                                 </div>    
                                 <div className='flex w-full justify-between  mt-8'> 
-                             <label className="block mt-8">
+                             <label className="block">
                              <label className="form-label">COST</label>
                              <Field
                              type="number"
@@ -472,7 +420,7 @@ const updateStatusToApproved = async (documentId: string) => {
                              className="form-input bg-grey w-48"
                             /> 
                             </label> 
-                            <label className="block mt-8">
+                            <label className="block">
                              <label className="form-label">PART</label>
                              <Field
                              type="text"
@@ -483,7 +431,7 @@ const updateStatusToApproved = async (documentId: string) => {
                             </label>  
                             </div> 
                             <div className='flex w-full justify-between  mt-8'>  
-                            <label className="block mt-8">
+                            <label className="block">
                              <label className="form-label">SERIAL NUMBER</label>
                              <Field
                              type="text"
@@ -493,7 +441,7 @@ const updateStatusToApproved = async (documentId: string) => {
                             /> 
                             </label>   
 
-                          <label className="block ml-24 mt-8">
+                          <label className="block ml-24">
                           <label className="form-label">BROKEN PART</label>
                           <Field name="broken_partImage">
                              {({ field, form }: any) => (
@@ -518,19 +466,35 @@ const updateStatusToApproved = async (documentId: string) => {
                              value={values.remarks}
                              className="form-input bg-grey w-96 h-20"
                             />
-                            </label>                      
+                            </label> 
+
+                            <label className="block mt-8">
+                                <label className="form-label">APPROVE</label>
+                                <Field
+                                type="checkbox"
+                                name="approvalCheckbox" 
+                                checked={checkboxState[selectedMaintenance.id]}
+                                onChange={(event:any) => {
+                                const checked = event.currentTarget.checked;
+                               setApprovalCount(checked ? approvalCount + 1 : approvalCount - 1);
+                                     }}
+                                 className="form-checkbox bg-gray-200" 
+                                />
+                              </label>
+                    
                             <div className='flex w-full justify-end mt-24 '>
-                                <button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32' onClick={handleMaintenanceReset}>Reset</button>
-                                <button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4' type='submit' >Save</button>
+                                <button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32' onClick={handleEditModalClose}>Reset</button>
+                                <button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4' type='submit' >Submit</button>
                             </div>
                         </div>
                     </Form>
                      )}
                     </Formik>
                 </div>
-            </FormModal>
+            </FormModal> 
+                        )}
+
             </>
-        
     )
 }  
 
@@ -540,11 +504,11 @@ interface VehiclesTableProps {
     selectedTab: number;  
     maintananceList:DocumentData 
     isSuperAdmin:boolean  
-    handleCheckboxClick:any 
-    checkboxState: any; // Add this line
+    handleEditClick:any
 }
-export function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,handleCheckboxClick,checkboxState}: VehiclesTableProps) { 
-        const [userApproves, setUserApproves] = useState(false);
+export function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,handleEditClick}: VehiclesTableProps) { 
+        const [userApproves, setUserApproves] = useState(false); 
+
         const [fetchedMaintanance, setFetchedMaintanance]=useState<DocumentData[]>([]);  
         console.log("MaintananceTable Rendering with selectedTab:", selectedTab); 
         console.log("Mainanace list", maintananceList); 
@@ -552,19 +516,13 @@ export function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,hand
         const currentDate = new Date();
   
         const filteredMaintenance = maintananceList.filter((maintenance: any) => {
-            const maintenanceDate = new Date(maintenance?.date?.seconds * 1000);
-    
-            if (selectedTab === 0) {
-                // Show items with dates that are yet to reach (future dates)
-                return maintenanceDate > currentDate;
-            } else if (selectedTab === 1) {
-                // Show items with dates that have already passed (past dates)
-                return maintenanceDate < currentDate;
+            if (!maintenance.date || !maintenance.date.seconds) {
+                console.error('Invalid date structure:', maintenance.date);
+                return false; // Skip entries with invalid date structure
             }
-    
-            return true;
-        });  
-   
+        
+            return maintenance.status === "Pending";
+        });
 
 
 
@@ -645,7 +603,16 @@ export function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,hand
                                         <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]"> 
                                         {maintenance.status}
                                          </td>
-                                    
+                                    <td>
+                                    <div>   
+                                         <button
+                                        className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2"
+                                        onClick={() => handleEditClick(maintenance)}
+                                        >
+                                            Approve
+                                        </button>
+                                         </div> 
+                                        </td>  
                                     </tr> 
                                     </Fragment>
                             )
@@ -654,7 +621,7 @@ export function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,hand
                         </table>
                     </div>
                     <div className="fixed bottom-0 right-0">
-                    {/* <Notifications/> */}
+                    <Notifications/>
                     </div>
                 </div>
             </div>
