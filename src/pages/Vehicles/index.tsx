@@ -14,7 +14,8 @@ import { parseISO, format } from 'date-fns';
 import Maintenance from "./maintanance";
 import VehicleAllocation from "./vehicle_allocation";
 import { useRouter } from "next/router"; 
-import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider"; 
+import Pending from "./pending";
 
 
 
@@ -167,7 +168,8 @@ export default function VehiclesComponent() {
                         <div  className="max-h-[500px] overflow-y-auto">
                         <Maintenance />
                             </div>
-                        </Tab.Panel>
+                        </Tab.Panel> 
+                 
                     </Tab.Panels>
                 </Tab.Group> 
                 </div> 
