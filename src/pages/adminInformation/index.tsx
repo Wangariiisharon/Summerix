@@ -6,7 +6,7 @@ import { fbDb } from "@/firebase/configs";
 import { Formik, Field, Form } from 'formik/dist/index';
 import { useRouter } from "next/router";
 import { toast } from 'react-hot-toast';
-import { collection, addDoc, doc, setDoc, DocumentData, getDocs } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, DocumentData, getDocs, query, where } from 'firebase/firestore';
 import Link from "next/link";
 import { useEffect, useState } from "react"; 
 import bcrypt from 'bcryptjs';
@@ -15,113 +15,141 @@ import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 
 
 
-
 export default function AdminInformation() {
-    const router = useRouter();
-    const [isCheckboxChecked, setIsCheckboxChecked] = useState(false); 
-    const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
-    const [fetchedAdmins, setFetchedAdmins] = useState<DocumentData[]>([]);   
+  const router = useRouter();
+  const [isCheckboxChecked, setIsCheckboxChecked] = useState(false); 
+  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
+  const [fetchedAdmins, setFetchedAdmins] = useState<DocumentData[]>([]);   
 
 
-    const togglePasswordVisibility = () => {
-        setShowPassword(!showPassword);
-    }
-    const eyeIcon = showPassword ? (
-      <span className="fa fa-eye fa-xs" aria-hidden="true"></span>
-  ) : (
-      <span className="fa fa-eye-slash fa-xs" aria-hidden="true"></span>
-  );
-  
+  const togglePasswordVisibility = () => {
+      setShowPassword(!showPassword);
+  }
+  const eyeIcon = showPassword ? (
+    <span className="fa fa-eye fa-xs" aria-hidden="true"></span>
+) : (
+    <span className="fa fa-eye-slash fa-xs" aria-hidden="true"></span>
+);
 
 
-    const handleCheckboxChange = (event: { target: { checked: boolean | ((prevState: boolean) => boolean); }; }) => {
-      setIsCheckboxChecked(event.target.checked);
-    }; 
 
-    useEffect(() => {
-      const fetchAdmins = async () => {
-          try {
-              const querySnapshot = await getDocs(collection(fbDb, 'admins'));
-              const adminsData = querySnapshot.docs.map((doc) => ({
-                  id: doc.id,
-                  ...doc.data()
-              }));
-              setFetchedAdmins(adminsData);
-          } catch (error) {
-              console.error('Error fetching admins:', error);
-          }
-      };
-  
-      fetchAdmins();
-  }, []);  
+  const handleCheckboxChange = (event: { target: { checked: boolean | ((prevState: boolean) => boolean); }; }) => {
+    setIsCheckboxChecked(event.target.checked);
+  }; 
 
-  
-  function generateUserId(adminCount: number) {
+  useEffect(() => {
+    const fetchAdmins = async () => {
+        try {
+            const querySnapshot = await getDocs(collection(fbDb, 'admins'));
+            const adminsData = querySnapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setFetchedAdmins(adminsData);
+        } catch (error) {
+            console.error('Error fetching admins:', error);
+        }
+    };
+
+    fetchAdmins();
+}, []);  
+
+
+async function generateAdminId(organisationId: string) {
+  try {
+    const querySnapshot = await getDocs(query(collection(fbDb, 'admins'), where('organisationId', '==', organisationId)));
+    const adminCount = querySnapshot.size;
+
     // Customize this logic based on your requirements
-    return `U${adminCount.toString().padStart(3, '0')}`;
+    return `U${(adminCount + 1).toString().padStart(3, '0')}`;
+  } catch (error) {
+    console.error('Error fetching admins count:', error);
+    // Handle error or return a default value
+    return 'U001';
+  }
 }
 
 
 
-    const doAdmin = async (formValues: { firstname: string; lastname: string; email: string; phonenumber: string; password?: string; confirmpassword?: string; }) => {
-      console.log("doAdmin > formValues:", formValues);
-    
-      const { firstname, lastname, email, phonenumber, password, confirmpassword } = formValues;
-      const organisationId = router.query.organisationId as string;
-    
-      if (!organisationId) {
-        console.error("Invalid organisationId");
-        return;
-      }
-      if (!firstname || !lastname || !email || !phonenumber || !password || !confirmpassword) {
-        toast.error('Please fill in all fields.');
-        return;
-      }
-    
-      if (password !== confirmpassword) {
-        toast.error('Passwords do not match.');
-        return;
-      }
-    
-      try {
-        // Create user in Firebase Authentication
-        const auth = getAuth(firebaseApp);
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-    
-        // Now, you have the user object, and you can get the UID
-        const userId = user.uid;
-    
-        // Add user data to Firestore
-        const adminCollection = collection(fbDb, 'admins');
-        const docRef = doc(adminCollection, organisationId);
-    
-        const data = {
-          userId, // You can store the UID in your Firestore document
-          adminId: generateUserId(fetchedAdmins.length + 1),
-          firstname,
-          lastname,
-          email,
-          phonenumber,
-          status: true,
-          super_admin: true,
-          organisationId
-        };
-    
-        await setDoc(docRef, data); 
-        toast.success("Account Successfully Created.");
+  const doAdmin = async (formValues: { firstname: string; lastname: string; email: string; phonenumber: string; password?: string; confirmpassword?: string; }) => {
+    console.log("doAdmin > formValues:", formValues);
   
-        router.push(`/Administration`); 
-        // router.push(`/Administration?organisationId=${organisationId}`);
-
-
-      } catch (error) {
-        console.error('ACCOUNT CREATION ERROR:', error);
-        toast.error('Please enter the correct auth details.');
-      }
-    };
-    
+    const { firstname, lastname, email, phonenumber, password, confirmpassword } = formValues;
+    const organisationId = router.query.organisationId as string;
   
+    if (!organisationId) {
+      console.error("Invalid organisationId");
+      return;
+    }
+    // if (!firstname || !lastname || !email || !phonenumber || !password || !confirmpassword) {
+    //   toast.error('Please fill in all fields.');
+    //   return;
+    // } 
+    if (!firstname) {
+      toast.error('Please fill in all Firstname.');
+      return;
+    } 
+    if (!lastname) {
+      toast.error('Please fill in all Lastname.');
+      return;
+    }    if (!email) {
+      toast.error('Please fill in all Email.');
+      return;
+    }    if (!phonenumber) {
+      toast.error('Please fill in all Phonenumber.');
+      return;
+    }    if (!password) {
+      toast.error('Please fill in all Password.');
+      return;
+    }    if (!confirmpassword) {
+      toast.error('Please fill in all Confirmpassword.');
+      return;
+    }
+  
+    if (password !== confirmpassword) {
+      toast.error('Passwords do not match.');
+      return;
+    }
+  
+    try {
+      // Create user in Firebase Authentication
+      const auth = getAuth(firebaseApp);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+  
+      // Now, you have the user object, and you can get the UID
+      const userId = user.uid;
+  
+      // Add user data to Firestore
+      const adminCollection = collection(fbDb, 'admins');
+      const docRef = doc(adminCollection, organisationId);
+  
+      // Use the generateAdminId function to get the appropriate adminId
+      const generatedAdminId = await generateAdminId(organisationId);
+  
+      const data = {
+        userId, // You can store the UID in your Firestore document
+        adminId: generatedAdminId,
+        firstname,
+        lastname,
+        email,
+        phonenumber,
+        status: true,
+        super_admin: true,
+        organisationId
+      };
+  
+      await setDoc(docRef, data);
+      toast.success("Account Successfully Created.");
+  
+      router.push(`/Administration`);
+  
+    } catch (error) {
+      console.error('ACCOUNT CREATION ERROR:', error);
+      toast.error('Please enter the correct authentication details.');
+    }
+  };
+
   return (
     <main className="">
       <Seo title="Login" />

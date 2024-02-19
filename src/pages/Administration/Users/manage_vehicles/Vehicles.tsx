@@ -77,10 +77,19 @@ export default function Vehicles(){
         setOpen(false) 
         setShowAddVehicleModal(false);
     } 
-    function generateUserId(adminCount: number) {
-      // Customize this logic based on your requirements
-      return `V${adminCount.toString().padStart(3, '0')}`;
-  }
+    async function generateVehicleId(organisationId: string) {
+      try {
+        const querySnapshot = await getDocs(query(collection(fbDb, 'vehicles'), where('organisationId', '==', organisationId)));
+        const adminCount = querySnapshot.size;
+    
+        // Customize this logic based on your requirements
+        return `V${(adminCount + 1).toString().padStart(3, '0')}`;
+      } catch (error) {
+        console.error('Error fetching Vehicles count:', error);
+        // Handle error or return a default value
+        return 'V001';
+      }
+    }
   
     const handleSubmit = async (values: { cargo_capacity: any; lisence_plate: any; vehicle_type: any; }) => {
       // Check if values are undefined
@@ -96,13 +105,35 @@ export default function Vehicles(){
       const registration_date = new Date();
       const licensePlate = values.lisence_plate;
       const vehiclesCollection = collection(fbDb, 'vehicles');
-      const querySnapshot = await getDocs(query(vehiclesCollection, where('lisence_plate', '==', licensePlate)));
+      // const querySnapshot = await getDocs(query(vehiclesCollection, where('lisence_plate', '==', licensePlate)));
   
-      if (!querySnapshot.empty) {
-        console.error('A vehicle with this license plate already exists');
-        // toast.error('A vehicle with this license plate already exists'); 
-        toast.error(`A vehicle with the license plate '${values.lisence_plate}' already exists`);
-      } else {
+      // if (!querySnapshot.empty) {
+      //   console.error('A vehicle with this license plate already exists');
+      //   // toast.error('A vehicle with this license plate already exists'); 
+      //   toast.error(`A vehicle with the license plate '${values.lisence_plate}' already exists`);
+      // }  
+
+      const existingDepartmentQuery = query(collection(fbDb, 'vehicles'), 
+      where('lisence_plate', '==', values.lisence_plate),
+      where('organisationId', '==', organisationId)
+    );
+
+    const existingDepartmentSnapshot = await getDocs(existingDepartmentQuery);
+
+    if (!existingDepartmentSnapshot.empty) {
+      console.error('Vehicle with this license plate already exists in the same organisation'); 
+      toast.error(`A Vehicle with the license plate  '${values.lisence_plate}' already exists`);
+      return;
+    } 
+    
+
+      if (organisationId === null) {
+        console.error('organisationId is null');
+        // Handle the null case, maybe show an error or return
+        return;
+      }
+      const generatedVehicleId = await generateVehicleId(organisationId);
+        
         const VehicleData = {
           cargo_capacity: values.cargo_capacity,
           lisence_plate: values.lisence_plate,
@@ -111,14 +142,14 @@ export default function Vehicles(){
           archive: false,
           registration_date: registration_date,
           availability_status: "Available",
-          vehiclesId: generateUserId(fetchedVehicles.length + 1), 
+          vehiclesId: generatedVehicleId, // Assign the result of the function
           organisationId: organisationId,
 
         };
   
         const docRef = await addDoc(vehiclesCollection, VehicleData);
         console.log('Vehicle added with ID: ', docRef.id);
-      }
+      
       setOpen(false); 
       setShowAddVehicleModal(false);
 

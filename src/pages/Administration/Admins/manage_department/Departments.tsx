@@ -62,9 +62,20 @@ export default function Departments(){
 }, [organisationId]);  
 
 
-    function generateUserId(adminCount: number) {
-        return `D${adminCount.toString().padStart(3, '0')}`;
+// Function to generate departmentId based on the count of departments
+async function generateDepartmentId(organisationId: string) {
+    try {
+      const querySnapshot = await getDocs(query(collection(fbDb, 'departments'), where('organisationId', '==', organisationId)));
+      const departmentCount = querySnapshot.size;
+  
+      // Customize this logic based on your requirements
+      return `D${(departmentCount + 1).toString().padStart(3, '0')}`;
+    } catch (error) {
+      console.error('Error fetching departments count:', error);
+      // Handle error or return a default value
+      return 'D001';
     }
+  }
 
     const handleSubmit = async (values: { name: any;}) => { 
         console.log("Submitted Values:", values);
@@ -74,22 +85,36 @@ export default function Departments(){
             if (!values.name) {
                 console.error('Required form fields are missing');
                 console.log("Submitted Values:", values);  
+                toast.error("Please fill in the name field");  
+ 
                 return;
             }  
-            const existingDepartmentQuery = query(collection(fbDb, 'departments'), where('name', '==', values.name));
-            const existingAdminSnapshot = await getDocs(existingDepartmentQuery);
-    
-            if (!existingAdminSnapshot.empty) {
-                console.error('Group with this name already exists'); 
-                // toast.error('User with this email already exists');  
-                toast.error(`A Group with the name '${values.name}' already exists`);
+            const existingDepartmentQuery = query(collection(fbDb, 'departments'), 
+            where('name', '==', values.name),
+            where('organisationId', '==', organisationId)
+          );
+      
+          const existingDepartmentSnapshot = await getDocs(existingDepartmentQuery);
+      
+          if (!existingDepartmentSnapshot.empty) {
+            console.error('Department with this name already exists in the same organisation'); 
+            toast.error(`A Department with the name '${values.name}' already exists`);
+            return;
+          } 
+            if (organisationId === null) {
+                console.error('organisationId is null');
+                // Handle the null case, maybe show an error or return
                 return;
-            } 
+              }
+          
+              // Use the generateDepartmentId function to get the appropriate departmentId
+              const generatedDepartmentId = await generateDepartmentId(organisationId);
+
 
     
             const updated = new Date();
             const DepartmentsData = {
-                departmentId: generateUserId(fetchedDepartments.length + 1),
+                departmentId: generatedDepartmentId,
                 name: values.name,
                 updated: updated,  
                 status:true, 
@@ -99,11 +124,10 @@ export default function Departments(){
             const docRef = await addDoc(collection(fbDb, 'departments'), DepartmentsData);
             console.log('Department added with ID: ', docRef.id); 
             toast.success("Department Successfully Added.");
-
-    
+   
             setOpen(false);
         } catch (error) {
-            console.error('Error adding Driver:', error);
+            console.error('Error adding Department:', error);
         } 
 } 
 
@@ -122,7 +146,7 @@ export default function Departments(){
 
                         <div className='flex justify-end text-base mr-2'>
                           <div className='ml-2'>
-                            <AddButton name='Add' handleAddClick={handleAdd}/>
+                            <AddButton name='Add Group' handleAddClick={handleAdd}/>
                             </div>
                         </div>
 

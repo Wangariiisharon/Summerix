@@ -73,10 +73,20 @@ useEffect(() => {
        fetchedClients();
          }, [organisationId]); 
          
-    function generateUserId(adminCount: number) {
-        // Customize this logic based on your requirements
-        return `C${adminCount.toString().padStart(3, '0')}`;
-    }
+         async function generateCitiesId(organisationId: string) {
+            try {
+              const querySnapshot = await getDocs(query(collection(fbDb, 'clients'), where('organisationId', '==', organisationId)));
+              const adminCount = querySnapshot.size;
+          
+              // Customize this logic based on your requirements
+              return `C${(adminCount + 1).toString().padStart(3, '0')}`;
+            } catch (error) {
+              console.error('Error fetching Client count:', error);
+              // Handle error or return a default value
+              return 'C001';
+            }
+          }
+        
 
     const handleAddClient = async (values: { name: any; address: any; contact_details: any; representative_address: any; client_details: any;}) => { 
         setOpen(true)
@@ -94,13 +104,6 @@ useEffect(() => {
                 return;
             }  
 
-            const existingDriverQuery = await getDocs(query(collection(fbDb, 'clients'), where('name', '==', values.name)));
-    
-            if (!existingDriverQuery.empty) {
-              console.error('This Client Already Exists'); 
-              toast.error(`A Client with the name '${values.name}' already exists`);
-              return;
-            } 
 
             let clientDetailsImageUrl = '';  
             if (values.client_details) {
@@ -111,7 +114,28 @@ useEffect(() => {
                 clientDetailsImageUrl = await getDownloadURL(storageRef);
                 console.log('Client Details URL:', clientDetailsImageUrl);
 
-            } 
+            }  
+
+            const existingDepartmentQuery = query(collection(fbDb, 'clients'), 
+            where('name', '==', values.name),
+            where('organisationId', '==', organisationId)
+          );
+      
+          const existingDepartmentSnapshot = await getDocs(existingDepartmentQuery);
+      
+          if (!existingDepartmentSnapshot.empty) {
+            console.error('Client with this name already exists in the same organisation'); 
+            toast.error(`A Client with the name '${values.name}' already exists`);
+            return;
+          } 
+          
+      
+            if (organisationId === null) {
+              console.error('organisationId is null');
+              // Handle the null case, maybe show an error or return
+              return;
+            }
+            const generatedCitiesId = await generateCitiesId(organisationId);
 
     
             const clientsData = {
@@ -120,7 +144,7 @@ useEffect(() => {
                 contact_details: values.contact_details,
                 representative_address: values.representative_address, 
                 client_details: clientDetailsImageUrl,
-                clientId: generateUserId(fetchedClients.length + 1), 
+                clientId:generatedCitiesId, 
                 organisationId: organisationId,
 
             };

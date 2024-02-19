@@ -72,11 +72,19 @@ export default function Class(){
         fetchedClasses();
          }, [organisationId]); 
     
-    function generateUserId(adminCount: number) {
-        // Customize this logic based on your requirements
-        return `C${adminCount.toString().padStart(3, '0')}`;
-    }
-
+         async function generateAdminId(organisationId: string) {
+            try {
+              const querySnapshot = await getDocs(query(collection(fbDb, 'classes'), where('organisationId', '==', organisationId)));
+              const adminCount = querySnapshot.size;
+          
+              // Customize this logic based on your requirements
+              return `C${(adminCount + 1).toString().padStart(3, '0')}`;
+            } catch (error) {
+              console.error('Error fetching Classes count:', error);
+              // Handle error or return a default value
+              return 'C001';
+            }
+          }
     const handleAddClient = async (values: { name: any;}) => { 
         setOpen(true)
         console.log("Submitted Values:", values);  
@@ -93,18 +101,29 @@ export default function Class(){
                 return;
             }  
 
-            const existingDriverQuery = await getDocs(query(collection(fbDb, 'classes'), where('name', '==', values.name)));
-    
-            if (!existingDriverQuery.empty) {
-              console.error('This class Already Exists'); 
-              toast.error(`A class with the name '${values.name}' already exists`);
-              return;
-            }
+            const existingDepartmentQuery = query(collection(fbDb, 'classes'), 
+            where('name', '==', values.name),
+            where('organisationId', '==', organisationId)
+          );
+      
+          const existingDepartmentSnapshot = await getDocs(existingDepartmentQuery);
+      
+          if (!existingDepartmentSnapshot.empty) {
+            console.error('Class with this name already exists in the same organisation'); 
+            toast.error(`A Class with the name '${values.name}' already exists`);
+            return;
+          } 
+          
+          if (organisationId === null) {
+            console.error('organisationId is null');
+            // Handle the null case, maybe show an error or return
+            return;
+          }
+          const generatedClassId = await generateAdminId(organisationId);
 
-    
             const clientsData = {
                 name: values.name,
-                classId: generateUserId(fetchedClasses.length + 1), 
+                classId: generatedClassId, 
                 organisationId: organisationId,
 
             };
