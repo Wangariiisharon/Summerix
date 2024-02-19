@@ -19,7 +19,7 @@ import ExportDriverDataToCSV  from "../../../../components/Exports/driversExport
 import { toast } from 'react-hot-toast'; 
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 
-const Headers = ["DRIVER ID", "NAME", "MOBILE", "NATIONALITY"]
+const Headers = ["DRIVER ID", "NAME", "MOBILE", "ADDRESS"]
 
 export default function Drivers(){
     const [open,setOpen]=useState(false) 
@@ -82,10 +82,19 @@ useEffect(() => {
       };
       fetchedDrivers();
        }, [organisationId]); 
-    function generateUserId(adminCount: number) {
-        // Customize this logic based on your requirements
-        return `D${adminCount.toString().padStart(3, '0')}`;
-    }
+       async function generateDriverId(organisationId: string) {
+        try {
+          const querySnapshot = await getDocs(query(collection(fbDb, 'drivers'), where('organisationId', '==', organisationId)));
+          const adminCount = querySnapshot.size;
+      
+          // Customize this logic based on your requirements
+          return `D${(adminCount + 1).toString().padStart(3, '0')}`;
+        } catch (error) {
+          console.error('Error fetching Drivers count:', error);
+          // Handle error or return a default value
+          return 'D001';
+        }
+      }
 
 
     const handleSubmit = async (values: { name: any; phonenumber: any; email_adress: any; city: any;vehicle_type: any;model: any;year: any;number: any;profile: any;identity_card: any; good_conduct: any,        
@@ -104,12 +113,23 @@ useEffect(() => {
                     console.log("Submitted Values:", values);   
                     return
                 }  
-                const existingDriverQuery = await getDocs(query(collection(fbDb, 'drivers'), where('email_adress', '==', values.email_adress)));
-                if (!existingDriverQuery.empty) {
-                  console.error('A driver with this email already exists'); 
-                  toast.error(`A Driver with the Email '${values.email_adress}' already exists`);
-                  return;
-                }
+
+                const existingDepartmentQuery = query(collection(fbDb, 'drivers'), 
+                where('email_adress', '==', values.email_adress),
+                where('organisationId', '==', organisationId)
+              );
+          
+              const existingDepartmentSnapshot = await getDocs(existingDepartmentQuery);
+          
+              if (!existingDepartmentSnapshot.empty) {
+                console.error('A driver with this email already exists in the same organisation'); 
+                toast.error(`A Driver with the Email '${values.email_adress}' already exists`);
+                return;
+              } 
+              
+
+
+
                 let idImageUrl = '';  
                 if (values.identity_card) {
                     const storage = getStorage(firebaseApp);
@@ -139,7 +159,13 @@ useEffect(() => {
                     console.log('Good Conduct File URL:', pdfFileUrl);
                 }
             
+                if (organisationId === null) {
+                  console.error('organisationId is null');
+                  // Handle the null case, maybe show an error or return
+                  return;
+                }
                 const registration_date = new Date();
+                const generatedVehicleId = await generateDriverId(organisationId);
 
 
                 const DriversData = {
@@ -152,7 +178,7 @@ useEffect(() => {
                     archive:false, 
                     good_conduct:pdfFileUrl,
                     registration_date: registration_date,
-                    driversId: generateUserId(fetchedDrivers.length + 1),  
+                    driversId: generatedVehicleId,  
                     organisationId: organisationId,
 
                 };
@@ -683,7 +709,7 @@ const updateDriverStatusInDatabase = async (driverId: string, newStatus: boolean
             <p className="text-lg font-bold ml-7">Drivers</p> 
                 <div className='flex  text-base mt-2 w-80 ml-7'>
                 <SearchBar
-                  placeholder='Search name, id, phone'
+                  placeholder='Search Driver'
                   value={searchQuery}
                   onChange={handleSearchChange}
                 /> 
@@ -719,7 +745,7 @@ const updateDriverStatusInDatabase = async (driverId: string, newStatus: boolean
                                         {drivers.name}
                                         </BodyCell>
                                         <BodyCell>{drivers.phonenumber}</BodyCell>
-                                        <BodyCell>{drivers.country}</BodyCell>
+                                        <BodyCell>{drivers.city}</BodyCell>
                                         <td className="relative whitespace-nowrap pt-6 pl-3 pr-4 text-right text-sm font-medium sm:pr-0 flex justify-around"> 
                                         <div  onClick={()=>handleEditClick(drivers)}>
                                             <EditBtn/>

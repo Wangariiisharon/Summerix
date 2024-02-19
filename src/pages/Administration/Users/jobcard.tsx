@@ -20,25 +20,7 @@ export default function Jobcard() {
 
   const {organisationId} = useAuthContext(); 
   console.log("Jobcards Organisation ID:", organisationId);
-  
-//   useEffect(() => {
-  
-//     const fetchedJobcards = async () => {
-//         try {
-//             const querySnapshot = await getDocs(collection(fbDb, 'jobcard'));
-//             const jobcardData = querySnapshot.docs.map((doc) => ({
-//                 id: doc.id,
-//                 ...doc.data()
-//             }));
-//             setfetchedJobcards(jobcardData);
-//         } catch (error) {
-//             console.error('Error fetching Jobcards:', error);
-//         }
-//     };
     
-
-//     fetchedJobcards();
-// }, []);   
       useEffect(() => {
         const fetchedJobcards = async () => { 
         const db = getFirestore();
@@ -93,16 +75,28 @@ const handleAddJobcard = async (values: { name: any }) => {
       const jobcardCollection = collection(fbDb, "jobcard");
   
       // Check if a Jobcard with the same name already exists
-      const querySnapshot = await getDocs(
-        query(jobcardCollection, where("name", "==", values.name))
-      );
+      // const querySnapshot = await getDocs(
+      //   query(jobcardCollection, where("name", "==", values.name))
+      // );
   
-      if (!querySnapshot.empty) {
-        console.error("A Jobcard with this name already exists"); 
-        toast.error(`A Jobcard with the name '${values.name}' already exists`);
+      // if (!querySnapshot.empty) {
+      //   console.error("A Jobcard with this name already exists"); 
+      //   toast.error(`A Jobcard with the name '${values.name}' already exists`);
 
-        return;
-      }
+      //   return;
+      // } 
+      const existingDepartmentQuery = query(collection(fbDb, 'jobcard'), 
+      where('name', '==', values.name),
+      where('organisationId', '==', organisationId)
+    );
+
+    const existingDepartmentSnapshot = await getDocs(existingDepartmentQuery);
+
+    if (!existingDepartmentSnapshot.empty) {
+      console.error('Jobcard with this name already exists in the same organisation'); 
+      toast.error(`A Jobcard with the  name  '${values.name}' already exists`);
+      return;
+    } 
   
       const JobcardData = {
         name: values.name,

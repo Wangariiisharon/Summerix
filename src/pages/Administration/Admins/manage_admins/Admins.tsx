@@ -68,10 +68,19 @@ export default function Admins() {
     const handleReset = () => {
         setOpen(false)
     }
-    function generateUserId(adminCount: number) {
-        // Customize this logic based on your requirements
-        return `U${adminCount.toString().padStart(3, '0')}`;
-    }
+    async function generateAdminId(organisationId: string) {
+        try {
+          const querySnapshot = await getDocs(query(collection(fbDb, 'admins'), where('organisationId', '==', organisationId)));
+          const adminCount = querySnapshot.size;
+      
+          // Customize this logic based on your requirements
+          return `U${(adminCount + 1).toString().padStart(3, '0')}`;
+        } catch (error) {
+          console.error('Error fetching admins count:', error);
+          // Handle error or return a default value
+          return 'U001';
+        }
+      }
     const auth = getAuth(firebaseApp); 
     // const user = currentUser(auth);
     const user = auth.currentUser; 
@@ -86,11 +95,32 @@ export default function Admins() {
                 return;
             }
     
-            if (!values.firstname || !values.lastname || !values.email || !values.phonenumber) {
-                console.error('Required form fields are missing');
+            // if (!values.firstname || !values.lastname || !values.email || !values.phonenumber) {
+            //     console.error('Required form fields are missing'); 
+            //     return;
+            // } 
+            if (!values.firstname) {
+            console.error(`Please fill the field ${values.firstname}`);  
+            toast.error(`Please fill the field FirstName`);
                 return;
             }
-
+            if (!values.lastname) {
+                console.error(`Please fill the field ${values.firstname}`);  
+                toast.error(`Please fill the field LastName`);
+                    return;
+                }
+            if (!values.email) {
+                    console.error(`Please fill the field ${values.firstname}`);  
+                    toast.error(`Please fill the field Email`);
+                        return;
+                    }
+            if (!values.phonenumber) {
+                        console.error(`Please fill the field ${values.firstname}`);  
+                        toast.error(`Please fill the field Phone number`);
+                            return;
+               }
+           
+                                        
             const auth = getAuth(firebaseApp);
 
           // Create the user with email and password
@@ -135,10 +165,12 @@ export default function Admins() {
             } else {
                 // Inviter not found
                 console.error('Inviter not found');
-            }
+            } 
+            const generatedAdminId = await generateAdminId(organisationId);
+
     
             const adminData = {
-                adminId: generateUserId(filteredAdmins.length + 1), 
+                adminId: generatedAdminId,
                 firstname: values.firstname,
                 lastname: values.lastname,
                 email: values.email,
@@ -343,7 +375,7 @@ export default function Admins() {
                         </div> 
                         <div className='flex justify-end text-base mr-2'>
                         <SearchBar
-                         placeholder='Search name, id, phone'
+                         placeholder='Search User'
                           value={searchQuery}
                           onChange={handleSearchChange} 
                           className="h-6"
