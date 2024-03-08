@@ -4,7 +4,6 @@ import { Toaster } from "react-hot-toast";
 import "@/globals.css";
 import React from "react";
 import  Script  from 'next/script';
-import { BrowserRouter as Router } from 'react-router-dom'; // Import BrowserRouter
 
 export default function MyApp({ Component, pageProps }: any) {
   return (
@@ -15,21 +14,18 @@ export default function MyApp({ Component, pageProps }: any) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" /> 
-        {/* <Script
+        <script
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE&libraries=places"
-        strategy="beforeInteractive"
-      /> */} 
-       <script
-          src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE&libraries=places"
-          async
-          defer
-        ></script>
+        // strategy="beforeInteractive"
+      />     
       </Head>
         <AuthProvider>
         <Component {...pageProps} />
         </AuthProvider>
       <Toaster />
+      <script src="/register-service-worker.js" />
     </>
   );
-} 
+}  
+
 

@@ -149,6 +149,8 @@ export default function Vehicles(){
   
         const docRef = await addDoc(vehiclesCollection, VehicleData);
         console.log('Vehicle added with ID: ', docRef.id);
+        toast.success("Vehicle Successfully Added.");
+
       
       setOpen(false); 
       setShowAddVehicleModal(false);
@@ -376,10 +378,10 @@ export default function Vehicles(){
       };
 
       
-    
+
     return (
         <>
-            <div className='mt-8  h-full bg-[#FAFAFB] '>
+            <div className='mt-2 h-full'>
                 <Tab.Group>
                     <div className='flex w-full justify-end'>
   
@@ -403,7 +405,7 @@ export default function Vehicles(){
 
                     <Tab.Panels>
                         <Tab.Panel>
-                        <div  className="h-full bg-[#FAFAFB] overflow-y-auto"> 
+                        <div  className="h-full overflow-y-auto"> 
                         <VehiclesTable
                 selectedTab={selectedTab}
                 vehicles={fetchedVehicles}
@@ -413,7 +415,7 @@ export default function Vehicles(){
                             </div>
                         </Tab.Panel>
                         <Tab.Panel>
-                        <div  className="h-full bg-[#FAFAFB] overflow-y-auto">
+                        <div  className="h-full overflow-y-auto">
                         <VehiclesTable
                 selectedTab={selectedTab}
                 vehicles={fetchedVehicles}
@@ -423,7 +425,7 @@ export default function Vehicles(){
                             </div>
                         </Tab.Panel>
                         <Tab.Panel>
-                        <div  className=" h-full bg-[#FAFAFB] overflow-y-auto">
+                        <div  className=" h-full overflow-y-auto">
                         <VehiclesTable
                 selectedTab={selectedTab}
                 vehicles={fetchedVehicles}
@@ -714,41 +716,40 @@ export default function Vehicles(){
             console.error('Error updating Vehicle status in database:', error);
           }
         };
-      
-        return (
-          <>
-            <div className="bg-[#FAFAFB] h-full w-100%">
-              <Table>
-                <>
+      //     // const Headers = ["VEHICLE ID", "VEHICLE TYPE", "LICENSE PLATE"]
+
+        return ( 
+
+          <div className="px-4 ml-2 sm:px-6 lg:px-8">
+          {/* <p className="text-base mb-2 font-bold">Vehicles</p>   */}
+          <div className="flow-root">
+            <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <table className="min-w-full divide-y divide-gray-300">
                   <thead>
-                    <tr className="whitespace-nowrap py-3.5 pl-4 pr-3 bg-[#FAFAFB] text-left text-base sm:pl-0">
-                      {Headers.map((header, index) => {
-                        return (
-                          <Fragment key={index}>
-                            <HeaderCell>{header}</HeaderCell>
-                          </Fragment>
-                        );
-                      })}
+                    <tr>
+                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">VEHICLE ID</th>
+                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">VEHICLE TYPE</th>
+                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">LICENSE PLATE</th>
                     </tr>
                   </thead>
-                  <TableBody>
+                  <tbody className="bg-[#FAFAFB]">
                     {sortedVehicles.map((vehicle, index) => { 
                       return (
                         <Fragment key={index}>
-                          <div className="w-full mb-2 font-nunito font-regular"></div>
-                          <tr className="border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular">
-                            <td className="whitespace-nowrap pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0">
+                          <tr className="hover:bg-gray-100">
+                            <td className="whitespace-nowrap font-nunito font-regular pr-3  pl-4 pr-3  text-d-blue text-base sm:pl-0">
                               {vehicle.vehiclesId}
-                            </td>
-                            <BodyCell>{vehicle.vehicle_type}</BodyCell>
-                            <BodyCell>{vehicle.lisence_plate}</BodyCell> 
-                            <td className="relative whitespace-nowrap pt-6 pl-3 pr-4 text-right text-sm font-medium sm:pr-0 flex justify-around">
+                            </td> 
+                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">{vehicle.vehicle_type}</td> 
+                            <td className="whitespace-nowrap px-2 py-2 relative">{vehicle.lisence_plate}</td>
+                            <td className='whitespace-nowrap px-2 py-2 relative flex flex-row'>
                               <div onClick={() => handleEditClick(vehicle)}>
                                 <EditBtn />
                               </div>
                               <div>
                                 <button
-                                        className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2"
+                                        className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2 ml-4"
                                         onClick={() => updateVehicleStatusInDatabase(vehicle.id, !vehicle.archive)}
                                 >
                                   {vehicle.archive ? 'Unarchive' : 'Archive'}
@@ -760,9 +761,9 @@ export default function Vehicles(){
                         </Fragment>
                       );
                     })}
-                  </TableBody>
-                </>
-              </Table>
+                  </tbody>
+                
+              </table>
       
               <div className="flex flex-row justify-center my-4 ui-selected:border-b-4 outline-none text-sm font-nunito font-bold uppercase">
                 <button
@@ -782,7 +783,9 @@ export default function Vehicles(){
                 </button>
               </div>
             </div>
-          </>
+          </div>
+        </div> 
+      </div>
         );
       }
       

@@ -1,159 +1,145 @@
-import { fbDb } from "@/firebase/configs";
-import { collection, onSnapshot, doc, updateDoc, getDoc } from "@firebase/firestore";
-import { useState, useEffect } from "react";
-import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+// import { useState, useEffect } from "react";
+// import { useAuthContext } from "@/components/Authentication/AuthProvider";
+// import { collection, onSnapshot, doc, getDoc, updateDoc, setDoc } from "@firebase/firestore";
+// import { fbDb } from "@/firebase/configs";
 
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  timestamp: Date;
-  needsDisplay: boolean;
-}
 
-interface UserData {
-  email: string;
-  super_admin: boolean;
-}
+// interface Notification {
+//   id: string;
+//   title: string;
+//   message: string;
+//   timestamp: Date;
+//   needsDisplay: boolean;
+// }
 
-interface AuthContextData {
-  organisationId: string;
-  userData: UserData;
-}
+// interface UserData {
+//   super_admin: boolean;
+//   email: string;
+// }
 
-const Notifications = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const { organisationId, userData } = useAuthContext() as AuthContextData;
+// interface AuthContextData {
+//   organisationId: string;
+//   userData: UserData | null;
+// }
 
-  useEffect(() => {
-    if (organisationId) {
-      const unsubscribe = onSnapshot(collection(fbDb, 'notifications'), async (querySnapshot) => {
-        const notificationsData: Notification[] = [];
-  
-// ... (inside the useEffect)
-for (const docChange of querySnapshot.docChanges()) {
-  const notificationDoc = docChange.doc;
+// const Notifications = () => {
+//   const [notifications, setNotifications] = useState<Notification[]>([]);
+//   const { organisationId, userData } = useAuthContext() as AuthContextData;
+//   const [hasNewNotifications, setHasNewNotifications] = useState(false);
 
-  // Check if notification document has maintenanceId
-  if (notificationDoc.data().maintenanceId) {
-    const maintenanceDocRef = doc(fbDb, 'maintenance', notificationDoc.data().maintenanceId);
-    const maintenanceDocSnapshot = await getDoc(maintenanceDocRef);
 
-    const maintenanceData = maintenanceDocSnapshot.data();
-    const isPending = maintenanceData && maintenanceData.status === 'Pending';
+//   useEffect(() => {
+//     if (organisationId && userData) {
+//       const unsubscribe = onSnapshot(collection(fbDb, 'notifications'), async (querySnapshot) => {
+//         const notificationsData: Notification[] = [];
+//         let hasNew = false; // Initialize hasNew variable
 
-    if (
-      docChange.type === 'added' &&
-      isPending &&
-      notificationDoc.data().needsDisplay &&
-      !(await isNotificationRead(userData.email, notificationDoc.id))
-    ) {
-      notificationsData.push({
-        id: notificationDoc.id,
-        title: notificationDoc.data().title,
-        message: notificationDoc.data().message,
-        timestamp: notificationDoc.data().timestamp.toDate(),
-        needsDisplay: notificationDoc.data().needsDisplay,
-      });
-    }
-  }
-}
-// ...
 
-  
-        setNotifications(notificationsData);
-      });
-  
-      return () => unsubscribe();
-    }
-  }, []);
-  
+//         for (const docChange of querySnapshot.docChanges()) {
+//           const notificationDoc = docChange.doc;
 
-  const isNotificationRead = async (userEmail: string, notificationId: string) => {
-    try {
-      const userNotificationDocRef = doc(
-        fbDb,
-        'admins',
-        userData.email || '' // Use a default value or handle undefined userEmail
-      );
-  
-      const userNotificationDocSnapshot = await getDoc(userNotificationDocRef);
-  
-      // Ensure that userNotificationDocSnapshot.data()?.read is a boolean
-      const isRead = userNotificationDocSnapshot.exists() && userNotificationDocSnapshot.data()?.read === true;
-  
-      if (isRead) {
-        console.log('Notification has already been read by the user');
-      }
-  
-      return isRead;
-    } catch (error) {
-      console.error('Error checking if notification is read:', error);
-      return false;
-    }
-  };
-  
-  
+//           if (docChange.type === 'added') {
+//             const notificationData = notificationDoc.data();
+//             const viewed = await isNotificationViewed(notificationDoc.id, userData.email);
 
-  const markNotificationAsRead = async (notificationId: string) => {
-    try {
-      const notificationDocRef = doc(fbDb, 'notifications', notificationId);
-      const notificationDocSnapshot = await getDoc(notificationDocRef);
-  
-      if (notificationDocSnapshot.exists()) {
-        // Check if the user has already read this notification
-        const userNotificationDocRef = doc(
-          fbDb,
-          'admins',
-          userData?.email || '' // Use a default value or handle undefined userData.email
-        );
-  
-        const userNotificationDocSnapshot = await getDoc(userNotificationDocRef);
-        
-        // Explicitly check if userNotificationDocSnapshot.data() is defined and has read property
-        if (
-          userNotificationDocSnapshot.exists() &&
-          userNotificationDocSnapshot.data() &&
-          typeof userNotificationDocSnapshot.data().read === 'boolean' &&
-          userNotificationDocSnapshot.data().read
-        ) {
-          console.log('Notification has already been read by the user');
-          return;
-        }
-  
-        // Update the notification to mark it as read
-        await updateDoc(notificationDocRef, {
-          needsDisplay: false,
-        });
-  
-        console.log('Notification marked as read');
-      } else {
-        console.error('Notification not found');
-      }
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
-  };
-  
-  return (
-    <div className="bg-white shadow rounded-md">
-      <div className="p-4"></div>
-      <ul>
-        {notifications.map((notification: any) => (
-          <li key={notification.id} className={`flex justify-between items-center py-4 px-4 border-b last:border-b-0 last:rounded-b-md`}>
-            <div>
-              <p className="text-sm font-semibold text-[#065AD8] p-2">{notification.title}</p>
-              <p className="text-sm p-2">{notification.message}</p>
-              <p className="text-xs p-2">Time: {notification.timestamp.toLocaleString()}</p>
-              <button className={`text-[#4FD1C5] p-2 text-sm hover:text-gray-700 focus:outline-none`} onClick={() => markNotificationAsRead(notification.id)}>
-                Close
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-};
+//             if (notificationData.needsDisplay && !viewed) {
+//               notificationsData.push({
+//                 id: notificationDoc.id,
+//                 title: notificationData.title,
+//                 message: notificationData.message,
+//                 timestamp: notificationData.timestamp.toDate(),
+//                 needsDisplay: notificationData.needsDisplay,
+//               }); 
+//               hasNew = true; // Set hasNew to true if there are new notifications
 
-export default Notifications;
+//             }
+//           }
+//         }
+//         setNotifications(notificationsData);
+//         setHasNewNotifications(true);
+
+//       });
+
+//       return () => unsubscribe();
+//     }
+//   }, [organisationId, userData]);
+
+//   const markNotificationAsRead = async (notificationId: string, userEmail: string) => {
+//     try {
+//       if (userEmail) {
+//         const userDocRef = doc(fbDb, 'user_notifications', userEmail);
+//         const userDocSnapshot = await getDoc(userDocRef);
+
+//         if (userDocSnapshot.exists()) {
+//           const userData = userDocSnapshot.data();
+//           const viewedNotifications = userData?.viewedNotifications || [];
+//           viewedNotifications.push(notificationId);
+
+//           await updateDoc(userDocRef, {
+//             viewedNotifications: viewedNotifications,
+//           });
+//         } else {
+//           await setDoc(userDocRef, {
+//             viewedNotifications: [notificationId],
+//           });
+//         }
+
+//         // Remove the notification from the state
+//         setNotifications(notifications => notifications.filter(notification => notification.id !== notificationId));
+//       } else {
+//         console.error('User email is undefined');
+//       }
+//     } catch (error) {
+//       console.error('Error marking notification as read:', error);
+//     }
+//   };
+
+//   const isNotificationViewed = async (notificationId: string, userEmail: string) => {
+//     try {
+//       const userDocRef = doc(fbDb, 'user_notifications', userEmail);
+//       const userDocSnapshot = await getDoc(userDocRef);
+
+//       if (userDocSnapshot.exists()) {
+//         const userData = userDocSnapshot.data();
+//         return userData?.viewedNotifications?.includes(notificationId) || false;
+//       } else {
+//         console.error('User document not found');
+//         return false;
+//       }
+//     } catch (error) {
+//       console.error('Error checking notification status:', error);
+//       return false;
+//     }
+//   };
+
+//   return (
+//     <div className="bg-white shadow rounded-md">
+//       <div className="p-4"></div>
+//       <ul>
+//         {notifications.map((notification: Notification) => (
+//           <li key={notification.id} className={`flex justify-between items-center py-4 px-4 border-b last:border-b-0 last:rounded-b-md`}>
+//             <div>
+//               <p className="text-sm font-semibold text-[#065AD8] p-2">{notification.title}</p>
+//               <p className="text-sm p-2">{notification.message}</p>
+//               <p className="text-xs p-2">Time: {notification.timestamp.toLocaleString()}</p>
+//               <button
+//                 className={`text-[#4FD1C5] p-2 text-sm hover:text-gray-700 focus:outline-none`}
+//                 onClick={() => {
+//                   if (userData && userData.email) {
+//                     markNotificationAsRead(notification.id, userData.email);
+//                   }
+//                 }}
+//                 >
+//                 Close
+//               </button>
+//             </div>
+//           </li>
+//         ))}
+//       </ul>
+//     </div>
+//   );
+// };
+
+// export default Notifications;
+
+

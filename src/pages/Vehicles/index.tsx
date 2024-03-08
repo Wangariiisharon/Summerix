@@ -12,12 +12,9 @@ import { DocumentData, collection, query, where, getDocs } from "firebase/firest
 import { fbDb } from "@/firebase/configs"; 
 import { parseISO, format } from 'date-fns';
 import Maintenance from "./maintanance";
-import VehicleAllocation from "./vehicle_allocation";
 import { useRouter } from "next/router"; 
 import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider"; 
 import Pending from "./pending";
-
-
 
 const Headers = [
     {
@@ -52,9 +49,6 @@ export default function VehiclesComponent() {
     
 
     useEffect(() => {
-
-        
-
         const fetchVehicles = async () => {
             try {
               // Ensure organisationId is available before making the query
@@ -120,7 +114,6 @@ export default function VehiclesComponent() {
         
              <SiteLayout>
             <div className='bg-[#FAFAFB]'>
-
                 <p className="text-lg font-nunito font-bold mt-2 ml-5">Vehicles</p>
 
                 <div className='mt-4'> 
@@ -145,27 +138,27 @@ export default function VehiclesComponent() {
                     </Tab.List>
                     <Tab.Panels>
                         <Tab.Panel>
-                        <div  className="max-h-[500px] overflow-y-auto">
+                        <div  className="">
                         <DummyTable selectedTab={selectedTab} vehicles={fetchedVehicles} vehicleTrips={vehicleTrips} />
                             </div>
                         </Tab.Panel>
                         <Tab.Panel>
-                        <div  className="max-h-[500px] overflow-y-auto">
+                        <div  className="">
                         <DummyTable selectedTab={selectedTab} vehicles={fetchedVehicles} vehicleTrips={vehicleTrips}/>
                             </div>
                         </Tab.Panel>
                         <Tab.Panel>
-                        <div  className="max-h-[500px] overflow-y-auto">
+                        <div  className="">
                         <DummyTable selectedTab={selectedTab} vehicles={fetchedVehicles} vehicleTrips={vehicleTrips}/>
                             </div>
                         </Tab.Panel>
                         <Tab.Panel>
-                        <div  className="max-h-[500px] overflow-y-auto">
+                        <div  className="">
                         <DummyTable selectedTab={selectedTab} vehicles={fetchedVehicles} vehicleTrips={vehicleTrips}/>
                             </div>
                         </Tab.Panel>
                         <Tab.Panel>
-                        <div  className="max-h-[500px] overflow-y-auto">
+                        <div  className="">
                         <Maintenance />
                             </div>
                         </Tab.Panel> 
@@ -180,6 +173,7 @@ export default function VehiclesComponent() {
             </SiteLayout>   
     )
 }
+
 
 
 
@@ -211,83 +205,88 @@ export function DummyTable({ selectedTab,vehicles,vehicleTrips }: VehiclesTableP
       };  
     console.log("Filtered Vehicles:", filteredVehicles); 
     return ( 
-        <div className="bg-[#FAFAFB] h-400 w-100%">
-        <div className="px-4 sm:px-6 lg:px-8">
-            <div className="mt-8 flow-root">
-                <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                    <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                        <table className="min-w-full  divide-y divide-gray-300">
-                            <thead>
+      <div className="px-4 ml-6 sm:px-6 lg:px-8">
+        <div className="mt-8 flow-root">
+        <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+         <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+           <table className="min-w-full divide-y divide-gray-300">
+            <thead>
                                 <tr>
                                     <th
                                         scope="col"
-                                        className="whitespace-nowrap px-2 py-3.5 text-left  font-semibold"
-                                    >
+                                        className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">                                     
+                                        
                                      License Plate                                    
                                      </th>
                            
                                     <th
                                         scope="col"
-                                        className="whitespace-nowrap px-2 py-3.5 text-left  font-semibold"
-                                    >
+                                        className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900" 
+                                        >
                                         Status
                                     </th>
                                     <th
                                         scope="col"
-                                        className="whitespace-nowrap px-2 py-3.5 text-left  font-semibold"
-                                    >
+                                        className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"   
+                                        >
                                         Registration Date
                                     </th>
                 
                                     <th
                                         scope="col"
-                                        className="whitespace-nowrap px-2 py-3.5 text-left  font-semibold"
-                                    >
+                                        className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"                                     
+                                        >
                                         Trips Completed
                                     </th>
-                                    <th scope="col" className="whitespace-nowrap px-2 py-3.5 text-left  font-semibold">
-                                        <span className="sr-only"></span>
+                                    <th scope="col" 
+                                      className="relative whitespace-nowrap py-3.5 pl-3 pr-4 sm:pr-0">
+                                      <span className="sr-only"></span>
                                     </th>
                                 </tr>
                             </thead>
  
-                            <tbody  className="divide-y divide-gray-200  bg-[#FAFAFB]">
+                            <tbody  className=" bg-[#FAFAFB]">
                             {filteredVehicles.map((vehicle, index) => {   
                                 const { seconds } = vehicle.registration_date; 
                                 const updatedDate = new Date(seconds * 1000); 
                                 const tripsCompleted = vehicleTrips[vehicle.lisence_plate] || 0; // Get the trip count for the vehicle
 
                                 return( 
-                                    // <tr className='border-solid border-2 border-[#D9E2F6] h-10 font-nunito font-regular'>
                                     <Fragment key={index}>  
                                     <div className="w-full mb-2 font-nunito font-regular"></div>
-                                    <tr key={vehicle.id} className='my-2 border-solid border-2  bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>  
-                                        <td className="whitespace-nowrap py-2 pl-4 pr-3  text-d-blue sm:pl-0"  onClick={() => handleVehicleClick(vehicle)}>{vehicle.lisence_plate}</td>
-                                        <td className="whitespace-nowrap px-2 py-2 relative">
-                                  
-                                             <div className={`rounded-full inline-block text-sm h-8 absolute transform -translate-y-1/2 ${vehicle?.availability_status === 'Available' ? 'bg-[#E2E9FB] text-[#0068DD]' : (vehicle?.availability_status === 'On Route' ? 'bg-[#B9F3EE] text-[#076960]' : 'bg-[#EAEAEA] text-[#364250]')}`} style={{ width: `${(vehicle?.availability_status?.length || 0) * 7}px`, left: '-8px' }}>
-  <span className="absolute inset-0 flex items-center justify-center">
-    {vehicle?.availability_status}
-  </span>
-</div>
-
+                                    <tr key={vehicle.id} 
+                                     className="hover:bg-gray-100">
+                                     <td 
+                                       className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0"  
+                                       onClick={() => handleVehicleClick(vehicle)}>{vehicle.lisence_plate}</td>
+                                        <td 
+                                        className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 relative"
+                                        > 
+                                        {/*      className="whitespace-nowrap px-3 py-4 text-sm text-gray-500"  */}
+                                
+                                        <div className={`rounded-full inline-block text-sm h-8 absolute transform -translate-y-1/2 ${vehicle?.availability_status === 'Available' ? 'bg-[#E2E9FB] text-[#0068DD]' : (vehicle?.availability_status === 'On Route' ? 'bg-[#B9F3EE] text-[#076960]' : 'bg-[#EAEAEA] text-[#364250]')}`} style={{ width: `${(vehicle?.availability_status?.length || 0) * 7}px`, left: '-8px' }}>
+                                        <span className="absolute inset-0 flex items-center justify-center">
+                                         {vehicle?.availability_status}
+                                       </span>
+                                        </div>
                                             </td> 
-    
-                                            <td className="whitespace-nowrap px-2 py-2 ">
+                                            <td
+                                            className="whitespace-nowrap px-3 py-4 text-sm text-gray-500" 
+                                            >
                                             {format(updatedDate, 'MM/dd/yy')}
                                            </td>
-                                        <td className="whitespace-nowrap px-2 py-2 text-lg font-bold text-black">{tripsCompleted} Trips</td>
+                                        <td 
+                                        className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-bold text-black">
+                                            {tripsCompleted} Trips</td>
                                     </tr> 
-                                    </Fragment>
-
+                                     </Fragment>
                             )
                         })}
                             </tbody>
                         </table>
                     </div>
                 </div>
-            </div>
-        </div> 
+            </div> 
         </div> 
 
     )

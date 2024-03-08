@@ -1,438 +1,704 @@
-import React from 'react'
-import { Fragment, useEffect, useState} from "react";
+import {Header, HeaderBar} from "@/components/Headers";
+import {AddButton, Button, DeleteBtn, EditBtn} from "@/components/Buttons"; 
+import {PlusIcon, XMarkIcon} from "@heroicons/react/24/outline";
+import {headers} from "next/headers";
+import {DummyTable} from "@/components/Table/Table";
+import {FormEvent, Fragment, ReactNode, useEffect, useState} from "react";
+import {FormModal} from "@/components/Modals/FormModal"; 
+import { Field, Formik,Form } from "formik";
+import {Input, Submit} from "@/components/Forms/input";
+import SiteLayout from "@/Layout/SiteLayout";
 import { Tab } from "@headlessui/react";
-import  { fbDb } from "@/firebase/configs";
-import { getDocs, collection, DocumentData, addDoc, Timestamp } from "firebase/firestore";
-import {  format } from 'date-fns';
+import Planned from "../Administration/Users/jobcard";
+import firebaseApp, { fbDb } from "@/firebase/configs";
+import { getDocs, collection, DocumentData, addDoc, Timestamp, updateDoc, doc, query, where, getFirestore, onSnapshot, getDoc,setDoc } from "firebase/firestore";
+import { parseISO, format } from 'date-fns';
 import Jobcard from "../Administration/Users/jobcard"; 
-import NotAssigned from './not_assigned';
+import { serverTimestamp } from 'firebase/firestore'
+import { AnyCnameRecord } from "dns";
+import { FirebaseStorage, getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+import ImageInput from "@/components/ImageInputs"; 
+import { toast } from 'react-hot-toast';
+// import  Notifications from "./notifications"
+import {  useAuthContext } from "@/components/Authentication/useContext";
+import Pending from "./pending"; 
 
 
-const tabs = [
-    {name: 'ASSIGNED', href: '#', current: false},
-    {name: 'NOT ASSIGNED', href: '#', current: false},
-]
 
+function classNames(...classes: string[]) {
+    return classes.filter(Boolean).join(' ');
+} interface UserData {
+  email: string; 
+  super_admin: boolean;
+} 
+interface AuthContextData {
+  organisationId: string;
+  userData: UserData; 
 
-export default function VehicleAllocation() {
+}
+
+export default function Maintenance() {
     const [open, setOpen] = useState(false)
     const [selectedTab, setSelectedTab] = useState<number>(0); 
-    const [fetchedMaintanance, setFetchedMaintanance]=useState<DocumentData[]>([]);   
-    const [fetchedAllocation, setfetchedAllocation]=useState<DocumentData[]>([]); 
-    const [allocationList, setAllocationList] = useState<DocumentData[]>([]);
-  
-    const [fetchedVehicles, setFetchedVehicles]=useState<DocumentData[]>([]);  
+    const [fetchedMaintanance, setFetchedMaintanance]=useState<DocumentData[]>([]);  
     const [vehicleNames, setVehicleNames] = useState<string[]>([]); 
     const [jobcards, setjobcards] = useState<string[]>([]); 
-    const [fetchJobCard, setfetchJobCard] = useState<string[]>([]); 
-    const [drivers, setdrivers] = useState<string[]>([]); 
-
+    const [drivers, setdrivers] = useState<string[]>([]);
     const [showAddJobcardModal, setShowAddJobcardModal] = useState(false);
     const [showScheduleMaintenanceModal, setShowScheduleMaintenanceModal] = useState(false);
+    const [selectedTabIndex, setSelectedTabIndex] = useState(0); 
+    const [approvalCount, setApprovalCount] = useState(0);
+   const [checkboxState, setCheckboxState] = useState<boolean[]>([]);
+   const [checkedIndexes, setCheckedIndexes] = useState<number[]>([]);
 
-  
-    const handleAddClick = () => {   
-        setOpen(true)
-    }
-    const handleJobCardReset = () => {
-        setShowAddJobcardModal(false)
-    } 
+
+
+    const { isAuthenticated, userId, organisationId, userData } = useAuthContext();
+
+    console.log("Maintanance Page OrganisationId: ", organisationId);
+    console.log("Maintanance Page UserData: ", userData);
+
+
+    const isSuperAdmin = userData?.super_admin;
+    const approvedBy = userData?.email;
+
+    console.log("Maintanance Super Admin: ", isSuperAdmin);
+    
+
+    const MaintainanceTabs = [
+      { name: 'PLANNED', href: '#', current: selectedTabIndex === 0 },
+      { name: 'HISTORY', href: '#', current: selectedTabIndex === 1 },
+      isSuperAdmin
+        ? { name: 'PENDING', href: '#', current: selectedTabIndex === 2 }
+        : null,
+    ].filter(Boolean); // Remove null values
+    
+   
     const handleMaintenanceReset = () => {
-        setShowScheduleMaintenanceModal(false)
+        setShowScheduleMaintenanceModal(false) 
+        setOpen(false)
     }   
-    const handleTabClick = (index:any) => {
-        setSelectedTab(index);
-    };  
     const handleDropdownClick = (event: { stopPropagation: () => void; }) => {
         event.stopPropagation();
-    };
+    }; 
 
-
+    
     useEffect(() => { 
-        const fetchedVehicles = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(fbDb, 'vehicles'));
-                const vehiclesData: DocumentData[] = [];
-                querySnapshot.forEach((doc) => {
-                    const vehicle = {
-                        id: doc.id,
-                        ...doc.data()
-                    };
-                    vehiclesData.push(vehicle);
-                });
-                setFetchedVehicles(vehiclesData);
-            } catch (error) {
-                console.error('Error fetching Vehicles:', error);
+        const fetchVehicleNames = async () => {
+          try {
+            if (organisationId) {
+              const q = query(collection(fbDb, 'vehicles'), where('organisationId', '==', organisationId));
+              const querySnapshot = await getDocs(q);
+              const names = querySnapshot.docs.map(doc => doc.data().lisence_plate);
+              setVehicleNames(names);
+            } else {
+              // Handle the case when organisationId is not available
+              console.error('Organisation ID is not available for fetching Vehicle names.');
             }
-        }; 
-        
-        
+          } catch (error) {
+            console.error('Error fetching Vehicle names:', error);
+          }
+        };
+      
         const fetchJobCard = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(fbDb, 'jobcard'));
-                const names = querySnapshot.docs.map(doc => doc.data().name);
-                setjobcards(names);
-            } catch (error) {
-                console.error('Error fetching JobCard names:', error);
+          try {
+            if (organisationId) {
+              const q = query(collection(fbDb, 'jobcard'), where('organisationId', '==', organisationId));
+              const querySnapshot = await getDocs(q);
+              const names = querySnapshot.docs.map(doc => doc.data().name);
+              setjobcards(names);
+            } else {
+              console.error('Organisation ID is not available for fetching JobCard names.');
             }
-        }; 
+          } catch (error) { 
+            console.error('Error fetching JobCard names:', error);
+          }
+        };
+      
         const fetchDriver = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(fbDb, 'drivers'));
-                const names = querySnapshot.docs.map(doc => doc.data().name);
-                setdrivers(names);
-            } catch (error) {
-                console.error('Error fetching Vehicle names:', error);
+          try {
+            if (organisationId) {
+              const q = query(collection(fbDb, 'drivers'), where('organisationId', '==', organisationId));
+              const querySnapshot = await getDocs(q);
+              const names = querySnapshot.docs.map(doc => doc.data().name);
+              setdrivers(names);
+            } else {
+              // Handle the case when organisationId is not available
+              console.error('Organisation ID is not available for fetching Driver names.');
             }
+          } catch (error) {
+            console.error('Error fetching Driver names:', error);
+          }
         };
-  
-        const fetchAllocationData = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(fbDb, 'vehicleAllocation'));
-                const allocationData: DocumentData[] = [];
-    
-                querySnapshot.forEach((doc) => {
-                    const allocation = {
-                        id: doc.id,
-                        ...doc.data()
-                    };
-                    allocationData.push(allocation);
-                });
-    
-                setAllocationList(allocationData);
-            } catch (error) {
-                console.error('Error fetching allocationData:', error);
-            }
-        };
-    
-        fetchedVehicles(); 
-        fetchDriver();
-        fetchAllocationData(); 
-        fetchJobCard();  
-    }, []); 
-
-
-    const handleScheduleMaintanace = async (values: { requested_by: any; cost:any; remarks:any;vehicle:any; job_cards:any; date:any}) => {  
-        setShowScheduleMaintenanceModal(true);
-        setShowAddJobcardModal(false);  
-        setOpen(true);
-
-        console.log("Submitted Values:", values); 
-    
+      
+        const fetchedMaintenance = async () => { 
+          const db = getFirestore();
+ 
         try {
-            if (!values) {
-                console.error('Form values are undefined');
-                return;
-            }
-    
-            if (!values.requested_by||!values.vehicle||!values.cost||!values.job_cards||!values.remarks||!values.date) {
-                console.error('Required form fields are missing');
-                return;
-            } 
-
-            const dateObj = new Date(values.date +"T00:00:00");  
-            const timestamp=Timestamp.fromDate(dateObj)
-
-
-            const maintenanceData = {
-                requested_by: values.requested_by, 
-                vehicle: values.vehicle, 
-                date: timestamp, 
-                cost: values.cost,  
-                job_cards: values.job_cards,
-                remarks: values.remarks,
-            };
-    
-            const docRef = await addDoc(collection(fbDb, 'maintenance'), maintenanceData);
-            console.log('Jobcard added with ID: ', docRef.id);
-    
-            setOpen(false);
-        } catch (error) {
-            console.error('Error adding jobcard:', error);
-        } 
+       if (organisationId) {
+       const q = query(collection(db, 'maintenance'), where('organisationId', '==', organisationId));
+ 
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+       const maintenanceData = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      }));
+       setFetchedMaintanance(maintenanceData);
+      });
+ 
+       return () => unsubscribe(); 
+ 
+       } else {
+         console.error('Organisation ID is not available.');
+       }  
+     } catch (error) {
+       console.error('Error fetching Maintanance:', error);
     }
+  };
+      
+        fetchVehicleNames();
+        fetchDriver();
+        fetchJobCard();
+        fetchedMaintenance();
+      }, [organisationId]);  
 
 
+      const sanitizeEmailForFirestore = (email: string) => {
+        // Use Base64 encoding to handle special characters
+        const encodedEmail = btoa(email);
+      
+        // Use the encoded email with a fixed string in the Firestore collection reference
+        return `user_${encodedEmail}`;
+      };
+      
     
+      const handleScheduleMaintanace = async (values: { requested_by: any; cost: any; remarks: any; vehicle: any; job_cards: any; date: any; serial_number: any; part: any; broken_partImage: any }) => {
+        setShowScheduleMaintenanceModal(true);
+        setShowAddJobcardModal(false);
+        setOpen(true);
+      
+        console.log("Submitted Values:", values);
+      
+        try {
+          if (!values) {
+            console.error('Form values are undefined');
+            return;
+          }
+      
+          if (!values) {
+            console.error("Form values are undefined");
+            return;
+          } 
+          if (
+            !values.requested_by)  {
+            console.error("Required form fields are missing"); 
+            toast.error(`Please fill the field Requested by`);
+            return;
+          }  
+          if (
+            !values.vehicle)  {
+            console.error("Required form fields are missing"); 
+            toast.error(`Please fill the field Vehicle`);
+            return;
+          }      
+           if (
+            !values.cost)  {
+            console.error("Required form fields are missing"); 
+            toast.error(`Please fill the field Cost`);
+            return;
+          }       
+          if (
+            !values.job_cards)  {
+            console.error("Required form fields are missing"); 
+            toast.error(`Please fill the field JobCard`);
+            return;
+          }       
+          if (
+            !values.remarks)  {
+            console.error("Required form fields are missing"); 
+            toast.error(`Please fill the field Remarks`);
+            return;
+          }       
+          if (
+            !values.date)  {
+            console.error("Required form fields are missing"); 
+            toast.error(`Please fill the field Date`);
+            return;
+          } 
+          if (
+            !values.broken_partImage)  {
+            console.error("Required form fields are missing"); 
+            toast.error(`Please fill the field Broken part image`);
+            return;
+          }  
+          if (
+            !values.serial_number)  {
+            console.error("Required form fields are missing"); 
+            toast.error(`Please fill the field Serial number`);
+            return;
+          }
+          if (
+            !values.part)  {
+            console.error("Required form fields are missing"); 
+            toast.error(`Please fill the field  Part`);
+            return;
+          }
+      
+          const dateObj = new Date(values.date + "T00:00:00");
+          const timestamp = Timestamp.fromDate(dateObj);
+      
+          let brokenPartImageUrl = '';
+          if (values.broken_partImage) {
+            const storage = getStorage(firebaseApp);
+            const storageRef = ref(storage, `broken_partImage/${values.broken_partImage.name}`);
+      
+            await uploadBytes(storageRef, values.broken_partImage);
+            brokenPartImageUrl = await getDownloadURL(storageRef);
+            console.log('Broken Part Image URL:', brokenPartImageUrl);
+          } 
 
+          const maintenanceData = {
+            approvalCount: 0,
+            requested_by: values.requested_by,
+            vehicle: values.vehicle,
+            date: timestamp,
+            cost: values.cost,
+            job_cards: values.job_cards,
+            remarks: values.remarks,
+            serial_number: values.serial_number,
+            part: values.part,
+            status: "Pending",
+            broken_partImage: brokenPartImageUrl,
+            organisationId: organisationId,
+            notificationNeedsDisplay: true, 
+            isNotificationViewed:false,
+            userId: userData?.userId, 
+          };
+      
+          const docRef = await addDoc(collection(fbDb, 'maintenance'), maintenanceData);
+          console.log('Maintenance added with ID: ', docRef.id);
+          toast.success("Maintenance Request Successfully Added.");  
 
-    return (
-        <>
-            <div className=''>
+          const superAdminQuerySnapshot = await getDocs(query(collection(fbDb, 'admins'), where('super_admin', '==', true)));
+          const superAdmins = superAdminQuerySnapshot.docs.map(doc => doc.data().email);
+           const superAdminEmail=userData?.email 
+
+        const notificationData = {
+          title: 'New Maintenance Request',
+          message: `New maintenance request added by ${values.requested_by}.`, 
+          organisationId: organisationId,
+          timestamp: Timestamp.now(),
+          maintenanceId: docRef.id,
+          readBy: [], 
+          userId: userData?.userId, 
+        }; 
         
+        // Add notification to each super admin's collection
+        await addDoc(collection(fbDb, 'notifications'),notificationData);
+        
+          setOpen(false);
+        } catch (error) {
+          console.error('Error adding Notification:', error);
+        }
+      
+        setShowScheduleMaintenanceModal(false);
+      };
+        
+const handleCheckboxClick = async (index: number) => {
+  const documentId = fetchedMaintanance[index].id;
+  const maintenanceDocRef = doc(fbDb, 'maintenance', documentId);
+
+  try { 
+    if (checkedIndexes.includes(index)) {
+      console.log('Checkbox already checked.');  
+      toast.error('Checkbox already checked.'); 
+      return;
+    }  
+    setCheckedIndexes([...checkedIndexes, index]);
+
+    // Get the current approvalCount and approvedBy array from Firestore
+    const docSnapshot = await getDoc(maintenanceDocRef);
+
+    if (docSnapshot && docSnapshot.exists()) {
+      const currentApprovalCount = docSnapshot.data()?.approvalCount || 0;
+      const approvedByArray = docSnapshot.data()?.approvedBy || [];
+
+      // Check if the user has already approved
+      if (!approvedByArray.includes(userData.email)) {
+        // Update the approvalCount and add the user email to approvedBy array in Firestore
+        await updateDoc(maintenanceDocRef, {
+          approvalCount: currentApprovalCount + 1,
+          approvedBy: [...approvedByArray, userData.email],
+        });
+
+        // Check if the approval count reaches 3
+        if (currentApprovalCount + 1 === 3) {
+          // Perform the logic to update the status to "Approved"
+          await updateStatusToApproved(documentId);
+        }
+      } else {
+        console.log('User has already approved.');
+      }
+    } else {
+      console.error('Document not found or does not exist.');
+    }
+  } catch (error) {
+    console.error('Error updating approval count:', error);
+  }
+};
+
+const updateStatusToApproved = async (documentId: string) => {
+  try {
+     const maintenanceDocRef = doc(fbDb, 'maintenance', documentId);
+     const docSnapshot = await getDoc(maintenanceDocRef);
+
+     if (docSnapshot && docSnapshot.exists()) {
+        const currentApprovalCount = docSnapshot.data()?.approvalCount || 0;
+
+        if (currentApprovalCount === 3) {
+           // Update the status to "Approved" in Firestore
+           await updateDoc(maintenanceDocRef, { status: 'Approved',approvedBy:approvedBy });
+        }
+     } else {
+        console.error('Document not found or does not exist.');
+     }
+  } catch (error) {
+     console.error('Error updating status to Approved:', error);
+  }
+};
+  
+    return (  
+        <>
+            {/* <div className=''> */}
+                {/* <div className="flex flex-row justify-end absolute mb-2 right-10">  
+                <div className=""> 
+                <Button
+                className='rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2'
+                handleClick={handleScheduleMaintanace}>
+               <PlusIcon className='h-6 w-6 mr-2' />
+                 Schedule Maintenance
+              </Button>
+                </div>
+                </div> */} 
+                <div className="absolute top-12 flex justify-end right-10 "> 
+                <Button 
+                className='rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2'
+                handleClick={handleScheduleMaintanace}>
+                <PlusIcon className='h-6 w-6 mr-2' /> 
+                Schedule Maintenance
+                </Button> 
+                </div>
+
                 <div className='mt-4'> 
                 <Tab.Group>
-                <Tab.List className='w-full bg-[#FAFAFB] font-nunito flex justify-start mb-3'> 
-                                {tabs.map((tab, index) => {
-                                     return (
-                                        <Fragment key={index}>
-                                         <Tab
-                                         className='ui-selected:border-b-4 border-d-green outline-none
-                                                    ui-selected:text-d-green text-sm font-nunito font-bold uppercase flex flex-row ml-10'  
-                                          onClick={() => {
-                                          console.log("Tab Clicked", index);
-                                          setSelectedTab(index);
-                                           }}
-                                         >
-                                         {tab.name}
-                                        </Tab> 
-                                        </Fragment> 
-                                    )
-                                })}
+                <Tab.List className="w-full bg-[#FAFAFB] font-nunito flex justify-start mb-3">
+                  {MaintainanceTabs.filter(Boolean).map((tab, index) => (
+                     <Fragment key={index}>
+                    <Tab
+                  className={classNames(
+                 'border-d-green outline-none text-sm font-nunito font-bold uppercase flex flex-row ml-10',
+                  tab?.current ? 'ui-selected border-b-4 ui-selected:text-d-green' : ''
+                   )}
+                   onClick={() => setSelectedTabIndex(index)}
+                   >
+                   {tab?.name}
+                   </Tab>
+                 </Fragment>
+                  ))}
+                </Tab.List>
 
-                            </Tab.List>
+
                     <Tab.Panels>
+                    <Tab.Panel className={classNames(selectedTabIndex === 0 ? 'ui-selected border-b-4' : '', 'h-full')}> 
+                        <MaintananceTable selectedTab={selectedTabIndex} maintananceList={fetchedMaintanance} isSuperAdmin={isSuperAdmin} handleCheckboxClick={handleCheckboxClick} checkboxState={checkboxState}  />
+                        </Tab.Panel>
+                        <Tab.Panel className={classNames(selectedTabIndex === 0 ? 'ui-selected border-b-4' : '', 'h-full')}>
+                        <MaintananceTable selectedTab={selectedTabIndex} maintananceList={fetchedMaintanance} isSuperAdmin={isSuperAdmin} handleCheckboxClick={handleCheckboxClick} checkboxState={checkboxState}   />
+                        </Tab.Panel> 
                         <Tab.Panel>
-                        <div  className="max-h-[500px] overflow-y-auto">
-                        <MaintananceTable selectedTab={selectedTab} allocationList={allocationList} vehiclesList={fetchedVehicles} />
-
+                        <div  className="">
+                        <Pending />
                             </div>
                         </Tab.Panel>
-                        <Tab.Panel>
-                        <div  className="max-h-[500px] overflow-y-auto">
-                        <NotAssigned/>
-
-                            </div>
-                        </Tab.Panel>
-                        <Tab.Panel>
-                        <div  className="max-h-[500px] overflow-y-auto">
-                        <Jobcard />
-                            </div>
-                        </Tab.Panel>
-       
-                
-
                     </Tab.Panels>
                 </Tab.Group> 
                 </div> 
                 <div>
                 </div>
-            </div>
-            </>
+
+            <FormModal open={showScheduleMaintenanceModal} setOpen={setShowScheduleMaintenanceModal}>
+                <div className='p-8'>
+                    <div className='flex w-full h-full justify-between items-center mb-12'>
+                        <div className='text-xl font-semibold '>
+                            Schedule Maintanance
+                        </div>
+                        <Button className='bg-red-50 h-12 w-12 flex items-center justify-center rounded-full' handleClick={handleMaintenanceReset}>
+                            <XMarkIcon className='h-6 w-6 text-red-400'/>
+                        </Button>
+                    </div>
+                    <Formik
+                    initialValues={{
+                        requested_by: "",  
+                        vehicle: "",
+                        cost:"", 
+                        job_cards: "", 
+                        remarks: "", 
+                        date: "",  
+                        part: "", 
+                        serial_number: "", 
+                        broken_partImage: null,
+                                      }}
+                        onSubmit={(values) => handleScheduleMaintanace(values)}  
+
+                        >
+                       {({ values, setFieldValue}) => (
+                    <Form>
+                        <div className=''>
+                            <div className='flex w-full justify-between'>
+                            <label className="block">
+                             <label className="form-label">MAINTANANCE TYPE</label>
+                             <Field
+                             as="select"
+                            name="job_cards"  
+                           value={values.job_cards}
+                         className="form-input bg-grey w-96" 
+                         onClick={handleDropdownClick}
+
+                         > 
+                        <option value="">Select Maintenance Type</option>
+                        {jobcards.map((job_cards, index) => (
+                        <option key={index} value={job_cards}>
+                         {job_cards}
+                       </option>
+            ))}
+        </Field>
+                             </label>                          
+                             </div> 
+                             <label className="block  mt-8">
+                             <label className="form-label">VEHICLE</label>
+                             <Field
+                             as="select"
+                            name="vehicle"  
+                           value={values.vehicle}
+                         className="form-input bg-grey w-96" 
+                         onClick={handleDropdownClick}
+                         > 
+                        <option value="">Select Vehicle</option>
+                        {vehicleNames.map((vehicle, index) => (
+                        <option key={index} value={vehicle}>
+                         {vehicle}
+                         </option>
+                        ))}
+                        </Field>
+                             </label>   
+                             <div className='flex w-full justify-between  mt-8'> 
+                             <label className="block">
+                             <label className="form-label">REQUESTED BY</label>
+                             <Field
+                             as="select"
+                            name="requested_by"  
+                           value={values.requested_by}
+                         className="form-input bg-grey w-48" 
+                         onClick={handleDropdownClick}
+
+                         > 
+                         <option value="">Select Driver</option>
+                        {drivers.map((requested_by, index) => (
+                        <option key={index} value={requested_by}>
+                         {requested_by}
+                       </option>
+                       ))}
+                      </Field>
+                             </label>  
+                             <label className="block">
+                             <label className="form-label">DATE</label>
+                             <Field
+                             type="date"
+                             name="date"
+                             value={values.date}
+                             className="form-input bg-grey w-48"
+                            />
+                            </label> 
+                                </div>    
+                                <div className='flex w-full justify-between  mt-8'> 
+                             <label className="block mt-8">
+                             <label className="form-label">COST</label>
+                             <Field
+                             type="number"
+                             name="cost" 
+                             placeholder="Ksh"
+                             value={values.cost}
+                             className="form-input bg-grey w-48"
+                            /> 
+                            </label> 
+                            <label className="block mt-8">
+                             <label className="form-label">PART</label>
+                             <Field
+                             type="text"
+                             name="part"
+                             value={values.part}
+                             className="form-input bg-grey w-48"
+                            /> 
+                            </label>  
+                            </div> 
+                            <div className='flex w-full justify-between  mt-8'>  
+                            <label className="block mt-8">
+                             <label className="form-label">SERIAL NUMBER</label>
+                             <Field
+                             type="text"
+                             name="serial_number"
+                             value={values.serial_number}
+                             className="form-input bg-grey w-48"
+                            /> 
+                            </label>   
+
+                          <label className="block ml-24 mt-8">
+                          <label className="form-label">BROKEN PART</label>
+                          <Field name="broken_partImage">
+                             {({ field, form }: any) => (
+                             <input
+                            type="file"
+                           onChange={(event) => {
+                           const file = event.currentTarget?.files?.[0];
+                            if (file) {
+                          form.setFieldValue('broken_partImage', file);
+                          }
+                         }}
+                        />
+                        )}
+                    </Field>
+                    </label>  
+                            </div> 
+                            <label className="block mt-8">
+                            <label className="form-label">REMARKS</label>
+                            <Field
+                             type="text"
+                             name="remarks"
+                             value={values.remarks}
+                             className="form-input bg-grey w-96 h-20"
+                            />
+                            </label>                      
+                            <div className='flex w-full justify-end mt-24 '>
+                                <button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32' onClick={handleMaintenanceReset}>Reset</button>
+                                <button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4' type='submit' >Save</button>
+                            </div>
+                        </div>
+                    </Form>
+                     )}
+                    </Formik>
+                </div>
+            </FormModal>
+             
+             </>
         
     )
 }  
 
-
-
 interface VehiclesTableProps {
-    selectedTab: number;  
-    allocationList:DocumentData; 
-    vehiclesList:DocumentData;
+  selectedTab: number;  
+ maintananceList:DocumentData 
+ isSuperAdmin:boolean  
+  handleCheckboxClick:any 
+ checkboxState: any; // Add this line
 }
+function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,handleCheckboxClick,checkboxState}: VehiclesTableProps) { 
+      const [userApproves, setUserApproves] = useState(false);
+      const [fetchedMaintanance, setFetchedMaintanance]=useState<DocumentData[]>([]);  
+     console.log("MaintananceTable Rendering with selectedTab:", selectedTab); 
+    console.log("Mainanace list", maintananceList); 
+     
+     const currentDate = new Date();  
 
-export function MaintananceTable({ selectedTab,allocationList,vehiclesList }: VehiclesTableProps) {
-        console.log("MaintananceTable Rendering with selectedTab:", selectedTab); 
-        console.log("Allocation List", allocationList);
+const filteredApprovedMaintenance = maintananceList.filter((maintenance: { status: string; })=> maintenance.status === 'Approved');
 
-        const currentDate = new Date();
 
-        const filteredAllocation = allocationList.filter((allocation: any) => {  
-            const maintenanceDate = new Date(allocation.end_time.seconds * 1000);
-    
-            if (selectedTab === 0) {
-                // Show items with dates that are yet to reach (future dates)
-                return maintenanceDate > currentDate;
-            } else if (selectedTab === 1) {
-                // Show items with dates that have already passed (past dates)
-                return maintenanceDate < currentDate ;
-            }
-    
-            return true;
-        }); 
-        const updatedAllocationList = filteredAllocation.map((allocation: any) => {
-        const endDate = new Date(allocation.end_time.seconds * 1000); 
-        const startDate = new Date(allocation.start_time.seconds * 1000);
-
-        const updatedEndDate = new Date(allocation.end_time.seconds * 1000);
-        const updatedStartDate = new Date(allocation.start_time.seconds * 1000); 
-        const date=[updatedStartDate,updatedEndDate]
-        if (startDate <= currentDate && endDate > currentDate) {
-            console.log('Setting status to On Route');
-            return {
-              ...allocation,
-              end_time: format(updatedEndDate, 'dd/MM/yy'), 
-              start_time: format(updatedStartDate, 'dd/MM/yy'),
-              driver: allocation.driver ? allocation.driver : 'Not Assigned', 
-              status: 'On Route' // Set status to 'On Route' if start date has passed but end time has not
-            };
-          } else {
-            console.log('Keeping original status');
-            // If start date is in the future, keep the original status
-            return {
-              ...allocation,
-              end_time: format(updatedEndDate, 'dd/MM/yy'), 
-              start_time: format(updatedStartDate, 'dd/MM/yy'),
-              driver: allocation.driver ? allocation.driver : 'Not Assigned', 
-              status: allocation.status ? allocation.status : 'Unknown' // Set status to allocation.status if start date is in the future
-            };
+const filteredMaintenance = filteredApprovedMaintenance.filter((maintenance: any) => {
+          const maintenanceDate = new Date(maintenance?.date?.seconds * 1000);
+ 
+         if (selectedTab === 0) {
+             // Show items with dates that are yet to reach (future dates)
+             return maintenanceDate > currentDate;
+         } else if (selectedTab === 1) {
+             // Show items with dates that have already passed (past dates)
+             return maintenanceDate < currentDate;
           }
-          
-          
-          
  
-    });
-        
-    console.log("Filtered Allocation:", filteredAllocation); 
-    return (
-        <div className="px-4 sm:px-6 lg:px-8">
-            <div className="mt-8 flow-root">
-                <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                    <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                        <table className="min-w-full divide-y divide-gray-300">
-                            <thead>
-                                <tr> 
-                                    <th 
-                                      scope="col"
-                                      className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left font-semibold sm:pl-0" 
-                                    > 
-                                         
-                                     VEHICLE
-                                    </th> 
-                                    <th
-                                        scope="col"
-                                        className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left font-semibold sm:pl-0"
-                                    >
-                                    STATUS
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left font-semibold sm:pl-0"
-                                    >
-                                    DRIVER
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="whitespace-nowrap px-2 py-3.5 text-left font-semibold"
-                                    >
-                                    DATE
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="whitespace-nowrap px-2 py-3.5 text-left font-semibold"
-                                    >
-                                    TRIPS
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="whitespace-nowrap px-2 py-3.5 text-left font-semibold"
-                                    >
-                                    
-                                    </th>
-                                    
-                                   
-                                    <th scope="col" className="relative whitespace-nowrap py-3.5 pl-3 pr-4 sm:pr-0">
-                                        <span className="sr-only"></span>
-                                    </th>
-                                </tr>
-                            </thead>
- 
-                            <tbody  className="divide-y divide-gray-200  bg-[#FAFAFB]">
-                            {
-                             updatedAllocationList.map((allocation: any, index: any) => {
-                             const formattedStartTime =
-                             allocation.start_time instanceof Date
-                            ? allocation.start_time.toLocaleString()
-                             : allocation.start_time;
+          return true;
+      });  
 
-                           const formattedEndTime =
-                           allocation.end_time instanceof Date
-                            ? allocation.end_time.toLocaleString()
-                       : allocation.end_time;
+// export default function Example() {
+  return (
+    <div className="px-4 sm:px-6 lg:px-8">
 
-                       const startDate =
-                       allocation.start_time.seconds !== undefined
-                         ? new Date(allocation.start_time.seconds * 1000)
-                         : new Date(allocation.start_time); // Convert to Date object
-                     
-                     const status =
-                       startDate.toDateString() === currentDate.toDateString()
-                         ? 'On Route'
-                         : allocation.status;
-  
-
-                            return (
-    <Fragment key={index}>
-      <div className="w-full mb-2 font-nunito font-regular"></div>
-      <tr
-        key={allocation.id}
-        className="my-4 border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular"
-      >
-        <td className="whitespace-nowrap pl-4 pr-3 !pt-4 sm:pl-0">
-          {allocation.vehicle_id && allocation.vehicle_id.name}
-        </td>
-
-        <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">
-          <div
-            className={`rounded-full inline-block text-sm h-8    ${
-              status === 'Available'
-                ? 'bg-[#E2E9FB] text-[#0068DD]'
-                : status === 'On Route'
-                ? 'bg-[#B9F3EE] text-[#076960]'
-                : 'bg-[#EAEAEA] text-[#364250]'
-            }`}
-            style={{ width: `${status.length * 8}px`, left: '-8px' }}
-          >
-            <span className="inset-0 mt-1.5 flex">{status}</span>
-          </div>
-        </td>
-
-        <td
-          className={`whitespace-nowrap px-2 pt-4 ${
-            allocation.requested_by === 'Not Assigned'
-              ? 'text-[#777E96] font-nunito'
-              : allocation.requested_by === `${allocation.requested_by}`
-              ? ' text-[#000000]'
-              : 'text-[#000000]'
-          }`}
-        >
-          {allocation.requested_by}
-        </td>
-
-        <td
-          className={`whitespace-nowrap px-2 pt-4 ${
-            allocation.end_time === 'Not Defined'
-              ? 'text-[#777E96] font-nunito'
-              : allocation.end_time === `${allocation.end_time}`
-              ? ' text-[#000000]'
-              : 'text-[#777E96]'
-          }`}
-        >
-          {allocation.end_time !== 'Not Defined'
-            ? `${formattedStartTime}-${formattedEndTime}`
-            : allocation.end_time}
-        </td>
-
-        <td className="whitespace-nowrap p-2 text-center align-middle  text-left pt-4 text-lg font-bold text-black">
-          {allocation.vehicle_id && allocation.vehicle_id.trips} Trips
-        </td>
-        {allocation.end_time === 'Not Defined' ||
-        new Date(allocation.end_time * 1000) < currentDate ? (
-          <tr
-            key={`${allocation.id}-allocate`}
-            className="relative whitespace-nowrap pt-3 pl-3 pr-4 text-right text-sm font-medium sm:pr-0 flex justify-around"
-          >
-            <td colSpan={7} className="text-center">
-              <button className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2">
-                Allocate
-              </button>
-            </td>
-          </tr>
-        ) : null}
-      </tr>
-    </Fragment>
-  );
-})}
-
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+      {/* <div className="sm:flex sm:items-center">
+        <div className="sm:flex-auto">
+          <h1 className="text-base font-semibold leading-6 text-gray-900">Users</h1>
+          <p className="mt-2 text-sm text-gray-700">
+            A list of all the users in your account including their name, title, email and role.
+          </p>
         </div>
-    )
+        <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+          <button
+            type="button"
+            className="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          >
+            Add user
+          </button>
+        </div>
+      </div>
+       */}
+      <div className="mt-8 flow-root">
+        <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+          <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+              <table className="min-w-full divide-y divide-gray-300">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
+                      Vehicle
+                    </th>
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                      Date
+                    </th>
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                      Jobcard
+                    </th>
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                     Requested by
+                    </th> 
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                     Cost
+                    </th>
+                    {/* <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                      <span className="sr-only">Edit</span>
+                    </th> */}   
+                  </tr>
+                </thead>
+                  <tbody className="divide-y divide-gray-200 bg-white">
+                  {filteredMaintenance.map((maintenance:any,index:any) => {
+                    const {seconds} = maintenance.date 
+                    const updatedDate=new Date(maintenance.date) 
+                    return(
+                      <div> 
+                        <tr key={index}>
+                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                              {maintenance.vehicle}
+                            </td> 
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{maintenance.date}</td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{maintenance.jobcard}</td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{maintenance.reduestedBy}</td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{maintenance.cost}</td>
+                        </tr>
+                      </div>
+                    )
+                  })}
+
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }
-
-
-
-

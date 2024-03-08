@@ -103,7 +103,7 @@ export default function DashboardComponent() {
     ];
     return (
         <SiteLayout>
-            <div  className="max-h-full	 overflow-y-auto">
+            <div  className="h-screen">
                 <p className="text-lg font-nunito font-bold mt-2 ml-5">Dashboard</p>
 
                 <div className='mt-8 flex justify-between '> 

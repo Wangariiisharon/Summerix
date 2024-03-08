@@ -1,3 +1,4 @@
+
 import {Header, HeaderBar} from "@/components/Headers";
 import {AddButton, Button, DeleteBtn, EditBtn} from "@/components/Buttons"; 
 import {PlusIcon, XMarkIcon} from "@heroicons/react/24/outline";
@@ -11,7 +12,7 @@ import SiteLayout from "@/Layout/SiteLayout";
 import { Tab } from "@headlessui/react";
 import Planned from "../Administration/Users/jobcard";
 import firebaseApp, { fbDb } from "@/firebase/configs";
-import { getDocs, collection, DocumentData, addDoc, Timestamp, updateDoc, doc, query, where, getFirestore, onSnapshot, getDoc } from "firebase/firestore";
+import { getDocs, collection, DocumentData, addDoc, Timestamp, updateDoc, doc, query, where, getFirestore, onSnapshot, getDoc,setDoc } from "firebase/firestore";
 import { parseISO, format } from 'date-fns';
 import Jobcard from "../Administration/Users/jobcard"; 
 import { serverTimestamp } from 'firebase/firestore'
@@ -19,22 +20,22 @@ import { AnyCnameRecord } from "dns";
 import { FirebaseStorage, getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import ImageInput from "@/components/ImageInputs"; 
 import { toast } from 'react-hot-toast';
-import  Notifications from "./notifications"
-import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
-import Pending from "./pending";
+import {  useAuthContext } from "@/components/Authentication/useContext";
+import Pending from "./pending"; 
+
 
 
 function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ');
-} 
-interface UserData {
+} interface UserData {
   email: string; 
   super_admin: boolean;
 } 
 interface AuthContextData {
   organisationId: string;
-  userData: UserData;
+  userData: UserData; 
 }
+
 export default function Maintenance() {
     const [open, setOpen] = useState(false)
     const [selectedTab, setSelectedTab] = useState<number>(0); 
@@ -46,12 +47,13 @@ export default function Maintenance() {
     const [showScheduleMaintenanceModal, setShowScheduleMaintenanceModal] = useState(false);
     const [selectedTabIndex, setSelectedTabIndex] = useState(0); 
     const [approvalCount, setApprovalCount] = useState(0);
-   const [checkboxState, setCheckboxState] = useState<boolean[]>([]);
-   const [checkedIndexes, setCheckedIndexes] = useState<number[]>([]);
+    const [checkboxState, setCheckboxState] = useState<boolean[]>([]);
+    const [checkedIndexes, setCheckedIndexes] = useState<number[]>([]);
 
 
 
-    const { organisationId, userData } = useAuthContext() as AuthContextData; 
+    const { isAuthenticated, userId, organisationId, userData } = useAuthContext();
+
     console.log("Maintanance Page OrganisationId: ", organisationId);
     console.log("Maintanance Page UserData: ", userData);
 
@@ -61,19 +63,14 @@ export default function Maintenance() {
 
     console.log("Maintanance Super Admin: ", isSuperAdmin);
     
-    
-    // const MaintainanceTabs = [
-    //   { name: 'PLANNED', href: '#', current: selectedTabIndex === 0 },
-    //   { name: 'HISTORY', href: '#', current: selectedTabIndex === 1 },
-    //   { name: 'PENDING', href: '#', current: selectedTabIndex === 2 },
-    // ]; 
+
     const MaintainanceTabs = [
       { name: 'PLANNED', href: '#', current: selectedTabIndex === 0 },
       { name: 'HISTORY', href: '#', current: selectedTabIndex === 1 },
       isSuperAdmin
         ? { name: 'PENDING', href: '#', current: selectedTabIndex === 2 }
         : null,
-    ].filter(Boolean); // Remove null values
+    ].filter(Boolean);
     
    
     const handleMaintenanceReset = () => {
@@ -82,10 +79,9 @@ export default function Maintenance() {
     }   
     const handleDropdownClick = (event: { stopPropagation: () => void; }) => {
         event.stopPropagation();
-    };
+    }; 
 
-
-    useEffect(() => {
+    useEffect(() => { 
         const fetchVehicleNames = async () => {
           try {
             if (organisationId) {
@@ -164,86 +160,6 @@ export default function Maintenance() {
         fetchedMaintenance();
       }, [organisationId]);  
 
-      const handleScheduleMaintanace = async (values: { requested_by: any; cost:any; remarks:any;vehicle:any; job_cards:any; date:any; serial_number:any; part:any ; broken_partImage:any}) => {  
-        setShowScheduleMaintenanceModal(true);
-        setShowAddJobcardModal(false);  
-        setOpen(true);
-        
-        console.log("Submitted Values:", values); 
-        
-        try {
-            if (!values) {
-                console.error('Form values are undefined');
-                return;
-            }
-        
-            if (!values.requested_by||!values.vehicle||!values.cost||!values.job_cards||!values.remarks||!values.date||!values.broken_partImage) {
-                console.error('Required form fields are missing');
-                return;
-            } 
-        
-            const dateObj = new Date(values.date +"T00:00:00");  
-            const timestamp=Timestamp.fromDate(dateObj)
-       
-            let brokenPartImageUrl = '';  
-            if (values.broken_partImage ) {
-                const storage = getStorage(firebaseApp);
-                const storageRef = ref(storage, `broken_partImage/${values.broken_partImage.name}`);
-                
-                await uploadBytes(storageRef, values.broken_partImage);
-                brokenPartImageUrl = await getDownloadURL(storageRef);
-                console.log('Broken Part Image URL:', brokenPartImageUrl);
-      
-            }  
-        
-            const maintenanceData = {                
-                 approvalCount:0, 
-                requested_by: values.requested_by, 
-                vehicle: values.vehicle, 
-                date: timestamp, 
-                cost: values.cost,  
-                job_cards: values.job_cards,
-                remarks: values.remarks, 
-                serial_number: values.serial_number,
-                part: values.part,
-                status:"Pending",
-                broken_partImage: brokenPartImageUrl, 
-                organisationId:organisationId,
-                notificationNeedsDisplay: true // Add this   n line
-            };
-            const docRef = await addDoc(collection(fbDb, 'maintenance'), maintenanceData);
-            console.log('Maintenance added with ID: ', docRef.id); 
-            toast.success("Maintenance Request Successfully Added.");
-           // Check if the current user is a super admin 
-
-         if (isSuperAdmin) {
-          const superAdminQuerySnapshot = await getDocs(query(collection(fbDb, 'admins'), where('super_admin', '==', true)));
-          const superAdmins = superAdminQuerySnapshot.docs.map(doc => doc.data().email);
-
-         // Send notifications only to super admins
-      for (const superAdminEmail of superAdmins) { 
-        const sanitizedEmail = sanitizeEmailForFirestore(superAdminEmail);
-        const notificationData = {
-          title: 'New Maintenance Request',
-          message: `New maintenance request added by ${values.requested_by}.`, 
-          organisationId: organisationId,
-          timestamp: Timestamp.now(),
-          maintenanceId: docRef.id,
-          needsDisplay: true
-        };
-
-        // Add notification to each super admin's collection
-        await addDoc(collection(fbDb, 'notifications'),notificationData);
-        console.log(`Notification added for super admin: ${superAdminEmail}`);
-      }
-    }
-            setOpen(false);
-        } catch (error) {
-            console.error('Error adding Notification:', error);
-        }
-        
-        setShowScheduleMaintenanceModal(false);
-      } 
 
       const sanitizeEmailForFirestore = (email: string) => {
         // Use Base64 encoding to handle special characters
@@ -252,7 +168,140 @@ export default function Maintenance() {
         // Use the encoded email with a fixed string in the Firestore collection reference
         return `user_${encodedEmail}`;
       };
-          
+      
+    
+      const handleScheduleMaintanace = async (values: { requested_by: any; cost: any; remarks: any; vehicle: any; job_cards: any; date: any; serial_number: any; part: any; broken_partImage: any }) => {
+        setShowScheduleMaintenanceModal(true);
+        setShowAddJobcardModal(false);
+        setOpen(true);
+      
+        console.log("Submitted Values:", values);
+      
+        try {
+          if (!values) {
+            console.error('Form values are undefined');
+            return;
+          }
+      
+          if (!values) {
+            console.error("Form values are undefined");
+            return;
+          } 
+          if (
+            !values.requested_by)  {
+            console.error("Required form fields are missing"); 
+            toast.error(`Please fill the field Requested by`);
+            return;
+          }  
+          if (
+            !values.vehicle)  {
+            console.error("Required form fields are missing"); 
+            toast.error(`Please fill the field Vehicle`);
+            return;
+          }      
+           if (
+            !values.cost)  {
+            console.error("Required form fields are missing"); 
+            toast.error(`Please fill the field Cost`);
+            return;
+          }       
+          if (
+            !values.job_cards)  {
+            console.error("Required form fields are missing"); 
+            toast.error(`Please fill the field JobCard`);
+            return;
+          }       
+          if (
+            !values.remarks)  {
+            console.error("Required form fields are missing"); 
+            toast.error(`Please fill the field Remarks`);
+            return;
+          }       
+          if (
+            !values.date)  {
+            console.error("Required form fields are missing"); 
+            toast.error(`Please fill the field Date`);
+            return;
+          } 
+          if (
+            !values.broken_partImage)  {
+            console.error("Required form fields are missing"); 
+            toast.error(`Please fill the field Broken part image`);
+            return;
+          }  
+          if (
+            !values.serial_number)  {
+            console.error("Required form fields are missing"); 
+            toast.error(`Please fill the field Serial number`);
+            return;
+          }
+          if (
+            !values.part)  {
+            console.error("Required form fields are missing"); 
+            toast.error(`Please fill the field  Part`);
+            return;
+          }
+      
+          const dateObj = new Date(values.date + "T00:00:00");
+          const timestamp = Timestamp.fromDate(dateObj);
+      
+          let brokenPartImageUrl = '';
+          if (values.broken_partImage) {
+            const storage = getStorage(firebaseApp);
+            const storageRef = ref(storage, `broken_partImage/${values.broken_partImage.name}`);
+      
+            await uploadBytes(storageRef, values.broken_partImage);
+            brokenPartImageUrl = await getDownloadURL(storageRef);
+            console.log('Broken Part Image URL:', brokenPartImageUrl);
+          } 
+
+          const maintenanceData = {
+            approvalCount: 0,
+            requested_by: values.requested_by,
+            vehicle: values.vehicle,
+            date: timestamp,
+            cost: values.cost,
+            job_cards: values.job_cards,
+            remarks: values.remarks,
+            serial_number: values.serial_number,
+            part: values.part,
+            status: "Pending",
+            broken_partImage: brokenPartImageUrl,
+            organisationId: organisationId,
+            notificationNeedsDisplay: true, 
+            isNotificationViewed:false,
+            userId: userData?.userId, 
+          };
+      
+          const docRef = await addDoc(collection(fbDb, 'maintenance'), maintenanceData);
+          console.log('Maintenance added with ID: ', docRef.id);
+          toast.success("Maintenance Request Successfully Added.");  
+
+          const superAdminQuerySnapshot = await getDocs(query(collection(fbDb, 'admins'), where('super_admin', '==', true)));
+          const superAdmins = superAdminQuerySnapshot.docs.map(doc => doc.data().email);
+           const superAdminEmail=userData?.email 
+
+        const notificationData = {
+          title: 'New Maintenance Request',
+          message: `New maintenance request added by ${values.requested_by}.`, 
+          organisationId: organisationId,
+          timestamp: Timestamp.now(),
+          maintenanceId: docRef.id,
+          readBy: [], 
+          userId: userData?.userId, 
+        }; 
+        
+        // Add notification to each super admin's collection
+        await addDoc(collection(fbDb, 'notifications'),notificationData);
+        
+          setOpen(false);
+        } catch (error) {
+          console.error('Error adding Notification:', error);
+        }
+      
+        setShowScheduleMaintenanceModal(false);
+      };
+        
 const handleCheckboxClick = async (index: number) => {
   const documentId = fetchedMaintanance[index].id;
   const maintenanceDocRef = doc(fbDb, 'maintenance', documentId);
@@ -318,34 +367,43 @@ const updateStatusToApproved = async (documentId: string) => {
   
     return (  
         <>
-            <div className=''>
-                <div className="flex flex-row fixed top-12 right-10">  
-                <div className="ml-2"> 
+            {/* <div className=''> */}
+                {/* <div className="flex flex-row justify-end absolute mb-2 right-10">  
+                <div className=""> 
                 <Button
-                className='rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4  mr-2 mt-2'
+                className='rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2'
                 handleClick={handleScheduleMaintanace}>
                <PlusIcon className='h-6 w-6 mr-2' />
                  Schedule Maintenance
               </Button>
                 </div>
+                </div> */} 
+                <div className="absolute top-12 flex justify-end right-10 "> 
+                <Button 
+                className='rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2'
+                handleClick={handleScheduleMaintanace}>
+                <PlusIcon className='h-6 w-6 mr-2' /> 
+                Schedule Maintenance
+                </Button> 
                 </div>
+
                 <div className='mt-4'> 
                 <Tab.Group>
-                <Tab.List className="w-full bg-[#FAFAFB] font-nunito flex justify-start mb-3">
-  {MaintainanceTabs.filter(Boolean).map((tab, index) => (
-    <Fragment key={index}>
-      <Tab
-        className={classNames(
-          'border-d-green outline-none text-sm font-nunito font-bold uppercase flex flex-row ml-10',
-          tab?.current ? 'ui-selected border-b-4 ui-selected:text-d-green' : ''
-        )}
-        onClick={() => setSelectedTabIndex(index)}
-      >
-        {tab?.name}
-      </Tab>
-    </Fragment>
-  ))}
-</Tab.List>
+                <Tab.List className="w-full bg-[#FAFAFB] font-nunito flex justify-start mb-3 ml-4">
+                  {MaintainanceTabs.filter(Boolean).map((tab, index) => (
+                     <Fragment key={index}>
+                    <Tab
+                  className={classNames(
+                 'border-d-green outline-none text-sm font-nunito font-bold uppercase flex flex-row ml-10',
+                  tab?.current ? 'ui-selected border-b-4 ui-selected:text-d-green' : ''
+                   )}
+                   onClick={() => setSelectedTabIndex(index)}
+                   >
+                   {tab?.name}
+                   </Tab>
+                 </Fragment>
+                  ))}
+                </Tab.List>
 
 
                     <Tab.Panels>
@@ -356,7 +414,7 @@ const updateStatusToApproved = async (documentId: string) => {
                         <MaintananceTable selectedTab={selectedTabIndex} maintananceList={fetchedMaintanance} isSuperAdmin={isSuperAdmin} handleCheckboxClick={handleCheckboxClick} checkboxState={checkboxState}   />
                         </Tab.Panel> 
                         <Tab.Panel>
-                        <div  className="max-h-[500px] overflow-y-auto">
+                        <div  className="">
                         <Pending />
                             </div>
                         </Tab.Panel>
@@ -365,7 +423,6 @@ const updateStatusToApproved = async (documentId: string) => {
                 </div> 
                 <div>
                 </div>
-            </div>
 
             <FormModal open={showScheduleMaintenanceModal} setOpen={setShowScheduleMaintenanceModal}>
                 <div className='p-8'>
@@ -529,30 +586,31 @@ const updateStatusToApproved = async (documentId: string) => {
                     </Formik>
                 </div>
             </FormModal>
-            </>
+             
+             </>
         
     )
 }  
 
 
-
-interface VehiclesTableProps {
+ interface VehiclesTableProps {
     selectedTab: number;  
     maintananceList:DocumentData 
     isSuperAdmin:boolean  
     handleCheckboxClick:any 
-    checkboxState: any; // Add this line
+    checkboxState: any; 
 }
-export function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,handleCheckboxClick,checkboxState}: VehiclesTableProps) { 
-        const [userApproves, setUserApproves] = useState(false);
-        const [fetchedMaintanance, setFetchedMaintanance]=useState<DocumentData[]>([]);  
+  function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,handleCheckboxClick,checkboxState}: VehiclesTableProps) { 
         console.log("MaintananceTable Rendering with selectedTab:", selectedTab); 
-        console.log("Mainanace list", maintananceList); 
+       console.log("Mainanace list", maintananceList); 
         
-        const currentDate = new Date();
+        const currentDate = new Date();  
+
+const filteredApprovedMaintenance = maintananceList.filter((maintenance: { status: string; })=> maintenance.status === 'Approved');
+
   
-        const filteredMaintenance = maintananceList.filter((maintenance: any) => {
-            const maintenanceDate = new Date(maintenance?.date?.seconds * 1000);
+const filteredMaintenance = filteredApprovedMaintenance.filter((maintenance: any) => {
+             const maintenanceDate = new Date(maintenance?.date?.seconds * 1000);
     
             if (selectedTab === 0) {
                 // Show items with dates that are yet to reach (future dates)
@@ -560,67 +618,66 @@ export function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,hand
             } else if (selectedTab === 1) {
                 // Show items with dates that have already passed (past dates)
                 return maintenanceDate < currentDate;
-            }
+             }
     
-            return true;
-        });  
+             return true;
+         });  
    
 
-
-
-    console.log("Filtered Vehicles:", filteredMaintenance); 
-    return (
-        <div className="px-4 sm:px-6 lg:px-8">
-            <div className="mt-8 flow-root">
-                <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                    <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                        <table className="min-w-full divide-y divide-gray-300">
-                            <thead>
-                                <tr> 
+   console.log("Filtered Vehicles:", filteredMaintenance); 
+     return (
+         <div className="ml-4 px-4 sm:px-6 lg:px-8">
+           <div className="mt-8 flow-root">
+           <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+              <table className="min-w-full divide-y divide-gray-300">
+               <thead>
+                             <tr> 
                                     <th 
                                       scope="col"
-                                      className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left font-semibold sm:pl-0" 
-                                    > 
+                                      className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">                                     
 
+                                     </th>
+                                    <th
+                                         scope="col"
+                                         className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900" 
+                                           >
+                                         VEHICLE
+                                     </th>
+                                     <th
+                                         scope="col"
+                                         className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"   
+                                           >
+                                         DATE
+                                     </th>
+                                     <th
+                                         scope="col"
+                                         className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"                                     
+                                         >
+                                    
+                                         JOB CARDS
+                                     </th>
+                                     <th
+                                        scope="col"
+                                        className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"                                     
+                                        >
+                                          REQUESTED BY
                                     </th>
                                     <th
                                         scope="col"
-                                        className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left font-semibold sm:pl-0"
-                                    >
-                                        VEHICLE
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="whitespace-nowrap px-2 py-3.5 text-left font-semibold"
-                                    >
-                                        DATE
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="whitespace-nowrap px-2 py-3.5 text-left font-semibold"
-                                    >
-                                        JOB CARDS
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="whitespace-nowrap px-2 py-3.5 text-left font-semibold"
-                                    >
-                                         REQUESTED BY
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="whitespace-nowrap px-2 py-3.5 text-left font-semibold"
-                                    >
+                                        className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"            
+                                         >
                                         COST
                                     </th>
 
-                                    <th scope="col" className="relative whitespace-nowrap py-3.5 pl-3 pr-4 sm:pr-0">
+                                     <th scope="col"
+                                      className="relative whitespace-nowrap py-3.5 pl-3 pr-4 sm:pr-0">
                                         <span className="sr-only"></span>
-                                    </th>
-                                </tr>
-                            </thead>
+                                     </th>
+                                 </tr>
+                             </thead>
  
-                            <tbody  className="divide-y divide-gray-200  bg-[#FAFAFB]">
+                            <tbody  className="bg-[#FAFAFB]">
                             {filteredMaintenance.map((maintenance:any, index:any) => {  
                                  const { seconds } = maintenance.date; 
                                  const updatedDate = new Date(seconds * 1000);
@@ -628,37 +685,46 @@ export function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,hand
                                 return( 
                                     <Fragment key={index}> 
                                     <div className="w-full mb-2 font-nunito font-regular"></div>
-                                    <tr key={maintenance.id}   className='my-4 border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>
-                                      <td>  
-                                      <span className="fa-stack fa-lg">
-                                      <i className="fa fa-circle fa-stack-2x text-[#F2F2F2]" aria-hidden="true"></i>
-                                      <i className="fa fa-truck fa-stack-1x fa-inverse text-[#0C0C0C]" aria-hidden="true"></i> 
+                                     <tr key={maintenance.id} 
+                                     className="hover:bg-gray-100">
+                                       <td 
+                                       className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">  
+                                       <span className="fa-stack fa-lg">
+                                       <i className="fa fa-circle fa-stack-2x text-[#F2F2F2]" aria-hidden="true"></i>
+                                       <i className="fa fa-truck fa-stack-1x fa-inverse text-[#0C0C0C]" aria-hidden="true"></i> 
                                       </span>
-                                       </td>
-                                        <td className="whitespace-nowrap pl-4 pr-3 !pt-4 text-d-blue sm:pl-0">{maintenance.vehicle}</td>
-                                        <td className="whitespace-nowrap px-2  pt-4 font-medium ">
-                                        {format(updatedDate, 'MM/dd/yy')}
                                         </td>
-                                        <td className="whitespace-nowrap px-2 pt-4">{maintenance.job_cards}</td>
-                                        <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">{maintenance.requested_by}</td>
-                                        <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">{maintenance.cost}</td>
-                                        <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]"> 
-                                        {maintenance.status}
-                                         </td>
-                                    
+                                         <td 
+                                         className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                          {maintenance.vehicle}
+                                          </td>
+                                       <td 
+                                       className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">                                    
+                                           {format(updatedDate, 'MM/dd/yy')}
+                                        </td>
+                                        <td 
+                                        className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                          {maintenance.job_cards}
+                                          </td>
+                                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                          {maintenance.requested_by}
+                                          </td>
+                                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                          {maintenance.cost}
+                                          </td>
+                                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500"> 
+                                         {maintenance.status}
+                                          </td>
                                     </tr> 
                                     </Fragment>
                             )
-                        })}
-                            </tbody>
+                         })}
+                             </tbody>
                         </table>
-                    </div>
-                    <div className="fixed bottom-0 right-0">
-                    {/* <Notifications/> */}
-                    </div>
+                     </div>
                 </div>
             </div>
         </div>
-    )
-}
-
+     )
+ }
+ 

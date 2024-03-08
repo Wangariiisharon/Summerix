@@ -1,22 +1,25 @@
 import React, { useEffect, useState } from "react";
 import AuthLayout from "../../components/Authentication/AuthLayout";
 import Seo from "../../components/Seo";
-import firebaseApp from "../../firebase/configs"
+// import firebaseApp from "../../firebase/configs"
 import { getAuth, isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { Field, Form, Formik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { toast } from 'react-hot-toast';
-import { fbDb } from "@/firebase/configs";
+import firebaseApp, { fbDb}  from "@/firebase/configs";
 import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore"; 
-import bcrypt from 'bcryptjs';     
+import bcrypt from 'bcryptjs';    
+import { getMessaging, getToken, onMessage } from 'firebase/messaging';
+
 
 
 export default function LoginPage() {
-  const router = useRouter(); 
+  const router = useRouter();  
+  const [fcmToken, setFcmToken] = useState<string | null>(null);
 
-  
+
   useEffect(() => {
     const handleSignInWithEmailLink = async () => {
       const auth = getAuth(firebaseApp);
@@ -50,7 +53,9 @@ export default function LoginPage() {
           }
         }
       }
-    };
+    }; 
+
+
   
     // Call the function to handle sign-in with email link
     handleSignInWithEmailLink();
