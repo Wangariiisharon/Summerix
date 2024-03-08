@@ -82,15 +82,13 @@ export interface VehicleDetails {
 
 // Rest of the code...AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE
 
-
-
 export default function VehiclesDetails() { 
     const router = useRouter();
   const { id } = router.query;
   const [vehicleDetails, setvehicleDetails] = useState<VehicleDetailsProps['vehicle'] | null>(null);  
   const [Vehicles, setVehicles] = useState<string[]>([]); 
   const [fetchedTrips, setFetchedTrips]=useState<DocumentData[]>([]);      
-  const [tripDetails, setTripDetails] = useState({ start_time: 0, end_time: 0, drop_off_location: "", pick_up_location: "" ,requested_by:{name: ""}}); 
+  const [tripDetails, setTripDetails] = useState({ start_time: 0, drop_off_location: "", pick_up_location: "" ,requested_by:{name: ""}}); 
   const [open, setOpen] = useState(false);   
   const [availabilityValue, setAvailabilityValue] = useState(70); 
   const isMounted = useRef(true);
@@ -172,7 +170,7 @@ useEffect(() => {
   const fetchData = async (vehicleData: any) => {
     try {
       const querySnapshot = await getDocs(collection(fbDb, 'trips'));
-      const tripsData: React.SetStateAction<DocumentData[]> | { id: string; drop_off_location: any; pick_up_location: any; start_time: any; end_time: any; vehicle: any;requested_by: any;}[] = [];
+      const tripsData: React.SetStateAction<DocumentData[]> | { id: string; drop_off_location: any; pick_up_location: any; start_time: any; vehicle: any;requested_by: any;}[] = [];
   
       querySnapshot.forEach((doc) => {
         const trip = {
@@ -180,7 +178,7 @@ useEffect(() => {
           drop_off_location: doc.data().drop_off_location,
           pick_up_location: doc.data().pick_up_location,
           start_time: doc.data().start_time,
-          end_time: doc.data().end_time,
+          // end_time: doc.data().end_time,
           vehicle: doc.data().vehicle,  // Include the vehicle data in the trip object
           requested_by: doc.data().requested_by,
         };
@@ -199,12 +197,12 @@ useEffect(() => {
         const mostRecentTrip = sortedTripsData.find((trip) => trip.vehicle.id === vehicleId);
   
         if (mostRecentTrip) {
-          const { drop_off_location, pick_up_location, start_time, end_time,requested_by} = mostRecentTrip;
+          const { drop_off_location, pick_up_location, start_time,requested_by} = mostRecentTrip;
           setTripDetails({
             drop_off_location,
             pick_up_location,
             start_time,
-            end_time, 
+            // end_time, 
             requested_by,
           });
         }
@@ -339,18 +337,6 @@ function formatYear(timestamp: any) {
 
       </div>
       </div>  
-   {/* <div className='bg-white shadow rounded-md ml-8 '>
-     <p className='font-bold ml-10'>Vehicle Condition</p>
-      <div className="flex flex-col relative">
-          <div className='!bg-white' style={{ width: '200px', height: '200px', margin: 'auto' }}>
-        <Doughnut data={data} options={options} />
-           </div> 
-        <p className='font-extrabold text-3xl fa-stack-1x absolute mt-20'>
-        {availabilityValue}%
-        </p>
-        </div>
-      </div> */}
-
       <div className='bg-white w-1/2 h-1/6 	shadow rounded-md flex flex-col ml-8 px-2'>   
       <div className='flex justify-between mt-2'>  
       <div className='flex flex-row ml-2'>
@@ -358,7 +344,6 @@ function formatYear(timestamp: any) {
       <p className='text-[#20C997] text-xs ml-3'>LIVE</p> 
       </div>   
        <p className='font-bold ml-8'>Vehicle Status</p>  
-       {/* <p className='ml-5'>Vehicle Status</p> */} 
        <div className={`rounded-full inline-block text-sm	 h-8 ml-8 ${vehicleDetails.availability_status === 'Available' ? 'bg-[#E2E9FB] text-[#0068DD]' : (vehicleDetails.availability_status === 'On Route' ? 'bg-[#B9F3EE] text-[#076960]' : 'bg-[#EAEAEA] text-[#364250]')}`} style={{ width: `${vehicleDetails.availability_status.length * 8}px`, left: '-8px' }}>
                 {vehicleDetails.availability_status}
         </div> 
@@ -371,8 +356,8 @@ function formatYear(timestamp: any) {
       <p className='text-xs font-bold'>{formatDate(tripDetails.start_time)}</p>
      </div>
      <div className='flex flex-col ml-4'>
-     <p className='text-sm'>End time</p>
-     <p className='text-xs font-bold'>{formatDate(tripDetails.end_time)}</p>
+     {/* <p className='text-sm'>End time</p>
+     <p className='text-xs font-bold'>{formatDate(tripDetails.end_time)}</p> */}
      </div>
 
        </div> 
@@ -390,7 +375,7 @@ function formatYear(timestamp: any) {
       </div> 
       <div className=''>  
       <MapComponent dropOffLocationName={tripDetails.drop_off_location} pickUpLocationName={tripDetails.pick_up_location} />
-  </div>
+      </div>
         
       </div>
       </div>  
@@ -400,14 +385,14 @@ function formatYear(timestamp: any) {
       <div className='flex flex-row ml-2'> 
       <div className='border-t border-gray-200 flex flex-col'>  
       <p className='text-xs font-bold py-4'>Year</p> 
-      <p className='text-xs font-bold py-3'>Color</p>  
+      {/* <p className='text-xs font-bold py-3'>Color</p>   */}
       <p className='text-xs font-bold py-4'>License Plate</p>  
       <p className='text-xs font-bold py-4'>Registration Date</p> 
       </div>   
       <div className='flex flex-col ml-40 '> 
       {/* <p className='text-sm py-4'>2023</p>  */}
       <p className='text-sm py-4'>{formatYear(vehicleDetails.registration_date)}</p>
-      <p className='text-sm py-4 '>{vehicleDetails.color}</p> 
+      {/* <p className='text-sm py-4 '>{vehicleDetails.color}</p>  */}
       <p className='text-sm py-4'>{vehicleDetails.lisence_plate}</p>
       <p className='text-sm py-4'>{formatDate(vehicleDetails.registration_date)}</p>
       </div>   

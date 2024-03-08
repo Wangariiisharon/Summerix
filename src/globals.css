@@ -91,15 +91,27 @@
 }  
 .Tab.List {
   justify-start: center; /* Default behavior for small screens */
+} 
+/* Add this CSS to your global stylesheet or inside a <style> tag in your component */
+.scrollable-tbody {
+  display: block;
+  max-height: 400px; /* Adjust based on your requirement */
+  overflow-y: auto;
 }
+
+.fixed-thead th {
+  position: sticky;
+  top: 0;
+  background-color: #fff; /* Match your table header background */
+  z-index: 1; /* Ensure the header overlaps the body rows when scrolling */
+}
+
 
 @media (min-width: full) {
   .Tab.List {
     justify-between: center; /* Tabs fill available space on larger screens */
   }
 }
-/* Your existing styles */
-/* Your existing styles */
 
 /* Media query for screens smaller than 640px */
 @media (max-width: 640px) {

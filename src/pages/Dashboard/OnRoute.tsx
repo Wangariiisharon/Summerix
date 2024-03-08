@@ -25,10 +25,10 @@ export default function OnRoute(){
 
                     // Parse the start_time and end_time from the trip data
                     const startTime = new Date(trip.start_time.toDate());
-                    const endTime = new Date(trip.end_time.toDate());
+                    // const endTime = new Date(trip.end_time.toDate());
 
                     // Check if the current date is between start_time and end_time
-                    if (currentDate >= startTime && currentDate <= endTime) {
+                    if (currentDate >= startTime  ) {
                         tripsData.push({
                             id: doc.id,
                             ...trip,
@@ -74,9 +74,9 @@ export default function OnRoute(){
                                     <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-bold  sm:pl-0">
                                         Starting Route
                                     </th>
-                                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-bold ">
+                                    {/* <th scope="col" className="px-3 py-3.5 text-left text-sm font-bold ">
                                         Ending Route
-                                    </th>
+                                    </th> */}
                                     <th scope="col" className="px-3 py-3.5 text-left text-sm font-bold ">
                                         Truck NO
                                     </th>

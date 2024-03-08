@@ -19,7 +19,7 @@ import { AnyCnameRecord } from "dns";
 import { FirebaseStorage, getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import ImageInput from "@/components/ImageInputs"; 
 import { toast } from 'react-hot-toast';
-import  Notifications from "./notifications"
+// import  Notifications from "./notifications"
 import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
 import Checkbox from '@mui/material/Checkbox';
 
@@ -39,8 +39,8 @@ interface AuthContextData {
  
 interface MaintenanceData {
     id: string;
-    approvalCount: number; // Assuming it's a number, adjust the type accordingly
-    status: string; // Adjust the type accordingly
+    approvalCount: number;
+    status: string; 
     requested_by: any,  
     vehicle: any,
     cost:any, 
@@ -226,14 +226,61 @@ const uploadImage = async (file: File, folder: string) => {
       if (!values) {
         console.error("Form values are undefined");
         return;
-      }
-  
+      } 
       if (
-        !values.requested_by||!values.vehicle||!values.cost||!values.job_cards||!values.remarks||!values.date||!values.broken_partImage
-      )  {
-        console.error("Required form fields are missing");
+        !values.requested_by)  {
+        console.error("Required form fields are missing"); 
+        toast.error(`Please fill the field Requested by`);
+        return;
+      }  
+      if (
+        !values.vehicle)  {
+        console.error("Required form fields are missing"); 
+        toast.error(`Please fill the field Vehicle`);
+        return;
+      }      
+       if (
+        !values.cost)  {
+        console.error("Required form fields are missing"); 
+        toast.error(`Please fill the field Cost`);
+        return;
+      }       
+      if (
+        !values.job_cards)  {
+        console.error("Required form fields are missing"); 
+        toast.error(`Please fill the field JobCard`);
+        return;
+      }       
+      if (
+        !values.remarks)  {
+        console.error("Required form fields are missing"); 
+        toast.error(`Please fill the field Remarks`);
+        return;
+      }       
+      if (
+        !values.date)  {
+        console.error("Required form fields are missing"); 
+        toast.error(`Please fill the field Date`);
         return;
       } 
+      if (
+        !values.broken_partImage)  {
+        console.error("Required form fields are missing"); 
+        toast.error(`Please fill the field Broken part image`);
+        return;
+      }  
+      if (
+        !values.serial_number)  {
+        console.error("Required form fields are missing"); 
+        toast.error(`Please fill the field Serial number`);
+        return;
+      }
+      if (
+        !values.part)  {
+        console.error("Required form fields are missing"); 
+        toast.error(`Please fill the field  Part`);
+        return;
+      }
 
       // Update the vehicle data in the database using the selectedVehicle.id
       const vehicleRef = doc(fbDb, "maintenance", selectedMaintenance.id);
@@ -256,22 +303,14 @@ const uploadImage = async (file: File, folder: string) => {
         broken_partImage: values.broken_partImage ? await uploadImage(values.broken_partImage, 'broken_partImage') : selectedMaintenance.broken_partImage,
       };
 
-      // If approvalCount is greater than or equal to three, update status to "Approved"
-    //   if (updatedData.approvalCount >= 3) {
-    //     updatedData.status = 'Approved';
-    //     updatedData.approvedBy = [...editFormInitialValues.approvedBy, approvedBy];
-
-
-    //   } else {
-    //     updatedData.status = 'Pending';
-    //   }
     if (updatedData.approvalCount >= 3) {
       updatedData.status = 'Approved';
     } else {
       updatedData.status = 'Pending';
     }
 
-    await setDoc(vehicleRef, updatedData, { merge: true });
+    await setDoc(vehicleRef, updatedData, { merge: true }); 
+    toast.success("Maintenance Edited Successfully")
 
     setSelectedMaintenance(null);
     setEditModalOpen(false);
@@ -279,7 +318,7 @@ const uploadImage = async (file: File, folder: string) => {
         
 
     } catch (error) {
-      console.error("Error updating Vehicle:", error);
+      console.error("Error updating Maintenance:", error);
     }
   };
 
@@ -312,9 +351,8 @@ const uploadImage = async (file: File, folder: string) => {
                 <div className='mt-4'> 
                 <Tab.Group>
                     <Tab.Panels>
-                    <Tab.Panel className={classNames(selectedTabIndex === 0 ? 'ui-selected border-b-4' : '', 'h-full')}> 
+                    <Tab.Panel className={classNames(selectedTabIndex === 0 ? 'ui-selected border-b-4' : '', )}> 
                         <MaintananceTable selectedTab={selectedTabIndex} maintananceList={fetchedMaintanance} isSuperAdmin={isSuperAdmin}  handleEditClick={handleEditClick} />
-
                         </Tab.Panel>
                     </Tab.Panels>
                 </Tab.Group> 
@@ -518,67 +556,67 @@ export function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,hand
         const filteredMaintenance = maintananceList.filter((maintenance: any) => {
             if (!maintenance.date || !maintenance.date.seconds) {
                 console.error('Invalid date structure:', maintenance.date);
-                return false; // Skip entries with invalid date structure
+                return false; 
             }
         
             return maintenance.status === "Pending";
         });
-
-
-
     console.log("Filtered Vehicles:", filteredMaintenance); 
-    return (
-        <div className="px-4 sm:px-6 lg:px-8">
-            <div className="mt-8 flow-root">
-                <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                    <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                        <table className="min-w-full divide-y divide-gray-300">
-                            <thead>
+
+    return ( 
+
+      <div className=" ml-6 px-4 sm:px-6 lg:px-8">
+      <div className="mt-8 flow-root">
+      <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+       <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+         <table className="min-w-full divide-y divide-gray-300">
+          <thead>
                                 <tr> 
                                     <th 
                                       scope="col"
-                                      className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left font-semibold sm:pl-0" 
-                                    > 
-
+                                      className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">                                     
+                                      
                                     </th>
                                     <th
                                         scope="col"
-                                        className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left font-semibold sm:pl-0"
+                                        className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900" 
                                     >
                                         VEHICLE
                                     </th>
                                     <th
                                         scope="col"
-                                        className="whitespace-nowrap px-2 py-3.5 text-left font-semibold"
+                                        className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"   
                                     >
                                         DATE
                                     </th>
                                     <th
                                         scope="col"
-                                        className="whitespace-nowrap px-2 py-3.5 text-left font-semibold"
+                                        className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"                                     
                                     >
                                         JOB CARDS
                                     </th>
                                     <th
                                         scope="col"
-                                        className="whitespace-nowrap px-2 py-3.5 text-left font-semibold"
-                                    >
+                                        className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                                        >                                     
+                                        
                                          REQUESTED BY
                                     </th>
                                     <th
                                         scope="col"
-                                        className="whitespace-nowrap px-2 py-3.5 text-left font-semibold"
-                                    >
+                                        className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">                                   
+                                        
                                         COST
                                     </th>
 
-                                    <th scope="col" className="relative whitespace-nowrap py-3.5 pl-3 pr-4 sm:pr-0">
-                                        <span className="sr-only"></span>
+                                    <th scope="col" 
+                                      className="relative whitespace-nowrap py-3.5 pl-3 pr-4 sm:pr-0">
+                                      <span className="sr-only"></span>
                                     </th>
                                 </tr>
                             </thead>
  
-                            <tbody  className="divide-y divide-gray-200  bg-[#FAFAFB]">
+                            <tbody className="bg-[#FAFAFB]">
                             {filteredMaintenance.map((maintenance:any, index:any) => {  
                                  const { seconds } = maintenance.date; 
                                  const updatedDate = new Date(seconds * 1000);
@@ -586,24 +624,48 @@ export function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,hand
                                 return( 
                                     <Fragment key={index}> 
                                     <div className="w-full mb-2 font-nunito font-regular"></div>
-                                    <tr key={maintenance.id}   className='my-4 border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>
-                                      <td>  
+                                    <tr key={maintenance.id}   
+                                     className="hover:bg-gray-100">
+                                     <td 
+                                    className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0"  
+                                     >  
                                       <span className="fa-stack fa-lg">
                                       <i className="fa fa-circle fa-stack-2x text-[#F2F2F2]" aria-hidden="true"></i>
                                       <i className="fa fa-truck fa-stack-1x fa-inverse text-[#0C0C0C]" aria-hidden="true"></i> 
                                       </span>
                                        </td>
-                                        <td className="whitespace-nowrap pl-4 pr-3 !pt-4 text-d-blue sm:pl-0">{maintenance.vehicle}</td>
-                                        <td className="whitespace-nowrap px-2  pt-4 font-medium ">
+                                        <td 
+                                        className="whitespace-nowrap px-2 py-2 relative">
+                                        {maintenance.vehicle}
+                                        </td>
+                                        <td 
+                                            className="whitespace-nowrap px-3 py-4 text-sm text-gray-500" 
+                                            >
                                         {format(updatedDate, 'MM/dd/yy')}
                                         </td>
-                                        <td className="whitespace-nowrap px-2 pt-4">{maintenance.job_cards}</td>
-                                        <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">{maintenance.requested_by}</td>
-                                        <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]">{maintenance.cost}</td>
-                                        <td className="whitespace-nowrap px-2 pt-4 text-sm text-[#777E96]"> 
+                                        <td
+                                            className="whitespace-nowrap px-3 py-4 text-sm text-gray-500" 
+                                            >
+                                          {maintenance.job_cards}
+                                          </td>
+                                        <td 
+                                            className="whitespace-nowrap px-3 py-4 text-sm text-gray-500" 
+                                            >
+                                          {maintenance.requested_by}
+                                          </td>
+                                        <td 
+                                            className="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
+                                             >
+                                          {maintenance.cost}
+                                          </td>
+                                        <td 
+                                            className="whitespace-nowrap px-3 py-4 text-sm text-gray-500" 
+                                            > 
                                         {maintenance.status}
                                          </td>
-                                    <td>
+                                    <td 
+                                    className="whitespace-nowrap px-3 py-4 text-sm text-gray-500" 
+                                            >
                                     <div>   
                                          <button
                                         className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2"
@@ -619,10 +681,7 @@ export function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,hand
                         })}
                             </tbody>
                         </table>
-                    </div>
-                    <div className="fixed bottom-0 right-0">
-                    <Notifications/>
-                    </div>
+                    </div> 
                 </div>
             </div>
         </div>

@@ -1,8 +1,8 @@
 import 'firebase/firestore';
 import AuthLayout from "@/components/Authentication/AuthLayout";
 import Seo from "@/components/Seo";
-import firebaseApp from "@/firebase/configs";
-import { fbDb } from "@/firebase/configs";
+// import firebaseApp from "@/firebase/configs";
+import firebaseApp, { fbDb}  from "@/firebase/configs";
 import { Formik, Field, Form } from 'formik/dist/index';
 import { useRouter } from "next/router";
 import { toast } from 'react-hot-toast';
@@ -11,15 +11,18 @@ import Link from "next/link";
 import { useEffect, useState } from "react"; 
 import bcrypt from 'bcryptjs';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getMessaging, getToken } from 'firebase/messaging';
 
+const isBrowser = typeof window !== 'undefined';
 
+export default function AdminInformation() { 
 
-
-export default function AdminInformation() {
   const router = useRouter();
   const [isCheckboxChecked, setIsCheckboxChecked] = useState(false); 
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
-  const [fetchedAdmins, setFetchedAdmins] = useState<DocumentData[]>([]);   
+  const [fetchedAdmins, setFetchedAdmins] = useState<DocumentData[]>([]); 
+  const [fcmToken, setFcmToken] = useState('');
+  
 
 
   const togglePasswordVisibility = () => {
@@ -49,8 +52,36 @@ export default function AdminInformation() {
         } catch (error) {
             console.error('Error fetching admins:', error);
         }
+    }; 
+
+
+    const initializeFcmToken = async () => {
+      try {
+        if (typeof window !== 'undefined') {
+          const permission = await Notification.requestPermission();
+          if (permission === 'granted') {
+            const messaging = getMessaging(firebaseApp);
+            const currentToken = await getToken(messaging, {
+              vapidKey: 'BMiLEy0NT-toPT6b6Tmj2t0uSi3N7Pn9vsQGFFeY5f6GjiX_2CE7NaNBdjxr4-z3EJRXdiiL34OIZMfSFVfM6yk',
+            });
+
+            if (currentToken) {
+              console.log('Token:', currentToken);
+              setFcmToken(currentToken);
+              // Send the token to your server and save it in the user document
+            } else {
+              console.log('No registration token available. Request permission to generate one.');
+            }
+          } else {
+            console.log('Unable to get notification permission.');
+          }
+        }
+      } catch (err) {
+        console.log('An error occurred while initializing FCM token. ', err);
+      }
     };
 
+    initializeFcmToken();
     fetchAdmins();
 }, []);  
 
@@ -69,8 +100,6 @@ async function generateAdminId(organisationId: string) {
   }
 }
 
-
-
   const doAdmin = async (formValues: { firstname: string; lastname: string; email: string; phonenumber: string; password?: string; confirmpassword?: string; }) => {
     console.log("doAdmin > formValues:", formValues);
   
@@ -81,10 +110,6 @@ async function generateAdminId(organisationId: string) {
       console.error("Invalid organisationId");
       return;
     }
-    // if (!firstname || !lastname || !email || !phonenumber || !password || !confirmpassword) {
-    //   toast.error('Please fill in all fields.');
-    //   return;
-    // } 
     if (!firstname) {
       toast.error('Please fill in all Firstname.');
       return;
@@ -136,7 +161,8 @@ async function generateAdminId(organisationId: string) {
         phonenumber,
         status: true,
         super_admin: true,
-        organisationId
+        organisationId, 
+        fcmToken: fcmToken
       };
   
       await setDoc(docRef, data);
@@ -149,6 +175,7 @@ async function generateAdminId(organisationId: string) {
       toast.error('Please enter the correct authentication details.');
     }
   };
+
 
   return (
     <main className="">
@@ -253,4 +280,3 @@ async function generateAdminId(organisationId: string) {
     </main>
   );
 }
-

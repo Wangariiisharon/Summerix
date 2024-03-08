@@ -12,11 +12,13 @@ import {useRouter} from "next/router";
 import { FormModal } from "@/components/Modals/FormModal";
 // import { Field, Form, Formik } from "formik";
 import { Formik, Field, Form } from 'formik/dist/index';
-import firebaseApp, { fbDb } from "@/firebase/configs";
+import firebaseApp, { fbDb}  from "@/firebase/configs";
 import { User, createUserWithEmailAndPassword, getAuth,sendSignInLinkToEmail} from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc,updateDoc,addDoc,query,getDocs,where, DocumentData, getDoc, onSnapshot } from 'firebase/firestore'; 
 import { toast } from 'react-hot-toast';
 import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+import { getMessaging, getToken } from 'firebase/messaging';
+
 
 
 
@@ -29,6 +31,7 @@ export default function Admins() {
     const [searchQuery, setSearchQuery] = useState(""); 
     const [selectedAdmin, setSelectedAdmin] = useState<DocumentData | null>(null); 
     const [editModalOpen, setEditModalOpen] = useState(false); 
+    const [fcmToken, setFcmToken] = useState('');
     const [editFormInitialValues, setEditFormInitialValues] = useState({
         firstname: "",
         lastname: "",
@@ -38,11 +41,9 @@ export default function Admins() {
         status:true,
 
       });
-    const router=useRouter()  
-    const { organisationId } = useAuthContext();
-    console.log("Admins Organisation ID:", organisationId);
-    
-
+    const router=useRouter()    
+    let { organisationId } = useAuthContext();
+    console.log("Admins Organisation ID:", organisationId); 
     const handleSearchChange = (e:any) => {
         const query = e.target.value;
         console.log("Search Query:", query);
@@ -68,7 +69,63 @@ export default function Admins() {
     const handleReset = () => {
         setOpen(false)
     }
-    async function generateAdminId(organisationId: string) {
+    useEffect(() => {
+        const fetchedAdmins = async () => { 
+                const db = getFirestore();
+    
+          try {
+            // Ensure organisationId is available before making the query
+            if (organisationId) {
+           const q = query(collection(db, 'admins'), where('organisationId', '==', organisationId));
+    
+          const unsubscribe = onSnapshot(q, (querySnapshot) => {
+          const adminsData = querySnapshot.docs.map((doc) => ({
+           id: doc.id,
+           ...doc.data(),
+           }));
+           setFetchedAdmins(adminsData);
+          });
+    
+           return () => unsubscribe(); 
+    
+            } else {
+              console.error('Organisation ID is not available.');
+            }  
+          } catch (error) {
+            console.error('Error fetching Admins:', error);
+          }
+            };
+
+            const initializeFcmToken = async () => {
+                try {
+                  if (typeof window !== 'undefined') {
+                    const permission = await Notification.requestPermission();
+                    if (permission === 'granted') {
+                      const messaging = getMessaging(firebaseApp);
+                      const currentToken = await getToken(messaging, {
+                        vapidKey: 'BMiLEy0NT-toPT6b6Tmj2t0uSi3N7Pn9vsQGFFeY5f6GjiX_2CE7NaNBdjxr4-z3EJRXdiiL34OIZMfSFVfM6yk',
+                      });
+          
+                      if (currentToken) {
+                        console.log('Token:', currentToken);
+                        setFcmToken(currentToken);
+                        // Send the token to your server and save it in the user document
+                      } else {
+                        console.log('No registration token available. Request permission to generate one.');
+                      }
+                    } else {
+                      console.log('Unable to get notification permission.');
+                    }
+                  }
+                } catch (err) {
+                  console.log('An error occurred while initializing FCM token. ', err);
+                }
+              };
+          
+              initializeFcmToken();
+             fetchedAdmins();
+             }, [organisationId]); 
+    async function generateAdminId(organisationId: string | null) {
         try {
           const querySnapshot = await getDocs(query(collection(fbDb, 'admins'), where('organisationId', '==', organisationId)));
           const adminCount = querySnapshot.size;
@@ -84,21 +141,21 @@ export default function Admins() {
     const auth = getAuth(firebaseApp); 
     // const user = currentUser(auth);
     const user = auth.currentUser; 
-    const inviterUid = user ? user.uid : null;
+    const inviterUid = user ? user.uid : null; 
+
+
+
     const handleSubmit = async (values: { firstname: any; lastname: any; email: any; phonenumber: any; super_admin: boolean; invitationSent: boolean }) => {
         console.log("Submitted Values:", values);
-        console.log("User", user);
+        console.log("User", user); 
+
     
         try {
             if (!values) {
                 console.error('Form values are undefined');
                 return;
             }
-    
-            // if (!values.firstname || !values.lastname || !values.email || !values.phonenumber) {
-            //     console.error('Required form fields are missing'); 
-            //     return;
-            // } 
+     
             if (!values.firstname) {
             console.error(`Please fill the field ${values.firstname}`);  
             toast.error(`Please fill the field FirstName`);
@@ -131,21 +188,22 @@ export default function Admins() {
            const userCredential = await createUserWithEmailAndPassword(auth, values.email, "Random");
            const authUid = userCredential.user.uid;
 
-    
+
             // Check if user with the given email already exists
-            const existingAdminQuery = query(collection(fbDb, 'admins'), where('email', '==', values.email));
-            const existingAdminSnapshot = await getDocs(existingAdminQuery);
-    
-            if (!existingAdminSnapshot.empty) {
-                console.error('User with this email already exists');
-                toast.error('User with this email already exists');
-                toast.error(`A User with the Email '${values.email}' already exists`);
-    
-                return;
-            } 
+            const existingAdminQuery = query(collection(fbDb, 'admins'), 
+            where('email', '==', values.email),
+            where('organisationId', '==', organisationId)
+        );
+        
+        const existingAdminSnapshot = await getDocs(existingAdminQuery);
+        
+        if (!existingAdminSnapshot.empty) {
+            console.error('User with this email already exists in the organization');
+            toast.error(`A User with the Email '${values.email}' already exists in the organization`);
+            return;
+        }
 
     
-            let organisationId; // Declare organisationId here
     
             // Assuming 'inviters' is the collection where inviter data is stored
             const inviterQuery = query(collection(fbDb, 'admins'), where('userId', '==', inviterUid));
@@ -167,8 +225,6 @@ export default function Admins() {
                 console.error('Inviter not found');
             } 
             const generatedAdminId = await generateAdminId(organisationId);
-
-    
             const adminData = {
                 adminId: generatedAdminId,
                 firstname: values.firstname,
@@ -179,9 +235,8 @@ export default function Admins() {
                 super_admin: values.super_admin,
                 inviterUid: inviterUid,
                 organisationId: organisationId,
-                userId: authUid
-                
-
+                userId: authUid,
+                fcmToken: fcmToken
             };
     
             const docRef = await addDoc(collection(fbDb, 'admins'), adminData);
@@ -218,58 +273,8 @@ export default function Admins() {
     };
     
 
-    // useEffect(() => {
-    //     const db = getFirestore();
-        
-    //     // Ensure organisationId is available before making the query
-    //     if (organisationId) {
-    //       const q = query(collection(db, 'admins'), where('organisationId', '==', organisationId));
-    
-    //       const unsubscribe = onSnapshot(q, (querySnapshot) => {
-    //         const adminsData = querySnapshot.docs.map((doc) => ({
-    //           id: doc.id,
-    //           ...doc.data(),
-    //         }));
-    //         setFetchedAdmins(adminsData);
-    //       });
-    
-    //       return () => unsubscribe(); // Unsubscribe when the component unmounts or organisationId changes
-    //     } else {
-    //       // Handle the case when organisationId is not available
-    //       console.error('Organisation ID is not available.');
-    //     }
-    //   }, [organisationId]); 
 
 
-
-      useEffect(() => {
-        const fetchedAdmins = async () => { 
-                const db = getFirestore();
-    
-          try {
-            // Ensure organisationId is available before making the query
-            if (organisationId) {
-           const q = query(collection(db, 'admins'), where('organisationId', '==', organisationId));
-    
-          const unsubscribe = onSnapshot(q, (querySnapshot) => {
-          const adminsData = querySnapshot.docs.map((doc) => ({
-           id: doc.id,
-           ...doc.data(),
-           }));
-           setFetchedAdmins(adminsData);
-          });
-    
-           return () => unsubscribe(); 
-    
-            } else {
-              console.error('Organisation ID is not available.');
-            }  
-          } catch (error) {
-            console.error('Error fetching Admins:', error);
-          }
-            };
-            fetchedAdmins();
-             }, [organisationId]); 
     
     const updateFetchedAdmins = (updatedAdmins: SetStateAction<DocumentData[]>) => {
         setFetchedAdmins(updatedAdmins);
@@ -368,9 +373,9 @@ export default function Admins() {
     return (
         <>
         <div className='bg-[#FAFAFB]'>
-            <div className='mt-8 max-h-[500px]'>
+            <div className='mt-2 max-h-[700px]'>
                 <Tab.Group>
-                    <div className='flex w-full justify-end'>
+                    <div className='mb-2 flex w-full justify-end'>
                         <div className='bg-[#FAFAFB]'>
                         </div> 
                         <div className='flex justify-end text-base mr-2'>
@@ -379,8 +384,7 @@ export default function Admins() {
                           value={searchQuery}
                           onChange={handleSearchChange} 
                           className="h-6"
-                />
-                         
+                />  
                         <div className='ml-2'>
                             <AddButton name='Add User' handleAddClick={handleAddAdmin}/>
                             </div>
@@ -403,7 +407,7 @@ export default function Admins() {
                 <div className='p-5'>
                     <div className='flex w-full h-full justify-between items-center mb-12'>
                         <div className='text-xl font-semibold '>
-                            New Admin
+                            New User
                         </div>
                         <Button className='bg-red-50 h-12 w-12 flex items-center justify-center rounded-full' handleClick={handleReset}>
                             <XMarkIcon className='h-6 w-6 text-red-400'/>
@@ -598,7 +602,7 @@ interface AdminsTableProps {
 
 export function AdminsTable({ selectedTab,updateFetchedAdmins,handleEditClick,admins ,filteredAdmins}: AdminsTableProps) { 
     const [currentPage, setCurrentPage] = useState(0);
-    const rowsPerPage = 4;
+    const rowsPerPage = 6;
     console.log("AdminsTable Rendering with selectedTab:", selectedTab);
     const startIndex = currentPage * rowsPerPage;
     const endIndex = startIndex + rowsPerPage; 
@@ -606,87 +610,78 @@ export function AdminsTable({ selectedTab,updateFetchedAdmins,handleEditClick,ad
     
     const visibleAdmins = filteredAdmins.slice(startIndex, endIndex); 
     return (
-        <div className="">
-            <Table>
-                <>
-                    <thead>
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="flow-root">
+            <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <table className="min-w-full divide-y divide-gray-300">
+                  <thead>
                     <tr>
-                        {Headers.map((header, index) => {
-                            return (
-                                <Fragment key={index}>
-                                    <HeaderCell>
-                                        {header}
-                                    </HeaderCell>
-                                </Fragment>
-                            )
-                        })}
+                      <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">ID</th>
+                      <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">NAME</th>
+                      <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">PHONE</th>
+                      <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">ADMIN</th>
+                      <th scope="col" className="relative whitespace-nowrap py-3.5 pl-3 pr-4 sm:pr-0"></th>
                     </tr>
-                    </thead>
-                    <TableBody>  
-                    {visibleAdmins.map((admin, index) => {  
-                        const userId = `U${(index + 1).toString().padStart(3, '0')}`;
-                        console.log("User ID",userId); 
-                   return (
-            <Fragment key={index}> 
-            <div className='w-full mb-2'></div>
-                <tr className='border-solid border-2 border-[#D9E2F6] h-10 font-nunito font-regular'>
-                    <td className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0">
-                        {admin.adminId}
-                    </td> 
-                    <BodyCell>
-                        {`${admin.firstname} ${admin.lastname}`}
-                    </BodyCell> 
-                    <BodyCell >{admin.phonenumber}</BodyCell> 
+                  </thead>
+                  <tbody className="bg-[#FAFAFB]">
+                    {visibleAdmins.map((admin: any, index: any) => (
+                      <Fragment key={index}>
+                        <tr className="hover:bg-gray-100">
+                          <td className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 pr-3 text-d-blue text-base sm:pl-0">{admin.adminId}</td>
+                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">{`${admin.firstname} ${admin.lastname}`}</td>
+                          <td className="whitespace-nowrap px-2 py-2 relative">{admin.phonenumber}</td>
+                          <td className='whitespace-nowrap px-2 py-2 relative flex flex-row'>
+                            <div className='h-10 flex items-center'>
+                              {admin.super_admin ? <CheckCircleIcon className='h-8 w-8 text-d-green'/> : <XCircleIcon className='h-8 w-8 text-crimson-red'/>}
+                            </div>
+                            <div
+                            className='ml-4' 
+                             onClick={() => handleEditClick(admin)}>
+                              <EditBtn />
+                            </div>
+                          </td>
+                        </tr>
+                      </Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div> 
 
-                             <div className='h-10 flex items-center '>
-                                {admin.super_admin ?
-                                    <CheckCircleIcon className='h-8 w-8 text-d-green'/>
-                                    :
-                                    <XCircleIcon className='h-8 w-8 text-crimson-red'/>
-                                }
-                            </div> 
-                            {/* onClick={() => updateDriverStatusInDatabase(drivers.id, !drivers.archive)} */}                     <BodyCell>
-                        <>
-                        <div  onClick={()=>handleEditClick(admin)}>
-                            <EditBtn/>
-                             </div>
-                        </>
-                    </BodyCell> 
- 
-                </tr>  
-              
-            </Fragment>
 
-        )
-    })}
-                    {/* </div> */}
 
-           </TableBody>
-
-                </>
-            </Table> 
-
-            <div className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
-                             text-sm font-nunito font-bold uppercase bg-[#FAFAFB]">
-    <button 
+          <div className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
+          text-sm font-nunito font-bold uppercase bg-[#FAFAFB]">
+         <button 
         className="ml-5"
         onClick={() => setCurrentPage(currentPage - 1)}
         disabled={currentPage === 0}
-    >
+        >
         Prev
+        </button>
+     <span className="ml-5">{currentPage + 1}</span>
+      <button 
+      className="ml-5"
+      onClick={() => setCurrentPage(currentPage + 1)}
+      disabled={endIndex >= filteredAdmins.length}
+       >
+      Next
     </button>
-    <span className="ml-5">{currentPage + 1}</span>
-    <button 
-        className="ml-5"
-        onClick={() => setCurrentPage(currentPage + 1)}
-        disabled={endIndex >= filteredAdmins.length}
-    >
-        Next
-    </button>
-</div> 
-            </div>
-    )
+    </div>
+
+
+
+        </div> 
+      ); 
+
+ 
+      
 }
+
+
+
 
 
 

@@ -16,7 +16,7 @@ import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthPr
 
 
 
-const Headers = ["DEPARTMENT ID", "NAME","UPDATED"]
+const Headers = ["GROUP ID", "NAME","UPDATED"]
 export default function Departments(){ 
     const [open,setOpen]=useState(false) 
     const [selectedTab, setSelectedTab] = useState<number>(0); 
@@ -69,7 +69,7 @@ async function generateDepartmentId(organisationId: string) {
       const departmentCount = querySnapshot.size;
   
       // Customize this logic based on your requirements
-      return `D${(departmentCount + 1).toString().padStart(3, '0')}`;
+      return `G${(departmentCount + 1).toString().padStart(3, '0')}`;
     } catch (error) {
       console.error('Error fetching departments count:', error);
       // Handle error or return a default value
@@ -137,9 +137,9 @@ async function generateDepartmentId(organisationId: string) {
 
     return (
         <>
-            <div className='mt-8 max-h-[700px]'>
+            <div className='mt-2 max-h-[700px]'>
                 <Tab.Group>
-                    <div className='flex w-full justify-end'>
+                    <div className='mb-2 flex w-full justify-end'>
                         <div className='bg-white'>
              
                         </div>
@@ -155,7 +155,7 @@ async function generateDepartmentId(organisationId: string) {
                     <Tab.Panels>
 
                         <Tab.Panel>
-                        <div  className="max-h-[500px] overflow-y-auto"> 
+                        <div  className="h-full overflow-y-auto"> 
                         <DepartmentsTable departments={fetchedDepartments} updateFetchedDepartments={updatefetchedDepartments} />
 
                             </div>
@@ -234,65 +234,64 @@ export function DepartmentsTable({ departments,updateFetchedDepartments }: Vehic
     
         // Update the state with the filtered list of departments
         updateFetchedDepartments(updatedDepartments);
-      };
+      }; 
+    //   const Headers = ["GROUP ID", "NAME","UPDATED"]
 
-  
     return (
-        <>
-            <Table>
-                <>
-                    <thead>
-                    <tr className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left text-base  sm:pl-0">
-                        {Headers.map((header, index) => {
-                            return (
-                                <Fragment key={index}>
-                                    <HeaderCell>
-                                        {header}
-                                    </HeaderCell>
-                                </Fragment>
-                            )
-                        })}
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="flow-root">
+            <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <table className="min-w-full divide-y divide-gray-300">
+                  <thead>
+                    <tr>
+                      <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">GROUP ID</th>
+                      <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">NAME</th>
+                      <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">UPDATED</th>
                     </tr>
-                    </thead>
-                    <TableBody>
+                  </thead>
+                      <tbody className="bg-[#FAFAFB]">
                         {departments.map((departments, index) => {
-                        // const { seconds } = departments.updated; 
                         const { seconds } = departments?.updated || {}; // Use optional chaining
                         if (seconds !== undefined) {
                             const updatedDate = new Date(seconds * 1000);
                             const departmentId = `D${(index + 1).toString().padStart(3, '0')}`;
                             console.log("Vehicle ID", departmentId);
-
-                        // const updatedDate = new Date(seconds * 1000); 
-                        // const departmentId = `D${(index + 1).toString().padStart(3, '0')}`; 
                         
                         console.log("Vehicle ID",departmentId); 
 
                             return (
                                 <Fragment key={index}>
-                                   <div className="w-full mb-2"></div>
-                                    <tr className='border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] h-10 font-nunito font-regular' >
-                                        <td className="whitespace-nowrap flex flex-row  pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0 font-nunito font-regular">
-                                            {departments.departmentId}  <ViewMenu departmentId={departments.id} onDeactivate={() => handleDeactivate(departments.id)}/>
-                                            {/* router.push(`/Administration/manage_roles/assignRole?id=${admin.id}`); */}
-                                        </td>
-                                        <BodyCell>
+                                  <tr className="hover:bg-gray-100">
+                                        <td 
+                                         className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 text-d-blue text-base sm:pl-0 flex flex-row"                                        >
+                                            {departments.departmentId}  
+                                            <ViewMenu departmentId={departments.id} onDeactivate={() => handleDeactivate(departments.id)}/>
+                                        </td> 
+                                        <td
+                                         className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0"
+                                        > 
                                         {departments.name}
-                                        </BodyCell>
-                                        {/* <BodyCell>{departments.members}</BodyCell> */}
-                                        <BodyCell>{formatDistanceToNow(updatedDate)} ago</BodyCell>
-                                        {/* <BodyCell>{departments.status ? 'Active' : 'Inactive'}</BodyCell> */}
+                                        </td> 
+                                        <td 
+                                        className="whitespace-nowrap px-2 py-2 relative" 
+                                        >
+                                        {formatDistanceToNow(updatedDate)} ago
+                                        </td>
                                         <div className="h-10 font-nunito font-regular"></div>
-
                                     </tr>
+
                                 </Fragment>
                             )
                         }
                         })}
-                    </TableBody>
-                </>
-            </Table>
-        </>
+                    </tbody>
+            </table>
+            </div>
+            </div>
+            </div>
+            </div>
+
     )
 }
 

@@ -180,7 +180,7 @@ useEffect(() => {
                     </div>
 
                         <Tab.Panel>
-                            <div  className="max-h-[500px] overflow-y-auto">
+                            <div  className="h-full overflow-y-auto">
                             <CitiesTable clients={fetchedClients} filteredClients={filteredClients}/>
                             </div>
                         </Tab.Panel>
@@ -291,17 +291,12 @@ useEffect(() => {
 interface ClientsTableProps {
     clients: DocumentData[]; 
     filteredClients: DocumentData[];
-
-
 }
 
 function CitiesTable({ clients, }: ClientsTableProps) { 
     const [searchQuery, setSearchQuery] = useState("");  
     const [fetchedClients, setfetchedClients]=useState<DocumentData[]>([]);  
     const [open, setOpen] = useState(false)
-
-
-
 
       const handleSearchChange = (e:any) => {
         const query = e.target.value;
@@ -329,8 +324,6 @@ function CitiesTable({ clients, }: ClientsTableProps) {
                 console.error('Required form fields are missing');
                 return;
             } 
-
-    
             const clientsData = {
                 name: values.name,
             };
@@ -348,71 +341,60 @@ function CitiesTable({ clients, }: ClientsTableProps) {
       
     return (
         <>
-        <p className="text-lg ml-8 font-bold">Clients</p>  
-        {/* <div className="fles flex-row"> */}
-        <div className='flex  text-base mt-2 ml-8 w-72 searchBarContainer'>
+        <p className="text-base ml-10 font-bold">Clients</p>  
+        <div className='flex  text-base mt-2 ml-10 w-72 searchBarContainer'>
         <SearchBar
                   placeholder='Search For Clients'
                   value={searchQuery}
                   onChange={handleSearchChange} 
                   className='ml-5'
                 /> 
-        </div>  
+          </div>  
 
- 
-
-                        {/* </div> */}
-        {/* <div className="flex justify-end mr-20 bg-[#FAFAFB]">
-            <p>Nairobi,Kenya</p> 
-           <i className="fa fa-angle-down" aria-hidden="true"></i>
-           </div> */}
-
-
-            <Table>
-                <>
-                    <thead>
+          <div className="ml-5 px-4 sm:px-6 lg:px-8">
+          <div className="flow-root">
+            <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <table className="min-w-full divide-y divide-gray-300">
+                  <thead>
                     <tr>
-                        {Headers.map((header, index) => {
-                            return (
-                                <Fragment key={index}>
-                                    <HeaderCell>
-                                        {header}
-                                    </HeaderCell>
-                                </Fragment>
-                            )
-                        })}
+                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">CLIENT ID</th>
+                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">NAME</th>
                     </tr>
                     </thead>
-                    <TableBody>
+                    <tbody className="bg-[#FAFAFB]">
                         {filteredClients.map((clients, index) => {  
                             const clientId = `C${(index + 1).toString().padStart(3, '0')}`;
                             console.log("Client ID",clientId); 
                             return (
                                 <Fragment key={index}> 
-                                    <div className='w-full mb-2'></div>
-                                    <tr className='border-solid border-2 border-[#D9E2F6] bg-[#FAFAFB] mb-2 h-10 font-nunito font-regular'>
-                                    <td className="whitespace-nowrap  pl-4 pr-3 !pt-4 text-d-blue text-base sm:pl-0 font-nunito font-regular ">
+                                   <tr className="hover:bg-gray-100">
+                                    <td className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 pr-3 text-d-blue text-base sm:pl-0">
                                             {clients.clientId}
+                                        </td> 
+                                        <td
+                                        className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0"
+                                        >
+                                       {clients.name}
                                         </td>
-                                        <BodyCell>
-                                            {clients.name}
-                                        </BodyCell>
-                                        {/* <BodyCell>Ksh 250000</BodyCell> */}
-                                        {/* <BodyCell>Ksh 250000</BodyCell>  */}
-                                        <div className='h-10'></div>
-    
                                     </tr> 
-                                    {/* </div> */} 
-                                 
-                                </Fragment>
+               
+                                    </Fragment>
                             )
-                        })}
-                    </TableBody>
-                </>
-            </Table> 
-      
-            
-        </>
+                        }
+                        )}
+                    </tbody>
+            </table>
+            </div>
+            </div>
+            </div>
+            </div> 
+            </>
+
+    
     )
 }
+
+
+
 

@@ -1,6 +1,6 @@
 import { fbDb } from '@/firebase/configs';
 import { DocumentData, addDoc, collection, getDocs, getFirestore, onSnapshot, query, where } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react' 
+import React, { Fragment, useEffect, useState } from 'react' 
 import { parseISO, format } from 'date-fns';
 import {AddButton, Button, DeleteBtn, EditBtn} from "@/components/Buttons"; 
 import {PlusIcon, XMarkIcon} from "@heroicons/react/24/outline"; 
@@ -73,18 +73,6 @@ const handleAddJobcard = async (values: { name: any }) => {
       }
   
       const jobcardCollection = collection(fbDb, "jobcard");
-  
-      // Check if a Jobcard with the same name already exists
-      // const querySnapshot = await getDocs(
-      //   query(jobcardCollection, where("name", "==", values.name))
-      // );
-  
-      // if (!querySnapshot.empty) {
-      //   console.error("A Jobcard with this name already exists"); 
-      //   toast.error(`A Jobcard with the name '${values.name}' already exists`);
-
-      //   return;
-      // } 
       const existingDepartmentQuery = query(collection(fbDb, 'jobcard'), 
       where('name', '==', values.name),
       where('organisationId', '==', organisationId)
@@ -106,8 +94,10 @@ const handleAddJobcard = async (values: { name: any }) => {
   
       const docRef = await addDoc(jobcardCollection, JobcardData);
       console.log("Jobcard added with ID: ", docRef.id);
+      toast.success("Jobcard Successfully Added.");
   
       setOpen(false);
+      setShowAddJobcardModal(false);
     } catch (error) {
       console.error("Error adding jobcard:", error);
     }
@@ -116,7 +106,7 @@ const handleAddJobcard = async (values: { name: any }) => {
 
   return (
     // <div>planned</div> 
-    <div className="px-4 sm:px-6 lg:px-8">  
+    <div className="mt-2 h-full">  
     <div className=" flex justify-end">
         <Button
     className='rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4  mt-2'
@@ -125,77 +115,62 @@ const handleAddJobcard = async (values: { name: any }) => {
     ADD JOB CARD
     </Button> 
     </div>
-    <div className="mt-8 flow-root"> 
-        <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+    <div className="mt-2 ml-2 flow-root"> 
+     <div className="px-4 sm:px-6 lg:px-8">
+          <div className="flow-root">
+            <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
                 <table className="min-w-full divide-y divide-gray-300">
                     <thead>
                         <tr> 
                             <th 
                               scope="col"
-                              className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left font-semibold sm:pl-0" 
-                            > 
+                              className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"                            > 
                                Truck  
 
                             </th>
                             <th
                                 scope="col"
-                                className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left font-semibold sm:pl-0"
-                            >
+                                className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"                            >
                                 NAME
                             </th>
-                            {/* <th
-                                scope="col"
-                                className="whitespace-nowrap px-2 py-3.5 text-left font-semibold"
-                            >
-                                STATUS
-                            </th> */}
-             
-                            {/* <th
-                                scope="col"
-                                className="whitespace-nowrap px-2 py-3.5 text-left font-semibold"
-                            >
-                                ACTION 
-                            </th> */}
-                            <th scope="col" className="relative whitespace-nowrap py-3.5 pl-3 pr-4 sm:pr-0">
-                                <span className="sr-only"></span>
+                        
+                            <th scope="col" 
+                            className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"                            >
+                            <span className="sr-only"></span>
                             </th>
                         </tr>
                     </thead>
 
-                    <tbody  className="divide-y divide-gray-200 bg-white">
+                    <tbody className="bg-[#FAFAFB]">
                     {fetchedJobcards.map((jobcard:any, index:any) => {  
-
                         return( 
-                            
+                          <Fragment key={index}>
+
                             <tr key={jobcard.id}   className='my-4 bg-[#FAFAFB]'>
-                              <td>  
+                              <td className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 pr-3  text-d-blue text-base sm:pl-0">  
                               <span className="fa-stack fa-lg">
                               <i className="fa fa-circle fa-stack-2x text-[#F2F2F2]" aria-hidden="true"></i>
                               <i className="fa fa-truck fa-stack-1x fa-inverse text-[#0C0C0C]" aria-hidden="true"></i> 
                               </span>
-
+                               </td> 
+                               <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
+                                {jobcard.name}
                                </td>
             
-                                <td className="whitespace-nowrap pl-4 pr-3 !pt-4 text-d-blue sm:pl-0">{jobcard.name}</td>
-                                {/* <td className="whitespace-nowrap px-2  pt-4 font-medium ">
-                                {jobcard.status ? 'Approved' : 'Denied'}
-                                </td>  */}
-                                {/* <BodyCell>{admin.status ? 'Active' : 'Inactive'}</BodyCell>  */}
+                            </tr> 
+                            </Fragment>
 
-                       
-                                {/* <td className="whitespace-nowrap pl-8 pt-4 ">  
-                                :
-                                 </td> */}
-
-                            </tr>
                     )
                 })}
                     </tbody>
                 </table>
             </div>
         </div>
-    </div> 
+        </div> 
+        </div> 
+        </div> 
+
     <FormModal open={showAddJobcardModal} setOpen={setShowAddJobcardModal}>
                 <div className='p-8'>
                     <div className='flex w-full h-full justify-between items-center mb-12'>
