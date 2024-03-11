@@ -776,6 +776,10 @@ export function DriversTable({ drivers,updateFetchedDrivers, handleEditClick }: 
 
     const [selectedDriver, setSelectedDriver] = useState(null);  
     const [searchQuery, setSearchQuery] = useState("");
+    const [currentPage, setCurrentPage] = useState(0);
+    const rowsPerPage = 6;
+    const startIndex = currentPage * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage; 
 
     const router=useRouter();   
 
@@ -821,6 +825,8 @@ const updateDriverStatusInDatabase = async (driverId: string, newStatus: boolean
     const handleDriverClick = (driver: any) => {
         router.push(`/Administration/Users/manage_drivers/driversDetails?id=${driver.id}`);
       };  
+      const visibleDrivers = sortedDrivers.slice(startIndex, endIndex); 
+
 
 
     return ( 
@@ -849,7 +855,7 @@ const updateDriverStatusInDatabase = async (driverId: string, newStatus: boolean
                 </tr>
                     </thead>
                     <tbody className="bg-[#FAFAFB]">
-                        {sortedDrivers.map((drivers, index) => { 
+                        {visibleDrivers.map((drivers, index) => { 
                             const driverId = `D${(index + 1).toString().padStart(3, '0')}`;
                              console.log("Driver ID",driverId); 
                             return (
@@ -888,7 +894,27 @@ const updateDriverStatusInDatabase = async (driverId: string, newStatus: boolean
             </div>
             </div>
             </div>
-            </div>
+            </div> 
+
+
+            <div className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
+          text-sm font-nunito font-bold uppercase bg-[#FAFAFB]">
+         <button 
+        className="ml-5"
+        onClick={() => setCurrentPage(currentPage - 1)}
+        disabled={currentPage === 0}
+        >
+        Prev
+        </button>
+     <span className="ml-5">{currentPage + 1}</span>
+      <button 
+      className="ml-5"
+      onClick={() => setCurrentPage(currentPage + 1)}
+      disabled={endIndex >= visibleDrivers.length}
+       >
+      Next
+    </button>
+    </div>
 
 
         </>
