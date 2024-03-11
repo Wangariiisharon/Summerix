@@ -233,10 +233,11 @@ function CitiesTable({ clients, }: ClientsTableProps) {
     const [searchQuery, setSearchQuery] = useState("");  
     const [fetchedClients, setfetchedClients]=useState<DocumentData[]>([]);  
     const [open, setOpen] = useState(false)
-
-
-
-
+    const [currentPage, setCurrentPage] = useState(0);
+    const rowsPerPage = 6;
+    const startIndex = currentPage * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage; 
+    
       const handleSearchChange = (e:any) => {
         const query = e.target.value;
         console.log("Search Query:", query);
@@ -247,7 +248,9 @@ function CitiesTable({ clients, }: ClientsTableProps) {
         const nameMatch = fullName.includes(searchQuery.toLowerCase());
           return nameMatch;
       }); 
-      console.log("FILTERD CLIENTS",filteredClients); 
+      console.log("FILTERD CLIENTS",filteredClients);
+      const visibleClasses = filteredClients.slice(startIndex, endIndex); 
+ 
       const handleAddClient = async (values: { name: any;}) => { 
         setOpen(true)
         console.log("Submitted Values:", values);  
@@ -269,7 +272,7 @@ function CitiesTable({ clients, }: ClientsTableProps) {
                 name: values.name,
             };
     
-            const docRef = await addDoc(collection(fbDb, 'clients'), clientsData);
+            const docRef = await addDoc(collection(fbDb, 'classes'), clientsData);
             console.log('Client added with ID: ', docRef.id);
     
             setOpen(false);
@@ -306,7 +309,7 @@ function CitiesTable({ clients, }: ClientsTableProps) {
                     </tr>
                     </thead>
                     <tbody className="bg-[#FAFAFB]">
-                        {filteredClients.map((clients, index) => {  
+                        {visibleClasses.map((clients, index) => {  
                             return (
                                 <Fragment key={index}>   
                                     <tr className="hover:bg-gray-100">
@@ -323,7 +326,27 @@ function CitiesTable({ clients, }: ClientsTableProps) {
               </div>
             </div>
             </div>      
-        </div> 
+        </div>  
+
+        
+        <div className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
+          text-sm font-nunito font-bold uppercase bg-[#FAFAFB]">
+         <button 
+        className="ml-5"
+        onClick={() => setCurrentPage(currentPage - 1)}
+        disabled={currentPage === 0}
+        >
+        Prev
+        </button>
+     <span className="ml-5">{currentPage + 1}</span>
+      <button 
+      className="ml-5"
+      onClick={() => setCurrentPage(currentPage + 1)}
+      disabled={endIndex >= visibleClasses.length}
+       >
+      Next
+    </button>
+    </div>
         </> 
     )
 }

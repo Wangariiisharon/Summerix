@@ -546,6 +546,10 @@ interface VehiclesTableProps {
 }
 export function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,handleEditClick}: VehiclesTableProps) { 
         const [userApproves, setUserApproves] = useState(false); 
+        const [currentPage, setCurrentPage] = useState(0);
+        const rowsPerPage = 4;
+        const startIndex = currentPage * rowsPerPage;
+        const endIndex = startIndex + rowsPerPage; 
 
         const [fetchedMaintanance, setFetchedMaintanance]=useState<DocumentData[]>([]);  
         console.log("MaintananceTable Rendering with selectedTab:", selectedTab); 
@@ -562,6 +566,7 @@ export function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,hand
             return maintenance.status === "Pending";
         });
     console.log("Filtered Vehicles:", filteredMaintenance); 
+    const visibleClasses = filteredMaintenance.slice(startIndex, endIndex); 
 
     return ( 
 
@@ -617,7 +622,7 @@ export function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,hand
                             </thead>
  
                             <tbody className="bg-[#FAFAFB]">
-                            {filteredMaintenance.map((maintenance:any, index:any) => {  
+                            {visibleClasses.map((maintenance:any, index:any) => {  
                                  const { seconds } = maintenance.date; 
                                  const updatedDate = new Date(seconds * 1000);
 
@@ -683,7 +688,25 @@ export function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,hand
                         </table>
                     </div> 
                 </div>
-            </div>
+            </div> 
+            <div className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
+          text-sm font-nunito font-bold uppercase bg-[#FAFAFB]">
+         <button 
+        className="ml-5"
+        onClick={() => setCurrentPage(currentPage - 1)}
+        disabled={currentPage === 0}
+        >
+        Prev
+        </button>
+     <span className="ml-5">{currentPage + 1}</span>
+      <button 
+      className="ml-5"
+      onClick={() => setCurrentPage(currentPage + 1)}
+      disabled={endIndex >= visibleClasses.length}
+       >
+      Next
+    </button>
+    </div>
         </div>
     )
 }
