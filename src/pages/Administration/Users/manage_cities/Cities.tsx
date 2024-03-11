@@ -1,19 +1,14 @@
 import {Tab} from "@headlessui/react";
-import {ChangeEvent, Fragment, useEffect, useState} from "react";
-import {AddButton, Button} from "@/components/Buttons";
-import Table, {DummyTable} from "@/components/Table/Table";
-import { CheckCircleIcon, PlusIcon, XCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { HeaderCell, BodyCell } from "../../../../components/Table/Cells";
-import { TableBody } from "../../../../components/Table/Row";
+import { Fragment, useEffect, useState} from "react";
+import { Button} from "@/components/Buttons";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import SearchBar from "../../../../components/Forms/input"
-import Link from "next/link";
-import DashboardComponent from "../../../Dashboard"
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import { DocumentData, getDocs, collection, addDoc, query, where, getFirestore, onSnapshot } from "firebase/firestore";
 import { FormModal } from "@/components/Modals/FormModal";
 import { Formik, Field, Form } from 'formik/dist/index';
 import toast from "react-hot-toast"; 
-import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 
 
@@ -297,6 +292,12 @@ function CitiesTable({ clients, }: ClientsTableProps) {
     const [searchQuery, setSearchQuery] = useState("");  
     const [fetchedClients, setfetchedClients]=useState<DocumentData[]>([]);  
     const [open, setOpen] = useState(false)
+    const [currentPage, setCurrentPage] = useState(0);
+    const rowsPerPage = 6;
+    console.log("AdminsTable Rendering with selectedTab:");
+    const startIndex = currentPage * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage; 
+    
 
       const handleSearchChange = (e:any) => {
         const query = e.target.value;
@@ -308,7 +309,10 @@ function CitiesTable({ clients, }: ClientsTableProps) {
         const nameMatch = fullName.includes(searchQuery.toLowerCase());
           return nameMatch;
       }); 
-      console.log("FILTERD CLIENTS",filteredClients); 
+      console.log("FILTERD CLIENTS",filteredClients);  
+
+      const visibleClients = filteredClients.slice(startIndex, endIndex); 
+
       const handleAddClient = async (values: { name: any;}) => { 
         setOpen(true)
         console.log("Submitted Values:", values);  
@@ -337,8 +341,6 @@ function CitiesTable({ clients, }: ClientsTableProps) {
         } 
     }  
 
-
-      
     return (
         <>
         <p className="text-base ml-10 font-bold">Clients</p>  
@@ -363,7 +365,7 @@ function CitiesTable({ clients, }: ClientsTableProps) {
                     </tr>
                     </thead>
                     <tbody className="bg-[#FAFAFB]">
-                        {filteredClients.map((clients, index) => {  
+                        {visibleClients.map((clients, index) => {  
                             const clientId = `C${(index + 1).toString().padStart(3, '0')}`;
                             console.log("Client ID",clientId); 
                             return (
@@ -389,6 +391,26 @@ function CitiesTable({ clients, }: ClientsTableProps) {
             </div>
             </div>
             </div> 
+
+            
+        <div className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
+          text-sm font-nunito font-bold uppercase bg-[#FAFAFB]">
+         <button 
+        className="ml-5"
+        onClick={() => setCurrentPage(currentPage - 1)}
+        disabled={currentPage === 0}
+        >
+        Prev
+        </button>
+     <span className="ml-5">{currentPage + 1}</span>
+      <button 
+      className="ml-5"
+      onClick={() => setCurrentPage(currentPage + 1)}
+      disabled={endIndex >= visibleClients.length}
+       >
+      Next
+    </button>
+    </div>
             </>
 
     

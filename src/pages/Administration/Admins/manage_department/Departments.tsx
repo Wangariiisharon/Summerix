@@ -225,6 +225,8 @@ interface VehiclesTableProps {
 }
 
 export function DepartmentsTable({ departments,updateFetchedDepartments }: VehiclesTableProps) {  
+    const [currentPage, setCurrentPage] = useState(0);
+
     const handleDeactivate = (id: string) => {
         // Implement your deactivation logic here
         console.log(`Deactivating department with ID: ${id}`);
@@ -235,7 +237,12 @@ export function DepartmentsTable({ departments,updateFetchedDepartments }: Vehic
         // Update the state with the filtered list of departments
         updateFetchedDepartments(updatedDepartments);
       }; 
-    //   const Headers = ["GROUP ID", "NAME","UPDATED"]
+    //   const Headers = ["GROUP ID", "NAME","UPDATED"] 
+    const rowsPerPage = 6;
+    console.log("DepatmensTable Rendering with selectedTab:");
+    const startIndex = currentPage * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage; 
+    const visibleDepartments = departments.slice(startIndex, endIndex); 
 
     return (
         <div className="px-4 sm:px-6 lg:px-8">
@@ -251,7 +258,7 @@ export function DepartmentsTable({ departments,updateFetchedDepartments }: Vehic
                     </tr>
                   </thead>
                       <tbody className="bg-[#FAFAFB]">
-                        {departments.map((departments, index) => {
+                        {visibleDepartments.map((departments, index) => {
                         const { seconds } = departments?.updated || {}; // Use optional chaining
                         if (seconds !== undefined) {
                             const updatedDate = new Date(seconds * 1000);
@@ -290,6 +297,31 @@ export function DepartmentsTable({ departments,updateFetchedDepartments }: Vehic
             </div>
             </div>
             </div>
+
+
+
+        <div className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
+          text-sm font-nunito font-bold uppercase bg-[#FAFAFB]">
+         <button 
+        className="ml-5"
+        onClick={() => setCurrentPage(currentPage - 1)}
+        disabled={currentPage === 0}
+        >
+        Prev
+        </button>
+     <span className="ml-5">{currentPage + 1}</span>
+      <button 
+      className="ml-5"
+      onClick={() => setCurrentPage(currentPage + 1)}
+      disabled={endIndex >= departments.length}
+       >
+      Next
+    </button>
+    </div>
+
+
+
+            
             </div>
 
     )

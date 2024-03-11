@@ -187,6 +187,10 @@ interface VehiclesTableProps {
 
 export function DummyTable({ selectedTab,vehicles,vehicleTrips }: VehiclesTableProps) { 
     console.log('Vehicle Trips:', vehicleTrips);
+    const [currentPage, setCurrentPage] = useState(0);
+    const rowsPerPage = 6;
+    const startIndex = currentPage * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage; 
 
         console.log("VehiclesTable Rendering with selectedTab:", selectedTab); 
         const Headers = ["License Plate ", "Status", "Registration","Trips Completed"]
@@ -204,6 +208,9 @@ export function DummyTable({ selectedTab,vehicles,vehicleTrips }: VehiclesTableP
         router.push(`/Vehicles/vehiclesDetails?id=${vehicle.id}`);
       };  
     console.log("Filtered Vehicles:", filteredVehicles); 
+
+    const visibleVehicles = filteredVehicles.slice(startIndex, endIndex); 
+
     return ( 
       <div className="px-4 ml-6 sm:px-6 lg:px-8">
         <div className="mt-8 flow-root">
@@ -215,7 +222,7 @@ export function DummyTable({ selectedTab,vehicles,vehicleTrips }: VehiclesTableP
                                     <th
                                         scope="col"
                                         className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">                                     
-                                        
+                            
                                      License Plate                                    
                                      </th>
                            
@@ -246,7 +253,7 @@ export function DummyTable({ selectedTab,vehicles,vehicleTrips }: VehiclesTableP
                             </thead>
  
                             <tbody  className=" bg-[#FAFAFB]">
-                            {filteredVehicles.map((vehicle, index) => {   
+                            {visibleVehicles.map((vehicle:any, index:any) => {   
                                 const { seconds } = vehicle.registration_date; 
                                 const updatedDate = new Date(seconds * 1000); 
                                 const tripsCompleted = vehicleTrips[vehicle.lisence_plate] || 0; // Get the trip count for the vehicle
@@ -286,7 +293,29 @@ export function DummyTable({ selectedTab,vehicles,vehicleTrips }: VehiclesTableP
                         </table>
                     </div>
                 </div>
-            </div> 
+            </div>  
+
+
+                    
+        <div className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
+          text-sm font-nunito font-bold uppercase bg-[#FAFAFB]">
+         <button 
+        className="ml-5"
+        onClick={() => setCurrentPage(currentPage - 1)}
+        disabled={currentPage === 0}
+        >
+        Prev
+        </button>
+     <span className="ml-5">{currentPage + 1}</span>
+      <button 
+      className="ml-5"
+      onClick={() => setCurrentPage(currentPage + 1)}
+      disabled={endIndex >= visibleVehicles.length}
+       >
+      Next
+    </button>
+    </div>
+
         </div> 
 
     )

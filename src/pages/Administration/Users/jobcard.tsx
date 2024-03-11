@@ -16,7 +16,11 @@ export default function Jobcard() {
     const [jobcards, setjobcards] = useState<string[]>([]); 
     const [showAddJobcardModal, setShowAddJobcardModal] = useState(false);
     const [showScheduleMaintenanceModal, setShowScheduleMaintenanceModal] = useState(false);
-  const [fetchedJobcards, setfetchedJobcards]=useState<DocumentData[]>([]);    
+  const [fetchedJobcards, setfetchedJobcards]=useState<DocumentData[]>([]);   
+  const [currentPage, setCurrentPage] = useState(0);
+  const rowsPerPage = 6;
+  const startIndex = currentPage * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;   
 
   const {organisationId} = useAuthContext(); 
   console.log("Jobcards Organisation ID:", organisationId);
@@ -55,11 +59,14 @@ const handleJobCardReset = () => {
     setShowAddJobcardModal(false) 
     setOpen(false)
 }
-const handleAddJobcard = async (values: { name: any }) => {
+const handleAddJobcard = async (values: { name: any }) => { 
+
     setShowAddJobcardModal(true);
     setShowScheduleMaintenanceModal(false);
     setOpen(true);
     console.log("Submitted Values:", values);
+    
+
   
     try {
       if (!values) {
@@ -101,7 +108,10 @@ const handleAddJobcard = async (values: { name: any }) => {
     } catch (error) {
       console.error("Error adding jobcard:", error);
     }
-  };
+  }; 
+
+  const visibleJobCards = fetchedJobcards.slice(startIndex, endIndex); 
+
   
 
   return (
@@ -143,7 +153,7 @@ const handleAddJobcard = async (values: { name: any }) => {
                     </thead>
 
                     <tbody className="bg-[#FAFAFB]">
-                    {fetchedJobcards.map((jobcard:any, index:any) => {  
+                    {visibleJobCards.map((jobcard:any, index:any) => {  
                         return( 
                           <Fragment key={index}>
 
@@ -222,7 +232,26 @@ const handleAddJobcard = async (values: { name: any }) => {
                      )}
                     </Formik>
                 </div>
-            </FormModal> 
+            </FormModal>  
+
+            <div className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
+          text-sm font-nunito font-bold uppercase bg-[#FAFAFB]">
+         <button 
+        className="ml-5"
+        onClick={() => setCurrentPage(currentPage - 1)}
+        disabled={currentPage === 0}
+        >
+        Prev
+        </button>
+     <span className="ml-5">{currentPage + 1}</span>
+      <button 
+      className="ml-5"
+      onClick={() => setCurrentPage(currentPage + 1)}
+      disabled={endIndex >= visibleJobCards.length}
+       >
+      Next
+    </button>
+    </div>
 </div>
   )
 }
