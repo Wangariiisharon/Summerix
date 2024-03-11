@@ -602,7 +602,11 @@ const updateStatusToApproved = async (documentId: string) => {
 }
   function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,handleCheckboxClick,checkboxState}: VehiclesTableProps) { 
         console.log("MaintananceTable Rendering with selectedTab:", selectedTab); 
-       console.log("Mainanace list", maintananceList); 
+       console.log("Mainanace list", maintananceList);  
+       const [currentPage, setCurrentPage] = useState(0);
+       const rowsPerPage = 6;
+       const startIndex = currentPage * rowsPerPage;
+       const endIndex = startIndex + rowsPerPage;
         
         const currentDate = new Date();  
 
@@ -622,7 +626,8 @@ const filteredMaintenance = filteredApprovedMaintenance.filter((maintenance: any
     
              return true;
          });  
-   
+         const visibleClasses = filteredMaintenance.slice(startIndex, endIndex); 
+ 
 
    console.log("Filtered Vehicles:", filteredMaintenance); 
      return (
@@ -678,7 +683,7 @@ const filteredMaintenance = filteredApprovedMaintenance.filter((maintenance: any
                              </thead>
  
                             <tbody  className="bg-[#FAFAFB]">
-                            {filteredMaintenance.map((maintenance:any, index:any) => {  
+                            {visibleClasses.map((maintenance:any, index:any) => {  
                                  const { seconds } = maintenance.date; 
                                  const updatedDate = new Date(seconds * 1000);
 
@@ -712,7 +717,7 @@ const filteredMaintenance = filteredApprovedMaintenance.filter((maintenance: any
                                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                           {maintenance.cost}
                                           </td>
-                                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500"> 
+                                       <td className="whitespace-nowrap px-3 py-4 text-sm text-[#777E96]"> 
                                          {maintenance.status}
                                           </td>
                                     </tr> 
@@ -723,7 +728,25 @@ const filteredMaintenance = filteredApprovedMaintenance.filter((maintenance: any
                         </table>
                      </div>
                 </div>
-            </div>
+            </div> 
+            <div className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
+          text-sm font-nunito font-bold uppercase bg-[#FAFAFB]">
+         <button 
+        className="ml-5"
+        onClick={() => setCurrentPage(currentPage - 1)}
+        disabled={currentPage === 0}
+        >
+        Prev
+        </button>
+     <span className="ml-5">{currentPage + 1}</span>
+      <button 
+      className="ml-5"
+      onClick={() => setCurrentPage(currentPage + 1)}
+      disabled={endIndex >= visibleClasses.length}
+       >
+      Next
+    </button>
+    </div>
         </div>
      )
  }

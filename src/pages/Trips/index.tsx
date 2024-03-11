@@ -90,7 +90,10 @@ export default function TripsComponent() {
         memo: "",  
         trip_status: "", 
         organisationId: "",
-        tripId: "",
+        tripId: "", 
+        dealValue:0,
+        fuel:0,
+        mileage_fee:0
       });
     const router=useRouter()  
 
@@ -262,7 +265,11 @@ export default function TripsComponent() {
             memo:trip.memo,   
             trip_status:trip.trip_status,
             organisationId:trip.organisation_id,
-            tripId:trip.tripId
+            tripId:trip.tripId,
+           dealValue:trip.dealValue,
+            fuel:trip.fuel,
+            mileage_fee:trip.mileage_fee
+
         });
         setEditModalOpen(true);
       };   
@@ -285,6 +292,9 @@ export default function TripsComponent() {
         trip_status:any 
         organisationId:any
         tripId:any
+        dealValue:any,
+        fuel:any,
+        mileage_fee:any
 
       }) => { 
         if (!selectedTrip) {
@@ -332,7 +342,10 @@ export default function TripsComponent() {
             memo:values.memo,   
             trip_status:values.trip_status, 
             organisationId:values.organisationId,
-            tripId:values.tripId
+            tripId:values.tripId,
+            dealValue:values.dealValue,
+            fuel:values.fuel,
+            mileage_fee:values.mileage_fee,
           });
 
           // Update the local fetchedVehicles state
@@ -353,6 +366,9 @@ export default function TripsComponent() {
                   trip_status:values.trip_status, 
                   organisationId:values.organisationId,
                   tripId:values.tripId,
+                  dealValue:values.dealValue,
+                  fuel:values.fuel,
+                  mileage_fee:values.mileage_fee,
                 }
               : trip
           );
@@ -412,7 +428,7 @@ const generateTripId = async (vehicle: string, start_time: string) => {
 
 
 
-const handleSubmit = async (values: { requested_by: string; pick_up_location: string; drop_off_location: string; vehicle: string; start_time: string; end_time: string; cargo_type: string; cargo_quantity: string; memo: string; company: string; client: string; dealValue: number;fuel:number}) => {
+const handleSubmit = async (values: { requested_by: string; pick_up_location: string; drop_off_location: string; vehicle: string; start_time: string; end_time: string; cargo_type: string; cargo_quantity: string; memo: string; company: string; client: string; dealValue: number;fuel:number,mileage_fee:number}) => {
     setOpen(false); 
     console.log("Submitted Values:", values);
     try {
@@ -483,12 +499,18 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
         console.error("Required form fields are missing"); 
         toast.error(`Please fill the field  Deal Value`);
         return;
-      }      if (
-        !values.fuel)  {
+      }      
+      if (!values.fuel)  {
         console.error("Required form fields are missing"); 
         toast.error(`Please fill the field  Fuel`);
         return;
+      } 
+      if (!values.mileage_fee)  {
+        console.error("Required form fields are missing"); 
+        toast.error(`Please fill the field  Mileage Fee`);
+        return;
       }
+      // mileage_fee
             // Query Firestore to get the number of trips for the selected vehicle
         const tripsQuery = query(collection(fbDb, 'trips'), where('vehicle', '==', values.vehicle));
         const tripsSnapshot = await getDocs(tripsQuery);
@@ -531,6 +553,7 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
             client: values.client, 
             dealValue: values.dealValue, 
             fuel: values.fuel, 
+            mileage_fee: values.mileage_fee,
         };
 
         const docRef = await addDoc(collection(fbDb, 'trips'), maintenanceData);
@@ -675,33 +698,33 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                     </div>
                 </div> 
                 </div>
-                <div className='mt-4'> 
+                <div className='mt-2'> 
                         <Tab.Group>
    
                     <Tab.Panels>
                     <Tab.Panel>
                      {selectedTab === 0 ? (
-                       <div className="max-h-[500px] overflow-y-auto">
+                       <div className="overflow-y-auto">
                            <AllTrips searchQuery={searchQuery} setSearchQuery={setSearchQuery}/>
                            </div>
                           ) : (
-                     <div className="max-h-[500px] overflow-y-auto">
+                     <div className="overflow-y-auto">
                       <TripsTable selectedTab={selectedTab} trips={fetchedTrips} filteredTrips={filteredTrips} handleEditClick={handleEditClick}/>
                      </div>
                          )}
                       </Tab.Panel>
                        <Tab.Panel>
-                        <div className="max-h-[500px] overflow-y-auto">
+                        <div className="overflow-y-auto">
                           <TripsTable selectedTab={1} trips={fetchedTrips} filteredTrips={filteredTrips}handleEditClick={handleEditClick}/>
                        </div>
                           </Tab.Panel>
                         <Tab.Panel>
-                          <div className="max-h-[500px] overflow-y-auto">
+                          <div className="overflow-y-auto">
                            <TripsTable selectedTab={2} trips={fetchedTrips} filteredTrips={filteredTrips} handleEditClick={handleEditClick} />
                          </div>
                          </Tab.Panel>
                          <Tab.Panel>
-                         <div className="max-h-[500px] overflow-y-auto">
+                         <div className="overflow-y-auto">
                          <TripsTable selectedTab={3} trips={fetchedTrips} filteredTrips={filteredTrips}handleEditClick={handleEditClick}/>
                           </div>
                          </Tab.Panel>
@@ -735,7 +758,8 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                         company: "", 
                         client: "", 
                         dealValue: 0, 
-                        fuel: 0, 
+                        fuel: 0,
+                        mileage_fee: 0 ,
 
 
 
@@ -940,7 +964,19 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                              className="form-input bg-grey w-48"
                             />
                             </label> 
-                            </div> 
+                            </div>  
+                            <div className="mt-8 flex w-full justify-between"> 
+                            <label className="block">
+                             <label className="form-label">MILEAGE FEE</label>
+                             <Field
+                             type="number"
+                             name="mileage_fee"
+                             value={values.mileage_fee} 
+                             placeholder="Ksh"
+                             className="form-input bg-grey w-48"
+                            />
+                            </label> 
+                            </div>
 
                             <p className="mt-5 font-semibold"> CARGO</p>  
                             <div className='flex w-full justify-between'> 
@@ -1070,7 +1106,44 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                          >
                         </Field> 
                         </label>   
-                         </div> 
+                         </div>  
+                         <div className="mt-8 flex w-full justify-between"> 
+                             <label className="block">
+                             <label className="form-label">DEAL VALUE</label>
+                             <Field
+                             disabled
+                             type="number"
+                             name="dealValue"
+                             value={values.dealValue} 
+                             placeholder="Ksh"
+                             className="form-input bg-grey w-48"
+                            />
+                            </label>   
+                            <label className="block">
+                             <label className="form-label">FUEL</label>
+                             <Field
+                             disabled
+                             type="number"
+                             name="fuel"
+                             value={values.fuel} 
+                             placeholder="Ksh"
+                             className="form-input bg-grey w-48"
+                            />
+                            </label> 
+                            </div>  
+                            <div className="mt-8 flex w-full justify-between"> 
+                            <label className="block">
+                             <label className="form-label">MILEAGE FEE</label>
+                             <Field
+                             disabled
+                             type="number"
+                             name="mileage_fee"
+                             value={values.mileage_fee} 
+                             placeholder="Ksh"
+                             className="form-input bg-grey w-48"
+                            />
+                            </label> 
+                            </div>
                             <p className="mt-5 font-semibold"> Cargo</p>  
                             <div className='flex w-full justify-between'> 
   
@@ -1160,7 +1233,11 @@ interface TripsPerVehicle {
 
 
 
-  export function TripsTable({ selectedTab,trips,filteredTrips,handleEditClick }: TripsTableProps) {  
+  export function TripsTable({ selectedTab,trips,filteredTrips,handleEditClick }: TripsTableProps) {   
+    const [currentPage, setCurrentPage] = useState(0);
+    const rowsPerPage = 6;
+    const startIndex = currentPage * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage; 
     const router=useRouter() 
     const handleTripClick = (trip: any) => {
         router.push(`/Trips//viewTrip?id=${trip.id}`);
@@ -1206,6 +1283,7 @@ interface TripsPerVehicle {
       : 0);
            
       console.log("Selected Tab", selectedTab);  
+      const visibleTrips = filteredAllocation.slice(startIndex, endIndex); 
 
 
       const formatTripId = (currentMonth: string, tripCount: { toString: () => string; }, vehicle: any) => {
@@ -1229,11 +1307,7 @@ interface TripsPerVehicle {
           }
         }
       };
-      
-
-
-      
-  
+    
   
     return ( 
       <div className="px-4 sm:px-6 lg:px-8">
@@ -1277,13 +1351,13 @@ interface TripsPerVehicle {
                 </tr>
               </thead>
               <tbody className="bg-[#FAFAFB]">
-                {filteredAllocation.map((trip, index) => (
+                {visibleTrips.map((trip, index) => (
                   <Fragment key={index}>
                   <div className="w-full mb-2 font-nunito font-regular"></div>
                     <tr className="bg-[#FAFAFB] hover:bg-gray-100" onClick={() => handleTripClick(trip)} style={{ cursor: 'pointer' }}
                        >
                       <td 
-                      className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0"  
+                      className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium  text-blue-700 sm:pl-0"  
                       >
                       {trip.tripId}
                       </td>
@@ -1325,7 +1399,28 @@ interface TripsPerVehicle {
             </table>
           </div>
         </div>
-      </div>
+      </div> 
+
+        <div className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
+        text-sm font-nunito font-bold uppercase bg-[#FAFAFB]">
+         <button 
+        className="ml-5"
+        onClick={() => setCurrentPage(currentPage - 1)}
+        disabled={currentPage === 0}
+        >
+        Prev
+        </button>
+     <span className="ml-5">{currentPage + 1}</span>
+      <button 
+      className="ml-5"
+      onClick={() => setCurrentPage(currentPage + 1)}
+      disabled={endIndex >= visibleTrips.length}
+       >
+      Next
+    </button>
+    </div> 
+
+
     </div>
   );
 }

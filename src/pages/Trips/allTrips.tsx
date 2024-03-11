@@ -54,7 +54,8 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
       organisationId: "", 
       tripId: "", 
       dealValue: 0,
-      fuel:0
+      fuel:0,
+      mileage_fee:0
 
     });
       const [selectedTabIndex, setSelectedTabIndex] = useState(0);
@@ -88,7 +89,8 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
             organisationId:trip.organisationId,
             tripId:trip.tripId,
             fuel:trip.fuel,
-            dealValue:trip.dealValue
+            dealValue:trip.dealValue ,
+            mileage_fee:trip.mileage_fee
 
         });
         setEditModalOpen(true);
@@ -113,7 +115,8 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
         organisationId:any ,
         tripId:any,
         fuel:any,
-        dealValue:any
+        dealValue:any,
+        mileage_fee:any
 
       }) => { 
         if (!selectedTrip) {
@@ -163,7 +166,9 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
             organisationId:values.organisationId,
             tripId:values.tripId,  
             dealValue:values.dealValue,
-            fuel:values.fuel
+            fuel:values.fuel,
+            mileage_fee:values.mileage_fee
+            
           });
 
           // Update the local fetchedVehicles state
@@ -185,7 +190,9 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
                   organisationId:values.organisationId,
                   tripId:values.tripId,
                   fuel:values.fuel,
-                  dealValue:values.dealValue
+                  dealValue:values.dealValue,
+                  mileage_fee:values.mileage_fee
+
 
                 }
               : trip
@@ -343,7 +350,7 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
 
                 </div>
                 {/* <HeaderBar headers={Headers}/> */} 
-                <div className='mt-4'> 
+                <div className='mt-2'> 
                 <Tab.Group>  
                   <div className="flex flex-row">
                 <Tab.List className="w-full bg-[#FAFAFB] font-nunito flex justify-start mb-3">
@@ -380,13 +387,13 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
                     <Tab.Panels> 
          
                     <Tab.Panel className={classNames(selectedTabIndex === 0 ? 'ui-selected border-b-4' : '', 'h-full')}>
-                        <div  className="max-h-[500px] overflow-y-auto">
+                        <div  className=" overflow-y-auto">
                         {/* <TripsTable selectedTab={selectedTabIndex} trips={fetchedTrips} filteredTrips={filteredTrips} handleEditClick={handleEditClick}/> */}
                         <TripsTable selectedTab={selectedTabIndex} trips={fetchedTrips} filteredTrips={filteredTrips.filter(filterTripsByTimeRange)} handleEditClick={handleEditClick} />
                             </div>
                         </Tab.Panel>
                         <Tab.Panel className={classNames(selectedTabIndex === 0 ? 'ui-selected border-b-4' : '', 'h-full')}>
-                        <div  className="max-h-[500px] overflow-y-auto">
+                        <div  className="overflow-y-auto">
                         <TripsTable selectedTab={selectedTabIndex} trips={fetchedTrips} filteredTrips={filteredTrips} handleEditClick={handleEditClick} />
                             </div>
             
@@ -485,7 +492,45 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
                          >
                         </Field> 
                         </label>   
-                         </div> 
+                         </div>  
+                         <div className="mt-8 flex w-full justify-between"> 
+                             <label className="block">
+                             <label className="form-label">DEAL VALUE</label>
+                             <Field
+                             disabled
+                             type="number"
+                             name="dealValue"
+                             value={values.dealValue} 
+                             placeholder="Ksh"
+                             className="form-input bg-grey w-48"
+                            />
+                            </label>   
+                            <label className="block">
+                             <label className="form-label">FUEL</label>
+                             <Field
+                             disabled
+                             type="number"
+                             name="fuel"
+                             value={values.fuel} 
+                             placeholder="Ksh"
+                             className="form-input bg-grey w-48"
+                            />
+                            </label> 
+                            </div>  
+                            <div className="mt-8 flex w-full justify-between"> 
+                            <label className="block">
+                             <label className="form-label">MILEAGE FEE</label>
+                             <Field
+                             disabled
+                             type="number"
+                             name="mileage_fee"
+                             value={values.mileage_fee} 
+                             placeholder="Ksh"
+                             className="form-input bg-grey w-48"
+                            />
+                            </label> 
+                            </div> 
+                     
                             <p className="mt-5 font-semibold"> Cargo</p>  
                             <div className='flex w-full justify-between'> 
   
@@ -578,7 +623,11 @@ interface TripsPerVehicle {
 
 
 export function TripsTable({ selectedTab,trips,filteredTrips,handleEditClick }: TripsTableProps) {  
-    const router=useRouter()  
+    const router=useRouter()   
+    const [currentPage, setCurrentPage] = useState(0);
+    const rowsPerPage = 3;
+    const startIndex = currentPage * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage; 
 
     
     const handleTripClick = (trip: any) => {
@@ -604,7 +653,9 @@ export function TripsTable({ selectedTab,trips,filteredTrips,handleEditClick }: 
       
         return true; 
 
-      });
+      }); 
+      const visibleTrips = filteredAllocation.slice(startIndex, endIndex); 
+
       const formatTripId = (currentMonth: string, tripCount: { toString: () => string; }, vehicle: any) => {
         const formattedMonth = currentMonth.substring(0, 3); 
         const formattedTripCount = tripCount.toString().padStart(2, '0'); // Ensure two-digit trip count
@@ -671,13 +722,13 @@ export function TripsTable({ selectedTab,trips,filteredTrips,handleEditClick }: 
                   </tr>
                 </thead>
                 <tbody className="bg-[#FAFAFB]">
-                  {filteredAllocation.map((trip, index) => (
+                  {visibleTrips.map((trip, index) => (
                     <Fragment key={index}>
                     <div className="w-full mb-2 font-nunito font-regular"></div>
                       <tr className="bg-[#FAFAFB] hover:bg-gray-100" onClick={() => handleTripClick(trip)} style={{ cursor: 'pointer' }}
                          >
                         <td 
-                        className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0"  
+                        className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium  text-blue-700 sm:pl-0"  
                         >
                         {trip.tripId}
                         </td>
@@ -719,7 +770,28 @@ export function TripsTable({ selectedTab,trips,filteredTrips,handleEditClick }: 
               </table>
             </div>
           </div>
-        </div>
+        </div>  
+
+        <div className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
+          text-sm font-nunito font-bold uppercase bg-[#FAFAFB]">
+         <button 
+        className="ml-5"
+        onClick={() => setCurrentPage(currentPage - 1)}
+        disabled={currentPage === 0}
+        >
+        Prev
+        </button>
+     <span className="ml-5">{currentPage + 1}</span>
+      <button 
+      className="ml-5"
+      onClick={() => setCurrentPage(currentPage + 1)}
+      disabled={endIndex >= visibleTrips.length}
+       >
+      Next
+    </button>
+    </div>
+
+
       </div>
     );
 }
