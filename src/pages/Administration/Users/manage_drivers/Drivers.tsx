@@ -867,7 +867,6 @@ const updateDriverStatusInDatabase = async (driverId: string, newStatus: boolean
                                         <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">{drivers.name}</td> 
                                         <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">{drivers.phonenumber}</td> 
                                         <td className="whitespace-nowrap px-2 py-2 relative">{drivers.city}</td>
-                                        <td className="whitespace-nowrap px-2 py-2 relative">{drivers.city}</td>
                                         <td className='whitespace-nowrap px-2 py-2 relative flex flex-row'>
                                         <div  onClick={()=>handleEditClick(drivers)}>
                                             <EditBtn/>

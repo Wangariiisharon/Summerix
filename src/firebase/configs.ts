@@ -2,7 +2,6 @@ import 'firebase/auth';
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, Timestamp } from 'firebase/firestore';
-import { getMessaging, isSupported } from 'firebase/messaging'; // Add this import
 
 const apps = getApps();
 

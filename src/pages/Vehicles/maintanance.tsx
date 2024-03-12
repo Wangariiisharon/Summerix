@@ -729,7 +729,7 @@ const filteredMaintenance = filteredApprovedMaintenance.filter((maintenance: any
                      </div>
                 </div>
             </div> 
-            <div className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
+                    <div className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
           text-sm font-nunito font-bold uppercase bg-[#FAFAFB]">
          <button 
         className="ml-5"

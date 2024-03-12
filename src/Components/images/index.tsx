@@ -11,12 +11,14 @@ interface Props {
 
 export function CardIcon({src, alt}:Props){
     return (
-        <Image src={src} alt={alt} width={60} height={60}/>
+        <Image src={src} alt={alt} width={60} height={60}/> 
+
     )
 } 
 
 export function DashLogo(){
     return (
-        <Image src={dashlogo} alt={'logo'} priority={true}/>
+        <Image src={dashlogo} alt={'logo'} priority={true}/>  
+        
     )
 } 

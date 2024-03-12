@@ -167,7 +167,7 @@ async function generateDepartmentId(organisationId: string) {
                 <div className='p-5'>
                     <div className='flex w-full h-full justify-between items-center mb-12'>
                         <div className='text-xl font-semibold '>
-                            New Department
+                            New GROUP
                         </div>
                         <Button className='bg-red-50 h-12 w-12 flex items-center justify-center rounded-full' handleClick={handleReset}>
                             <XMarkIcon className='h-6 w-6 text-red-400'/>
