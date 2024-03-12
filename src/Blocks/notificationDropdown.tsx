@@ -105,8 +105,8 @@ const markAllAsRead = async () => {
                   const { seconds } = notification?.timestamp || {}; // Use optional chaining
                   const updatedDate = new Date(seconds * 1000);
               return( 
-                <div className='py-2 divide-y divide-solid'> 
-              <div key={notification.id} className='px-4 py-1 hover:bg-gray-100'> 
+                <div key={notification.id} className='py-2 divide-y divide-solid'> 
+              <div className='px-4 py-1 hover:bg-gray-100'> 
                 <span className='font-semibold'>{notification.title} </span>: {notification.message}  
                 <span className='font-semibold px-4 py-1 text-[#6A6B6C] text-sm'>{formatDistanceToNow(updatedDate)}</span>  
               </div>  

@@ -641,7 +641,7 @@ export function TripsTable({ selectedTab,trips,filteredTrips,handleEditClick }: 
       const currentDate = new Date() ;    
 
 
-      const filteredAllocation = trips.filter((trip: any) => {   
+      const filteredAllocation = filteredTrips.filter((trip: any) => {   
 
         const maintenanceDate = new Date(trip?.start_time?.seconds * 1000);
     
@@ -695,7 +695,7 @@ export function TripsTable({ selectedTab,trips,filteredTrips,handleEditClick }: 
                     <th scope="col"
                     className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                     Name
-                    </th>
+                    </th> 
                     <th scope="col"
                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"   
                      >
