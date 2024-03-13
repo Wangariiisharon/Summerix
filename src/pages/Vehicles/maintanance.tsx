@@ -742,7 +742,7 @@ const filteredMaintenance = filteredApprovedMaintenance.filter((maintenance: any
       <button 
       className="ml-5"
       onClick={() => setCurrentPage(currentPage + 1)}
-      disabled={endIndex >= visibleClasses.length}
+      disabled={endIndex >= filteredMaintenance.length}
        >
       Next
     </button>

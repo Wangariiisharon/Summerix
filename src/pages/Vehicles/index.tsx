@@ -310,7 +310,7 @@ export function DummyTable({ selectedTab,vehicles,vehicleTrips }: VehiclesTableP
       <button 
       className="ml-5"
       onClick={() => setCurrentPage(currentPage + 1)}
-      disabled={endIndex >= visibleVehicles.length}
+      disabled={endIndex >= filteredVehicles.length}
        >
       Next
     </button>

@@ -909,7 +909,7 @@ const updateDriverStatusInDatabase = async (driverId: string, newStatus: boolean
       <button 
       className="ml-5"
       onClick={() => setCurrentPage(currentPage + 1)}
-      disabled={endIndex >= visibleDrivers.length}
+      disabled={endIndex >= sortedDrivers.length}
        >
       Next
     </button>

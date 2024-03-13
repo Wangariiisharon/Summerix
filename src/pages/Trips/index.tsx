@@ -22,7 +22,6 @@ import exportDataToCSV  from "../../components/Exports/tripsExport";
 import toast from "react-hot-toast";
 import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider"; 
-// import PlacesAutoComplete from "./places"; 
 import PlacesAutocomplete from 'react-places-autocomplete';
 import { AnyRecord } from "dns";
 
@@ -52,12 +51,13 @@ const SearchBar = ({ placeholder, value, onChange }:any) => {
     />
   );
 };
-
+type Coordinates = {
+  lat: number;
+  lng: number;
+};
 
 export default function TripsComponent() {
     const [open, setOpen] = useState(false)  
-    const [showAddJobcardModal, setShowAddJobcardModal] = useState(false);
-    const [showScheduleMaintenanceModal, setShowScheduleMaintenanceModal] = useState(false);
     const [drivers, setDrivers] = useState<{ id: string; name: string; phonenumber: string }[]>([]);  
     // const [vehicles, setVehicles] = useState<{ id: string; name: string; availability_status: string; lisence_plate: string }[]>([]); 
     const [companies, setCompanies] = useState<{id:string; name: string; vehicle: string[] }[]>([]); 
@@ -65,17 +65,16 @@ export default function TripsComponent() {
     const [selectedCompanyVehicles, setSelectedCompanyVehicles]=useState<string[]>([]);  
     const [companyDetailsFetched, setCompanyDetailsFetched] = useState(false);
     const [selectedCompany, setSelectedCompany] = useState('');
-
-    // const [selectedCompanyVehicles, setSelectedCompanyVehicles] = useState([]);
     const [selectedTab, setSelectedTab] = useState<number>(0); 
     const [fetchedTrips, setfetchedTrips]=useState<DocumentData[]>([]);   
     const [fetchedClients, setfetchedClients]=useState<DocumentData[]>([]);   
-    const [fetchedCompanies, setfetchedCompanies]=useState<DocumentData[]>([]);  
-    const [availableVehicles, setAvailableVehicles] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");  
     const [selectedTrip, setSelectedTrip] = useState<DocumentData | null>(null); 
     const [editModalOpen, setEditModalOpen] = useState(false); 
-    const [isExporting, setIsExporting] = useState(false);
+    const [isExporting, setIsExporting] = useState(false); 
+    const [pickUpLocation, setPickUpLocation] = useState<string>('');
+    const [dropOffLocation, setDropOffLocation] = useState<string>('');
+    const [distance, setDistance] = useState<string>('');
 
     
     const [editFormInitialValues, setEditFormInitialValues] = useState({
@@ -116,18 +115,19 @@ export default function TripsComponent() {
  
     const handleReset = () => {
         setOpen(false)
-    }   
-    const handleClick = () => {
-      setOpen(false)
-  }
+    } 
+    const convertAddressToCoordinates = async (address: string): Promise<Coordinates> => {
+      // Implementation goes here
+      return { lat: 0, lng: 0 }; // Dummy return to satisfy function return type
+    };
+    
+
     const updateSelectedCompanyVehicles = (companyName: string) => {
       if (companyName) {
         const company = companies.find((company) => company.name === companyName);
         if (company) {
           setSelectedCompanyVehicles(company.vehicle); 
-          console.log(setSelectedCompanyVehicles); 
-
-          
+          console.log(setSelectedCompanyVehicles);   
         }
       } else {
         setSelectedCompanyVehicles([]);
@@ -244,7 +244,7 @@ export default function TripsComponent() {
       fetchedCompanies(); 
   }, [organisationId]); 
   console.log(selectedCompanyVehicles,"SelectedCompanyVehicles"); 
-  console.log(selectedCompany,"SelectedCompany");  
+  console.log(selectedCompany,"SelectedCompany");   
 
 
     const handleEditClick = (trip: DocumentData) => { 
@@ -426,11 +426,29 @@ const generateTripId = async (vehicle: string, start_time: string) => {
   }
 };
 
+async function fetchDistance(pickUpAddress:any, dropOffAddress:any) {
+  try {
+      const response = await fetch(`/api/distance?origins=${encodeURIComponent(pickUpAddress)}&destinations=${encodeURIComponent(dropOffAddress)}`);
+      const { distance } = await response.json(); 
+      console.log('fetchDistance:', distance); 
+      // setDistance(distance)
+      
+      if (distance) {
+          return distance; 
+      } else {
+          throw new Error('Distance not found in response');
+      }
+  } catch (error) {
+      console.error('Failed to fetch distance:', error);
+      throw error;
+  }
+}
 
-
-const handleSubmit = async (values: { requested_by: string; pick_up_location: string; drop_off_location: string; vehicle: string; start_time: string; end_time: string; cargo_type: string; cargo_quantity: string; memo: string; company: string; client: string; dealValue: number;fuel:number,mileage_fee:number}) => {
+const handleSubmit = async (values: { requested_by: string; pick_up_location: string; drop_off_location: string; vehicle: string; start_time: string; end_time: string; cargo_type: string; cargo_quantity: string; memo: string; company: string; client: string; dealValue: number;fuel:number,mileage_fee:number;}) => {
     setOpen(false); 
-    console.log("Submitted Values:", values);
+    console.log("Submitted Values:", values); 
+    console.log("Distance handlesubmit:", distance);
+    
     try {
         if (!values) {
             console.error('Form values are undefined');
@@ -489,29 +507,36 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
         return;
       }
       if (
-        !values.client)  {
+        !values.client){
         console.error("Required form fields are missing"); 
         toast.error(`Please fill the field  Client`);
         return;
       } 
       if (
-        !values.dealValue)  {
+        !values.dealValue){
         console.error("Required form fields are missing"); 
         toast.error(`Please fill the field  Deal Value`);
         return;
       }      
-      if (!values.fuel)  {
+      if (!values.fuel){
         console.error("Required form fields are missing"); 
         toast.error(`Please fill the field  Fuel`);
         return;
       } 
-      if (!values.mileage_fee)  {
+      if (!values.mileage_fee){
         console.error("Required form fields are missing"); 
         toast.error(`Please fill the field  Mileage Fee`);
         return;
-      }
-      // mileage_fee
-            // Query Firestore to get the number of trips for the selected vehicle
+      }  
+      const pickUpAddress = values.pick_up_location;
+      const dropOffAddress = values.drop_off_location; 
+      console.log("PickUpAddress",pickUpAddress); 
+      console.log("dropOffAddress",dropOffAddress);
+
+    //  const distanceValue = await fetchDistance(pickUpAddress, dropOffAddress);
+     const distanceValue = await fetchDistance(pickUpAddress, dropOffAddress);
+     console.log("Fetched Distance Value:", distanceValue);
+    // Query Firestore to get the number of trips for the selected vehicle
         const tripsQuery = query(collection(fbDb, 'trips'), where('vehicle', '==', values.vehicle));
         const tripsSnapshot = await getDocs(tripsQuery);
         const numberOfTrips = tripsSnapshot.size;
@@ -553,7 +578,8 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
             client: values.client, 
             dealValue: values.dealValue, 
             fuel: values.fuel, 
-            mileage_fee: values.mileage_fee,
+            mileage_fee: values.mileage_fee, 
+            distance:distanceValue
         };
 
         const docRef = await addDoc(collection(fbDb, 'trips'), maintenanceData);
@@ -649,21 +675,6 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                            ))}
                           </Tab.List>
                         </Tab.Group>  
-                        <div className='flex justify-end'>
-                    {/* <div className='flex'>
-                        <Button className='bg-white px-3 uppercase flex items-center rounded text-base font-semibold' handleClick={handleClick}>
-                            Nairobi,Kenya
-                            <ChevronDownIcon className='ml-4 h-4 w-4'/>
-                        </Button>
-                        </div> */}
-                        {/* <Button className='ml-2 bg-white px-3 uppercase flex items-center rounded text-base font-semibold' handleClick={handleClick}>
-                        Today
-                        <ChevronDownIcon className='ml-4 h-4 w-4'/>
-                    </Button> */}
-
-                    
-
-                </div> 
                         </div>
 
                  <div className='flex w-full flex-row mt-6'>  
@@ -761,9 +772,6 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                         fuel: 0,
                         mileage_fee: 0 ,
 
-
-
-            
                                       }}
                         onSubmit={(values) => handleSubmit(values)  
                         }  
@@ -776,7 +784,8 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                           <label className="form-label">PICK UP LOCATION</label>
                           <PlacesAutocomplete
                                 value={values.pick_up_location}
-                                onChange={(address) => setFieldValue('pick_up_location', address)}
+                                onChange={(address) => setFieldValue('pick_up_location', address)} 
+
                                      >
                                        {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
                                      <div>
@@ -825,9 +834,8 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                   )}
                  </PlacesAutocomplete>
                     </label>
-                         </div>
-
-
+                         </div> 
+           
                              <div className='flex w-full justify-between mt-8'>  
                             <label className="block">
                              <label className="form-label">START TIME</label>
@@ -976,8 +984,18 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                              className="form-input bg-grey w-48"
                             />
                             </label> 
-                            </div>
 
+                            <label className="block">
+                            <label className="form-label">DISTANCE</label>
+                             <Field
+                             type="text"
+                             name="distance" 
+                             disabled
+                             value={distance}
+                             className="form-input bg-grey w-48" 
+                            />
+                            </label> 
+                            </div>
                             <p className="mt-5 font-semibold"> CARGO</p>  
                             <div className='flex w-full justify-between'> 
   
@@ -1414,7 +1432,7 @@ interface TripsPerVehicle {
       <button 
       className="ml-5"
       onClick={() => setCurrentPage(currentPage + 1)}
-      disabled={endIndex >= visibleTrips.length}
+      disabled={endIndex >= filteredAllocation.length}
        >
       Next
     </button>
