@@ -1,0 +1,94 @@
+[debug] [2024-03-11T08:45:30.444Z] ----------------------------------------------------------------------
+[debug] [2024-03-11T08:45:30.445Z] Command:       /Users/abdulosman/.nvm/versions/node/v20.10.0/bin/node /Users/abdulosman/.nvm/versions/node/v20.10.0/bin/firebase deploy
+[debug] [2024-03-11T08:45:30.445Z] CLI Version:   13.0.3
+[debug] [2024-03-11T08:45:30.446Z] Platform:      darwin
+[debug] [2024-03-11T08:45:30.446Z] Node Version:  v20.10.0
+[debug] [2024-03-11T08:45:30.446Z] Time:          Mon Mar 11 2024 10:45:30 GMT+0200 (Eastern European Standard Time)
+[debug] [2024-03-11T08:45:30.446Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-03-11T08:45:30.490Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-03-11T08:45:30.491Z] > authorizing via signed-in user (abdul.osman@gessic.com)
+[debug] [2024-03-11T08:45:30.491Z] [iam] checking project truck-it-bf0b2 for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2024-03-11T08:45:30.492Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/truck-it-bf0b2:testIamPermissions [none]
+[debug] [2024-03-11T08:45:30.492Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/truck-it-bf0b2:testIamPermissions x-goog-quota-user=projects/truck-it-bf0b2
+[debug] [2024-03-11T08:45:30.492Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/truck-it-bf0b2:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2024-03-11T08:45:32.417Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/truck-it-bf0b2:testIamPermissions 200
+[debug] [2024-03-11T08:45:32.417Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/truck-it-bf0b2:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2024-03-11T08:45:32.418Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/truck-it-bf0b2/serviceAccounts/truck-it-bf0b2@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2024-03-11T08:45:32.418Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/truck-it-bf0b2/serviceAccounts/truck-it-bf0b2@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2024-03-11T08:45:34.348Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/truck-it-bf0b2/serviceAccounts/truck-it-bf0b2@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2024-03-11T08:45:34.349Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/truck-it-bf0b2/serviceAccounts/truck-it-bf0b2@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2024-03-11T08:45:34.350Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/truck-it-bf0b2 [none]
+[debug] [2024-03-11T08:45:34.966Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/truck-it-bf0b2 200
+[debug] [2024-03-11T08:45:34.966Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/truck-it-bf0b2 {"projectId":"truck-it-bf0b2","projectNumber":"444807794647","displayName":"Truck IT","name":"projects/truck-it-bf0b2","resources":{"hostingSite":"truck-it-bf0b2","storageBucket":"truck-it-bf0b2.appspot.com","locationId":"us-central"},"state":"ACTIVE","etag":"1_8bfccb06-8f12-4cce-ae13-5c0a2f60b47a"}
+[debug] [2024-03-11T08:45:36.239Z] defaultcredentials: writing to file /Users/abdulosman/.config/firebase/abdul_osman_gessic.com_application_default_credentials.json
+[debug] [2024-03-11T08:45:36.242Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/truck-it-bf0b2/sites pageToken=&pageSize=10
+[debug] [2024-03-11T08:45:38.338Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/truck-it-bf0b2/sites 200
+[debug] [2024-03-11T08:45:38.338Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/truck-it-bf0b2/sites {"sites":[{"name":"projects/truck-it-bf0b2/sites/truck-it-bf0b2","defaultUrl":"https://truck-it-bf0b2.web.app","type":"DEFAULT_SITE"}]}
+[debug] [2024-03-11T08:45:38.339Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/truck-it-bf0b2/sites 
+[debug] [2024-03-11T08:45:38.871Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/truck-it-bf0b2/sites 200
+[debug] [2024-03-11T08:45:38.872Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/truck-it-bf0b2/sites {"sites":[{"name":"projects/truck-it-bf0b2/sites/truck-it-bf0b2","defaultUrl":"https://truck-it-bf0b2.web.app","type":"DEFAULT_SITE"}]}
+[debug] [2024-03-11T08:45:38.873Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/truck-it-bf0b2/webApps/-/config [none]
+[debug] [2024-03-11T08:45:39.816Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/truck-it-bf0b2/webApps/-/config 200
+[debug] [2024-03-11T08:45:39.816Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/truck-it-bf0b2/webApps/-/config {"projectId":"truck-it-bf0b2","appId":"1:444807794647:web:a2754d536a13ff3df90592","storageBucket":"truck-it-bf0b2.appspot.com","locationId":"us-central","apiKey":"AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE","authDomain":"truck-it-bf0b2.firebaseapp.com","messagingSenderId":"444807794647","measurementId":"G-FC1YTHYRH9"}
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2024-03-11T08:45:42.510Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/truck-it-bf0b2/sites/truck-it-bf0b2 [none]
+[debug] [2024-03-11T08:45:42.940Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/truck-it-bf0b2/sites/truck-it-bf0b2 200
+[debug] [2024-03-11T08:45:42.940Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/truck-it-bf0b2/sites/truck-it-bf0b2 {"name":"projects/truck-it-bf0b2/sites/truck-it-bf0b2","defaultUrl":"https://truck-it-bf0b2.web.app","type":"DEFAULT_SITE"}
+[info]    Linting and checking validity of types ...
+
+[info] 
+Failed to compile.
+
+[info] 
+./src/Blocks/notificationDropdown.tsx
+108:17  Error: Missing "key" prop for element in iterator  react/jsx-key
+
+./src/components/Authentication/AuthProvider.tsx
+82:6  Warning: React Hook useEffect has a missing dependency: 'router'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/Exports/maps.tsx
+44:6  Warning: React Hook useEffect has missing dependencies: 'dropOffLocation' and 'pickUpLocation'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/Headers/index.tsx
+103:9  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+104:9  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/ImageInputs/index.tsx
+22:9  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/pages/Administration/Users/manage_drivers/driversDetails.tsx
+85:7  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/pages/Dashboard/ClientsOverView.tsx
+90:69  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/pages/Vehicles/vehicle_allocation.tsx
+682:23  Error: Missing "key" prop for element in iterator  react/jsx-key
+
+./src/pages/_app.tsx
+17:9  Error: Synchronous scripts should not be used. See: https://nextjs.org/docs/messages/no-sync-scripts  @next/next/no-sync-scripts
+26:7  Error: Synchronous scripts should not be used. See: https://nextjs.org/docs/messages/no-sync-scripts  @next/next/no-sync-scripts
+
+./src/pages/auth/index.tsx
+62:6  Warning: React Hook useEffect has a missing dependency: 'router'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+161:19  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/pages/signin/index.tsx
+57:6  Warning: React Hook useEffect has a missing dependency: 'router'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+156:19  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
+
+[debug] [2024-03-11T08:45:45.656Z] Error: ENOENT: no such file or directory, open '/Users/abdulosman/Projects/truckit/.next/export-marker.json'
+[error] 
+[error] Error: An unexpected error has occurred.
