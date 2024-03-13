@@ -734,7 +734,7 @@ export default function Vehicles(){
                     </tr>
                   </thead>
                   <tbody className="bg-[#FAFAFB]">
-                    {sortedVehicles.map((vehicle, index) => { 
+                    {visibleVehicles.map((vehicle, index) => { 
                       return (
                         <Fragment key={index}>
                           <tr className="hover:bg-gray-100">

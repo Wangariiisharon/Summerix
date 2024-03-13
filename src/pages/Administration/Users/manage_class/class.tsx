@@ -327,8 +327,6 @@ function CitiesTable({ clients, }: ClientsTableProps) {
             </div>
             </div>      
         </div>  
-
-        
         <div className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
           text-sm font-nunito font-bold uppercase bg-[#FAFAFB]">
          <button 
@@ -342,7 +340,7 @@ function CitiesTable({ clients, }: ClientsTableProps) {
       <button 
       className="ml-5"
       onClick={() => setCurrentPage(currentPage + 1)}
-      disabled={endIndex >= visibleClasses.length}
+      disabled={endIndex >= filteredClients.length}
        >
       Next
     </button>

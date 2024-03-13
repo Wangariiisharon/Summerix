@@ -785,13 +785,11 @@ export function TripsTable({ selectedTab,trips,filteredTrips,handleEditClick }: 
       <button 
       className="ml-5"
       onClick={() => setCurrentPage(currentPage + 1)}
-      disabled={endIndex >= visibleTrips.length}
+      disabled={endIndex >= filteredAllocation.length}
        >
       Next
     </button>
     </div>
-
-
       </div>
     );
 }

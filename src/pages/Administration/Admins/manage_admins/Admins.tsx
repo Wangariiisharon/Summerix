@@ -10,7 +10,6 @@ import {TableBody} from "../../../../components/Table/Row";
 import {CheckCircleIcon,CheckIcon, XCircleIcon, XMarkIcon} from "@heroicons/react/24/outline";
 import {useRouter} from "next/router";
 import { FormModal } from "@/components/Modals/FormModal";
-// import { Field, Form, Formik } from "formik";
 import { Formik, Field, Form } from 'formik/dist/index';
 import firebaseApp, { fbDb}  from "@/firebase/configs";
 import { User, createUserWithEmailAndPassword, getAuth,sendSignInLinkToEmail} from 'firebase/auth';
@@ -50,13 +49,11 @@ export default function Admins() {
         setSearchQuery(query);
       };  
       
-      const filteredAdmins = fetchedAdmins.filter((admin) => {
+        const filteredAdmins = fetchedAdmins.filter((admin) => {
         const fullName = `${admin.firstname} ${admin.lastname}`.toLowerCase();
         const nameMatch = fullName.includes(searchQuery.toLowerCase());
-      
         // Check if status is true (either boolean or string 'true')
         const isStatusTrue = admin.status === true || admin.status === 'true';
-      
         return isStatusTrue && nameMatch;
       });
       
@@ -202,9 +199,6 @@ export default function Admins() {
             toast.error(`A User with the Email '${values.email}' already exists in the organization`);
             return;
         }
-
-    
-    
             // Assuming 'inviters' is the collection where inviter data is stored
             const inviterQuery = query(collection(fbDb, 'admins'), where('userId', '==', inviterUid));
             const inviterSnapshot = await getDocs(inviterQuery);
@@ -251,7 +245,7 @@ export default function Admins() {
     
                 // Send invitation email
                 const actionCodeSettings = {
-                    url:`https://truck-it-bf0b2.web.app/auth?adminId=${docRef.id}`,
+                    url:`https://truck-it-bf0b2.web.app/auth?adminId=${docRef.id}`,  
                     handleCodeInApp: true,
                 };
     

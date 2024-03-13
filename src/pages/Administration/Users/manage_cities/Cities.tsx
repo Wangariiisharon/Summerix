@@ -406,7 +406,7 @@ function CitiesTable({ clients, }: ClientsTableProps) {
       <button 
       className="ml-5"
       onClick={() => setCurrentPage(currentPage + 1)}
-      disabled={endIndex >= visibleClients.length}
+      disabled={endIndex >= filteredClients.length}
        >
       Next
     </button>

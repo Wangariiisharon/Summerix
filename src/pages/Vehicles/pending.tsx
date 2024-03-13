@@ -702,7 +702,7 @@ export function MaintananceTable({ selectedTab,maintananceList,isSuperAdmin,hand
       <button 
       className="ml-5"
       onClick={() => setCurrentPage(currentPage + 1)}
-      disabled={endIndex >= visibleClasses.length}
+      disabled={endIndex >= filteredMaintenance.length}
        >
       Next
     </button>

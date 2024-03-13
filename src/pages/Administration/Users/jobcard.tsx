@@ -247,7 +247,7 @@ const handleAddJobcard = async (values: { name: any }) => {
       <button 
       className="ml-5"
       onClick={() => setCurrentPage(currentPage + 1)}
-      disabled={endIndex >= visibleJobCards.length}
+      disabled={endIndex >= fetchedJobcards.length}
        >
       Next
     </button>
