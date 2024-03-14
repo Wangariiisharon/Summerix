@@ -92,7 +92,8 @@ export default function TripsComponent() {
         tripId: "", 
         dealValue:0,
         fuel:0,
-        mileage_fee:0
+        mileage_fee:0,
+        distance:""
       });
     const router=useRouter()  
 
@@ -268,7 +269,8 @@ export default function TripsComponent() {
             tripId:trip.tripId,
            dealValue:trip.dealValue,
             fuel:trip.fuel,
-            mileage_fee:trip.mileage_fee
+            mileage_fee:trip.mileage_fee, 
+            distance:trip.distance
 
         });
         setEditModalOpen(true);
@@ -294,7 +296,8 @@ export default function TripsComponent() {
         tripId:any
         dealValue:any,
         fuel:any,
-        mileage_fee:any
+        mileage_fee:any 
+        distance:any
 
       }) => { 
         if (!selectedTrip) {
@@ -345,7 +348,8 @@ export default function TripsComponent() {
             tripId:values.tripId,
             dealValue:values.dealValue,
             fuel:values.fuel,
-            mileage_fee:values.mileage_fee,
+            mileage_fee:values.mileage_fee, 
+            distance:values.distance
           });
 
           // Update the local fetchedVehicles state
@@ -369,6 +373,8 @@ export default function TripsComponent() {
                   dealValue:values.dealValue,
                   fuel:values.fuel,
                   mileage_fee:values.mileage_fee,
+                  distance:values.distance
+
                 }
               : trip
           );
@@ -1160,7 +1166,17 @@ const handleSubmit = async (values: { requested_by: string; pick_up_location: st
                              placeholder="Ksh"
                              className="form-input bg-grey w-48"
                             />
-                            </label> 
+                            </label>  
+                            <label className="block">
+                             <label className="form-label">DISTANCE</label>
+                             <Field
+                             disabled
+                             type="string"
+                             name="distance"
+                             value={values.distance} 
+                             className="form-input bg-grey w-48"
+                            />
+                            </label>
                             </div>
                             <p className="mt-5 font-semibold"> Cargo</p>  
                             <div className='flex w-full justify-between'> 
