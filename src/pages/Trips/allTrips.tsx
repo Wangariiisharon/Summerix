@@ -55,7 +55,8 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
       tripId: "", 
       dealValue: 0,
       fuel:0,
-      mileage_fee:0
+      mileage_fee:0,
+      distance:"",
 
     });
       const [selectedTabIndex, setSelectedTabIndex] = useState(0);
@@ -90,7 +91,8 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
             tripId:trip.tripId,
             fuel:trip.fuel,
             dealValue:trip.dealValue ,
-            mileage_fee:trip.mileage_fee
+            mileage_fee:trip.mileage_fee,
+            distance:trip.distance
 
         });
         setEditModalOpen(true);
@@ -116,7 +118,8 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
         tripId:any,
         fuel:any,
         dealValue:any,
-        mileage_fee:any
+        mileage_fee:any,
+        distance:any
 
       }) => { 
         if (!selectedTrip) {
@@ -167,7 +170,8 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
             tripId:values.tripId,  
             dealValue:values.dealValue,
             fuel:values.fuel,
-            mileage_fee:values.mileage_fee
+            mileage_fee:values.mileage_fee,
+            distance:values.distance
             
           });
 
@@ -191,7 +195,9 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
                   tripId:values.tripId,
                   fuel:values.fuel,
                   dealValue:values.dealValue,
-                  mileage_fee:values.mileage_fee
+                  mileage_fee:values.mileage_fee,
+                  distance:values.distance
+
 
 
                 }
@@ -528,6 +534,16 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
                              placeholder="Ksh"
                              className="form-input bg-grey w-48"
                             />
+                            </label>  
+                            <label className="block">
+                             <label className="form-label">DISTANCE</label>
+                             <Field
+                             disabled
+                             type="text"
+                             name="distance"
+                             value={values.distance} 
+                             className="form-input bg-grey w-48"
+                            />
                             </label> 
                             </div> 
                      
@@ -790,6 +806,7 @@ export function TripsTable({ selectedTab,trips,filteredTrips,handleEditClick }: 
       Next
     </button>
     </div>
+
       </div>
     );
 }
