@@ -1,5 +1,5 @@
 import { Fragment, ReactNode, useRef, useState ,useEffect,useContext} from 'react';
-import { CalendarIcon, ChartPieIcon, DocumentDuplicateIcon, FolderIcon, HomeIcon, UsersIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, ChartPieIcon, DocumentDuplicateIcon, FolderIcon, HomeIcon, UsersIcon,TruckIcon,ArrowUpRightIcon,ArrowTrendingUpIcon} from '@heroicons/react/24/outline';
 import { DashLogo } from '@/components/images';
 import { useRouter } from 'next/router';
 import React from 'react';
@@ -129,13 +129,13 @@ export default function SiteNav({ children }: Props) {
   
 const isSuperAdmin = adminDetails?.super_admin; 
 console.log("Admin Details",adminDetails); 
-
+ const truck=<i className="fa-regular fa-truck-moving"></i>
 
 const navigation = [
   { name: 'Dashboard', href: '/Dashboard', icon: HomeIcon, current: true,visible: true },
   { name: 'Administration', href: '/Administration', icon: UsersIcon, current: false,  visible:isSuperAdmin},
-  { name: 'Vehicles', href: '/Vehicles', icon: FolderIcon, current: false, visible: true },
-  { name: 'Trips', href: '/Trips', icon: CalendarIcon, current: false, visible: true },
+  { name: 'Vehicles', href: '/Vehicles', icon: TruckIcon, current: false, visible: true },
+  { name: 'Trips', href: '/Trips', icon: ArrowTrendingUpIcon, current: false, visible: true },
   { name: 'Report', href: '/Clients', icon: DocumentDuplicateIcon, current: false, visible: true },
 ];
 
@@ -160,10 +160,10 @@ const navigation = [
             <div className="flex h-16 py-3 pb-4 shrink-0 items-center">
               <DashLogo /> 
             </div>
-            <nav className="flex flex-1 flex-col">
+            <nav className="flex mt-2 flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-7">
                 <li>
-                <ul role="list" className="-mx-2 space-y-1">
+                <ul role="list" className="-mx-2 space-y-3">
                    {navigation.map((item) => { 
                             if (item.visible) {
                          return (
