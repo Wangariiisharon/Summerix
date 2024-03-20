@@ -57,8 +57,8 @@ export default function OnRoute(){
  
     
     return(
-        <>
-        <div className='bg-white shadow rounded-lg w-2/3 mr-2'>
+        <> 
+        <div className='bg-white shadow rounded-lg w-1/2'>
             <div className="sm:px-10 lg:px-12 pt-8">
                 <h2 id="applicant-information-title" className="text-lg font-bold leading-6">
                     On Route
@@ -123,7 +123,7 @@ export default function OnRoute(){
                 </div>
             </div>
 
-        </div>
+        </div> 
         </>
     )
 }

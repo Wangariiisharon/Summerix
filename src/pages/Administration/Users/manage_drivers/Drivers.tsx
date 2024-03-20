@@ -372,7 +372,7 @@ useEffect(() => {
           setSelectedDriver(null);
           setEditModalOpen(false);
         } catch (error) {
-          console.error("Error updating Vehicle:", error);
+          console.error("Error updating Driver:", error);
         }
       }; 
       const handleExportButtonClick = async () => {

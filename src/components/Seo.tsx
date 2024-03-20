@@ -40,4 +40,5 @@ const Seo = ({ lang, title, description, imageURL }: Props) => {
   );
 };
 
-export default Seo;
+export default Seo; 
+

@@ -17,7 +17,7 @@ export default function MyApp({ Component, pageProps }: any) {
       </Head> 
       <Script
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE&libraries=places"
-        // strategy="beforeInteractive"
+        strategy="beforeInteractive"
       />
         <AuthProvider>
         <Component {...pageProps} />

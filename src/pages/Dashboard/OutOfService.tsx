@@ -54,7 +54,7 @@ export default function OutOfService() {
         <> 
         {/* w-1/2 mt-8 grid max-w-3xl lg:max-w-7xl */}
         {/* bg-white shadow rounded-lg w-1/3 ml-2 */}
-            <div className='mt-8 bg-white shadow rounded-lg w-1/2 ml-2'>
+            <div className='mt-8 bg-white shadow rounded-lg w-1/2'>
                 <div className="px-4 pt-8 sm:px-6">
                     <h2 id="applicant-information-title" className="text-lg font-bold leading-6">
                         Out Of Service

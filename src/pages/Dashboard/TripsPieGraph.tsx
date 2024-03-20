@@ -1,5 +1,4 @@
 import {Doughnut} from "react-chartjs-2";
-import {ThisWeek} from "@/pages/Dashboard/index";
 import {Chart as ChartJS, ArcElement, Tooltip, ScriptableContext} from 'chart.js';
 import {AnyObject} from "chart.js/dist/types/basic";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
@@ -94,7 +93,7 @@ export default function TripsPieGraph() {
     }
     return (
         <>
-            <div className='rounded-lg bg-white shadow lg:min-w-[20] h-full max-h-[24]'>
+            <div className='rounded-lg w-1/4 bg-white shadow lg:min-w-[20] h-full max-h-[24]'>
             <div className="sm:px-6 flex w-full items-center justify-between">
                     <h2 id="applicant-information-title" className="text-xl font-bold leading-6">
                         Trips Completed
