@@ -13,7 +13,8 @@ import {Fragment, useState,useEffect} from "react";
 import {ChevronDownIcon} from "@heroicons/react/24/solid";
 import { fbDb } from "@/firebase/configs";
 import { DocumentData, getDocs, collection, query, where } from "firebase/firestore"; 
-import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
+import SiteNav from "@/Blocks/SiteNav";
 
 
 
@@ -59,7 +60,8 @@ export default function DashboardComponent() {
     
             setFetchedVehicles(vehiclesData); 
 
-            const totalVehicles = vehiclesData.length;
+            const totalVehicles = vehiclesData.length; 
+            setTrucksAvailable(totalVehicles)
 
             // Calculate overall earnings
             const totalDealValue = tripsData.reduce((acc, trip) => {
@@ -82,7 +84,11 @@ export default function DashboardComponent() {
       
             // Calculate available trucks
             const availableTrucks = totalVehicles - vehiclesOnTrip.length - vehiclesOutOfService.length;
-            setTrucksAvailable(availableTrucks);
+            // setTrucksAvailable(availableTrucks);  
+            // setTrucksAvailable(isNaN(availableTrucks) ? 0 : availableTrucks);
+
+            setEarningsPerTruck(isNaN(roundedEarningsPerTruck) ? 0 : roundedEarningsPerTruck);
+
 
           } else{
             console.error('Organisation ID is not available.');
@@ -102,9 +108,9 @@ export default function DashboardComponent() {
       { amount: trucksAvailable.toString(), href: '#', icon: '/icons/cashIcon.png', name: 'Trucks Available' },
     ];
     return (
-        <SiteLayout>
+        <SiteNav>
             <div  className="h-screen">
-                <p className="text-lg font-nunito font-bold mt-2 ml-5">Dashboard</p>
+                <p className="text-lg font-nunito font-bold mt-2 ml-4">Dashboard</p>
 
                 <div className='mt-8 flex justify-between '> 
                     {cards.map((card, index) => {
@@ -116,38 +122,25 @@ export default function DashboardComponent() {
                         )
                     })}
                 </div>
-                <div className='w-full flex justify-between'>
+                <div className=' flex justify-between'>
                     <VehicleOverview/> 
                     <OutOfService/>
- 
-                     {/* <TripsOverView/>  */}
- 
-                    {/* <FuelCostOverView/>   */}
-                </div>
-                <div className='flex w-full justify-between mt-8 '>
-                    <TripsPieGraph/> 
-                    <OnRoute/>
-
-                    {/* <TripsOverView/> */}
-                    {/* <ClientsOverView/> */}
-                </div>
-                <div className='flex w-full mt-8'>
-                    {/* <OnRoute/> */}
-                    {/* <OutOfService/> */}
-                </div>
+                </div> 
+                {/* <div className='flex flex-row'>
+                    <TripsPieGraph/>  
+                    <div className="ml-6">
+                    <OnRoute/> 
+                    </div>
+                </div> */} 
+                <div className=' flex justify-between mt-8'>
+                <TripsPieGraph/>  
+                <OnRoute/> 
+                </div> 
+                
 
             </div>
-            </SiteLayout>
+            </SiteNav>
     )
 }
 
-export function ThisWeek() {
-    return (
-        <>
-            <div className='text-sm flex items-center'>
-                This Week
-                <ChevronDownIcon className='ml-2 h-4 w-4'/>
-            </div>
-        </>
-    )
-}
+

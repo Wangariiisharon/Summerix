@@ -1,0 +1,1 @@
+{"version":3,"sources":["is-dev.ts"],"names":["isDev","__DEV__"],"mappings":"8EAAO,GAAMA,CAAAA,KAAK,CAAG,MAAOC,CAAAA,OAAP,GAAmB,WAAnB,CAAiCA,OAAjC,CAA2C,IAAzD,C","sourcesContent":["export const isDev = typeof __DEV__ !== 'undefined' ? __DEV__ : true\n"]}

@@ -1,0 +1,1 @@
+{"version":3,"sources":["empty.ts"],"names":["empty","object","array"],"mappings":"8EAAO,GAAMA,CAAAA,KAAK,CAAG,CACpBC,MAAM,CAAE,EADY,CAEpBC,KAAK,CAAE,EAFa,CAAd,C","sourcesContent":["export const empty = {\n\tobject: {},\n\tarray: [],\n}\n"]}

@@ -126,10 +126,9 @@ export default function SiteNav({ children }: Props) {
 
 }, [currentUser, organisationId]); 
   
-  
+
 const isSuperAdmin = adminDetails?.super_admin; 
 console.log("Admin Details",adminDetails); 
- const truck=<i className="fa-regular fa-truck-moving"></i>
 
 const navigation = [
   { name: 'Dashboard', href: '/Dashboard', icon: HomeIcon, current: true,visible: true },
@@ -155,7 +154,7 @@ const navigation = [
           <div
             ref={drawerRef}
             // className={`flex flex-col bg-d-blue h-screen overflow-y-auto px-6 lg:w-72 sm:w-60 ${isDrawerOpen ? 'lg:w-72 h-screen' : 'hidden'}`} 
-            className={`flex flex-col bg-d-blue h-screen overflow-y-auto px-6 lg:w-72 sm:w-60 ${isDrawerOpen ? 'block' : 'hidden'} lg:block`}
+            className={`flex flex-col bg-d-blue h-screen overflow-y-auto px-6 lg:w-72 sm:w-60 ${isDrawerOpen ? 'block' : 'hidden'}`}
           >
             <div className="flex h-16 py-3 pb-4 shrink-0 items-center">
               <DashLogo /> 

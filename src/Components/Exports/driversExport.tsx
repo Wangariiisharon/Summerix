@@ -30,6 +30,10 @@ export default async function ExportDriverDataToCSV() {
         Profile: driver.profile,
         Id: driver.identity_card,
         GoodConduct: driver.good_conduct,
+        MedicalReport: driver.medical_report,
+        Archive: driver.archive,
+        Driver_Id:driver.driversId,
+
       }));
 
       // Create the CSV string
@@ -45,3 +49,5 @@ export default async function ExportDriverDataToCSV() {
     throw new Error("An error occurred");
   }
 }
+
+

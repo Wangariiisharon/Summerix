@@ -1,63 +1,50 @@
-
 import React, { useState, useEffect } from 'react';
-import { GoogleMap, Marker, LoadScript } from '@react-google-maps/api';
+import { GoogleMap, Marker} from '@react-google-maps/api';
 
 interface MapComponentProps {
   dropOffLocationName: string;
   pickUpLocationName: string;
 }
 
-const MapComponent: React.FC<MapComponentProps> = ({ dropOffLocationName, pickUpLocationName }) => {
+const MapComponent: React.FC<MapComponentProps> = ({ dropOffLocationName, pickUpLocationName }) => {  
+  console.log("dropOffLocationName",dropOffLocationName); 
+  console.log("pickUpLocationName",pickUpLocationName);
+
   const [dropOffLocation, setDropOffLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [pickUpLocation, setPickUpLocation] = useState<{ lat: number; lng: number } | null>(null);
 
+  // Use environment variable for API Key
+  const apiKey = process.env.MY_MAPS_API_KEY!;
+
   useEffect(() => {   
-    const fetchCoordinates = async () => {
-      if (dropOffLocationName) {
-        const dropOffResponse = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(dropOffLocationName)}&key=AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE`
+    const fetchCoordinates = async (locationName: string, setLocation: React.Dispatch<React.SetStateAction<{ lat: number; lng: number } | null>>) => {
+      if (!locationName) return;
+      
+      try {
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(locationName)}&key=${apiKey}`
         );
-        const dropOffData = await dropOffResponse.json();
-        if (dropOffData.results && dropOffData.results.length > 0) {
-          const { lat, lng } = dropOffData.results[0].geometry.location;
-          setDropOffLocation({ lat, lng }); 
-          console.log("dropOffLocation :",dropOffLocation);
-          
+        const data = await response.json();
+        if (data.results && data.results.length > 0) {
+          const { lat, lng } = data.results[0].geometry.location;
+          setLocation({ lat, lng });          
         }
-      }
-
-      if (pickUpLocationName) {
-        const pickUpResponse = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(pickUpLocationName)}&key=AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE`
-        );
-        const pickUpData = await pickUpResponse.json();
-        if (pickUpData.results && pickUpData.results.length > 0) {
-          const { lat, lng } = pickUpData.results[0].geometry.location;
-          setPickUpLocation({ lat, lng });
-          console.log("pickUpLocation :",pickUpLocation);
-
-        }
+      } catch (error) {
+        console.error('Failed to fetch location data:', error);
       }
     };
 
-    fetchCoordinates();
-  }, [dropOffLocationName, pickUpLocationName]);
-   console.log("dropOffLocation Cordinates",dropOffLocation); 
-   console.log("pickUpLocation Cordinates",pickUpLocation);
-
-   
-  // Define your Google Maps API key
-  const apiKey = 'AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE';
+    fetchCoordinates(dropOffLocationName, setDropOffLocation);
+    fetchCoordinates(pickUpLocationName, setPickUpLocation);
+  }, [dropOffLocationName, pickUpLocationName]); 
 
   return (
-    <LoadScript googleMapsApiKey={apiKey}>
+
        <GoogleMap
-        mapContainerStyle={{ width: '100%', height: '100px' }}
+        mapContainerStyle={{ width: '100%', height: '400px' }} // Adjust height for better visibility
         center={{ lat: -1.286389, lng: 36.817223 }}
-        zoom={6}
+        zoom={10} // Adjust zoom level for better visibility
       >    
-   
-        {/* Marker for drop off location */}
         {pickUpLocation && (
           <Marker
             position={pickUpLocation}
@@ -65,7 +52,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ dropOffLocationName, pickUp
           />
         )}
 
-        {/* Marker for pick up location */}
         {dropOffLocation && (
           <Marker
             position={dropOffLocation}
@@ -73,8 +59,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ dropOffLocationName, pickUp
           />
         )}
       </GoogleMap>
-    </LoadScript>
   );
 };
 
-export default MapComponent;
+export default MapComponent; 
+

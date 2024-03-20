@@ -245,7 +245,7 @@ export default function Admins() {
     
                 // Send invitation email
                 const actionCodeSettings = {
-                    url:`https://truck-it-bf0b2.web.app/auth?adminId=${docRef.id}`,  
+                    url:`https://truck-it-bf0b2.web.app/auth?adminId=${docRef.id}`,   
                     handleCodeInApp: true,
                 };
     

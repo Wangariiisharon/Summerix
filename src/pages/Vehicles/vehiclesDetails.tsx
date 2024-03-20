@@ -6,7 +6,6 @@ import { DocumentData, collection, doc, getDoc, getDocs } from 'firebase/firesto
 import Link from 'next/link'; 
 import {Doughnut} from "react-chartjs-2";
 import { Timestamp } from 'firebase/firestore';
-import {ThisWeek} from "@/pages/Dashboard/index"; 
 import Image from 'next/image' 
 import {AddButton, Button, DeleteBtn, EditBtn} from "@/components/Buttons"; 
 import {PlusIcon, XMarkIcon} from "@heroicons/react/24/outline";
@@ -19,6 +18,7 @@ import { getFirestore, updateDoc } from 'firebase/firestore';
 import { format } from 'date-fns'; 
 import MapComponent from '../../components/Exports/maps';
 import { toast } from 'react-hot-toast';
+import { log } from 'console';
 
 
 
@@ -88,7 +88,10 @@ export default function VehiclesDetails() {
   const [vehicleDetails, setvehicleDetails] = useState<VehicleDetailsProps['vehicle'] | null>(null);  
   const [Vehicles, setVehicles] = useState<string[]>([]); 
   const [fetchedTrips, setFetchedTrips]=useState<DocumentData[]>([]);      
-  const [tripDetails, setTripDetails] = useState({ start_time: 0, drop_off_location: "", pick_up_location: "" ,requested_by:{name: ""}}); 
+  const [tripDetails, setTripDetails] = useState({ start_time: 0,
+     drop_off_location: "", 
+     pick_up_location: "" ,
+     requested_by:{name: ""}}); 
   const [open, setOpen] = useState(false);   
   const [availabilityValue, setAvailabilityValue] = useState(70); 
   const isMounted = useRef(true);
@@ -194,7 +197,8 @@ useEffect(() => {
         const vehicleId = vehicleData.id;
         
         // Get the most recent trip associated with the vehicle
-        const mostRecentTrip = sortedTripsData.find((trip) => trip.vehicle.id === vehicleId);
+        const mostRecentTrip = sortedTripsData.find((trip) => trip.vehicle.id === vehicleId); 
+        
   
         if (mostRecentTrip) {
           const { drop_off_location, pick_up_location, start_time,requested_by} = mostRecentTrip;
@@ -202,10 +206,11 @@ useEffect(() => {
             drop_off_location,
             pick_up_location,
             start_time,
-            // end_time, 
             requested_by,
-          });
+          }); 
+          
         }
+   
       }
     } catch (error) {
       console.error('Error fetching Trips:', error);
@@ -265,6 +270,9 @@ function formatYear(timestamp: any) {
 
   return format(dateObject, 'yyyy');
 }
+
+
+console.log("Trip trip Details",tripDetails);
 
 
   return ( 
