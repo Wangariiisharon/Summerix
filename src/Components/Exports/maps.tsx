@@ -41,13 +41,15 @@ const MapComponent: React.FC<MapComponentProps> = ({ dropOffLocationName, pickUp
   return (
 
        <GoogleMap
-        mapContainerStyle={{ width: '100%', height: '400px' }} // Adjust height for better visibility
-        center={{ lat: -1.286389, lng: 36.817223 }}
-        zoom={10} // Adjust zoom level for better visibility
+        mapContainerStyle={{ width: '100%', height: '100px' }} // Adjust height for better visibility
+        center={dropOffLocation ? dropOffLocation : { lat: -1.286389, lng: 36.817223 }} // Use dropOffLocation as center if available
+        zoom={5} // Adjust zoom level for better visibility
       >    
         {pickUpLocation && (
           <Marker
-            position={pickUpLocation}
+            // position={pickUpLocation} 
+            position={{ lat: pickUpLocation.lat, lng: pickUpLocation.lng }}
+
             title="Pick Up Location"
           />
         )}
