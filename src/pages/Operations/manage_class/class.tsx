@@ -162,7 +162,7 @@ export default function Class() {
 
   return (
     <>
-      <div className="mt-2 max-h-[700px]">
+      <div className="mt-2 h-full">
         <Tab.Group>
           <div className="flex w-full justify-end">
             <div className="bg-white">

@@ -1309,7 +1309,7 @@ export default function TripsComponent() {
                         value={values.trip_status}
                         className="form-input bg-grey w-48"
                       >
-                        <option value="Booked">Select Trip Status</option>
+                        <option value="">Select Trip Status</option>
                         <option value="Booked">Booked</option>
                         <option value="Ready for Departure">
                           Ready for Departure
@@ -1386,8 +1386,9 @@ export function TripsTable({
   const endIndex = startIndex + rowsPerPage;
   const router = useRouter();
   const handleTripClick = (trip: any) => {
-    router.push(`/Trips//viewTrip?id=${trip.id}`);
+    router.push(`Operations/Trips/viewTrip?id=${trip.id}`);
   };
+
   const calculateHourDifference = (startTime: number, endTime: number) => {
     // Calculate the difference in milliseconds
     const differenceInMilliseconds = endTime - startTime;

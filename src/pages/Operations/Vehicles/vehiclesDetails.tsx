@@ -306,7 +306,10 @@ export default function VehiclesDetails() {
     <SiteLayout>
       <div className="flex flex-row mt-2">
         <div className="mt-2">
-          <Link href="/Vehicles" className="text-xs font-inter text-[#4FD1C5]">
+          <Link
+            href="/Operations"
+            className="text-xs font-inter text-[#4FD1C5]"
+          >
             <i className="fa fa-arrow-left" aria-hidden="true"></i>
             Back
           </Link>
@@ -416,7 +419,7 @@ export default function VehiclesDetails() {
                   </div>
                   <div className="flex flex-col ml-4">
                     {/* <p className='text-sm'>End time</p>
-     <p className='text-xs font-bold'>{formatDate(tripDetails.end_time)}</p> */}
+                   <p className='text-xs font-bold'>{formatDate(tripDetails.end_time)}</p> */}
                   </div>
                 </div>
                 <div className="flex flex-row mt-4">

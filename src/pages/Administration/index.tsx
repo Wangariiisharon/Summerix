@@ -6,7 +6,7 @@ import AdminsComponent from "./Admins";
 import UsersComponent from "./Users";
 
 import Cities from "../Operations/manage_cities/Cities";
-import Vehicles from "./Users/manage_vehicles/Vehicles";
+import Vehicles from "../Operations/Vehicles/manage_vehicles/Vehicles";
 import Drivers from "../Operations/manage_drivers/Drivers";
 import Roles from "./Admins/manage_roles/Roles";
 import Departments from "./Admins/manage_department/Departments";
@@ -16,7 +16,7 @@ import HamburgerMenu from "@/components/hamburgerMenu";
 import AssignRole from "./Admins/manage_roles/assignRole";
 
 const tabs = [
-  { name: "Manage Users", href: "#", current: false },
+  { name: "User Management", href: "#", current: false },
   { name: "Company Profile", href: "#", current: false },
 ];
 
@@ -54,7 +54,7 @@ export default function AdministrationComponent() {
                   <AdminsComponent />
                 </Tab.Panel>
                 <Tab.Panel className="h-full">
-                  <UsersComponent />
+                  {/* <UsersComponent /> */}
                 </Tab.Panel>
               </Tab.Panels>
             </Tab.Group>

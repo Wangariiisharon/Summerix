@@ -179,7 +179,7 @@ export default function Cities() {
 
   return (
     <>
-      <div className="mt-8 max-h-[700px]">
+      <div className="mt-2 h-full">
         <Tab.Group>
           <div className="flex w-full justify-end">
             <div className="bg-white">
@@ -379,7 +379,7 @@ function CitiesTable({ clients }: ClientsTableProps) {
   return (
     <>
       <p className="text-base ml-10 font-bold">Clients</p>
-      <div className="flex  text-base mt-2 ml-10 w-72 searchBarContainer">
+      <div className="flex  text-base mt-2 ml-8 w-72 searchBarContainer">
         <SearchBar
           placeholder="Search For Clients"
           value={searchQuery}
