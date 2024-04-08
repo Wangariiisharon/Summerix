@@ -727,7 +727,6 @@ export default function Drivers() {
                               {({ field, form }: any) => (
                                 <input
                                   type="file"
-                                  accept=".pdf"
                                   onChange={(event) => {
                                     const file =
                                       event.currentTarget?.files?.[0];
@@ -747,7 +746,6 @@ export default function Drivers() {
                               {({ field, form }: any) => (
                                 <input
                                   type="file"
-                                  accept=".pdf"
                                   onChange={(event) => {
                                     const file =
                                       event.currentTarget?.files?.[0];
@@ -766,7 +764,6 @@ export default function Drivers() {
                               {({ field, form }: any) => (
                                 <input
                                   type="file"
-                                  accept=".pdf"
                                   onChange={(event) => {
                                     const file =
                                       event.currentTarget?.files?.[0];
@@ -789,7 +786,6 @@ export default function Drivers() {
                           >
                             Reset
                           </Button>
-                          {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
                           <button
                             className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
                             type="submit"
@@ -870,9 +866,7 @@ export function DriversTable({
   };
 
   const handleDriverClick = (driver: any) => {
-    router.push(
-      `/Administration/Users/manage_drivers/driversDetails?id=${driver.id}`
-    );
+    router.push(`Operations/manage_drivers/driversDetails?id=${driver.id}`);
   };
   const visibleDrivers = sortedDrivers.slice(startIndex, endIndex);
 
@@ -881,7 +875,7 @@ export function DriversTable({
 
     <>
       <p className="text-base font-bold ml-10">Drivers</p>
-      <div className="flex  text-base mt-2 w-80 ml-10">
+      <div className="flex  text-base mt-4 w-80 ml-10">
         <SearchBar
           placeholder="Search Driver"
           value={searchQuery}
@@ -930,9 +924,13 @@ export function DriversTable({
                     return (
                       <Fragment key={index}>
                         <tr className="hover:bg-gray-100">
-                          <td className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 pr-3 text-d-blue text-base sm:pl-0">
+                          <td
+                            className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 pr-3 text-d-blue text-base sm:pl-0"
+                            onClick={() => handleDriverClick(drivers)}
+                          >
                             {drivers.driversId}
                           </td>
+
                           <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
                             {drivers.name}
                           </td>

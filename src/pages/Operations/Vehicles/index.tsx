@@ -24,6 +24,7 @@ import {
   useAuthContext,
 } from "@/components/Authentication/AuthProvider";
 import Pending from "./pending";
+import Vehicles from "./manage_vehicles/Vehicles";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -39,11 +40,12 @@ export default function VehiclesComponent() {
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
 
   const headers = [
-    { name: "All Status", href: "#", current: selectedTabIndex === 0 },
-    { name: "On Route ", href: "#", current: selectedTabIndex === 1 },
-    { name: "Available ", href: "#", current: selectedTabIndex === 2 },
-    { name: "Out of Service", href: "#", current: selectedTabIndex === 3 },
-    { name: "Maintenance", href: "#", current: selectedTabIndex === 4 },
+    { name: "Vehicle Profile", href: "#", current: selectedTabIndex === 0 },
+    { name: "All Status", href: "#", current: selectedTabIndex === 1 },
+    { name: "On Route ", href: "#", current: selectedTabIndex === 2 },
+    { name: "Available ", href: "#", current: selectedTabIndex === 3 },
+    { name: "Out of Service", href: "#", current: selectedTabIndex === 4 },
+    { name: "Maintenance", href: "#", current: selectedTabIndex === 5 },
   ];
 
   useEffect(() => {
@@ -116,9 +118,9 @@ export default function VehiclesComponent() {
       <div className="bg-[#FAFAFB]">
         {/* <p className="text-lg font-nunito font-bold mt-2 ml-5">Vehicles</p> */}
 
-        <div className="mt-4">
+        <div className="mt-6">
           <Tab.Group>
-            <Tab.List className="w-full bg-[#FAFAFB] font-nunito flex justify-start mb-3 ml-1">
+            <Tab.List className="w-full bg-[#FAFAFB] font-nunito flex justify-start mt-3 mb-3 ml-1">
               {headers.filter(Boolean).map((tab: any, index: any) => (
                 <Fragment key={index}>
                   <Tab
@@ -136,6 +138,11 @@ export default function VehiclesComponent() {
               ))}
             </Tab.List>
             <Tab.Panels>
+              <Tab.Panel>
+                <div className="">
+                  <Vehicles />
+                </div>
+              </Tab.Panel>
               <Tab.Panel>
                 <div className="">
                   <DummyTable
@@ -214,15 +221,16 @@ export function DummyTable({
   const filteredVehicles = vehicles.filter(
     (vehicles) =>
       selectedTab === 0 ||
-      (selectedTab === 1 && vehicles.availability_status === "On Route") ||
-      (selectedTab === 2 && vehicles.availability_status === "Available") ||
-      (selectedTab === 3 &&
+      selectedTab === 1 ||
+      (selectedTab === 2 && vehicles.availability_status === "On Route") ||
+      (selectedTab === 3 && vehicles.availability_status === "Available") ||
+      (selectedTab === 4 &&
         vehicles.availability_status === "Out Of Service ") ||
-      (selectedTab === 4 && vehicles)
+      (selectedTab === 5 && vehicles)
   );
   const router = useRouter();
   const handleVehicleClick = (vehicle: any) => {
-    router.push(`/Vehicles/vehiclesDetails?id=${vehicle.id}`);
+    router.push(`Operations/Vehicles/vehiclesDetails?id=${vehicle.id}`);
   };
   console.log("Filtered Vehicles:", filteredVehicles);
 
@@ -230,7 +238,7 @@ export function DummyTable({
 
   return (
     <div className="px-4 ml-1 sm:px-6 lg:px-8">
-      <div className="mt-8 flow-root">
+      <div className="mt-4 flow-root">
         <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
             <table className="min-w-full divide-y divide-gray-300">

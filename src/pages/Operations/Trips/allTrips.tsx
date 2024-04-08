@@ -691,7 +691,7 @@ export function TripsTable({
   const endIndex = startIndex + rowsPerPage;
 
   const handleTripClick = (trip: any) => {
-    router.push(`/Trips//viewTrip?id=${trip.id}`);
+    router.push(`Operations/Trips/viewTrip?id=${trip.id}`);
   };
   const calculateHourDifference = (startTime: number, endTime: number) => {
     const differenceInMilliseconds = endTime - startTime;

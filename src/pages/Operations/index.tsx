@@ -7,15 +7,15 @@ import Vehicles from "./Vehicles";
 import Trips from "./Trips";
 import Drivers from "./manage_drivers/Drivers";
 import Class from "./manage_class/class";
-
 import SiteLayout from "@/Layout/SiteLayout";
 
 const tabs = [
   { name: "Trips", href: "#", current: false },
   { name: "Vehicles", href: "#", current: false },
+  { name: "Class", href: "#", current: false },
   { name: "Clients", href: "#", current: false },
   { name: "Drivers", href: "#", current: false },
-  { name: "Class", href: "#", current: false },
+  { name: "Suppliers", href: "#", current: false },
 ];
 
 function classNames(...classes: any) {
@@ -37,7 +37,7 @@ export default function AdministrationComponent() {
                     <Fragment key={index}>
                       <Tab
                         className="ui-selected:border-b-4 border-d-green outline-none
-                                             ui-selected:text-d-green text-sm font-nunito font-bold uppercase flex flex-row ml-10"
+                        ui-selected:text-d-green text-sm font-nunito font-bold uppercase flex flex-row ml-10"
                       >
                         {tab.name}
                       </Tab>
@@ -53,17 +53,15 @@ export default function AdministrationComponent() {
                   <Vehicles />
                 </Tab.Panel>
                 <Tab.Panel className="h-full">
+                  <Class />
+                </Tab.Panel>
+                <Tab.Panel className="h-full">
                   <Cities />
                 </Tab.Panel>
                 <Tab.Panel className="h-full">
                   <Drivers />
                 </Tab.Panel>
-                <Tab.Panel className="h-full">
-                  <Cities />
-                </Tab.Panel>
-                <Tab.Panel className="h-full">
-                  <Class />
-                </Tab.Panel>
+                <Tab.Panel className="h-full">{/* <Class /> */}</Tab.Panel>
               </Tab.Panels>
             </Tab.Group>
           </div>
@@ -72,3 +70,11 @@ export default function AdministrationComponent() {
     </SiteLayout>
   );
 }
+// const tabs = [
+//   { name: "Trips", href: "#", current: false },
+//   { name: "Vehicles", href: "#", current: false },
+//   { name: "Clients", href: "#", current: false },
+//   { name: "Drivers", href: "#", current: false },
+//   { name: "Class", href: "#", current: false },
+//   { name: "Suppliers", href: "#", current: false },
+// ];
