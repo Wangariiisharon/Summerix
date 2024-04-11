@@ -4,8 +4,6 @@ import Cities from "../../Operations/manage_cities/Cities";
 import Vehicles from "../../Operations/Vehicles/manage_vehicles/Vehicles";
 import Class from "../../Operations/manage_class/class";
 import Drivers from "../../Operations/manage_drivers/Drivers";
-import Roles from "../Admins/manage_roles/Roles";
-import Departments from "../Admins/manage_department/Departments";
 import Jobcard from "./jobcard";
 import React, { useState } from "react";
 
