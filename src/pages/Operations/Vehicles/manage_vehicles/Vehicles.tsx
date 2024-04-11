@@ -807,7 +807,6 @@ export default function Vehicles() {
                 }}
                 onSubmit={(values) => handleSubmit(values)}
               >
-                {/* Core Info: Make, model, year, and VIN (Vehicle Identification Number), Cargo Capacity */}
                 {({ values }) => (
                   <Form>
                     <div className="">

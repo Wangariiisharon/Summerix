@@ -248,7 +248,7 @@ export default function Maintenance() {
       }
       if (!values.job_cards) {
         console.error("Required form fields are missing");
-        toast.error(`Please fill the field JobCard`);
+        toast.error(`Please fill the field Maintance type`);
         return;
       }
       if (!values.remarks) {
