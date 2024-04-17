@@ -198,7 +198,7 @@ export default function Admins() {
     phonenumber: any;
     super_admin: boolean;
     invitationSent: boolean;
-    permissions: any;
+    department: any;
   }) => {
     console.log("Submitted Values:", values);
     console.log("User", user);
@@ -227,6 +227,11 @@ export default function Admins() {
       if (!values.phonenumber) {
         console.error(`Please fill the field ${values.firstname}`);
         toast.error(`Please fill the field Phone number`);
+        return;
+      }
+      if (!values.department) {
+        console.error(`Please fill the field ${values.department}`);
+        toast.error(`Please fill the field Department`);
         return;
       }
 
@@ -288,7 +293,7 @@ export default function Admins() {
         phonenumber: values.phonenumber,
         status: true,
         super_admin: values.super_admin,
-        permissions: values.permissions,
+        department: values.department,
         inviterUid: inviterUid,
         organisationId: organisationId,
         userId: authUid,
@@ -473,7 +478,7 @@ export default function Admins() {
                     lastname: "",
                     email: "",
                     phonenumber: "",
-                    permissions: "",
+                    department: "",
                     super_admin: false,
                     invitationSent: false,
                   }}
@@ -527,15 +532,15 @@ export default function Admins() {
                         </div>
                         <div className="flex w-full justify-between mt-8">
                           <label className="block">
-                            <label className="form-label">PERMISSIONS</label>
+                            <label className="form-label">DEPARTMENT</label>
                             <Field
                               as="select"
-                              name="permissions"
-                              value={values.permissions}
-                              className="form-input bg-grey  w-48"
+                              name="department"
+                              value={values.department} // Ensure this value corresponds to the selected department
+                              className="form-input bg-grey w-48"
                               onClick={handleDropdownClick}
                             >
-                              <option value="">Select Permissions</option>
+                              <option value="">Select Department</option>
                               {permissions.map(
                                 (permission: any, index: any) => (
                                   <option key={index} value={permission}>
