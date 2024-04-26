@@ -39,7 +39,7 @@ import {
 } from "firebase/storage";
 import ImageInput from "@/components/ImageInputs";
 import { toast } from "react-hot-toast";
-import { useAuthContext } from "@/components/Authentication/useContext";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import Pending from "./pending";
 
 function classNames(...classes: string[]) {
@@ -71,13 +71,14 @@ export default function Maintenance() {
   const [checkboxState, setCheckboxState] = useState<boolean[]>([]);
   const [checkedIndexes, setCheckedIndexes] = useState<number[]>([]);
 
-  const { isAuthenticated, userId, organisationId, userData } =
+  // const { isAuthenticated, userId, organisationId, userData } =
+  //   useAuthContext();
+  const { currentUser, organisationId, isSuperAdmin, userData } =
     useAuthContext();
 
   console.log("Maintanance Page OrganisationId: ", organisationId);
   console.log("Maintanance Page UserData: ", userData);
 
-  const isSuperAdmin = userData?.super_admin;
   const approvedBy = userData?.email;
 
   console.log("Maintanance Super Admin: ", isSuperAdmin);
@@ -147,7 +148,8 @@ export default function Maintenance() {
         if (organisationId) {
           const q = query(
             collection(fbDb, "drivers"),
-            where("organisationId", "==", organisationId)
+            where("organisationId", "==", organisationId),
+            where("archive", "==", false) // Only fetch drivers where archive is false
           );
           const querySnapshot = await getDocs(q);
           const names = querySnapshot.docs.map((doc) => doc.data().name);
@@ -348,6 +350,15 @@ export default function Maintenance() {
           notificationData
         );
       });
+      const newMaintenance = {
+        id: docRef.id,
+        ...notificationData,
+      };
+      // Prepend the new driver to the fetchedDrivers state
+      setFetchedMaintanance((prevMaintenance) => [
+        newMaintenance,
+        ...prevMaintenance,
+      ]);
 
       setOpen(false);
     } catch (error) {
@@ -376,11 +387,11 @@ export default function Maintenance() {
         const approvedByArray = docSnapshot.data()?.approvedBy || [];
 
         // Check if the user has already approved
-        if (!approvedByArray.includes(userData.email)) {
+        if (!approvedByArray.includes(userData?.email)) {
           // Update the approvalCount and add the user email to approvedBy array in Firestore
           await updateDoc(maintenanceDocRef, {
             approvalCount: currentApprovalCount + 1,
-            approvedBy: [...approvedByArray, userData.email],
+            approvedBy: [...approvedByArray, userData?.email],
           });
 
           // Check if the approval count reaches 3
@@ -600,7 +611,7 @@ export default function Maintenance() {
                     </label>
                   </div>
                   <div className="flex w-full justify-between  mt-8">
-                    <label className="block mt-8">
+                    <label className="block">
                       <label className="form-label">COST</label>
                       <Field
                         type="number"
@@ -610,7 +621,7 @@ export default function Maintenance() {
                         className="form-input bg-grey w-48"
                       />
                     </label>
-                    <label className="block mt-8">
+                    <label className="block">
                       <label className="form-label">PART</label>
                       <Field
                         type="text"
@@ -621,7 +632,7 @@ export default function Maintenance() {
                     </label>
                   </div>
                   <div className="flex w-full justify-between  mt-8">
-                    <label className="block mt-8">
+                    <label className="block">
                       <label className="form-label">SERIAL NUMBER</label>
                       <Field
                         type="text"
@@ -631,7 +642,7 @@ export default function Maintenance() {
                       />
                     </label>
 
-                    <label className="block ml-24 mt-8">
+                    <label className="block ml-24">
                       <label className="form-label">BROKEN PART</label>
                       <Field name="broken_partImage">
                         {({ field, form }: any) => (

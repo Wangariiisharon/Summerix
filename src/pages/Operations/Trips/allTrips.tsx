@@ -64,15 +64,18 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
   >([]);
   const [selectedTrip, setSelectedTrip] = useState<DocumentData | null>(null);
   const [vehicleNames, setVehicleNames] = useState<string[]>([]);
-  const [selectedTab, setSelectedTab] = useState<number>(0);
   const [fetchedTrips, setfetchedTrips] = useState<DocumentData[]>([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editFormInitialValues, setEditFormInitialValues] = useState({
-    requested_by: "",
+    requested_by: {
+      id: "",
+      name: "",
+      phonenumber: "",
+    },
     vehicle: "",
     pick_up_location: "",
     drop_off_location: "",
-    start_time: "" as unknown as Date, // Initialize as an empty string, cast to Date
+    start_time: "", // Initialize as an empty string, cast to Date
     end_time: "", // Make sure it's initialized as a string
     cargo_type: "",
     cargo_quantity: "",
@@ -99,15 +102,16 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
 
   const handleEditClick = (trip: DocumentData) => {
     const { seconds } = trip.start_time;
-    const startTime = new Date(seconds * 1000);
+    const startTime = trip.start_time.toDate(); // Converts Firestore Timestamp to JavaScript Date object
+    const endTime = trip.end_time.toDate();
     setSelectedTrip(trip);
     setEditFormInitialValues({
-      requested_by: trip.requested_by,
+      requested_by: trip.requested_by.name,
       vehicle: trip.vehicle,
       pick_up_location: trip.pick_up_location,
       drop_off_location: trip.drop_off_location,
-      start_time: startTime,
-      end_time: trip.end_time,
+      start_time: convertDateToInputString(startTime), // Convert date to string for input[type="date"]
+      end_time: convertDateToInputString(endTime),
       cargo_type: trip.cargo_type,
       cargo_quantity: trip.cargo_quantity,
       memo: trip.memo,
@@ -121,7 +125,17 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
     });
     setEditModalOpen(true);
   };
+  const convertDateToInputString = (date: string | number | Date) => {
+    const d = new Date(date);
+    let month = "" + (d.getMonth() + 1),
+      day = "" + d.getDate(),
+      year = d.getFullYear();
 
+    if (month.length < 2) month = "0" + month;
+    if (day.length < 2) day = "0" + day;
+
+    return [year, month, day].join("-"); // Format required for date input fields
+  };
   const handleEditModalClose = () => {
     setSelectedTrip(null);
     setEditModalOpen(false);
@@ -614,6 +628,7 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
                         value={values.trip_status}
                         className="form-input bg-grey w-48"
                       >
+                        <option>Select Trip Status</option>
                         <option value="Booked">Booked</option>
                         <option value="Ready for Departure">
                           Ready for Departure
@@ -686,7 +701,9 @@ export function TripsTable({
 }: TripsTableProps) {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(0);
-  const rowsPerPage = 3;
+  const rowsPerPage = 6;
+  const totalTrips = filteredTrips.length;
+  const totalPages = Math.ceil(totalTrips / rowsPerPage);
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
 
@@ -744,6 +761,21 @@ export function TripsTable({
         return 0; // Trip neither started nor ended in the current month
       }
     }
+  };
+
+  const handlePageClick = (page: number) => {
+    setCurrentPage(page);
+  };
+  const pageNumbers = () => {
+    let pages = [];
+    if (totalPages <= 5) {
+      for (let i = 0; i < totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      pages = [0, 1, 2, 3, "...", totalPages - 1];
+    }
+    return pages;
   };
 
   return (
@@ -853,24 +885,27 @@ export function TripsTable({
         </div>
       </div>
 
-      <div
-        className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
-          text-sm font-nunito font-bold uppercase bg-[#FAFAFB]"
-      >
-        <button
-          className="ml-5"
-          onClick={() => setCurrentPage(currentPage - 1)}
-          disabled={currentPage === 0}
-        >
-          Prev
+      <div className="flex justify-between items-center pt-4">
+        <button onClick={() => handlePageClick(0)} disabled={currentPage === 0}>
+          {"<<"}
         </button>
-        <span className="ml-5">{currentPage + 1}</span>
+        {pageNumbers().map((num, index) => {
+          // Only render buttons for numbers, and static text for ellipsis
+          if (typeof num === "number") {
+            return (
+              <button key={index} onClick={() => handlePageClick(num)}>
+                {num + 1}
+              </button>
+            );
+          } else {
+            return <span key={index}>...</span>;
+          }
+        })}
         <button
-          className="ml-5"
-          onClick={() => setCurrentPage(currentPage + 1)}
-          disabled={endIndex >= filteredAllocation.length}
+          onClick={() => handlePageClick(totalPages - 1)}
+          disabled={currentPage === totalPages - 1}
         >
-          Next
+          {">>"}
         </button>
       </div>
     </div>

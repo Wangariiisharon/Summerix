@@ -247,7 +247,7 @@ export default function ViewDepatment() {
               <div className="w-1/2 pr-4">
                 <PermissionsTable
                   permissions={departments?.permissions ?? []}
-                  heading={departments?.name ?? "Default Heading"}
+                  heading="Selected Permissions"
                   func={removePermission}
                   departmentId={id as string}
                 />
@@ -255,7 +255,7 @@ export default function ViewDepatment() {
               <div className="w-1/2 pl-4">
                 <AllPermissionsTable
                   permissions={fetchedPermisions}
-                  heading="Permissions"
+                  heading="All Permissions"
                   func={addPermission}
                   departmentId={id as string}
                 />

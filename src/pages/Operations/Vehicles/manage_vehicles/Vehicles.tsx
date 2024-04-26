@@ -68,6 +68,7 @@ export default function Vehicles() {
     organisationId: "",
   });
   const [showLeaseInput, setShowLeaseInput] = useState(false);
+  const [showEditLeaseInput, setShowEditLeaseInput] = useState(false);
 
   const { organisationId } = useAuthContext();
   console.log(" Vehicles Organisation ID:", organisationId);
@@ -314,11 +315,6 @@ export default function Vehicles() {
       cargoInsuranceUrl = await getDownloadURL(storageRef);
       console.log("ID Image URL:", cargoInsuranceUrl);
     }
-    // truck_incurance: null,
-    // cargo_insurance: null,
-    // port_entry_permits: null,
-    // inspection_certificates: null,
-    // transit_permits: null,
 
     const generatedVehicleId = await generateVehicleId(organisationId);
 
@@ -340,13 +336,20 @@ export default function Vehicles() {
       archive: false,
       registration_date: registration_date,
       availability_status: "Available",
-      vehiclesId: generatedVehicleId, // Assign the result of the function
+      vehiclesId: generatedVehicleId,
       organisationId: organisationId,
     };
 
     const docRef = await addDoc(vehiclesCollection, VehicleData);
     console.log("Vehicle added with ID: ", docRef.id);
     toast.success("Vehicle Successfully Added.");
+
+    const newVehicle = {
+      id: docRef.id,
+      ...VehicleData,
+    };
+    // Prepend the new driver to the fetchedDrivers state
+    setFetchedVehicles((prevVehicle) => [newVehicle, ...prevVehicle]);
 
     setOpen(false);
     setShowAddVehicleModal(false);
@@ -541,6 +544,7 @@ export default function Vehicles() {
     await uploadBytes(storageRef, file);
     return await getDownloadURL(storageRef);
   };
+
   const handleEditSubmit = async (values: {
     cargo_capacity: any;
     lisence_plate: any;
@@ -559,7 +563,7 @@ export default function Vehicles() {
     archive: any;
     registration_date: any;
     availability_status: any;
-    vehiclesId: any; // Assign the result of the function
+    vehiclesId: any;
     organisationId: any;
   }) => {
     if (!selectedVehicle) {
@@ -708,6 +712,7 @@ export default function Vehicles() {
             }
           : vehicle
       );
+
       setFetchedVehicles(updatedVehicles);
 
       setSelectedVehicle(null);
@@ -1051,7 +1056,7 @@ export default function Vehicles() {
                   initialValues={editFormInitialValues}
                   onSubmit={handleEditSubmit}
                 >
-                  {({ values }) => (
+                  {({ values, setFieldValue }) => (
                     <Form>
                       {" "}
                       <div className="">
@@ -1109,13 +1114,14 @@ export default function Vehicles() {
                             </label>
                             <Field
                               as="select"
-                              type="text"
                               name="ownership_status"
-                              value={values.ownership_status}
                               className="form-input bg-grey w-48"
-                              onChange={(e: any) =>
-                                setShowLeaseInput(e.target.value === "Owned")
-                              }
+                              onChange={(e: { target: { value: any } }) => {
+                                const { value } = e.target;
+                                setFieldValue("ownership_status", value);
+                                setShowLeaseInput(value === "Owned");
+                              }}
+                              value={values.ownership_status}
                             >
                               <option value="">Select Status</option>
                               <option value="Owned">Owned</option>
@@ -1152,7 +1158,7 @@ export default function Vehicles() {
                           </label>
                         </div>
                         <div className="flex w-full justify-between mt-8">
-                          <label className="block">
+                          <label className="block ">
                             <label className="form-label">YEAR</label>
                             <Field
                               type="text"
@@ -1186,7 +1192,7 @@ export default function Vehicles() {
                         </div>
 
                         <div className="flex w-full justify-between mt-8">
-                          <label className="block ml-6">
+                          <label className="block">
                             <label className="form-label">
                               CARGO INSURANCE
                             </label>
@@ -1209,7 +1215,7 @@ export default function Vehicles() {
                             </Field>
                           </label>
 
-                          <label className="block ">
+                          <label className="block ml-10">
                             <label className="form-label">PORT PERMITS</label>
                             <Field name="port_entry_permits">
                               {({ field, form }: any) => (
@@ -1231,7 +1237,7 @@ export default function Vehicles() {
                           </label>
                         </div>
                         <div className="flex w-full justify-between mt-8">
-                          <label className="block ml-6">
+                          <label className="block">
                             <label className="form-label">
                               TRANSIT PERMITS
                             </label>
@@ -1254,7 +1260,7 @@ export default function Vehicles() {
                             </Field>
                           </label>
 
-                          <label className="block">
+                          <label className="block ml-10">
                             <label className="form-label">
                               INSPECTION CERTIFICATES
                             </label>

@@ -29,7 +29,19 @@ import ExportDriverDataToCSV from "../../../components/Exports/driversExport";
 import { toast } from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 
-const Headers = ["DRIVER ID", "NAME", "MOBILE", "ADDRESS"];
+interface DriverDetails {
+  name: string;
+  phonenumber: string;
+  email_adress: string;
+  city: string;
+  profile: File | null;
+  identity_card: File | null;
+  good_conduct: File | null;
+  medical_report: File | null;
+  organisationId: string;
+  driversId: string;
+  [key: string]: string | File | null; // Index signature
+}
 
 export default function Drivers() {
   const [open, setOpen] = useState(false);
@@ -44,11 +56,12 @@ export default function Drivers() {
     phonenumber: "",
     email_adress: "",
     city: "",
-    number: "",
+    organisationId: "",
     profile: null,
     identity_card: null,
     good_conduct: null,
     medical_report: null,
+    driversId: "",
   });
   const [isExporting, setIsExporting] = useState(false);
 
@@ -122,7 +135,7 @@ export default function Drivers() {
     vehicle_type: any;
     model: any;
     year: any;
-    number: any;
+    // number: any;
     profile: any;
     identity_card: any;
     good_conduct: any;
@@ -266,6 +279,13 @@ export default function Drivers() {
       const docRef = await addDoc(collection(fbDb, "drivers"), DriversData);
       console.log("Driver added with ID: ", docRef.id);
       toast.success("Driver added successfully");
+      const newDriver = {
+        id: docRef.id,
+        ...DriversData,
+      };
+
+      // Prepend the new driver to the fetchedDrivers state
+      setfetchedDrivers((prevDrivers) => [newDriver, ...prevDrivers]);
 
       setOpen(false);
     } catch (error) {
@@ -280,15 +300,16 @@ export default function Drivers() {
   const handleEditClick = (driver: DocumentData) => {
     setSelectedDriver(driver);
     setEditFormInitialValues({
+      driversId: driver.driversId,
       name: driver.name,
       phonenumber: driver.phonenumber,
       email_adress: driver.email_adress,
       city: driver.city,
-      number: driver.number,
       profile: driver.profile,
       identity_card: driver.identity_card,
       good_conduct: driver.good_conduct,
       medical_report: driver.medical_report,
+      organisationId: driver.organisationId,
     });
     setEditModalOpen(true);
   };
@@ -304,120 +325,100 @@ export default function Drivers() {
     await uploadBytes(storageRef, file);
     return await getDownloadURL(storageRef);
   };
-  const handleEditSubmit = async (values: {
-    name: any;
-    phonenumber: any;
-    email_adress: any;
-    city: any;
-    profile: File | null;
-    identity_card: File | null;
-    good_conduct: File | null;
-    medical_report: File | null;
-  }) => {
+
+  const handleEditSubmit = async (values: DriverDetails) => {
     if (!selectedDriver) {
-      console.error("No selected vehicle to update");
+      console.error("No selected driver to update");
       return;
     }
 
     console.log("Edited Values:", values);
 
     try {
-      if (!values) {
-        console.error("Form values are undefined");
-        return;
+      const requiredFields: Array<keyof DriverDetails> = [
+        "name",
+        "phonenumber",
+        "email_adress",
+        "city",
+        "profile",
+        "identity_card",
+        "good_conduct",
+        "medical_report",
+      ];
+      for (const field of requiredFields) {
+        if (!values[field]) {
+          // Ensure field is treated as a string for replace method
+          const fieldName = field as string;
+          console.error(`Required form field '${fieldName}' is missing`);
+          toast.error(`Please fill the ${fieldName.replace("_", " ")} field`);
+          return;
+        }
       }
 
-      if (!values.name) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Name field");
-        return;
-      }
-      if (!values.phonenumber) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Phone number field");
-        return;
-      }
-      if (!values.email_adress) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Email Address field");
-        return;
-      }
-      if (!values.city) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the City field");
-        return;
-      }
-      if (!values.profile) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Profile field");
-        return;
-      }
-      if (!values.identity_card) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Identity Card field");
-        return;
-      }
-      if (!values.good_conduct) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Good Conduct field");
-        return;
-      }
-      if (!values.medical_report) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Medical Report field");
-        return;
-      }
-
-      // Update the vehicle data in the database using the selectedVehicle.id
-      const vehicleRef = doc(fbDb, "drivers", selectedDriver.id);
-      await setDoc(vehicleRef, {
-        name: values.name,
-        phonenumber: values.phonenumber,
-        email_adress: values.email_adress,
-        city: values.city,
-        profile: values.profile
-          ? await uploadImage(values.profile, "profile_images")
-          : selectedDriver.profile,
-        identity_card: values.identity_card
-          ? await uploadImage(values.identity_card, "id_images")
-          : selectedDriver.identity_card,
-        good_conduct: values.good_conduct
-          ? await uploadImage(values.good_conduct, "good_conduct")
-          : selectedDriver.good_conduct,
-        medical_report: values.medical_report
-          ? await uploadImage(values.medical_report, "medical_report")
-          : selectedDriver.medical_report,
-      });
-
-      // Update the local fetchedVehicles state
-      const updatedVehicles = fetchedDrivers.map((driver) =>
-        driver.id === selectedDriver.id
-          ? {
-              ...driver,
-              name: values.name,
-              phonenumber: values.phonenumber,
-              email_adress: values.email_adress,
-              city: values.city,
-            }
-          : driver
+      // Check for existing driver with the same email in the same organization
+      const driversRef = collection(fbDb, "drivers");
+      const emailQuery = query(
+        driversRef,
+        where("email_adress", "==", values.email_adress),
+        where("organisationId", "==", values.organisationId)
       );
-      toast.success("Driver Edited successfully");
+      const querySnapshot = await getDocs(emailQuery);
 
-      setfetchedDrivers(updatedVehicles);
+      if (
+        !querySnapshot.empty &&
+        querySnapshot.docs.some((doc) => doc.id !== selectedDriver.id)
+      ) {
+        toast.error(
+          "Another driver in the same organization already has this email address."
+        );
+        return;
+      }
 
+      // Update the driver data in the database
+      const driverRef = doc(fbDb, "drivers", selectedDriver.id);
+      await setDoc(
+        driverRef,
+        {
+          ...values,
+          organisationId: values.organisationId,
+          driversId: values.driversId,
+          profile: values.profile
+            ? await uploadImage(values.profile, "profile_images")
+            : selectedDriver.profile,
+          identity_card: values.identity_card
+            ? await uploadImage(values.identity_card, "id_images")
+            : selectedDriver.identity_card,
+          good_conduct: values.good_conduct
+            ? await uploadImage(values.good_conduct, "good_conduct")
+            : selectedDriver.good_conduct,
+          medical_report: values.medical_report
+            ? await uploadImage(values.medical_report, "medical_report")
+            : selectedDriver.medical_report,
+        },
+        { merge: true }
+      );
+
+      // Update local state
+      const updatedDrivers = fetchedDrivers.map((driver) =>
+        driver.id === selectedDriver.id ? { ...driver, ...values } : driver
+      );
+      setfetchedDrivers(updatedDrivers);
+      toast.success("Driver edited successfully");
       setSelectedDriver(null);
       setEditModalOpen(false);
     } catch (error) {
-      console.error("Error updating Driver:", error);
+      console.error("Error updating driver:", error);
+      toast.error("Failed to update driver. Please try again.");
     }
   };
+
   const handleExportButtonClick = async () => {
     setIsExporting(true);
 
     try {
-      const csvData = await ExportDriverDataToCSV();
+      const csvData = await ExportDriverDataToCSV(organisationId); // Pass organisationId as a parameter
 
-      // Create a blob and initiate the download
+      // Code to initiate download
       const blob = new Blob([csvData], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -484,7 +485,6 @@ export default function Drivers() {
                   vehicle_type: "",
                   model: "",
                   year: "",
-                  number: "",
                   profile: null,
                   identity_card: null,
                   good_conduct: null,
@@ -817,35 +817,35 @@ export function DriversTable({
   updateFetchedDrivers,
   handleEditClick,
 }: VehiclesTableProps) {
-  const [selectedDriver, setSelectedDriver] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const rowsPerPage = 6;
-  const startIndex = currentPage * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
 
   const router = useRouter();
 
   const handleSearchChange = (e: any) => {
-    const query = e.target.value;
-    console.log("Search Query:", query);
-    setSearchQuery(query);
+    setSearchQuery(e.target.value);
   };
-  const filteredDrivers = drivers.filter((drivers) => {
-    const fullName = `${drivers.name}`.toLowerCase();
-    return fullName.includes(searchQuery.toLowerCase());
+
+  // Filter and sort drivers
+  const filteredDrivers = drivers.filter((driver) => {
+    const fullName = `${driver.name}`.toLowerCase();
+    return !driver.archive && fullName.includes(searchQuery.toLowerCase());
   });
 
-  const sortedDrivers = [...filteredDrivers].sort((a, b) => {
-    if (a.archive && !b.archive) {
-      return 1; // a should come after b (archived vehicles come after non-archived)
-    } else if (!a.archive && b.archive) {
-      return -1; // a should come before b
-    } else {
-      return 0; // no change in order
-    }
-  });
-  console.log("These are the sortedVehicles", sortedDrivers);
+  const sortedDrivers = [...filteredDrivers].sort((a, b) =>
+    a.archive ? 1 : -1
+  );
+  const endIndex = (currentPage + 1) * rowsPerPage;
+  const visibleDrivers = sortedDrivers.slice(
+    currentPage * rowsPerPage,
+    endIndex
+  );
+
+  // Update current page if necessary
+  if (currentPage > 0 && visibleDrivers.length === 0) {
+    setCurrentPage(currentPage - 1);
+  }
 
   const updateDriverStatusInDatabase = async (
     driverId: string,
@@ -854,10 +854,9 @@ export function DriversTable({
     try {
       const driverRef = doc(fbDb, "drivers", driverId);
       await setDoc(driverRef, { archive: newStatus }, { merge: true });
-      console.log("Driver status updated in the database:", driverId);
 
       const updatedDrivers = drivers.map((driver) =>
-        driver.id === driverId ? { ...driver, status: newStatus } : driver
+        driver.id === driverId ? { ...driver, archive: newStatus } : driver
       );
       updateFetchedDrivers(updatedDrivers);
     } catch (error) {
@@ -868,14 +867,11 @@ export function DriversTable({
   const handleDriverClick = (driver: any) => {
     router.push(`Operations/manage_drivers/driversDetails?id=${driver.id}`);
   };
-  const visibleDrivers = sortedDrivers.slice(startIndex, endIndex);
 
   return (
-    // const Headers = ["DRIVER ID", "NAME", "MOBILE", "ADDRESS"]
-
     <>
       <p className="text-base font-bold ml-10">Drivers</p>
-      <div className="flex  text-base mt-4 w-80 ml-10">
+      <div className="flex text-base mt-4 w-80 ml-10">
         <SearchBar
           placeholder="Search Driver"
           value={searchQuery}
@@ -889,95 +885,67 @@ export function DriversTable({
               <table className="min-w-full divide-y divide-gray-300">
                 <thead>
                   <tr>
-                    <th
-                      scope="col"
-                      className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                    >
-                      DRIVER ID
-                    </th>
-                    <th
-                      scope="col"
-                      className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                    >
-                      NAME
-                    </th>
-                    <th
-                      scope="col"
-                      className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                    >
-                      MOBILE
-                    </th>
-                    <th
-                      scope="col"
-                      className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                    >
-                      ADDRESS
-                    </th>
+                    {["DRIVER ID", "NAME", "MOBILE", "ADDRESS"].map(
+                      (header, index) => (
+                        <th
+                          key={index}
+                          scope="col"
+                          className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+                        >
+                          {header}
+                        </th>
+                      )
+                    )}
                   </tr>
                 </thead>
                 <tbody className="bg-[#FAFAFB]">
-                  {visibleDrivers.map((drivers, index) => {
-                    const driverId = `D${(index + 1)
-                      .toString()
-                      .padStart(3, "0")}`;
-                    console.log("Driver ID", driverId);
-                    return (
-                      <Fragment key={index}>
-                        <tr className="hover:bg-gray-100">
-                          <td
-                            className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 pr-3 text-d-blue text-base sm:pl-0"
-                            onClick={() => handleDriverClick(drivers)}
+                  {visibleDrivers.map((driver, index) => (
+                    <Fragment key={index}>
+                      <tr className="hover:bg-gray-100">
+                        <td
+                          className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 pr-3 text-d-blue text-base sm:pl-0"
+                          onClick={() => handleDriverClick(driver)}
+                        >
+                          {driver.driversId}
+                        </td>
+                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
+                          {driver.name}
+                        </td>
+                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
+                          {driver.phonenumber}
+                        </td>
+                        <td className="whitespace-nowrap px-2 py-2 relative">
+                          {driver.city}
+                        </td>
+                        <td className="whitespace-nowrap px-2 py-2 relative flex flex-row">
+                          <div onClick={() => handleEditClick(driver)}>
+                            <EditBtn />
+                          </div>
+                          <button
+                            className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2 ml-2"
+                            onClick={() =>
+                              updateDriverStatusInDatabase(
+                                driver.id,
+                                !driver.archive
+                              )
+                            }
                           >
-                            {drivers.driversId}
-                          </td>
-
-                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
-                            {drivers.name}
-                          </td>
-                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
-                            {drivers.phonenumber}
-                          </td>
-                          <td className="whitespace-nowrap px-2 py-2 relative">
-                            {drivers.city}
-                          </td>
-                          <td className="whitespace-nowrap px-2 py-2 relative flex flex-row">
-                            <div onClick={() => handleEditClick(drivers)}>
-                              <EditBtn />
-                            </div>
-                            <div>
-                              <button
-                                className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2 ml-2"
-                                onClick={() =>
-                                  updateDriverStatusInDatabase(
-                                    drivers.id,
-                                    !drivers.archive
-                                  )
-                                }
-                              >
-                                {drivers.archive ? "Unarchive" : "Archive"}
-                              </button>
-                            </div>
-
-                            <div className="h-10"></div>
-                          </td>
-                        </tr>
-                      </Fragment>
-                    );
-                  })}
+                            {driver.archive ? "Unarchive" : "Archive"}
+                          </button>
+                        </td>
+                      </tr>
+                    </Fragment>
+                  ))}
                 </tbody>
               </table>
             </div>
           </div>
         </div>
       </div>
-
-      <div
-        className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
-          text-sm font-nunito font-bold uppercase bg-[#FAFAFB]"
-      >
+      <div className="flex flex-row justify-center my-4 ui-selected:border-b-4 outline-none text-sm font-nunito font-bold uppercase bg-[#FAFAFB]">
         <button
           className="ml-5"
-          onClick={() => setCurrentPage(currentPage - 1)}
+          onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
           disabled={currentPage === 0}
         >
           Prev
