@@ -1,5 +1,12 @@
 import { fbDb } from "@/firebase/configs";
-import { doc, getDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import SiteLayout from "@/Layout/SiteLayout";
@@ -39,41 +46,45 @@ interface TripDetailsProps {
 export default function ViewTrip() {
   const router = useRouter();
   const { id } = router.query;
-  const [tripDetails, settripDetails] = useState<
+  // const [tripDetails, settripDetails] = useState<
+  //   TripDetailsProps["trip"] | null  >(null);
+
+  const [tripDetails, setTripDetails] = useState<
     TripDetailsProps["trip"] | null
-  >(null);
+  >(null); // Correctly using setTripDetails here
+
   const [trip, setTrip] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
+  const [driverTripCount, setDriverTripCount] = useState(0);
 
   useEffect(() => {
-    const fetchTripsDetails = async () => {
+    const fetchTripDetails = async () => {
       if (id) {
         try {
-          const vehicleDocRef = doc(fbDb, "trips", id as string);
-          const vehicleDocSnap = await getDoc(vehicleDocRef);
+          const tripDocRef = doc(fbDb, "trips", id as string);
+          const tripDocSnap = await getDoc(tripDocRef);
 
-          if (vehicleDocSnap.exists()) {
-            const tripData = vehicleDocSnap.data() as TripDetailsProps["trip"];
-            settripDetails({
-              ...tripData,
-              vehicle: {
-                // Ensure 'vehicle' is an object
-                id: tripData.vehicle.id, // Replace with the actual vehicle ID
-                name: tripData.vehicle.name, // Replace with the actual vehicle name
-                availability_status: tripData.vehicle.availability_status, // Replace with the actual availability status
-                lisence_plate: tripData.vehicle.lisence_plate, // Assuming 'tripData.vehicle' contains the license plate
-              },
-            });
+          if (tripDocSnap.exists()) {
+            const tripData = tripDocSnap.data() as TripDetailsProps["trip"];
+            setTripDetails(tripData); // Correctly use setTripDetails to update state
+
+            // Optionally, fetch the number of trips for the driver
+            const tripsQuery = query(
+              collection(fbDb, "trips"),
+              where("requested_by.id", "==", tripData.requested_by.id)
+            );
+            const tripsSnapshot = await getDocs(tripsQuery);
+            setDriverTripCount(tripsSnapshot.docs.length); // Update the state for the trip count
           } else {
             console.log("Trip not found");
           }
         } catch (error) {
-          console.error("Error fetching trip:", error);
+          console.error("Error fetching trip details:", error);
         }
       }
     };
 
-    fetchTripsDetails();
+    fetchTripDetails();
   }, [id]);
 
   if (!tripDetails) {
@@ -312,7 +323,7 @@ export default function ViewTrip() {
             <i className="fa fa-solid fa-arrow-progress"></i>
             <div className="flex flex-col ml-6 ">
               <p className="text-xs ml-6 ">Trips</p>
-              <p className="text-xs ml-6">24</p>
+              <p className="text-xs ml-6">{driverTripCount}</p>
             </div>
           </div>
         </div>

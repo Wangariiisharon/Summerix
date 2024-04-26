@@ -170,6 +170,13 @@ export default function Cities() {
 
       const docRef = await addDoc(collection(fbDb, "clients"), clientsData);
       console.log("Client added with ID: ", docRef.id);
+      const newClient = {
+        id: docRef.id,
+        ...clientsData,
+      };
+
+      // Prepend the new driver to the fetchedDrivers state
+      setfetchedClients((prevJobcards) => [newClient, ...prevJobcards]);
 
       setOpen(false);
     } catch (error) {

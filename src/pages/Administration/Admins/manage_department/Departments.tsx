@@ -1,330 +1,383 @@
-import {Tab} from "@headlessui/react";
-import {Fragment, SetStateAction, useEffect, useState} from "react";
-import {AddButton, Button} from "@/components/Buttons";
-import Table, {DummyTable} from "@/components/Table/Table";
-import { CheckCircleIcon, XCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Tab } from "@headlessui/react";
+import { Fragment, SetStateAction, useEffect, useState } from "react";
+import { AddButton, Button } from "@/components/Buttons";
+import Table, { DummyTable } from "@/components/Table/Table";
+import {
+  CheckCircleIcon,
+  XCircleIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 import { BodyCell, HeaderCell } from "../../../../components/Table/Cells";
 import { TableBody } from "../../../../components/Table/Row";
-import { DocumentData, addDoc, collection, getDocs, getFirestore, onSnapshot, query, where } from "firebase/firestore";
+import {
+  DocumentData,
+  addDoc,
+  collection,
+  getDocs,
+  getFirestore,
+  onSnapshot,
+  query,
+  where,
+} from "firebase/firestore";
 import { fbDb } from "@/firebase/configs";
 import { FormModal } from "@/components/Modals/FormModal";
-import { Formik, Field, Form } from 'formik/dist/index';
-import { formatDistanceToNow } from 'date-fns'; 
-import ViewMenu from "./viewMenu"
-import toast from "react-hot-toast"; 
-import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+import { Formik, Field, Form } from "formik/dist/index";
+import { formatDistanceToNow } from "date-fns";
+import ViewMenu from "./viewMenu";
+import toast from "react-hot-toast";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
+const Headers = ["GROUP ID", "NAME", "UPDATED"];
+export default function Departments() {
+  const [open, setOpen] = useState(false);
+  const [selectedTab, setSelectedTab] = useState<number>(0);
+  const [fetchedDepartments, setFetchedDepartments] = useState<DocumentData[]>(
+    []
+  );
 
+  const { organisationId } = useAuthContext();
+  console.log("Departments Organisation ID:", organisationId);
 
+  const handleAdd = () => {
+    setOpen(true);
+  };
+  const handleReset = () => {
+    setOpen(false);
+  };
 
-const Headers = ["GROUP ID", "NAME","UPDATED"]
-export default function Departments(){ 
-    const [open,setOpen]=useState(false) 
-    const [selectedTab, setSelectedTab] = useState<number>(0); 
-    const [fetchedDepartments, setFetchedDepartments] = useState<DocumentData[]>([]);  
-    
-    const { organisationId } = useAuthContext();
-    console.log("Departments Organisation ID:", organisationId);
+  useEffect(() => {
+    const fetchedDepartments = async () => {
+      const db = getFirestore();
 
+      try {
+        if (organisationId) {
+          const q = query(
+            collection(db, "departments"),
+            where("organisationId", "==", organisationId)
+          );
 
-    const handleAdd = () => { 
-        setOpen(true)
-    }  
-    const handleReset = () => { 
-        setOpen(false)
-    }
+          const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const departmentsData = querySnapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+            setFetchedDepartments(departmentsData);
+          });
 
-    useEffect(() => {
-        const fetchedDepartments = async () => { 
-                const db = getFirestore();
+          return () => unsubscribe();
+        } else {
+          console.error("Organisation ID is not available.");
+        }
+      } catch (error) {
+        console.error("Error fetching Departments:", error);
+      }
+    };
+    fetchedDepartments();
+  }, [organisationId]);
 
-          try {
-            if (organisationId) {
-         const q = query(collection(db, 'departments'), where('organisationId', '==', organisationId));
-
-       const unsubscribe = onSnapshot(q, (querySnapshot) => {
-         const departmentsData = querySnapshot.docs.map((doc) => ({
-           id: doc.id,
-           ...doc.data(),
-         }));
-         setFetchedDepartments(departmentsData);
-       });
-
-      return () => unsubscribe(); 
-
-            } else {
-              console.error('Organisation ID is not available.');
-            }  
-          } catch (error) {
-            console.error('Error fetching Departments:', error);
-          }
-        };
-        fetchedDepartments();
-}, [organisationId]);  
-
-
-// Function to generate departmentId based on the count of departments
-async function generateDepartmentId(organisationId: string) {
+  // Function to generate departmentId based on the count of departments
+  async function generateDepartmentId(organisationId: string) {
     try {
-      const querySnapshot = await getDocs(query(collection(fbDb, 'departments'), where('organisationId', '==', organisationId)));
+      const querySnapshot = await getDocs(
+        query(
+          collection(fbDb, "departments"),
+          where("organisationId", "==", organisationId)
+        )
+      );
       const departmentCount = querySnapshot.size;
-  
+
       // Customize this logic based on your requirements
-      return `G${(departmentCount + 1).toString().padStart(3, '0')}`;
+      return `G${(departmentCount + 1).toString().padStart(3, "0")}`;
     } catch (error) {
-      console.error('Error fetching departments count:', error);
+      console.error("Error fetching departments count:", error);
       // Handle error or return a default value
-      return 'D001';
+      return "D001";
     }
   }
 
-    const handleSubmit = async (values: { name: any;}) => { 
+  const handleSubmit = async (values: { name: any }) => {
+    console.log("Submitted Values:", values);
+
+    try {
+      if (!values.name) {
+        console.error("Required form fields are missing");
         console.log("Submitted Values:", values);
-    
-        try {
-            
-            if (!values.name) {
-                console.error('Required form fields are missing');
-                console.log("Submitted Values:", values);  
-                toast.error("Please fill in the name field");  
- 
-                return;
-            }  
-            const existingDepartmentQuery = query(collection(fbDb, 'departments'), 
-            where('name', '==', values.name),
-            where('organisationId', '==', organisationId)
-          );
-      
-          const existingDepartmentSnapshot = await getDocs(existingDepartmentQuery);
-      
-          if (!existingDepartmentSnapshot.empty) {
-            console.error('Department with this name already exists in the same organisation'); 
-            toast.error(`A Department with the name '${values.name}' already exists`);
-            return;
-          } 
-            if (organisationId === null) {
-                console.error('organisationId is null');
-                // Handle the null case, maybe show an error or return
-                return;
-              }
-          
-              // Use the generateDepartmentId function to get the appropriate departmentId
-              const generatedDepartmentId = await generateDepartmentId(organisationId);
+        toast.error("Please fill in the name field");
 
+        return;
+      }
+      const existingDepartmentQuery = query(
+        collection(fbDb, "departments"),
+        where("name", "==", values.name),
+        where("organisationId", "==", organisationId)
+      );
 
-    
-            const updated = new Date();
-            const DepartmentsData = {
-                departmentId: generatedDepartmentId,
-                name: values.name,
-                updated: updated,  
-                status:true, 
-                organisationId: organisationId      
-            };
-    
-            const docRef = await addDoc(collection(fbDb, 'departments'), DepartmentsData);
-            console.log('Department added with ID: ', docRef.id); 
-            toast.success("Department Successfully Added.");
-   
-            setOpen(false);
-        } catch (error) {
-            console.error('Error adding Department:', error);
-        } 
-} 
+      const existingDepartmentSnapshot = await getDocs(existingDepartmentQuery);
 
-    const updatefetchedDepartments = (updatedDepartments: SetStateAction<DocumentData[]>) => {
-        setFetchedDepartments(updatedDepartments);
-    };
+      if (!existingDepartmentSnapshot.empty) {
+        console.error(
+          "Department with this name already exists in the same organisation"
+        );
+        toast.error(
+          `A Department with the name '${values.name}' already exists`
+        );
+        return;
+      }
+      if (organisationId === null) {
+        console.error("organisationId is null");
+        // Handle the null case, maybe show an error or return
+        return;
+      }
 
-    return (
-        <>
-            <div className='mt-2 max-h-[700px]'>
-                <Tab.Group>
-                    <div className='mb-2 flex w-full justify-end'>
-                        <div className='bg-white'>
-             
-                        </div>
+      // Use the generateDepartmentId function to get the appropriate departmentId
+      const generatedDepartmentId = await generateDepartmentId(organisationId);
 
-                        <div className='flex justify-end text-base mr-2'>
-                          <div className='ml-2'>
-                            <AddButton name='Add Group' handleAddClick={handleAdd}/>
-                            </div>
-                        </div>
+      const updated = new Date();
+      const DepartmentsData = {
+        departmentId: generatedDepartmentId,
+        name: values.name,
+        updated: updated,
+        status: true,
+        organisationId: organisationId,
+      };
 
-                    </div>
+      const docRef = await addDoc(
+        collection(fbDb, "departments"),
+        DepartmentsData
+      );
+      console.log("Department added with ID: ", docRef.id);
+      toast.success("Department Successfully Added.");
 
-                    <Tab.Panels>
+      const newDepartment = {
+        id: docRef.id,
+        ...DepartmentsData,
+      };
 
-                        <Tab.Panel>
-                        <div  className="h-full overflow-y-auto"> 
-                        <DepartmentsTable departments={fetchedDepartments} updateFetchedDepartments={updatefetchedDepartments} />
+      // Prepend the new driver to the fetchedDrivers state
+      setFetchedDepartments((prevDepartments) => [
+        newDepartment,
+        ...prevDepartments,
+      ]);
 
-                            </div>
-                        </Tab.Panel>
-                    </Tab.Panels>
-                </Tab.Group>
-                <div>
-            <FormModal open={open} setOpen={setOpen}>
-                <div className='p-5'>
-                    <div className='flex w-full h-full justify-between items-center mb-12'>
-                        <div className='text-xl font-semibold '>
-                            New GROUP
-                        </div>
-                        <Button className='bg-red-50 h-12 w-12 flex items-center justify-center rounded-full' handleClick={handleReset}>
-                            <XMarkIcon className='h-6 w-6 text-red-400'/>
-                        </Button>
-                    </div>
-                    <Formik
-                    initialValues={{
-                        name: "",
-                        // members: 0,
+      setOpen(false);
+    } catch (error) {
+      console.error("Error adding Department:", error);
+    }
+  };
 
-                                      }}
-                        onSubmit={(values) => {
-                        console.log('Form Values:', values);
+  const updatefetchedDepartments = (
+    updatedDepartments: SetStateAction<DocumentData[]>
+  ) => {
+    setFetchedDepartments(updatedDepartments);
+  };
 
-                            handleSubmit(values);
-                          }}
+  return (
+    <>
+      <div className="mt-2 max-h-[700px]">
+        <Tab.Group>
+          <div className="mb-2 flex w-full justify-end">
+            <div className="bg-white"></div>
+
+            <div className="flex justify-end text-base mr-2">
+              <div className="ml-2">
+                <AddButton name="Add Group" handleAddClick={handleAdd} />
+              </div>
+            </div>
+          </div>
+
+          <Tab.Panels>
+            <Tab.Panel>
+              <div className="h-full overflow-y-auto">
+                <DepartmentsTable
+                  departments={fetchedDepartments}
+                  updateFetchedDepartments={updatefetchedDepartments}
+                />
+              </div>
+            </Tab.Panel>
+          </Tab.Panels>
+        </Tab.Group>
+        <div>
+          <FormModal open={open} setOpen={setOpen}>
+            <div className="p-5">
+              <div className="flex w-full h-full justify-between items-center mb-12">
+                <div className="text-xl font-semibold ">New GROUP</div>
+                <Button
+                  className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
+                  handleClick={handleReset}
+                >
+                  <XMarkIcon className="h-6 w-6 text-red-400" />
+                </Button>
+              </div>
+              <Formik
+                initialValues={{
+                  name: "",
+                  // members: 0,
+                }}
+                onSubmit={(values) => {
+                  console.log("Form Values:", values);
+
+                  handleSubmit(values);
+                }}
+              >
+                {({ values, setFieldValue }) => (
+                  <Form>
+                    <div className="">
+                      <div className="flex w-full justify-between">
+                        <label className="block">
+                          <label className="form-label">NAME</label>
+                          <Field
+                            type="text"
+                            name="name"
+                            value={values.name}
+                            className="form-input bg-grey w-48"
+                          />
+                        </label>
+                      </div>
+                      <div className="flex w-full justify-end mt-24 ">
+                        <Button
+                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
+                          handleClick={handleReset}
                         >
-                       {({ values,setFieldValue }) => (
-                    <Form>
-                        <div className=''>
-                            <div className='flex w-full justify-between'>
-                            <label className="block">
-                             <label className="form-label">NAME</label>
-                             <Field
-                              type="text"
-                              name="name"
-                              value={values.name}
-                              className="form-input bg-grey w-48"
-                            />
-                             </label>
-                             </div>
-                            <div className='flex w-full justify-end mt-24 '>
-                                <Button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32' handleClick={handleReset}>Reset</Button>
-                                <button className='rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4' type='submit' >Save</button>
-                            </div>
-
-                        </div>
-                    </Form>
-                     )}
-                    </Formik>
-                </div>
-            </FormModal>
-
+                          Reset
+                        </Button>
+                        <button
+                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
+                          type="submit"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  </Form>
+                )}
+              </Formik>
             </div>
-
-            </div>
-        </>
-    )
-} 
-
+          </FormModal>
+        </div>
+      </div>
+    </>
+  );
+}
 
 interface VehiclesTableProps {
-    departments: DocumentData[];
-    updateFetchedDepartments: (updatedDepartments: DocumentData[]) => void; 
+  departments: DocumentData[];
+  updateFetchedDepartments: (updatedDepartments: DocumentData[]) => void;
 }
 
-export function DepartmentsTable({ departments,updateFetchedDepartments }: VehiclesTableProps) {  
-    const [currentPage, setCurrentPage] = useState(0);
+export function DepartmentsTable({
+  departments,
+  updateFetchedDepartments,
+}: VehiclesTableProps) {
+  const [currentPage, setCurrentPage] = useState(0);
 
-    const handleDeactivate = (id: string) => {
-        // Implement your deactivation logic here
-        console.log(`Deactivating department with ID: ${id}`);
-    
-        // Filter out the deactivated department from the list
-        const updatedDepartments = departments.filter((department) => department.id !== id);
-    
-        // Update the state with the filtered list of departments
-        updateFetchedDepartments(updatedDepartments);
-      }; 
-    //   const Headers = ["GROUP ID", "NAME","UPDATED"] 
-    const rowsPerPage = 6;
-    console.log("DepatmensTable Rendering with selectedTab:");
-    const startIndex = currentPage * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage; 
-    const visibleDepartments = departments.slice(startIndex, endIndex); 
+  const handleDeactivate = (id: string) => {
+    // Implement your deactivation logic here
+    console.log(`Deactivating department with ID: ${id}`);
 
-    return (
-        <div className="px-4 sm:px-6 lg:px-8">
-          <div className="flow-root">
-            <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                <table className="min-w-full divide-y divide-gray-300">
-                  <thead>
-                    <tr>
-                      <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">GROUP ID</th>
-                      <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">NAME</th>
-                      <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">UPDATED</th>
-                    </tr>
-                  </thead>
-                      <tbody className="bg-[#FAFAFB]">
-                        {visibleDepartments.map((departments, index) => {
-                        const { seconds } = departments?.updated || {}; // Use optional chaining
-                        if (seconds !== undefined) {
-                            const updatedDate = new Date(seconds * 1000);
-                            const departmentId = `D${(index + 1).toString().padStart(3, '0')}`;
-                            console.log("Vehicle ID", departmentId);
-                        
-                        console.log("Vehicle ID",departmentId); 
+    // Filter out the deactivated department from the list
+    const updatedDepartments = departments.filter(
+      (department) => department.id !== id
+    );
 
-                            return (
-                                <Fragment key={index}>
-                                  <tr className="hover:bg-gray-100">
-                                        <td 
-                                         className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 text-d-blue text-base sm:pl-0 flex flex-row"                                        >
-                                            {departments.departmentId}  
-                                            <ViewMenu departmentId={departments.id} onDeactivate={() => handleDeactivate(departments.id)}/>
-                                        </td> 
-                                        <td
-                                         className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0"
-                                        > 
-                                        {departments.name}
-                                        </td> 
-                                        <td 
-                                        className="whitespace-nowrap px-2 py-2 relative" 
-                                        >
-                                        {formatDistanceToNow(updatedDate)} ago
-                                        </td>
-                                        <div className="h-10 font-nunito font-regular"></div>
-                                    </tr>
+    // Update the state with the filtered list of departments
+    updateFetchedDepartments(updatedDepartments);
+  };
+  //   const Headers = ["GROUP ID", "NAME","UPDATED"]
+  const rowsPerPage = 6;
+  console.log("DepatmensTable Rendering with selectedTab:");
+  const startIndex = currentPage * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const visibleDepartments = departments.slice(startIndex, endIndex);
 
-                                </Fragment>
-                            )
-                        }
-                        })}
-                    </tbody>
+  return (
+    <div className="px-4 sm:px-6 lg:px-8">
+      <div className="flow-root">
+        <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+          <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+            <table className="min-w-full divide-y divide-gray-300">
+              <thead>
+                <tr>
+                  <th
+                    scope="col"
+                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+                  >
+                    DEPARTMENT ID
+                  </th>
+                  <th
+                    scope="col"
+                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+                  >
+                    NAME
+                  </th>
+                  <th
+                    scope="col"
+                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+                  >
+                    UPDATED
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-[#FAFAFB]">
+                {visibleDepartments.map((departments, index) => {
+                  const { seconds } = departments?.updated || {}; // Use optional chaining
+                  if (seconds !== undefined) {
+                    const updatedDate = new Date(seconds * 1000);
+                    const departmentId = `D${(index + 1)
+                      .toString()
+                      .padStart(3, "0")}`;
+                    console.log("Vehicle ID", departmentId);
+
+                    console.log("Vehicle ID", departmentId);
+
+                    return (
+                      <Fragment key={index}>
+                        <tr className="hover:bg-gray-100">
+                          <td className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 text-d-blue text-base sm:pl-0 flex flex-row">
+                            {departments.departmentId}
+                            <ViewMenu
+                              departmentId={departments.id}
+                              onDeactivate={() =>
+                                handleDeactivate(departments.id)
+                              }
+                            />
+                          </td>
+                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
+                            {departments.name}
+                          </td>
+                          <td className="whitespace-nowrap px-2 py-2 relative">
+                            {formatDistanceToNow(updatedDate)} ago
+                          </td>
+                          <div className="h-10 font-nunito font-regular"></div>
+                        </tr>
+                      </Fragment>
+                    );
+                  }
+                })}
+              </tbody>
             </table>
-            </div>
-            </div>
-            </div>
+          </div>
+        </div>
+      </div>
 
-
-
-        <div className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
-          text-sm font-nunito font-bold uppercase bg-[#FAFAFB]">
-         <button 
-        className="ml-5"
-        onClick={() => setCurrentPage(currentPage - 1)}
-        disabled={currentPage === 0}
+      <div
+        className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
+          text-sm font-nunito font-bold uppercase bg-[#FAFAFB]"
+      >
+        <button
+          className="ml-5"
+          onClick={() => setCurrentPage(currentPage - 1)}
+          disabled={currentPage === 0}
         >
-        Prev
+          Prev
         </button>
-     <span className="ml-5">{currentPage + 1}</span>
-      <button 
-      className="ml-5"
-      onClick={() => setCurrentPage(currentPage + 1)}
-      disabled={endIndex >= departments.length}
-       >
-      Next
-    </button>
+        <span className="ml-5">{currentPage + 1}</span>
+        <button
+          className="ml-5"
+          onClick={() => setCurrentPage(currentPage + 1)}
+          disabled={endIndex >= departments.length}
+        >
+          Next
+        </button>
+      </div>
     </div>
-
-
-
-            
-            </div>
-
-    )
+  );
 }
-
-

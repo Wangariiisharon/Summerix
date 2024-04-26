@@ -5,6 +5,7 @@ import {
   useState,
   useEffect,
   useContext,
+  useMemo,
 } from "react";
 import {
   CalendarIcon,
@@ -40,6 +41,7 @@ import { createContext } from "react";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { NotificationDropdown } from "./notificationDropdown";
+import Link from "next/link";
 
 interface Props {
   children: ReactNode;
@@ -55,10 +57,13 @@ export default function SiteNav({ children }: Props) {
   const [fetchedAdmins, setFetchedAdmins] = useState<DocumentData[]>([]);
   const [adminDetails, setadminDetails] = useState<any | null>(null);
   const [userInitials, setUserInitials] = useState<string>("");
-  const { currentUser, organisationId, userId } = useAuthContext();
+  const { currentUser, organisationId, isSuperAdmin } = useAuthContext();
   const [showDropdown, setShowDropdown] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const { hasPermission } = useAuthContext();
+
+  // const isSuperAdmin = useMemo(() => adminDetails?.roles.includes('super_admin'), [adminDetails]);
 
   const toggleNotificationDropdown = () => {
     console.log("Toggling dropdown");
@@ -170,55 +175,35 @@ export default function SiteNav({ children }: Props) {
         unsubscribeNotifications();
       }
     };
-  }, [currentUser, organisationId]);
+  }, [organisationId]);
 
-  const isSuperAdmin = adminDetails?.super_admin;
+  // const isSuperAdmin = adminDetails?.super_admin;
   console.log("Admin Details", adminDetails);
 
-  const navigation = [
-    {
-      name: "Dashboard",
-      href: "/Dashboard",
-      icon: HomeIcon,
-      current: true,
-      visible: true,
-    },
-    {
-      name: "Administration",
-      href: "/Administration",
-      icon: UsersIcon,
-      current: false,
-      visible: isSuperAdmin,
-    },
-    {
-      name: "Operations",
-      href: "/Operations",
-      icon: DocumentDuplicateIcon,
-      current: false,
-      visible: true,
-    },
-    // {
-    //   name: "Vehicles",
-    //   href: "/Vehicles",
-    //   icon: TruckIcon,
-    //   current: false,
-    //   visible: true,
-    // },
-    // {
-    //   name: "Trips",
-    //   href: "/Trips",
-    //   icon: ArrowTrendingUpIcon,
-    //   current: false,
-    //   visible: true,
-    // },
-    {
-      name: "Report",
-      href: "/Clients",
-      icon: DocumentDuplicateIcon,
-      current: false,
-      visible: true,
-    },
-  ];
+  const navigation = useMemo(
+    () => [
+      { name: "Dashboard", href: "/Dashboard", icon: HomeIcon, visible: true },
+      {
+        name: "Administration",
+        href: "/Administration",
+        icon: UsersIcon,
+        visible: isSuperAdmin,
+      },
+      {
+        name: "Operations",
+        href: "/Operations",
+        icon: DocumentDuplicateIcon,
+        visible: true,
+      },
+      {
+        name: "Report",
+        href: "/Clients",
+        icon: DocumentDuplicateIcon,
+        visible: true,
+      },
+    ],
+    [isSuperAdmin]
+  );
 
   const toggleSidebar = () => {
     setIsDrawerOpen(!isDrawerOpen);
@@ -243,41 +228,33 @@ export default function SiteNav({ children }: Props) {
             <div className="flex h-16 py-3 pb-4 shrink-0 items-center">
               <DashLogo />
             </div>
-            <nav className="flex mt-2 flex-1 flex-col">
-              <ul role="list" className="flex flex-1 flex-col gap-y-7">
-                <li>
-                  <ul role="list" className="-mx-2 space-y-3">
-                    {navigation.map((item) => {
-                      if (item.visible) {
-                        return (
-                          <a
-                            key={item.name}
-                            href={item.href}
-                            className={classNames(
-                              router.pathname === item.href
-                                ? "bg-light-green text-white"
-                                : "text-indigo-200 hover-text-white hover-bg-light-green",
-                              "group flex gap-x-3 rounded-md p-2 text-xl leading-6 font-semibold"
-                            )}
-                          >
-                            <item.icon
-                              className={classNames(
-                                router.pathname === item.href
-                                  ? "text-white"
-                                  : "text-indigo-200 group-hover:text-white",
-                                "h-6 w-6 shrink-0"
-                              )}
-                              aria-hidden="true"
-                            />
-                            {item.name}
-                          </a>
-                        );
-                      } else {
-                        return null;
-                      }
-                    })}
-                  </ul>
-                </li>
+            <nav className="mt-2 flex-1 flex-col">
+              <ul className="flex flex-1 flex-col gap-y-7">
+                {navigation
+                  .filter((item) => item.visible)
+                  .map((item) => (
+                    <Link key={item.name} href={item.href} passHref>
+                      <div
+                        className={classNames(
+                          router.pathname === item.href
+                            ? "bg-light-green text-white"
+                            : "text-indigo-200 hover:text-white hover:bg-light-green",
+                          "group flex items-center gap-x-3 rounded-md p-2 text-xl leading-6 font-semibold"
+                        )}
+                      >
+                        <item.icon
+                          className={classNames(
+                            router.pathname === item.href
+                              ? "text-white"
+                              : "text-indigo-200 group-hover:text-white",
+                            "h-6 w-6 shrink-0"
+                          )}
+                          aria-hidden="true"
+                        />
+                        {item.name}
+                      </div>
+                    </Link>
+                  ))}
               </ul>
             </nav>
           </div>

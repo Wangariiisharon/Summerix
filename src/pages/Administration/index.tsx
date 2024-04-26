@@ -16,8 +16,8 @@ import HamburgerMenu from "@/components/hamburgerMenu";
 import AssignRole from "./Admins/manage_roles/assignRole";
 
 const tabs = [
-  { name: "User Management", href: "#", current: false },
   { name: "Company Profile", href: "#", current: false },
+  { name: "User Management", href: "#", current: false },
 ];
 
 function classNames(...classes: any) {
@@ -41,7 +41,7 @@ export default function AdministrationComponent() {
                     <Fragment key={index}>
                       <Tab
                         className="ui-selected:border-b-4 border-d-green outline-none
-                                             ui-selected:text-d-green text-sm font-nunito font-bold uppercase flex flex-row ml-10"
+                       ui-selected:text-d-green text-sm font-nunito font-bold uppercase flex flex-row ml-10"
                       >
                         {tab.name}
                       </Tab>
@@ -51,10 +51,10 @@ export default function AdministrationComponent() {
               </Tab.List>
               <Tab.Panels className=" bg-[#FAFAFB] h-full">
                 <Tab.Panel className="h-full">
-                  <AdminsComponent />
+                  {/* <UsersComponent /> */}
                 </Tab.Panel>
                 <Tab.Panel className="h-full">
-                  {/* <UsersComponent /> */}
+                  <AdminsComponent />
                 </Tab.Panel>
               </Tab.Panels>
             </Tab.Group>

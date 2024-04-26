@@ -1,12 +1,7 @@
-/// <reference types="hoist-non-react-statics" />
 {
   "compilerOptions": {
-    "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "target": "es2015", // Updated from "es5" to "es2015" for better ES6 feature support
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
@@ -18,19 +13,17 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "downlevelIteration": true, // Added to enable downlevel iteration
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
     "skipLibCheck": true
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
-    "**/*.tsx"
-, "src/pages/api/distance.js"  ],
-  "exclude": [
-    "node_modules"
-  ]
+    "**/*.tsx",
+    "src/pages/api/distance.js"
+  ],
+  "exclude": ["node_modules"]
 }

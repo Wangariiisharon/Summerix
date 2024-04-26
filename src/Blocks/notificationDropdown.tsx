@@ -77,7 +77,6 @@ export const NotificationDropdown = ({ isOpen, onClose }: any) => {
       readBy: [...notification.readBy, currentUser?.uid], // Ensure we're not duplicating IDs
     }));
 
-    setNotifications(updatedNotifications); // Update the notifications state
     setIsClosed(false); // Assuming you want to close the dropdown here
     setUnreadCount(0); // Reset unread count after marking all as read
   };

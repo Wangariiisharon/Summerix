@@ -2,7 +2,7 @@ import firebase from "firebase/app";
 import "firebase/firestore";
 import { Tab } from "@headlessui/react";
 import { AddButton, Button, EditBtn } from "@/components/Buttons";
-import { Fragment, SetStateAction, useEffect, useState } from "react";
+import { Fragment, SetStateAction, useEffect, useState, Dispatch } from "react";
 import SearchBar from "../../../../components/Forms/input";
 import Table, { DummyTable } from "../../../../components/Table/Table";
 import { BodyCell, HeaderCell } from "../../../../components/Table/Cells";
@@ -13,9 +13,9 @@ import {
   XCircleIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { useRouter } from "next/router";
+import router, { useRouter } from "next/router";
 import { FormModal } from "@/components/Modals/FormModal";
-import { Formik, Field, Form } from "formik/dist/index";
+import { Formik, Field, Form, useFormikContext } from "formik/dist/index";
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import {
   User,
@@ -36,13 +36,12 @@ import {
   DocumentData,
   getDoc,
   onSnapshot,
+  DocumentReference,
 } from "firebase/firestore";
 import { toast } from "react-hot-toast";
-import {
-  AuthProvider,
-  useAuthContext,
-} from "@/components/Authentication/AuthProvider";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import { getMessaging, getToken } from "firebase/messaging";
+import "firebase/firestore";
 
 const Headers = ["Id", "Name", "Phone", "Admin"];
 
@@ -52,9 +51,9 @@ export default function Admins() {
   const [fetchedAdmins, setFetchedAdmins] = useState<DocumentData[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAdmin, setSelectedAdmin] = useState<DocumentData | null>(null);
-  const [editModalOpen, setEditModalOpen] = useState(false);
   const [fcmToken, setFcmToken] = useState("");
   const [permissions, setPermissions] = useState<string[]>([]);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [editFormInitialValues, setEditFormInitialValues] = useState({
     firstname: "",
     lastname: "",
@@ -62,9 +61,22 @@ export default function Admins() {
     phonenumber: "",
     super_admin: false,
     status: true,
+    additionalPermissions: [],
+    adminId: "",
+    fcmToken: "",
+    invitationSent: false,
+    organisationId: "",
+    userId: "",
+    department: "",
   });
+  const [departments, setDepartments] = useState<DocumentData[]>([]);
+  let { currentUser, organisationId, isSuperAdmin } = useAuthContext();
+
+  const [departmentReference, setDepartmentReference] =
+    useState<DocumentReference<DocumentData> | null>(null);
+
   const router = useRouter();
-  let { organisationId } = useAuthContext();
+  // let { organisationId } = useAuthContext();
   console.log("Admins Organisation ID:", organisationId);
   const handleSearchChange = (e: any) => {
     const query = e.target.value;
@@ -90,21 +102,27 @@ export default function Admins() {
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
-        if (organisationId) {
-          const q = query(
-            collection(fbDb, "departments"),
-            where("organisationId", "==", organisationId)
-          );
-          const querySnapshot = await getDocs(q);
-          const names = querySnapshot.docs.map((doc) => doc.data().name);
-          setPermissions(names);
-        } else {
-          console.error(
-            "Organisation ID is not available for fetching Permissions."
-          );
+        const departmentQuery = query(
+          collection(fbDb, "departments"),
+          where("organisationId", "==", organisationId) // Filter by organisationId
+        );
+        const departmentSnapshot = await getDocs(departmentQuery);
+
+        if (departmentSnapshot.empty) {
+          console.log("No departments found for the given organisation.");
+          setDepartments([]);
+          return;
         }
+
+        const departmentData = departmentSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          name: doc.data().name, // Assuming department name is stored in the 'name' field
+        }));
+
+        setDepartments(departmentData);
+        console.log("Departments:", departmentData);
       } catch (error) {
-        console.error("Error fetching Permissions:", error);
+        console.error("Error fetching departments:", error);
       }
     };
 
@@ -119,10 +137,14 @@ export default function Admins() {
           );
 
           const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const adminsData = querySnapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            }));
+            const adminsData = querySnapshot.docs.map((doc) => {
+              const departmentRef = doc.data().department;
+              return {
+                id: doc.id,
+                departmentRef,
+                ...doc.data(),
+              };
+            });
             setFetchedAdmins(adminsData);
           });
 
@@ -198,17 +220,13 @@ export default function Admins() {
     phonenumber: any;
     super_admin: boolean;
     invitationSent: boolean;
-    department: any;
+    // department: DocumentReference;
+    department: string; // Ensure correct type for department
   }) => {
     console.log("Submitted Values:", values);
     console.log("User", user);
 
     try {
-      if (!values) {
-        console.error("Form values are undefined");
-        return;
-      }
-
       if (!values.firstname) {
         console.error(`Please fill the field ${values.firstname}`);
         toast.error(`Please fill the field FirstName`);
@@ -293,7 +311,7 @@ export default function Admins() {
         phonenumber: values.phonenumber,
         status: true,
         super_admin: values.super_admin,
-        department: values.department,
+        department: values.department, // Use the selected department reference directly
         inviterUid: inviterUid,
         organisationId: organisationId,
         userId: authUid,
@@ -303,6 +321,12 @@ export default function Admins() {
       const docRef = await addDoc(collection(fbDb, "admins"), adminData);
       console.log("Admin added with ID: ", docRef.id);
       toast.success("Admin Successfully Added.");
+      const newAdmin = {
+        id: docRef.id,
+        ...adminData,
+      };
+
+      setFetchedAdmins((prevAdmins) => [newAdmin, ...prevAdmins]);
 
       if (!values.invitationSent) {
         // Authentication
@@ -339,6 +363,7 @@ export default function Admins() {
 
   const handleEditClick = (admin: DocumentData) => {
     setSelectedAdmin(admin);
+    console.log("Edit clicked for:", admin.firstname); // Check if this logs when clicked
     setEditFormInitialValues({
       firstname: admin.firstname,
       lastname: admin.lastname,
@@ -346,6 +371,13 @@ export default function Admins() {
       phonenumber: admin.phonenumber,
       super_admin: admin.super_admin,
       status: admin.status,
+      additionalPermissions: admin.additionalPermissions,
+      department: admin.department,
+      adminId: admin.adminId,
+      fcmToken: admin.fcmToken,
+      invitationSent: admin.invitationSent,
+      organisationId: admin.organisationId,
+      userId: admin.userId,
     });
     setEditModalOpen(true);
   };
@@ -362,6 +394,13 @@ export default function Admins() {
     phonenumber: any;
     super_admin: any;
     status: any;
+    additionalPermissions: any;
+    adminId: any;
+    fcmToken: any;
+    invitationSent: any;
+    organisationId: any;
+    userId: any;
+    department: any;
   }) => {
     if (!selectedAdmin) {
       console.error("No selected Admin to update");
@@ -371,20 +410,54 @@ export default function Admins() {
     console.log("Edited Values:", values);
 
     try {
-      if (!values) {
-        console.error("Form values are undefined");
+      if (!values.firstname) {
+        console.error(`Please fill the field FirstName`);
+        toast.error(`Please fill the field FirstName`);
         return;
       }
-
-      if (
-        !values.firstname ||
-        !values.lastname ||
-        !values.email ||
-        !values.phonenumber ||
-        !values.super_admin ||
-        !values.status
-      ) {
-        console.error("Required form fields are missing");
+      if (!values.lastname) {
+        console.error(`Please fill the field LastName`);
+        toast.error(`Please fill the field LastName`);
+        return;
+      }
+      if (!values.email) {
+        console.error(`Please fill the field Email`);
+        toast.error(`Please fill the field Email`);
+        return;
+      }
+      if (!values.phonenumber) {
+        console.error(`Please fill the field  Phone number`);
+        toast.error(`Please fill the field Phone number`);
+        return;
+      }
+      if (!values.department) {
+        console.error(`Please fill the field Department`);
+        toast.error(`Please fill the field Department`);
+        return;
+      }
+      if (!values.firstname) {
+        console.error(`Please fill the field ${values.firstname}`);
+        toast.error(`Please fill the field FirstName`);
+        return;
+      }
+      if (!values.lastname) {
+        console.error(`Please fill the field ${values.firstname}`);
+        toast.error(`Please fill the field LastName`);
+        return;
+      }
+      if (!values.email) {
+        console.error(`Please fill the field ${values.firstname}`);
+        toast.error(`Please fill the field Email`);
+        return;
+      }
+      if (!values.phonenumber) {
+        console.error(`Please fill the field ${values.firstname}`);
+        toast.error(`Please fill the field Phone number`);
+        return;
+      }
+      if (!values.department) {
+        console.error(`Please fill the field ${values.department}`);
+        toast.error(`Please fill the field Department`);
         return;
       }
 
@@ -397,6 +470,13 @@ export default function Admins() {
         phonenumber: values.phonenumber,
         super_admin: values.super_admin,
         status: values.status,
+        additionalPermissions: values.additionalPermissions,
+        department: values.department,
+        adminId: values.adminId,
+        fcmToken: values.fcmToken,
+        invitationSent: values.invitationSent,
+        organisationId: values.organisationId,
+        userId: values.userId,
       });
 
       // Update the local fetchedVehicles state
@@ -405,11 +485,18 @@ export default function Admins() {
           ? {
               ...admin,
               firstname: values.firstname,
-              phonenumber: values.phonenumber,
               lastname: values.lastname,
               email: values.email,
+              phonenumber: values.phonenumber,
               super_admin: values.super_admin,
               status: values.status,
+              additionalPermissions: values.additionalPermissions,
+              department: values.department,
+              adminId: values.adminId,
+              fcmToken: values.fcmToken,
+              invitationSent: values.invitationSent,
+              organisationId: values.organisationId,
+              userId: values.userId,
             }
           : admin
       );
@@ -487,7 +574,7 @@ export default function Admins() {
                     console.log(values);
                   }}
                 >
-                  {({ values }) => (
+                  {({ values, setFieldValue }) => (
                     <Form>
                       <div className="">
                         <div className="flex w-full justify-between">
@@ -536,18 +623,28 @@ export default function Admins() {
                             <Field
                               as="select"
                               name="department"
-                              value={values.department} // Ensure this value corresponds to the selected department
+                              value={values.department ? values.department : ""}
+                              onChange={(
+                                event: React.ChangeEvent<HTMLSelectElement>
+                              ) => {
+                                const selectedDepartmentName =
+                                  event.target.value;
+                                setFieldValue(
+                                  "department",
+                                  selectedDepartmentName
+                                );
+                              }}
                               className="form-input bg-grey w-48"
-                              onClick={handleDropdownClick}
                             >
                               <option value="">Select Department</option>
-                              {permissions.map(
-                                (permission: any, index: any) => (
-                                  <option key={index} value={permission}>
-                                    {permission}
-                                  </option>
-                                )
-                              )}
+                              {departments.map((department: any) => (
+                                <option
+                                  key={department.id}
+                                  value={department.name}
+                                >
+                                  {department.name}
+                                </option>
+                              ))}
                             </Field>
                           </label>
 
@@ -587,7 +684,7 @@ export default function Admins() {
                 <div>
                   <div className="flex w-full h-full justify-between items-center mb-12">
                     <div className="text-xl font-semibold ">
-                      Edit Admin Details
+                      Edit User Details
                     </div>
                     <Button
                       className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
@@ -710,6 +807,12 @@ export function AdminsTable({
   const endIndex = startIndex + rowsPerPage;
   console.log("Filterd Admins", filteredAdmins);
 
+  const handleUserClick = (admin: any) => {
+    // router.push(`Administration/Admins/manage_admins/viewAdmins?id=${admin.id}`);
+    router.push(`Administration/Admins/manage_admins/viewAdmin?id=${admin.id}`);
+    console.log("The admin", admin);
+  };
+
   const visibleAdmins = filteredAdmins.slice(startIndex, endIndex);
   return (
     <div className="px-4 sm:px-6 lg:px-8">
@@ -753,7 +856,10 @@ export function AdminsTable({
                 {visibleAdmins.map((admin: any, index: any) => (
                   <Fragment key={index}>
                     <tr className="hover:bg-gray-100">
-                      <td className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 pr-3 text-d-blue text-base sm:pl-0">
+                      <td
+                        className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 pr-3 text-d-blue text-base sm:pl-0"
+                        onClick={() => handleUserClick(admin)}
+                      >
                         {admin.adminId}
                       </td>
                       <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">{`${admin.firstname} ${admin.lastname}`}</td>
@@ -770,7 +876,10 @@ export function AdminsTable({
                         </div>
                         <div
                           className="ml-4"
-                          onClick={() => handleEditClick(admin)}
+                          onClick={(event) => {
+                            event.stopPropagation(); // Stop the event from bubbling up
+                            handleEditClick(admin);
+                          }}
                         >
                           <EditBtn />
                         </div>

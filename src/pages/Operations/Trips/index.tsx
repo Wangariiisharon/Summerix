@@ -11,7 +11,6 @@ import {
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { FormModal } from "@/components/Modals/FormModal";
 import { Fragment, SetStateAction, useEffect, useState } from "react";
-// import SearchBar from "../../components/Forms/input"
 import SiteLayout from "@/Layout/SiteLayout";
 import { fbDb } from "@/firebase/configs";
 import {
@@ -35,7 +34,7 @@ import { useRouter } from "next/router";
 import AllTrips from "./allTrips";
 import { AnyIfEmpty } from "react-redux";
 import { ErrorMessage } from "formik";
-import exportDataToCSV from "../../../components/Exports/tripsExport";
+import { exportDataToCSV } from "../../../components/Exports/tripsExport";
 import toast from "react-hot-toast";
 import { startOfMonth, endOfMonth, format } from "date-fns";
 import {
@@ -44,6 +43,7 @@ import {
 } from "@/components/Authentication/AuthProvider";
 import PlacesAutocomplete from "react-places-autocomplete";
 import { AnyRecord } from "dns";
+import * as Yup from "yup";
 
 // Update the import path
 
@@ -57,6 +57,7 @@ const tabs = [
   { key: "waiting", name: "Waiting" },
   { key: "complete", name: "Complete" },
 ];
+const statusMap = ["all", "onRoute", "complete", "waiting"];
 const SearchBar = ({ placeholder, value, onChange }: any) => {
   return (
     <input
@@ -99,13 +100,16 @@ export default function TripsComponent() {
   const [pickUpLocation, setPickUpLocation] = useState<string>("");
   const [dropOffLocation, setDropOffLocation] = useState<string>("");
   const [distance, setDistance] = useState<string>("");
-
   const [editFormInitialValues, setEditFormInitialValues] = useState({
-    requested_by: "",
+    requested_by: {
+      id: "",
+      name: "",
+      phonenumber: "",
+    },
     vehicle: "",
     pick_up_location: "",
     drop_off_location: "",
-    start_time: "" as unknown as Date, // Initialize as an empty string, cast to Date
+    start_time: "", // Initialize as an empty string, cast to Date
     end_time: "", // Make sure it's initialized as a string
     cargo_type: "",
     cargo_quantity: "",
@@ -119,6 +123,26 @@ export default function TripsComponent() {
     distance: "",
   });
   const router = useRouter();
+
+  const validationSchema = Yup.object({
+    requested_by: Yup.string().required("Driver is required"),
+    vehicle: Yup.string().required("Vehicle is required"),
+    pick_up_location: Yup.string().required("Pick up location is required"),
+    drop_off_location: Yup.string().required("Drop off location is required"),
+    start_time: Yup.date().required("Start time is required"),
+    // end_time: Yup.date().required("End time is required"),
+    cargo_type: Yup.string().required("Cargo type is required"),
+    cargo_quantity: Yup.string().required("Cargo quantity is required"),
+    company: Yup.string().required("Company is required"),
+    client: Yup.string().required("Client is required"),
+    dealValue: Yup.number().positive().required("Deal Value is required"),
+    fuel: Yup.number().positive().required("Fuel is required"),
+    mileage_fee: Yup.number().positive().required("Mileage Fee is required"),
+  });
+  const editValidationSchema = Yup.object({
+    end_time: Yup.date().required("End time is required"),
+    status: Yup.number().positive().required("Status is required"),
+  });
 
   const { organisationId } = useAuthContext();
   console.log("OrganisationId on Trips page:", organisationId);
@@ -140,12 +164,6 @@ export default function TripsComponent() {
   const handleReset = () => {
     setOpen(false);
   };
-  const convertAddressToCoordinates = async (
-    address: string
-  ): Promise<Coordinates> => {
-    // Implementation goes here
-    return { lat: 0, lng: 0 }; // Dummy return to satisfy function return type
-  };
 
   const updateSelectedCompanyVehicles = (companyName: string) => {
     if (companyName) {
@@ -165,7 +183,8 @@ export default function TripsComponent() {
         if (organisationId) {
           const q = query(
             collection(fbDb, "drivers"),
-            where("organisationId", "==", organisationId)
+            where("organisationId", "==", organisationId),
+            where("archive", "==", false) // Only fetch drivers where archive is false
           );
           const querySnapshot = await getDocs(q);
           const driverDetails = querySnapshot.docs.map((doc) => {
@@ -174,13 +193,14 @@ export default function TripsComponent() {
               id: doc.id,
               name: data.name,
               phonenumber: data.phonenumber,
+              // Consider fetching and returning additional necessary fields
             };
           });
           setDrivers(driverDetails);
         } else {
           // Handle the case when organisationId is not available
           console.error(
-            "Organisation ID is not available for fetching Vehicle names."
+            "Organisation ID is not available for fetching drivers."
           );
         }
       } catch (error) {
@@ -282,27 +302,38 @@ export default function TripsComponent() {
   console.log(selectedCompanyVehicles, "SelectedCompanyVehicles");
   console.log(selectedCompany, "SelectedCompany");
 
+  const convertDateToInputString = (date: string | number | Date) => {
+    const d = new Date(date);
+    let month = "" + (d.getMonth() + 1),
+      day = "" + d.getDate(),
+      year = d.getFullYear();
+
+    if (month.length < 2) month = "0" + month;
+    if (day.length < 2) day = "0" + day;
+
+    return [year, month, day].join("-"); // Format required for date input fields
+  };
+
   const handleEditClick = (trip: DocumentData) => {
     const { seconds } = trip.start_time;
-    const startTime = new Date(seconds * 1000);
-    const { endseconds } = trip.end_time;
-    const endTime = new Date(endseconds * 1000).toDateString();
+    const startTime = trip.start_time.toDate(); // Converts Firestore Timestamp to JavaScript Date object
+    const endTime = trip.end_time.toDate();
     setSelectedTrip(trip);
     setEditFormInitialValues({
-      requested_by: trip.requested_by,
+      requested_by: trip.requested_by.name,
       vehicle: trip.vehicle,
       pick_up_location: trip.pick_up_location,
       drop_off_location: trip.drop_off_location,
-      start_time: startTime,
-      end_time: endTime,
+      start_time: convertDateToInputString(startTime), // Convert date to string for input[type="date"]
+      end_time: convertDateToInputString(endTime),
       cargo_type: trip.cargo_type,
       cargo_quantity: trip.cargo_quantity,
       memo: trip.memo,
       trip_status: trip.trip_status,
-      organisationId: trip.organisation_id,
+      organisationId: trip.organisationId,
       tripId: trip.tripId,
-      dealValue: trip.dealValue,
       fuel: trip.fuel,
+      dealValue: trip.dealValue,
       mileage_fee: trip.mileage_fee,
       distance: trip.distance,
     });
@@ -327,8 +358,8 @@ export default function TripsComponent() {
     trip_status: any;
     organisationId: any;
     tripId: any;
-    dealValue: any;
     fuel: any;
+    dealValue: any;
     mileage_fee: any;
     distance: any;
   }) => {
@@ -348,11 +379,11 @@ export default function TripsComponent() {
         toast.error(`Please fill the field Trip status`);
         return;
       }
-      if (!values.end_time) {
-        console.error("Required form fields are missing");
-        toast.error("Please fill the field End time");
-        return;
-      }
+      // if (!values.end_time) {
+      //   console.error("Required form fields are missing");
+      //   toast.error("Please fill the field End time");
+      //   return;
+      // }
       const endTimeDate = new Date(values.end_time);
       const startTimeDate = new Date(values.start_time);
 
@@ -369,7 +400,9 @@ export default function TripsComponent() {
         pick_up_location: values.pick_up_location,
         drop_off_location: values.drop_off_location,
         start_time: values.start_time,
+        // end_time: ,
         end_time: endTimeTimestamp,
+
         cargo_type: values.cargo_type,
         cargo_quantity: values.cargo_quantity,
         memo: values.memo,
@@ -399,8 +432,8 @@ export default function TripsComponent() {
               trip_status: values.trip_status,
               organisationId: values.organisationId,
               tripId: values.tripId,
-              dealValue: values.dealValue,
               fuel: values.fuel,
+              dealValue: values.dealValue,
               mileage_fee: values.mileage_fee,
               distance: values.distance,
             }
@@ -414,6 +447,7 @@ export default function TripsComponent() {
       console.error("Error updating trip:", error);
     }
   };
+
   // Assuming tripsPerVehicle is a global variable to keep track of trip counts
   const tripsPerVehicle: Record<string, { count: number; lastMonth: string }> =
     {};
@@ -474,7 +508,6 @@ export default function TripsComponent() {
       );
       const { distance } = await response.json();
       console.log("fetchDistance:", distance);
-      // setDistance(distance)
 
       if (distance) {
         return distance;
@@ -493,7 +526,7 @@ export default function TripsComponent() {
     drop_off_location: string;
     vehicle: string;
     start_time: string;
-    end_time: string;
+    // end_time: string;
     cargo_type: string;
     cargo_quantity: string;
     memo: string;
@@ -503,79 +536,10 @@ export default function TripsComponent() {
     fuel: number;
     mileage_fee: number;
   }) => {
-    setOpen(false);
     console.log("Submitted Values:", values);
     console.log("Distance handlesubmit:", distance);
 
     try {
-      if (!values) {
-        console.error("Form values are undefined");
-        return;
-      }
-      if (!values.requested_by) {
-        console.error("Required form fields are missing");
-        return;
-      }
-      if (!values.vehicle) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field  Vehicle`);
-        return;
-      }
-      if (!values.pick_up_location) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Pick uplo cation`);
-        return;
-      }
-      if (!values.drop_off_location) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Drop off location`);
-        return;
-      }
-      if (!values.start_time) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Start time`);
-        return;
-      }
-      if (!values.cargo_type) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Cargo type`);
-        return;
-      }
-      if (!values.cargo_quantity) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Cargo quantity`);
-        return;
-      }
-      if (!values.company) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field company`);
-        return;
-      }
-      if (!values.company) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Company `);
-        return;
-      }
-      if (!values.client) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field  Client`);
-        return;
-      }
-      if (!values.dealValue) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field  Deal Value`);
-        return;
-      }
-      if (!values.fuel) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field  Fuel`);
-        return;
-      }
-      if (!values.mileage_fee) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field  Mileage Fee`);
-        return;
-      }
       const pickUpAddress = values.pick_up_location;
       const dropOffAddress = values.drop_off_location;
       console.log("PickUpAddress", pickUpAddress);
@@ -595,10 +559,10 @@ export default function TripsComponent() {
       console.log(`Number of trips for ${values.vehicle}: ${numberOfTrips}`);
 
       const startDateObj = new Date(values.start_time + "T00:00:00");
-      const endDateObj = new Date(values.end_time + "T00:00:00");
+      // const endDateObj = new Date(values.end_time + "T00:00:00");
 
       const startTimestamp = Timestamp.fromDate(startDateObj);
-      const endTimestamp = Timestamp.fromDate(endDateObj);
+      // const endTimestamp = Timestamp.fromDate(endDateObj);
 
       // Find the selected driver based on the provided name
       const selectedDriver = drivers.find(
@@ -620,7 +584,7 @@ export default function TripsComponent() {
         tripId: tripId,
         vehicle: values.vehicle,
         start_time: startTimestamp,
-        end_time: "",
+        // end_time: "",
         pick_up_location: values.pick_up_location,
         drop_off_location: values.drop_off_location,
         cargo_type: values.cargo_type,
@@ -638,6 +602,13 @@ export default function TripsComponent() {
       const docRef = await addDoc(collection(fbDb, "trips"), maintenanceData);
       console.log("Trip added with ID: ", docRef.id);
       toast.success("Trip Successfully Added.");
+      const newTrip = {
+        id: docRef.id,
+        ...maintenanceData,
+      };
+      // Prepend the new driver to the fetchedDrivers state
+      setfetchedTrips((prevTrip) => [newTrip, ...prevTrip]);
+
       setOpen(false);
     } catch (error) {
       console.error("Error adding Trip:", error);
@@ -650,16 +621,23 @@ export default function TripsComponent() {
   };
   const handleExportButtonClick = async () => {
     setIsExporting(true);
+    const status = statusMap[selectedTab]; // Get the status based on the selected tab
+    console.log("status:", status);
 
     try {
-      const csvData = await exportDataToCSV();
+      let csvData;
+      if (status === "all") {
+        csvData = await exportDataToCSV(); // Export all data without filtering
+      } else {
+        csvData = await exportDataToCSV(status); // Export data filtered by status
+      }
 
       // Create a blob and initiate the download
       const blob = new Blob([csvData], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "exported-data.csv";
+      a.download = `exported-data-${status}.csv`;
       a.click();
     } catch (error) {
       console.error("Error exporting data:", error);
@@ -667,6 +645,7 @@ export default function TripsComponent() {
 
     setIsExporting(false);
   };
+
   const currentTimestamp = Date.now();
   const currentDate = new Date();
 
@@ -747,8 +726,17 @@ export default function TripsComponent() {
             />
           </div>
           <div className="flex  right-4">
-            <button
+            <Button
               className="bg-d-green text-white text-sm flex w-[140px] h-[38px] items-center justify-center uppercase rounded"
+              handleClick={handleAddTrip}
+            >
+              <>
+                <PlusIcon className="h-6 w-6 mr-2" />
+                Add Trip
+              </>
+            </Button>
+            <button
+              className="ml-4 bg-d-green text-white text-sm flex w-[140px] h-[38px] items-center justify-center uppercase rounded"
               onClick={handleExportButtonClick}
               disabled={isExporting}
             >
@@ -757,16 +745,6 @@ export default function TripsComponent() {
                 Export
               </>
             </button>
-
-            <Button
-              className="ml-4 bg-d-green text-white text-sm flex w-[140px] h-[38px] items-center justify-center uppercase rounded"
-              handleClick={handleAddTrip}
-            >
-              <>
-                <PlusIcon className="h-6 w-6 mr-2" />
-                Add Trip
-              </>
-            </Button>
           </div>
         </div>
       </div>
@@ -827,16 +805,18 @@ export default function TripsComponent() {
       </div>
       <FormModal open={open} setOpen={setOpen}>
         <div className="p-8">
-          <div className="flex w-full h-full justify-between items-center mb-12">
-            <div className="text-xl font-semibold ">New Trip</div>
-            <Button
-              className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
-              handleClick={handleReset}
-            >
-              <XMarkIcon className="h-6 w-6 text-red-400" />
-            </Button>
+          <div>
+            <div className="flex w-full h-full justify-between items-center ">
+              <div className="text-xl font-semibold ">New Trip</div>
+              <Button
+                className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
+                handleClick={handleReset}
+              >
+                <XMarkIcon className="h-6 w-6 text-red-400" />
+              </Button>
+            </div>
+            <p className="text-red-500 text-xs mt-3">All fields are required</p>
           </div>
-
           <Formik
             initialValues={{
               requested_by: "",
@@ -854,18 +834,25 @@ export default function TripsComponent() {
               fuel: 0,
               mileage_fee: 0,
             }}
-            onSubmit={(values) => handleSubmit(values)}
+            validationSchema={validationSchema}
+            onSubmit={(values, { setSubmitting }) => {
+              handleSubmit(values);
+              // toast.success("Trip successfully saved!");
+              setSubmitting(false);
+              setOpen(false);
+            }}
           >
-            {({ values, setFieldValue }) => (
+            {(formik) => (
               <Form>
                 <div className="">
-                  <div className="flex w-full justify-between mt-8">
-                    <label className="block">
+                  <div className="flex w-full justify-between mt-6">
+                    {/* PICK UP LOCATION with Autocomplete */}
+                    <div className="block">
                       <label className="form-label">PICK UP LOCATION</label>
                       <PlacesAutocomplete
-                        value={values.pick_up_location}
+                        value={formik.values.pick_up_location}
                         onChange={(address) =>
-                          setFieldValue("pick_up_location", address)
+                          formik.setFieldValue("pick_up_location", address)
                         }
                       >
                         {({
@@ -881,28 +868,32 @@ export default function TripsComponent() {
                                 placeholder: "Enter Pick Up Location",
                               })}
                             />
-                            <div>
-                              {loading && <div>Loading...</div>}
-                              {suggestions.map((suggestion, index) => (
-                                <div
-                                  {...getSuggestionItemProps(suggestion)}
-                                  key={index}
-                                >
-                                  {suggestion.description}
-                                </div>
-                              ))}
-                            </div>
+                            {loading && <div>Loading...</div>}
+                            {suggestions.map((suggestion, index) => (
+                              <div
+                                {...getSuggestionItemProps(suggestion)}
+                                key={index}
+                              >
+                                {suggestion.description}
+                              </div>
+                            ))}
                           </div>
                         )}
                       </PlacesAutocomplete>
-                    </label>
+                      <ErrorMessage
+                        name="pick_up_location"
+                        component="div"
+                        className="error text-red-500 "
+                      />
+                    </div>
 
-                    <label className="block">
+                    {/* DROP OFF LOCATION with Autocomplete */}
+                    <div className="block">
                       <label className="form-label">DROP OFF LOCATION</label>
                       <PlacesAutocomplete
-                        value={values.drop_off_location}
+                        value={formik.values.drop_off_location}
                         onChange={(address) =>
-                          setFieldValue("drop_off_location", address)
+                          formik.setFieldValue("drop_off_location", address)
                         }
                       >
                         {({
@@ -918,43 +909,56 @@ export default function TripsComponent() {
                                 placeholder: "Enter Drop Off Location",
                               })}
                             />
-                            <div>
-                              {loading && <div>Loading...</div>}
-                              {suggestions.map((suggestion, index) => (
-                                <div
-                                  {...getSuggestionItemProps(suggestion)}
-                                  key={index}
-                                >
-                                  {suggestion.description}
-                                </div>
-                              ))}
-                            </div>
+                            {loading && <div>Loading...</div>}
+                            {suggestions.map((suggestion, index) => (
+                              <div
+                                {...getSuggestionItemProps(suggestion)}
+                                key={index}
+                              >
+                                {suggestion.description}
+                              </div>
+                            ))}
                           </div>
                         )}
                       </PlacesAutocomplete>
-                    </label>
+                      <ErrorMessage
+                        name="drop_off_location"
+                        component="div"
+                        className="error text-red-500 "
+                      />
+                    </div>
                   </div>
-
+                  {/* START TIME and END TIME */}
                   <div className="flex w-full justify-between mt-8">
-                    <label className="block">
+                    <div className="block">
                       <label className="form-label">START TIME</label>
                       <Field
                         type="date"
+                        value={formik.values.start_time}
                         name="start_time"
-                        value={values.start_time}
                         className="form-input bg-grey w-48"
                       />
-                    </label>
-                    <label className="block">
+                      <ErrorMessage
+                        name="start_time"
+                        component="div"
+                        className="error text-red-500 "
+                      />
+                    </div>
+                    <div className="block">
                       <label className="form-label">END TIME</label>
                       <Field
+                        disabled
                         type="date"
                         name="end_time"
-                        value={values.end_time}
+                        value={formik.values.end_time}
                         className="form-input bg-grey w-48"
-                        disabled
                       />
-                    </label>
+                      {/* <ErrorMessage
+                        name="end_time"
+                        component="div"
+                        className="error text-red-500 "
+                      /> */}
+                    </div>
                   </div>
 
                   <div className="flex w-full justify-between  mt-8">
@@ -963,7 +967,7 @@ export default function TripsComponent() {
                       <Field
                         as="select"
                         name="company"
-                        value={values.company}
+                        value={formik.values.company}
                         onChange={async (e: any) => {
                           const selectedCompanyName = e.target.value;
                           handleCompanyChange(selectedCompanyName);
@@ -986,8 +990,7 @@ export default function TripsComponent() {
                           // Enable the submit button and set the fetched flag
                           setCompanyDetailsFetched(true);
                           console.log(selectedCompanyDetails);
-                          console.log(values.company);
-                          setFieldValue("company", selectedCompanyName);
+                          formik.setFieldValue("company", selectedCompanyName);
                         }}
                         className="form-input bg-grey w-48"
                       >
@@ -998,13 +1001,18 @@ export default function TripsComponent() {
                           </option>
                         ))}
                       </Field>
+                      <ErrorMessage
+                        name="company"
+                        component="div"
+                        className="error text-red-500 "
+                      />
                     </label>
                     <label className="block">
                       <label className="form-label">CLIENT</label>
                       <Field
                         as="select"
                         name="client"
-                        value={values.client}
+                        value={formik.values.client}
                         className="form-input bg-grey w-48"
                       >
                         <option value="">Select Client</option>
@@ -1014,6 +1022,11 @@ export default function TripsComponent() {
                           </option>
                         ))}
                       </Field>
+                      <ErrorMessage
+                        name="client"
+                        component="div"
+                        className="error text-red-500 "
+                      />
                     </label>
                   </div>
                   <div className="mt-8 flex w-full justify-between">
@@ -1022,7 +1035,7 @@ export default function TripsComponent() {
                       <Field
                         as="select"
                         name="requested_by"
-                        value={values.requested_by}
+                        value={formik.values.requested_by}
                         className="form-input bg-grey w-48"
                       >
                         <option value="">Select Driver</option>
@@ -1033,13 +1046,18 @@ export default function TripsComponent() {
                           </option>
                         ))}
                       </Field>
+                      <ErrorMessage
+                        name="company"
+                        component="div"
+                        className="error text-red-500 "
+                      />
                     </label>
                     <label className="block">
                       <label className="form-label">VEHICLE</label>
                       <Field
                         as="select"
                         name="vehicle"
-                        value={values.vehicle}
+                        value={formik.values.vehicle}
                         className="form-input bg-grey w-48"
                       >
                         <option value="">Select Vehicle</option>
@@ -1049,6 +1067,11 @@ export default function TripsComponent() {
                           </option>
                         ))}
                       </Field>
+                      <ErrorMessage
+                        name="vehicle"
+                        component="div"
+                        className="error text-red-500 "
+                      />
                     </label>
                   </div>
                   <div className="mt-8 flex w-full justify-between">
@@ -1057,9 +1080,14 @@ export default function TripsComponent() {
                       <Field
                         type="number"
                         name="dealValue"
-                        value={values.dealValue}
+                        value={formik.values.dealValue}
                         placeholder="Ksh"
                         className="form-input bg-grey w-48"
+                      />
+                      <ErrorMessage
+                        name="dealValue"
+                        component="div"
+                        className="error text-red-500 "
                       />
                     </label>
                     <label className="block">
@@ -1067,9 +1095,14 @@ export default function TripsComponent() {
                       <Field
                         type="number"
                         name="fuel"
-                        value={values.fuel}
+                        value={formik.values.fuel}
                         placeholder="Ksh"
                         className="form-input bg-grey w-48"
+                      />
+                      <ErrorMessage
+                        name="fuel"
+                        component="div"
+                        className="error text-red-500 "
                       />
                     </label>
                   </div>
@@ -1079,9 +1112,14 @@ export default function TripsComponent() {
                       <Field
                         type="number"
                         name="mileage_fee"
-                        value={values.mileage_fee}
+                        value={formik.values.mileage_fee}
                         placeholder="Ksh"
                         className="form-input bg-grey w-48"
+                      />
+                      <ErrorMessage
+                        name="mileage_fee"
+                        component="div"
+                        className="error text-red-500 "
                       />
                     </label>
 
@@ -1094,6 +1132,11 @@ export default function TripsComponent() {
                         value={distance}
                         className="form-input bg-grey w-48"
                       />
+                      <ErrorMessage
+                        name="distance"
+                        component="div"
+                        className="error text-red-500 "
+                      />
                     </label>
                   </div>
                   <p className="mt-5 font-semibold"> CARGO</p>
@@ -1103,8 +1146,13 @@ export default function TripsComponent() {
                       <Field
                         type="text"
                         name="cargo_type"
-                        value={values.cargo_type}
+                        value={formik.values.cargo_type}
                         className="form-input bg-grey w-48"
+                      />
+                      <ErrorMessage
+                        name="cargo_type"
+                        component="div"
+                        className="error text-red-500 "
                       />
                     </label>
                     <label className="block mt-8">
@@ -1112,8 +1160,13 @@ export default function TripsComponent() {
                       <Field
                         type="text"
                         name="cargo_quantity"
-                        value={values.cargo_quantity}
+                        value={formik.values.cargo_quantity}
                         className="form-input bg-grey w-48"
+                      />
+                      <ErrorMessage
+                        name="cargo_quantity"
+                        component="div"
+                        className="error text-red-500 "
                       />
                     </label>
                   </div>
@@ -1122,9 +1175,14 @@ export default function TripsComponent() {
                     <Field
                       type="text"
                       name="memo"
-                      value={values.memo}
+                      value={formik.values.memo}
                       className="form-input bg-grey w-96 h-20"
                       placeholder="Optional"
+                    />
+                    <ErrorMessage
+                      name="memo"
+                      component="div"
+                      className="error text-red-500 "
                     />
                   </label>
                   <div className="flex w-full justify-end mt-24 ">
@@ -1152,7 +1210,7 @@ export default function TripsComponent() {
         <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
           <div>
             <div className="flex w-full h-full justify-between items-center mb-12">
-              <div className="text-xl font-semibold ">Edit Trip Details</div>
+              <div className="text-xl font-semibold ">Edit trip Details</div>
               <Button
                 className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
                 handleClick={handleEditModalClose}
@@ -1160,6 +1218,7 @@ export default function TripsComponent() {
                 <XMarkIcon className="h-6 w-6 text-red-400" />
               </Button>
             </div>
+
             <Formik
               initialValues={editFormInitialValues}
               onSubmit={handleEditSubmit}
@@ -1210,6 +1269,7 @@ export default function TripsComponent() {
                         />
                       </label>
                     </div>
+
                     <div className="flex w-full justify-between  mt-8">
                       <label className="block">
                         <label className="form-label">SELECT DRIVER</label>
@@ -1270,17 +1330,18 @@ export default function TripsComponent() {
                         <label className="form-label">DISTANCE</label>
                         <Field
                           disabled
-                          type="string"
+                          type="text"
                           name="distance"
                           value={values.distance}
                           className="form-input bg-grey w-48"
                         />
                       </label>
                     </div>
+
                     <p className="mt-5 font-semibold"> Cargo</p>
                     <div className="flex w-full justify-between">
                       <label className="block mt-8">
-                        <label className="form-label">CARGO TYPE</label>
+                        <label className="form-label">Cargo Type</label>
                         <Field
                           disabled
                           type="text"
@@ -1290,7 +1351,7 @@ export default function TripsComponent() {
                         />
                       </label>
                       <label className="block mt-8">
-                        <label className="form-label">CARGO QUANTITY</label>
+                        <label className="form-label">Cargo Quanitiy</label>
                         <Field
                           disabled
                           type="text"
@@ -1300,6 +1361,7 @@ export default function TripsComponent() {
                         />
                       </label>
                     </div>
+                    <div className="flex w-full justify-between"></div>
                     <label className="block mt-8">
                       <label className="form-label">TRIP STATUS</label>
 
@@ -1309,7 +1371,7 @@ export default function TripsComponent() {
                         value={values.trip_status}
                         className="form-input bg-grey w-48"
                       >
-                        <option value="">Select Trip Status</option>
+                        <option>Select Trip status</option>
                         <option value="Booked">Booked</option>
                         <option value="Ready for Departure">
                           Ready for Departure
@@ -1325,7 +1387,7 @@ export default function TripsComponent() {
                       </Field>
                     </label>
                     <label className="block mt-8">
-                      <label className="form-label">MEMO</label>
+                      <label className="form-label">Memo</label>
                       <Field
                         disabled
                         type="text"
@@ -1336,6 +1398,8 @@ export default function TripsComponent() {
                       />
                     </label>
                     <div className="flex w-full justify-end mt-24 ">
+                      {/* <Button className='text-blue text-xl mr-32' handleClick={handleReset}>Reset</Button>
+                                <button type='submit' >Save</button> */}
                       <Button
                         className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
                         handleClick={handleReset}
@@ -1382,52 +1446,37 @@ export function TripsTable({
 }: TripsTableProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const rowsPerPage = 6;
+  const totalTrips = filteredTrips.length;
+  const totalPages = Math.ceil(totalTrips / rowsPerPage);
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const router = useRouter();
+
   const handleTripClick = (trip: any) => {
     router.push(`Operations/Trips/viewTrip?id=${trip.id}`);
   };
 
-  const calculateHourDifference = (startTime: number, endTime: number) => {
-    // Calculate the difference in milliseconds
-    const differenceInMilliseconds = endTime - startTime;
-
-    // Convert milliseconds to hours and round to nearest whole number
-    const differenceInHours = Math.round(
-      differenceInMilliseconds / (1000 * 60 * 60)
-    );
-
-    return differenceInHours;
-  };
   const tripsPerVehicle: TripsPerVehicle = {};
   const currentDate = new Date();
+
   const filteredAllocation = filteredTrips
     .filter((trip) => {
       const startTime = new Date(trip?.start_time?.seconds * 1000);
       const endTime = new Date(trip?.end_time?.seconds * 1000);
 
       switch (selectedTab) {
-        case 0:
-          // Show all trips
+        case 0: // First tab: Show all trips
           return true;
-        case 1:
-          // Show trips whose start_time has reached but end_time hasn't reached
-          return currentDate >= startTime && currentDate < endTime;
-        case 2:
-          // Show completed trips where both start_time and end_time have already passed
+        case 1: // Second tab: Trips whose start_time has reached but end_time hasn't
+          return currentDate >= startTime;
+        case 2: // Other tabs: Show completed trips where end_time has already passed
           return currentDate > endTime;
-        case 3:
-          // Show completed trips where both start_time and end_time have already passed
-          return currentDate > endTime;
-        case 4:
-          // Show completed trips where both start_time and end_time have already passed
+        case 3: // Other tabs: Show completed trips where end_time has already passed
           return currentDate > endTime;
         default:
           return false;
       }
     })
-    // Sort the filteredAllocation array only if selectedTab is 3 (fourth tab)
     .sort((a, b) =>
       selectedTab === 3
         ? Number(new Date(b.end_time.seconds * 1000)) -
@@ -1438,33 +1487,19 @@ export function TripsTable({
   console.log("Selected Tab", selectedTab);
   const visibleTrips = filteredAllocation.slice(startIndex, endIndex);
 
-  const formatTripId = (
-    currentMonth: string,
-    tripCount: { toString: () => string },
-    vehicle: any
-  ) => {
-    const formattedMonth = currentMonth.substring(0, 3); // Get the first three characters of the month
-    const formattedTripCount = tripCount.toString().padStart(2, "0"); // Ensure two-digit trip count
-    return `${formattedMonth} ${formattedTripCount} ${vehicle}`;
+  const handlePageClick = (page: number) => {
+    setCurrentPage(page);
   };
-
-  const calculateTripCount = (
-    startMonth: string,
-    endMonth: string,
-    currentMonth: string
-  ): number => {
-    if (startMonth === endMonth) {
-      return currentMonth === startMonth ? 1 : 0; // Trip happened in the current month
-    } else {
-      // Trip spans multiple months
-      if (currentMonth === startMonth) {
-        return 1; // Trip started in the current month
-      } else if (currentMonth === endMonth) {
-        return 1; // Trip ends in the current month
-      } else {
-        return 0; // Trip neither started nor ended in the current month
+  const pageNumbers = () => {
+    let pages = [];
+    if (totalPages <= 5) {
+      for (let i = 0; i < totalPages; i++) {
+        pages.push(i);
       }
+    } else {
+      pages = [0, 1, 2, 3, "...", totalPages - 1];
     }
+    return pages;
   };
 
   return (
@@ -1573,25 +1608,27 @@ export function TripsTable({
           </div>
         </div>
       </div>
-
-      <div
-        className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
-        text-sm font-nunito font-bold uppercase bg-[#FAFAFB]"
-      >
-        <button
-          className="ml-5"
-          onClick={() => setCurrentPage(currentPage - 1)}
-          disabled={currentPage === 0}
-        >
-          Prev
+      <div className="flex justify-between items-center pt-4">
+        <button onClick={() => handlePageClick(0)} disabled={currentPage === 0}>
+          {"<<"}
         </button>
-        <span className="ml-5">{currentPage + 1}</span>
+        {pageNumbers().map((num, index) => {
+          // Only render buttons for numbers, and static text for ellipsis
+          if (typeof num === "number") {
+            return (
+              <button key={index} onClick={() => handlePageClick(num)}>
+                {num + 1}
+              </button>
+            );
+          } else {
+            return <span key={index}>...</span>;
+          }
+        })}
         <button
-          className="ml-5"
-          onClick={() => setCurrentPage(currentPage + 1)}
-          disabled={endIndex >= filteredAllocation.length}
+          onClick={() => handlePageClick(totalPages - 1)}
+          disabled={currentPage === totalPages - 1}
         >
-          Next
+          {">>"}
         </button>
       </div>
     </div>

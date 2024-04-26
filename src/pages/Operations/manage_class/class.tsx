@@ -154,6 +154,14 @@ export default function Class() {
       console.log("Class added with ID: ", docRef.id);
       toast.success("Class Successfully Added.");
 
+      const newClass = {
+        id: docRef.id,
+        ...clientsData,
+      };
+
+      // Prepend the new driver to the fetchedDrivers state
+      setfetchedClasses((prevClient) => [newClass, ...prevClient]);
+
       setOpen(false);
     } catch (error) {
       console.error("Error adding Class:", error);

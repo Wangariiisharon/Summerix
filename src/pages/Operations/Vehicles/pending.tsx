@@ -173,7 +173,8 @@ export default function Pending() {
         if (organisationId) {
           const q = query(
             collection(fbDb, "drivers"),
-            where("organisationId", "==", organisationId)
+            where("organisationId", "==", organisationId),
+            where("archive", "==", false)
           );
           const querySnapshot = await getDocs(q);
           const names = querySnapshot.docs.map((doc) => doc.data().name);
