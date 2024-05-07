@@ -37,6 +37,7 @@ import {
   AuthProvider,
   useAuthContext,
 } from "@/components/Authentication/AuthProvider";
+import { AnyPtrRecord } from "dns";
 
 const tabs = [
   { name: "OVERVIEW", href: "#", current: false },
@@ -100,17 +101,74 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
   const { organisationId } = useAuthContext();
   console.log("AllTrips Page OrganisationId: ", organisationId);
 
+  function convertToDate(firestoreTimestamp: any) {
+    if (firestoreTimestamp instanceof Timestamp) {
+      return firestoreTimestamp.toDate();
+    } else if (typeof firestoreTimestamp === "string") {
+      return new Date(firestoreTimestamp);
+    } else {
+      return firestoreTimestamp; // Assuming it's already a Date object or null
+    }
+  }
+  const convertDateToInputString = (date: string | number | Date) => {
+    const d = new Date(date);
+    let month = "" + (d.getMonth() + 1),
+      day = "" + d.getDate(),
+      year = d.getFullYear();
+
+    if (month.length < 2) month = "0" + month;
+    if (day.length < 2) day = "0" + day;
+
+    return [year, month, day].join("-"); // Format required for date input fields
+  };
+  // const handleEditClick = (trip: DocumentData) => {
+  //   const { seconds } = trip.start_time;
+  //   const startTime = trip.start_time?.toDate(); // Converts Firestore Timestamp to JavaScript Date object
+  //   const endTime = trip.end_time?.toDate();
+  //   setSelectedTrip(trip);
+  //   setEditFormInitialValues({
+  //     requested_by: trip.requested_by.name,
+  //     vehicle: trip.vehicle,
+  //     pick_up_location: trip.pick_up_location,
+  //     drop_off_location: trip.drop_off_location,
+  //     start_time: convertDateToInputString(startTime), // Convert date to string for input[type="date"]
+  //     end_time: convertDateToInputString(endTime),
+  //     cargo_type: trip.cargo_type,
+  //     cargo_quantity: trip.cargo_quantity,
+  //     memo: trip.memo,
+  //     trip_status: trip.trip_status,
+  //     organisationId: trip.organisationId,
+  //     tripId: trip.tripId,
+  //     fuel: trip.fuel,
+  //     dealValue: trip.dealValue,
+  //     mileage_fee: trip.mileage_fee,
+  //     distance: trip.distance,
+  //   });
+  //   setEditModalOpen(true);
+  // };
+
   const handleEditClick = (trip: DocumentData) => {
-    const { seconds } = trip.start_time;
-    const startTime = trip.start_time.toDate(); // Converts Firestore Timestamp to JavaScript Date object
-    const endTime = trip.end_time.toDate();
+    // Check and convert Firestore Timestamps to Date objects safely
+    const startTime =
+      trip.start_time && trip.start_time.toDate
+        ? trip.start_time.toDate()
+        : convertToDate(trip.start_time);
+    const endTime =
+      trip.end_time && trip.end_time.toDate
+        ? trip.end_time.toDate()
+        : convertToDate(trip.end_time);
+
     setSelectedTrip(trip);
     setEditFormInitialValues({
-      requested_by: trip.requested_by.name,
+      requested_by: {
+        id: trip.requested_by.id || "", // Assuming the 'id' field exists
+        name: trip.requested_by.name || "",
+        phonenumber: trip.requested_by.phonenumber || "",
+      },
       vehicle: trip.vehicle,
       pick_up_location: trip.pick_up_location,
       drop_off_location: trip.drop_off_location,
-      start_time: convertDateToInputString(startTime), // Convert date to string for input[type="date"]
+      start_time: convertDateToInputString(startTime),
       end_time: convertDateToInputString(endTime),
       cargo_type: trip.cargo_type,
       cargo_quantity: trip.cargo_quantity,
@@ -125,17 +183,7 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
     });
     setEditModalOpen(true);
   };
-  const convertDateToInputString = (date: string | number | Date) => {
-    const d = new Date(date);
-    let month = "" + (d.getMonth() + 1),
-      day = "" + d.getDate(),
-      year = d.getFullYear();
 
-    if (month.length < 2) month = "0" + month;
-    if (day.length < 2) day = "0" + day;
-
-    return [year, month, day].join("-"); // Format required for date input fields
-  };
   const handleEditModalClose = () => {
     setSelectedTrip(null);
     setEditModalOpen(false);
@@ -175,11 +223,7 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
         toast.error(`Please fill the field Trip status`);
         return;
       }
-      if (!values.end_time) {
-        console.error("Required form fields are missing");
-        toast.error("Please fill the field End time");
-        return;
-      }
+
       const endTimeDate = new Date(values.end_time);
       const startTimeDate = new Date(values.start_time);
 
@@ -187,11 +231,17 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
 
       // Convert the Date to a Firestore Timestamp
       const endTimeTimestamp = Timestamp.fromDate(endTimeDate);
+      const requestedByData = {
+        name: values.requested_by.name,
+        id: values.requested_by.id, // Ensure you capture and save all necessary details
+        email: values.requested_by.email, // Add more fields as needed
+      };
 
       // Update the vehicle data in the database using the selectedVehicle.id
       const AdminRef = doc(fbDb, "trips", selectedTrip.id);
       await setDoc(AdminRef, {
-        requested_by: values.requested_by,
+        // requested_by: values.requested_by.name,
+        requested_by: values.requested_by, // Passing the entire object
         vehicle: values.vehicle,
         pick_up_location: values.pick_up_location,
         drop_off_location: values.drop_off_location,
@@ -241,11 +291,23 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
       console.error("Error updating trip:", error);
     }
   };
+
   const filteredTrips = fetchedTrips.filter((trip) => {
     const fullName = `${trip.vehicle}`.toLowerCase();
     const nameMatch = fullName.includes(searchQuery.toLowerCase());
-    return nameMatch;
+    const startTimeMatch = formatDate(
+      new Date(trip.start_time.seconds * 1000)
+    ).includes(searchQuery);
+
+    return nameMatch || startTimeMatch;
   });
+
+  function formatDate(date: Date): string {
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // JavaScript months are zero-indexed
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`; // Formats date as "dd/MM/YYYY"
+  }
   const handleSearch = () => {};
   const handleClick = () => {};
   const handleAddTrip = () => {
@@ -258,26 +320,42 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
   useEffect(() => {
     const fetchDrivers = async () => {
       try {
-        // Ensure organisationId is available before making the query
         if (organisationId) {
-          const q = query(
+          // Query to fetch all drivers where archive is false and belong to the same organisation
+          const driversQuery = query(
             collection(fbDb, "drivers"),
-            where("organisationId", "==", organisationId)
+            where("organisationId", "==", organisationId),
+            where("archive", "==", false)
           );
-          const querySnapshot = await getDocs(q);
-          const driverDetails = querySnapshot.docs.map((doc) => {
-            const data = doc.data();
-            return {
-              id: doc.id,
-              name: data.name,
-              phonenumber: data.phonenumber,
-            };
-          });
-          setDrivers(driverDetails);
+          const querySnapshot = await getDocs(driversQuery);
+
+          const drivers = [];
+          for (const driverDoc of querySnapshot.docs) {
+            const driverData = driverDoc.data();
+            console.log("Driver data:", driverData);
+
+            // Query to check if the driver has any 'On Route' trips
+            const tripQuery = query(
+              collection(fbDb, "trips"),
+              where("requested_by.id", "==", driverDoc.id),
+              where("trip_status", "==", "On Route")
+            );
+            const tripSnapshot = await getDocs(tripQuery);
+            if (tripSnapshot.empty) {
+              // Only include drivers with no 'On Route' trips
+              drivers.push({
+                id: driverDoc.id,
+                name: driverData.name,
+                phonenumber: driverData.phonenumber,
+                // Add more fields if necessary
+              });
+            }
+          }
+          setDrivers(drivers);
+          console.log("FilterdDrivers:", drivers);
         } else {
-          // Handle the case when organisationId is not available
           console.error(
-            "Organisation ID is not available for fetching Vehicle names."
+            "Organisation ID is not available for fetching drivers."
           );
         }
       } catch (error) {
@@ -533,7 +611,7 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
                         <Field
                           disabled
                           name="requested_by"
-                          value={values.requested_by}
+                          value={values.requested_by.name}
                           className="form-input bg-grey w-48"
                         ></Field>
                       </label>

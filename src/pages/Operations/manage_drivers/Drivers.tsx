@@ -135,7 +135,6 @@ export default function Drivers() {
     vehicle_type: any;
     model: any;
     year: any;
-    // number: any;
     profile: any;
     identity_card: any;
     good_conduct: any;

@@ -10,9 +10,9 @@ import {
 import {
   CalendarIcon,
   ChartPieIcon,
+  HomeIcon,
   DocumentDuplicateIcon,
   FolderIcon,
-  HomeIcon,
   UsersIcon,
   TruckIcon,
   ArrowUpRightIcon,
@@ -62,6 +62,7 @@ export default function SiteNav({ children }: Props) {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const { hasPermission } = useAuthContext();
+  const [searchTerm, setSearchTerm] = useState("");
 
   // const isSuperAdmin = useMemo(() => adminDetails?.roles.includes('super_admin'), [adminDetails]);
 
@@ -217,42 +218,105 @@ export default function SiteNav({ children }: Props) {
   return (
     <>
       <div className=" flex ">
-        <div className="flex flex-row">
+        <div className="flex flex-col">
+          <div className="bg-[#065AD8]">
+            <div
+              className={`flex flex-row fixed top-0 h-14 bg-[#065AD8] flex items-center shadow-inner ${
+                isDrawerOpen ? " w-full" : "w-full lg:w-auto"
+              }`}
+            >
+              <div className="flex h-10 py-3 pb-4 shrink-0 items-center">
+                <DashLogo />
+              </div>
+              <div
+                className={`ml-4 ${
+                  isDrawerOpen ? "fixed left-60 ml-16 lg:fixed" : "fixed left-7"
+                } cursor-pointer`}
+                onClick={toggleSidebar}
+              >
+                <i className="fa fa-bars text-white" aria-hidden="true"></i>
+              </div>
+              <div className="fixed right-14 w-8">
+                <div className="flex items-center justify-end">
+                  {/* Notification bell and dropdown */}
+                  <div className="relative mr-4">
+                    <button
+                      onClick={toggleNotificationDropdown}
+                      className="text-white focus:outline-none"
+                    >
+                      {/* <FaBell className="text-2xl" aria-hidden="true" />  */}
+                      <i
+                        className="fa fa-bell fa-lg text-white"
+                        aria-hidden="true"
+                      ></i>
+                      {unreadCount > 0 && (
+                        <span className="absolute top-0 right-0 flex items-center justify-center w-6 h-6 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full transform translate-x-1/2 -translate-y-1/2">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </button>
+                    {/* Assuming NotificationDropdown component is defined elsewhere */}
+                    {showDropdown && (
+                      <NotificationDropdown onClose={closeDropdown} />
+                    )}
+                  </div>
+
+                  {/* User initials, name, and email */}
+                  <div className="flex items-center text-sm">
+                    <div className="flex items-center justify-center w-8 h-8 bg-blue-800 rounded-full text-white">
+                      <span className="font-bold">{userInitials}</span>
+                    </div>
+                    <div className="flex flex-col ml-2 mr-2 text-white">
+                      <span>{`${adminDetails?.firstname} ${adminDetails?.lastname}`}</span>
+                      <span>{adminDetails?.email}</span>
+                    </div>
+                    <button className="focus:outline-none">
+                      <i
+                        className="fa fa-chevron-down text-white"
+                        aria-hidden="true"
+                      ></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div
             ref={drawerRef}
-            // className={`flex flex-col bg-d-blue h-screen overflow-y-auto px-6 lg:w-72 sm:w-60 ${isDrawerOpen ? 'lg:w-72 h-screen' : 'hidden'}`}
-            className={`flex flex-col bg-d-blue h-screen overflow-y-auto px-6 lg:w-72 sm:w-60 ${
+            className={`flex flex-col bg-white h-screen overflow-y-auto py-10 lg:w-60 sm:w-60 ${
               isDrawerOpen ? "block" : "hidden"
             }`}
           >
-            <div className="flex h-16 py-3 pb-4 shrink-0 items-center">
-              <DashLogo />
-            </div>
-            <nav className="mt-2 flex-1 flex-col">
-              <ul className="flex flex-1 flex-col gap-y-7">
+            <nav className="mt-16 flex-1 w-full">
+              <ul className="flex flex-col gap-y-4 w-full border-[#0068dd] bg-[#ecf4ff] h-[48px] w-[275px]">
+                {/* <ul className="w-[269px] h-[48px] flex flex-col justify-center gap-y-4 m-[17px_0_6px] p-[12px_10px_12px_35px] border-2 border-[#0068dd] bg-[#ecf4ff]"> */}
                 {navigation
                   .filter((item) => item.visible)
                   .map((item) => (
-                    <Link key={item.name} href={item.href} passHref>
-                      <div
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      passHref
+                      className={classNames(
+                        router.pathname === item.href
+                          ? "bg-blue-100 text-[#065AD8]" // Active item style
+                          : "text-gray-700 hover:text-blue-800 hover:bg-blue-100", // Non-active item style
+                        "group flex items-center gap-x-4 rounded-md py-3 px-4 text-sm leading-6 font-semibold"
+                      )}
+                    >
+                      {/* <div class="w-[269px] h-[48px] flex flex-col justify-center items-start gap-2.5 m-[17px_0_6px] p-[12px_10px_12px_35px] border-2 border-[#0068dd] bg-[#ecf4ff]">
+                       */}
+                      <item.icon
                         className={classNames(
                           router.pathname === item.href
-                            ? "bg-light-green text-white"
-                            : "text-indigo-200 hover:text-white hover:bg-light-green",
-                          "group flex items-center gap-x-3 rounded-md p-2 text-xl leading-6 font-semibold"
+                            ? "text-blue-800" // Active icon style
+                            : "text-gray-400 group-hover:text-blue-800", // Non-active icon style
+                          "h-4 w-4 shrink-0"
                         )}
-                      >
-                        <item.icon
-                          className={classNames(
-                            router.pathname === item.href
-                              ? "text-white"
-                              : "text-indigo-200 group-hover:text-white",
-                            "h-6 w-6 shrink-0"
-                          )}
-                          aria-hidden="true"
-                        />
-                        {item.name}
-                      </div>
+                        aria-hidden="true"
+                      />
+                      <span>{item.name}</span>
                     </Link>
                   ))}
               </ul>
@@ -261,47 +325,18 @@ export default function SiteNav({ children }: Props) {
           <div className="bg-[#F34C4C]"></div>
 
           {/* <div className={`flex flex-row fixed top-0 h-10 bg-[#FFFFFF] flex items-center shadow-inner ${isDrawerOpen ? 'fixed left-72 w-full' : 'w-full'}`}> */}
-          <div
-            className={`flex flex-row fixed top-0 h-10 bg-[#FFFFFF] flex items-center shadow-inner ${
-              isDrawerOpen ? "lg:left-72 w-full" : "w-full lg:w-auto"
-            }`}
-          >
-            <div
-              className={`ml-4 ${
-                isDrawerOpen ? "fixed left-72 ml-16 lg:fixed" : "fixed left-7"
-              } cursor-pointer`}
-              onClick={toggleSidebar}
-            >
-              <i className="fa fa-bars" aria-hidden="true"></i>
-            </div>
-            <div className="mb-6">
-              <div className="fixed right-14 w-8">
-                <button
-                  onClick={toggleNotificationDropdown}
-                  className="text-gray-500 w-8 h-8 focus:outline-none relative"
-                >
-                  <i className="fa fa-bell fa-lg" aria-hidden="true"></i>
-                  {unreadCount > 0 && (
-                    <span className="absolute mb-5 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
-                      {unreadCount}
-                    </span>
-                  )}
-                </button>
-                <NotificationDropdown
-                  isOpen={showDropdown}
-                  onClose={closeDropdown}
-                />
-              </div>
-              <div className="fixed right-4 w-8 h-8  text-white bg-[#065AD8] rounded-full flex items-center justify-center">
-                {userInitials}
-              </div>
-            </div>
-          </div>
         </div>
-        <div
-          className={`bg-[#FAFAFB] px-4 py-10 h-screen ${
+        {/* <div
+          className={`bg-[#FAFAFB] px-4 py-10 h-screen  ${
             isDrawerOpen ? "lg:w-full sm:px-6 lg:px-8" : "lg:w-full "
           } transition-all ease-in-out duration-300`}
+        >
+          {children}
+        </div> */}
+        <div
+          className={`bg-[#FAFAFB] py-10 h-screen transition-all ease-in-out duration-300 ${
+            isDrawerOpen ? "w-full" : "w-full"
+          }`}
         >
           {children}
         </div>

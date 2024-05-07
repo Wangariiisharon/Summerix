@@ -25,6 +25,7 @@ import {
   onSnapshot,
   getDoc,
   setDoc,
+  orderBy,
 } from "firebase/firestore";
 import { parseISO, format } from "date-fns";
 import Jobcard from "../../Administration/Users/jobcard";
@@ -172,7 +173,8 @@ export default function Maintenance() {
         if (organisationId) {
           const q = query(
             collection(db, "maintenance"),
-            where("organisationId", "==", organisationId)
+            where("organisationId", "==", organisationId),
+            orderBy("date", "asc") // Adjust 'asc' to 'desc' if you need descending order
           );
 
           const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -188,7 +190,7 @@ export default function Maintenance() {
           console.error("Organisation ID is not available.");
         }
       } catch (error) {
-        console.error("Error fetching Maintanance:", error);
+        console.error("Error fetching Maintenance:", error);
       }
     };
 
@@ -435,17 +437,6 @@ export default function Maintenance() {
 
   return (
     <>
-      {/* <div className=''> */}
-      {/* <div className="flex flex-row justify-end absolute mb-2 right-10">  
-                <div className=""> 
-                <Button
-                className='rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2'
-                handleClick={handleScheduleMaintanace}>
-               <PlusIcon className='h-6 w-6 mr-2' />
-                 Schedule Maintenance
-              </Button>
-                </div>
-                </div> */}
       <div className="absolute top-12 flex justify-end right-10 ">
         <Button
           className="rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2"

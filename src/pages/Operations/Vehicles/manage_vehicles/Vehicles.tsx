@@ -155,6 +155,8 @@ export default function Vehicles() {
     inspection_certificates: any;
     transit_permits: any;
   }) => {
+    console.log("Ownership Status:", values.ownership_status);
+
     if (!values.cargo_capacity) {
       console.error("Required form fields are missing");
       toast.error("Please fill the field  Cargo capacity");
@@ -373,8 +375,6 @@ export default function Vehicles() {
         console.error("Required form fields are missing");
         return;
       }
-
-      const registration_date = new Date();
 
       // Check if the vehicle is already allocated to a company
       const vehicleAllocationsCollectionRef = collection(
@@ -868,9 +868,13 @@ export default function Vehicles() {
                             name="ownership_status"
                             value={values.ownership_status}
                             className="form-input bg-grey w-48"
-                            onChange={(e: any) =>
-                              setShowLeaseInput(e.target.value === "Owned")
-                            }
+                            onChange={(e: any) => {
+                              setShowLeaseInput(e.target.value === "Owned");
+                              console.log(
+                                "Ownership Status Changed:",
+                                e.target.value
+                              );
+                            }}
                           >
                             <option value="">Select Status</option>
                             <option value="Owned">Owned</option>
@@ -895,7 +899,6 @@ export default function Vehicles() {
                             </div>
                           )}
                         </label>
-
                         <label className="block">
                           <label className="form-label">MODEL</label>
                           <Field

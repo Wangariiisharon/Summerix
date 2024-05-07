@@ -28,9 +28,32 @@ export default function AdministrationComponent() {
   return (
     <SiteLayout>
       <div className=" bg-[#FAFAFB] flex flex-col">
-        <p className="text-lg font-nunito font-bold mt-2 ml-5">
-          Administration
-        </p>
+        <div className="h-[70px] pl-[35px] bg-white flex justify-between w-full">
+          <div className=" flex items-center">
+            <h1 className="text-base font-semibold text-gray-800 mr-4 ml-4">
+              Administration
+            </h1>
+          </div>
+        </div>
+        <div className="h-[134.6px] flex flex-row mb-2">
+          <div className="w-32 h-32 mt-14 ml-8 mb-10 mr-8 rounded-lg shadow-lg border-4 shadow-custom bg-gradient-to-r from-brand-blue to-brand-red p-6 rounded-lg"></div>
+          <div className="ml-4 flex flex-col mt-14">
+            <h1 className="text-base font-semibold text-gray-800 mr-4 ml-4">
+              Truck Mate Limited
+            </h1>
+            <p className="text-sm font-nunito text-gray-400">
+              Update your company photo and details here.
+            </p>
+            <div className="mt-4 flex flex-row">
+              <button className="w-[240px] h-[51px] flex flex-row items-center justify-center  text-white rounded bg-[#4FD1C5]">
+                Update Photo
+              </button>
+              <button className="ml-4 w-[100px] h-[49px] flex flex-row items-center justify-center gap-2.5 px-30 py-19.5 rounded-4 border border-gray-border bg-light-bg">
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
 
         <div>
           <div className="mt-10">

@@ -99,102 +99,81 @@ export default function TripsPieGraph() {
   const all = allVehicles.length;
   const completedPercentage = all > 0 ? outOfService / all : 0;
   const percentage = completedPercentage * 100;
+  interface dataset {
+    datasets: {
+      backgroundColor: string[];
+      data: number[];
+      borderJoinStyle:
+        | "round"
+        | "bevel"
+        | "miter"
+        | ((
+            ctx: ScriptableContext<"doughnut">,
+            options: AnyObject
+          ) => CanvasLineJoin | undefined);
+      borderWidth: number;
+      borderRadius: number;
+      borderAlign:
+        | "inner"
+        | "center"
+        | ((
+            ctx: ScriptableContext<"doughnut">,
+            options: AnyObject
+          ) => "inner" | "center" | undefined)
+        | readonly ("inner" | "center" | undefined)[]
+        | undefined;
+      spacing: number;
+      radius: number;
+    }[];
+  }
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        enabled: false,
-      },
-      centerText: {}, // Activate your custom plugin
-    },
-    animation: {
-      animateRotate: true,
-    },
-  };
-
-  const data = {
+  const data: dataset = {
+    // labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
     datasets: [
       {
-        data: [outOfService, all - outOfService],
-        backgroundColor: ["#20C997", "#E9ECEF"],
-        borderWidth: 0,
-        cutout: "80%",
-        radius: "80%", // Full radius
+        backgroundColor: ["#20C997", "#F7F8FA"],
+        data: [outOfService, all],
+        borderJoinStyle: "round",
+        borderWidth: 20,
+        borderRadius: 100,
+        borderAlign: "inner",
+        spacing: 15,
+        radius: 50,
       },
     ],
   };
-
-  ChartJS.register(ArcElement, Tooltip);
-
-  const centerTextPlugin = {
-    id: "centerText",
-    afterDraw: (chart: any) => {
-      const {
-        ctx,
-        chartArea: { top, bottom, left, right },
-        data,
-      } = chart;
-      ctx.save();
-      ctx.font = "bold 40px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      const totalVehicles = data.datasets[0].data.reduce(
-        (a: any, b: any) => a + b,
-        0
-      );
-      const text = `${totalVehicles}`;
-      const textX = (left + right) / 2;
-      const textY = (top + bottom) / 2;
-      ctx.fillText(text, textX, textY - 10); // Adjust text position as needed
-      ctx.font = "16px Arial text-lg";
-      // ctx.fillText("Total Vehicles", textX, textY + 20);
-      ctx.restore();
-    },
+  const options = {
+    cutout: 130,
   };
-
-  ChartJS.register(centerTextPlugin);
-  // return (
-  //   <>
-  //     <div className="flex flex-col items-center justify-center bg-white rounded-lg shadow w-70 h-64">
-  //       <h2 className="text-xs font-bold w-full flex justify-between items-center border-b border-[#E9ECEF] p-4">
-  //         Out of service vehicles
-  //         <button className="w-[90px] h-[34px] flex justify-center items-center text-xs gap-2.5 rounded border border-[#c0d7fa]">
-  //           View All
-  //           <ChevronDownIcon className="w-4 h-4" />
-  //         </button>
-  //       </h2>
-  //       <div className="flex flex-grow items-center justify-center w-full">
-  //         <Doughnut data={data} options={options} />
-  //       </div>
-  //       <div className="w-full flex flex-col items-center justify-center pb-4">
-  //         <p className="text-3xl font-bold absolute">{all}</p>
-  //         <p className="text-sm">Total Vehicles</p>
-  //       </div>
-  //       <div className="text-xs">Vehicles out of service {outOfService}</div>
-  //     </div>
-  //   </>
-  // );
   return (
     <>
-      <div className="flex flex-col items-center justify-center bg-white rounded-lg shadow w-70 h-64">
-        <h2 className="text-xs font-bold w-full flex justify-between items-center border-b border-[#E9ECEF] p-2">
-          Out of service vehicles
-          <button className="w-[90px] h-[34px] flex justify-center items-center text-xs gap-2.5 rounded border border-[#c0d7fa]">
-            View All
-            <ChevronDownIcon className="w-4 h-4" />
-          </button>
-        </h2>
-        <div className="w-full flex items-center justify-center h-full">
-          <Doughnut data={data} options={options} />
+      {/* <div className="rounded-lg w-1/4 bg-white shadow lg:min-w-[20] h-full max-h-[24]">  */}
+      <div className="w-[445px] h-[378px] flex-none p-[14px_0_29px] rounded-md bg-white">
+        <div className="sm:px-6 flex w-full items-center justify-between">
+          <h2
+            id="applicant-information-title"
+            className="text-xl font-bold leading-6"
+          >
+            Out of service vehicles{" "}
+          </h2>
+          <div className="text-sm flex items-center">
+            This Week
+            <ChevronDownIcon className="ml-2 h-4 w-4" />
+          </div>
         </div>
-        <div className="w-full flex flex-col items-center justify-center pb-4">
-          {/* <p className="text-3xl font-bold absolute">{all}</p> */}
-          <p className="text-sm">Total Vehicles</p>
+        <div className="flex flex-col items-center justify-center relative">
+          <div className="font-extrabold text-3xl absolute pl-4">
+            {all > 0 ? `${percentage}%` : "N/A"}
+          </div>
+          <Doughnut
+            id="pp"
+            data={data}
+            options={options}
+            className="!bg-white "
+          />
+          <div className="w-56 text-center text-lg absolute bottom-2">
+            Number of trips Completed this Month
+          </div>
         </div>
       </div>
     </>
