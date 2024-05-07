@@ -8,35 +8,35 @@
   }
   /* Notification.module.css */
 
-.notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 10px;
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  max-width: 300px;
-  transition: opacity 0.3s ease-in-out;
-}
+  .notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 300px;
+    transition: opacity 0.3s ease-in-out;
+  }
 
-.visible {
-  opacity: 1;
-}
+  .visible {
+    opacity: 1;
+  }
 
-.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
+  .hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
 
   .form-input,
   .form-textarea {
     @apply w-full mx-auto p-2 rounded-md outline-none border border-gray-300 focus:border-blue-600 text-xs text-gray-900 focus:bg-white disabled:opacity-50 invalid:border-red-500 invalid:text-red-600
 		focus:invalid:border-red-500 focus:invalid:ring-red-500;
-  } 
+  }
   .searchbar {
     @apply w-80 mx-auto p-2 rounded-md outline-none  focus:border-blue-600 text-xs text-gray-900 focus:bg-white disabled:opacity-50 invalid:border-red-500 invalid:text-red-600
 		focus:invalid:border-red-500 focus:invalid:ring-red-500;
@@ -52,13 +52,13 @@
 
   .btn-primary {
     @apply text-white  bg-blue-600 hover:bg-blue-700 disabled:opacity-60;
-  } 
-  .btn-google{ 
+  }
+  .btn-google {
     @apply shadow-lg text-black bg-white disabled:opacity-60 py-2 px-4 text-sm
     font-semibold rounded-xl outline-none border transition duration-150 ease-in-out disabled:cursor-not-allowed 
-    disabled:opacity-50; 
+    disabled:opacity-50;
   }
- 
+
   .btn-secondary {
     @apply text-black bg-secondary border-secondary hover:opacity-80;
   }
@@ -78,20 +78,20 @@
   .btn-flex {
     @apply flex items-center gap-2;
   }
-.table-body{
-  @apply divide-y divide-gray-200 bg-white px-8
-} 
-.searchBarContainer {
-  width: 64; 
-} 
-.submit{
-  @apply w-full mx-auto p-2 rounded-md outline-none bg-blue-600 text-white
-} 
-/* Media query for larger screens */
-}  
+  .table-body {
+    @apply divide-y divide-gray-200 bg-white px-8;
+  }
+  .searchBarContainer {
+    width: 64;
+  }
+  .submit {
+    @apply w-full mx-auto p-2 rounded-md outline-none bg-blue-600 text-white;
+  }
+  /* Media query for larger screens */
+}
 .Tab.List {
   justify-start: center; /* Default behavior for small screens */
-} 
+}
 /* Add this CSS to your global stylesheet or inside a <style> tag in your component */
 .scrollable-tbody {
   display: block;
@@ -105,7 +105,23 @@
   background-color: #fff; /* Match your table header background */
   z-index: 1; /* Ensure the header overlaps the body rows when scrolling */
 }
+.table-container {
+  max-height: 300px; /* Adjustable based on your design */
+  overflow-y: auto; /* Enables vertical scrolling */
+  overflow-x: hidden; /* Hides horizontal scrollbar */
+}
 
+.smaller-icon {
+  transform: scale(0.75); /* Scale down to 75% of the original size */
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin-left: 20px;
+    margin-right: 20px;
+    height: 376px;
+  }
+}
 
 @media (min-width: full) {
   .Tab.List {

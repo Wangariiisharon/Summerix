@@ -25,6 +25,7 @@ import {
   where,
   getFirestore,
   onSnapshot,
+  getDoc,
 } from "firebase/firestore";
 import { Field, Formik, Form, useFormik, FormikHelpers } from "formik";
 import setFieldValue from "formik";
@@ -36,19 +37,34 @@ import { AnyIfEmpty } from "react-redux";
 import { ErrorMessage } from "formik";
 import { exportDataToCSV } from "../../../components/Exports/tripsExport";
 import toast from "react-hot-toast";
-import { startOfMonth, endOfMonth, format } from "date-fns";
+import { startOfMonth, endOfMonth, format, parse } from "date-fns";
 import {
   AuthProvider,
   useAuthContext,
 } from "@/components/Authentication/AuthProvider";
 import PlacesAutocomplete from "react-places-autocomplete";
-import { AnyRecord } from "dns";
+import { AnyARecord, AnyRecord } from "dns";
 import * as Yup from "yup";
+import { RiLoginBoxFill } from "react-icons/ri";
+import { log } from "console";
 
 // Update the import path
 
 interface TripCounts {
   [key: string]: number;
+}
+// Define interfaces for your data types
+
+// Defines a map where the key is a string and the value is a Vehicle
+interface VehicleData {
+  archive: boolean;
+  availability_status: string;
+  // Include other properties as needed
+}
+interface Company {
+  id: string;
+  name: string;
+  vehicle: string[];
 }
 
 const tabs = [
@@ -92,15 +108,20 @@ export default function TripsComponent() {
   const [selectedCompany, setSelectedCompany] = useState("");
   const [selectedTab, setSelectedTab] = useState<number>(0);
   const [fetchedTrips, setfetchedTrips] = useState<DocumentData[]>([]);
-  const [fetchedClients, setfetchedClients] = useState<DocumentData[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filteredTrips, setFilteredTrips] = useState<DocumentData[]>([]);
+
+  const [fetchedClients, setfetchedClients] = useState<DocumentData[]>([]);
   const [selectedTrip, setSelectedTrip] = useState<DocumentData | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [pickUpLocation, setPickUpLocation] = useState<string>("");
   const [dropOffLocation, setDropOffLocation] = useState<string>("");
   const [distance, setDistance] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [editFormInitialValues, setEditFormInitialValues] = useState({
+    trip_id: "",
     requested_by: {
       id: "",
       name: "",
@@ -145,18 +166,29 @@ export default function TripsComponent() {
   });
 
   const { organisationId } = useAuthContext();
-  console.log("OrganisationId on Trips page:", organisationId);
 
-  const handleSearchChange = (e: any) => {
-    const query = e.target.value;
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value.trim().toLowerCase();
     console.log("Search Query:", query);
     setSearchQuery(query);
+    setFilteredTrips(
+      fetchedTrips.filter((trip) => {
+        const vehicleMatch = `${trip.vehicle}`.toLowerCase().includes(query);
+        const startTimeMatch = formatDate(
+          new Date(trip.start_time.seconds * 1000)
+        ).includes(query);
+        return vehicleMatch || startTimeMatch;
+      })
+    );
   };
-  const filteredTrips = fetchedTrips.filter((trip) => {
-    const fullName = `${trip.vehicle}`.toLowerCase();
-    const nameMatch = fullName.includes(searchQuery.toLowerCase());
-    return nameMatch;
-  });
+
+  function formatDate(date: Date): string {
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // JavaScript months are zero-indexed
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`; // Formats date as "dd/MM/YYYY"
+  }
+
   const handleAddTrip = () => {
     setOpen(true);
   };
@@ -176,29 +208,114 @@ export default function TripsComponent() {
       setSelectedCompanyVehicles([]);
     }
   };
+
+  const fetchOngoingTrips = async () => {
+    const now = new Date();
+    const ongoingTripsQuery = query(
+      collection(getFirestore(), "trips"),
+      where("start_time", "<=", Timestamp.fromDate(now)), // Trips that have started
+      where("end_time", ">", Timestamp.fromDate(now)) // But not yet ended
+    );
+
+    const querySnapshot = await getDocs(ongoingTripsQuery);
+    const ongoingTrips = querySnapshot.docs.map((doc) => {
+      console.log(doc.data()); // Debug to see the trip data
+      return doc.data();
+    });
+    return ongoingTrips;
+  };
+
+  const fetchDrivers = async (organisationId: any) => {
+    const db = getFirestore();
+    try {
+      // Retrieve trips that are "On Route"
+      const tripsQuery = query(
+        collection(db, "trips"),
+        where("trip_status", "==", "On Route")
+      );
+
+      const tripsSnapshot = await getDocs(tripsQuery);
+      const driversOnTripsIds = new Set(
+        tripsSnapshot.docs.map((doc) => {
+          console.log("Trip data for 'On Route':", doc.data());
+          return doc.data().requested_by.id;
+        })
+      );
+
+      if (driversOnTripsIds.size === 0) {
+        console.log("No drivers are currently on trips.");
+      } else {
+        console.log(
+          "Drivers currently on trips IDs:",
+          Array.from(driversOnTripsIds)
+        );
+      }
+
+      // Fetch all drivers not in trips
+      const allDriversQuery = query(
+        collection(db, "drivers"),
+        where("organisationId", "==", organisationId),
+        where("archive", "==", false)
+      );
+
+      const querySnapshot = await getDocs(allDriversQuery);
+      const availableDrivers = querySnapshot.docs.filter(
+        (doc) => !driversOnTripsIds.has(doc.id)
+      );
+
+      console.log(
+        "Filtered available drivers:",
+        availableDrivers.map((doc) => doc.data())
+      );
+
+      return availableDrivers.map((doc) => ({
+        id: doc.id,
+        name: doc.data().name,
+        phonenumber: doc.data().phonenumber,
+      }));
+    } catch (error) {
+      console.error("Error in fetchDrivers:", error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     const fetchDrivers = async () => {
       try {
-        // Ensure organisationId is available before making the query
         if (organisationId) {
-          const q = query(
+          // Query to fetch all drivers where archive is false and belong to the same organisation
+          const driversQuery = query(
             collection(fbDb, "drivers"),
             where("organisationId", "==", organisationId),
-            where("archive", "==", false) // Only fetch drivers where archive is false
+            where("archive", "==", false)
           );
-          const querySnapshot = await getDocs(q);
-          const driverDetails = querySnapshot.docs.map((doc) => {
-            const data = doc.data();
-            return {
-              id: doc.id,
-              name: data.name,
-              phonenumber: data.phonenumber,
-              // Consider fetching and returning additional necessary fields
-            };
-          });
-          setDrivers(driverDetails);
+          const querySnapshot = await getDocs(driversQuery);
+
+          const drivers = [];
+          for (const driverDoc of querySnapshot.docs) {
+            const driverData = driverDoc.data();
+            console.log("Driver data:", driverData);
+
+            // Query to check if the driver has any 'On Route' trips
+            const tripQuery = query(
+              collection(fbDb, "trips"),
+              where("requested_by.id", "==", driverDoc.id),
+              where("trip_status", "==", "On Route")
+            );
+            const tripSnapshot = await getDocs(tripQuery);
+            if (tripSnapshot.empty) {
+              // Only include drivers with no 'On Route' trips
+              drivers.push({
+                id: driverDoc.id,
+                name: driverData.name,
+                phonenumber: driverData.phonenumber,
+                // Add more fields if necessary
+              });
+            }
+          }
+          setDrivers(drivers);
+          console.log("FilterdDrivers:", drivers);
         } else {
-          // Handle the case when organisationId is not available
           console.error(
             "Organisation ID is not available for fetching drivers."
           );
@@ -207,6 +324,7 @@ export default function TripsComponent() {
         console.error("Error fetching Drivers:", error);
       }
     };
+
     const fetchedClients = async () => {
       try {
         if (organisationId) {
@@ -242,7 +360,7 @@ export default function TripsComponent() {
       try {
         if (organisationId) {
           const q = query(
-            collection(db, "trips"),
+            collection(fbDb, "trips"),
             where("organisationId", "==", organisationId)
           );
 
@@ -252,6 +370,7 @@ export default function TripsComponent() {
               ...doc.data(),
             }));
             setfetchedTrips(tripsData);
+            setFilteredTrips(tripsData);
           });
 
           return () => unsubscribe();
@@ -267,40 +386,85 @@ export default function TripsComponent() {
       try {
         if (organisationId) {
           const q = query(
-            collection(fbDb, "classes"),
+            collection(fbDb, "classes"), // Make sure this refers to the right collection
             where("organisationId", "==", organisationId)
           );
           const querySnapshot = await getDocs(q);
-          const companyDetails = querySnapshot.docs.map((doc) => {
-            const data = doc.data();
-            return {
-              id: doc.id,
-              name: data.name,
-              vehicle: data.vehicle || [], // Ensure it's an array
-            };
-          });
+          const companyDetails = await Promise.all(
+            querySnapshot.docs.map(async (doc) => {
+              const data = doc.data();
+              // Fetch and filter vehicles based on license plates listed in company details
+              const vehiclesPromises = data.vehicle.map(
+                async (licensePlate: any) => {
+                  const vehicleQuery = query(
+                    collection(fbDb, "vehicles"),
+                    where("lisence_plate", "==", licensePlate)
+                  );
+                  const vehicleSnapshot = await getDocs(vehicleQuery);
+                  const vehicleDocs = vehicleSnapshot.docs.map(
+                    async (vehicleDoc) => {
+                      const vehicleData = vehicleDoc.data();
+                      if (
+                        !vehicleData.archive &&
+                        vehicleData.availability_status !== "Out Of Service"
+                      ) {
+                        const tripQuery = query(
+                          collection(fbDb, "trips"),
+                          where("vehicle", "==", licensePlate),
+                          where("trip_status", "==", "On Route")
+                        );
+                        const tripSnapshot = await getDocs(tripQuery);
+                        if (tripSnapshot.empty) {
+                          return licensePlate; // Return the license plate of available vehicles
+                        }
+                      }
+                    }
+                  );
+                  const filteredVehicles = await Promise.all(vehicleDocs);
+                  return filteredVehicles.filter((v) => v); // Filter out undefined results
+                }
+              );
+              const vehicles = await Promise.all(vehiclesPromises);
+              const availableVehicles = vehicles.flat().filter((v) => v); // Flatten and filter to remove falsy values
+              return {
+                id: doc.id,
+                name: data.name,
+                vehicle: availableVehicles,
+              };
+            })
+          );
           setCompanies(companyDetails);
           if (companyDetails.length > 0) {
-            setSelectedCompany(companyDetails[0].name); // Set the first company as the default selected company
-            setSelectedCompanyVehicles(companyDetails[0].vehicle); // Set its vehicles
+            setSelectedCompany(companyDetails[0].name);
+            setSelectedCompanyVehicles(companyDetails[0].vehicle);
           }
         } else {
-          // Handle the case when organisationId is not available
           console.error(
-            "Organisation ID is not available for fetching Companies ."
+            "Organisation ID is not available for fetching Companies."
           );
         }
       } catch (error) {
         console.error("Error fetching Company details:", error);
       }
     };
+
+    fetchDrivers();
     fetchedTrips();
     fetchedClients();
-    fetchDrivers();
     fetchedCompanies();
   }, [organisationId]);
   console.log(selectedCompanyVehicles, "SelectedCompanyVehicles");
   console.log(selectedCompany, "SelectedCompany");
+
+  function convertToDate(firestoreTimestamp: any) {
+    if (firestoreTimestamp instanceof Timestamp) {
+      return firestoreTimestamp.toDate();
+    } else if (typeof firestoreTimestamp === "string") {
+      return new Date(firestoreTimestamp);
+    } else {
+      return firestoreTimestamp; // Assuming it's already a Date object or null
+    }
+  }
 
   const convertDateToInputString = (date: string | number | Date) => {
     const d = new Date(date);
@@ -313,18 +477,29 @@ export default function TripsComponent() {
 
     return [year, month, day].join("-"); // Format required for date input fields
   };
-
   const handleEditClick = (trip: DocumentData) => {
-    const { seconds } = trip.start_time;
-    const startTime = trip.start_time.toDate(); // Converts Firestore Timestamp to JavaScript Date object
-    const endTime = trip.end_time.toDate();
+    // Check and convert Firestore Timestamps to Date objects safely
+    const startTime =
+      trip.start_time && trip.start_time.toDate
+        ? trip.start_time.toDate()
+        : convertToDate(trip.start_time);
+    const endTime =
+      trip.end_time && trip.end_time.toDate
+        ? trip.end_time.toDate()
+        : convertToDate(trip.end_time);
+
     setSelectedTrip(trip);
     setEditFormInitialValues({
-      requested_by: trip.requested_by.name,
+      trip_id: trip.trip_id,
+      requested_by: {
+        id: trip.requested_by.id || "", // Assuming the 'id' field exists
+        name: trip.requested_by.name || "",
+        phonenumber: trip.requested_by.phonenumber || "",
+      },
       vehicle: trip.vehicle,
       pick_up_location: trip.pick_up_location,
       drop_off_location: trip.drop_off_location,
-      start_time: convertDateToInputString(startTime), // Convert date to string for input[type="date"]
+      start_time: convertDateToInputString(startTime),
       end_time: convertDateToInputString(endTime),
       cargo_type: trip.cargo_type,
       cargo_quantity: trip.cargo_quantity,
@@ -346,6 +521,7 @@ export default function TripsComponent() {
   };
 
   const handleEditSubmit = async (values: {
+    trip_id: any;
     requested_by: any;
     vehicle: any;
     pick_up_location: any;
@@ -379,11 +555,7 @@ export default function TripsComponent() {
         toast.error(`Please fill the field Trip status`);
         return;
       }
-      // if (!values.end_time) {
-      //   console.error("Required form fields are missing");
-      //   toast.error("Please fill the field End time");
-      //   return;
-      // }
+
       const endTimeDate = new Date(values.end_time);
       const startTimeDate = new Date(values.start_time);
 
@@ -391,18 +563,23 @@ export default function TripsComponent() {
 
       // Convert the Date to a Firestore Timestamp
       const endTimeTimestamp = Timestamp.fromDate(endTimeDate);
+      const requestedByData = {
+        name: values.requested_by.name,
+        id: values.requested_by.id, // Ensure you capture and save all necessary details
+        email: values.requested_by.email, // Add more fields as needed
+      };
 
       // Update the vehicle data in the database using the selectedVehicle.id
       const AdminRef = doc(fbDb, "trips", selectedTrip.id);
       await setDoc(AdminRef, {
-        requested_by: values.requested_by,
+        // requested_by: values.requested_by.name,
+        trip_id: values.trip_id,
+        requested_by: values.requested_by, // Passing the entire object
         vehicle: values.vehicle,
         pick_up_location: values.pick_up_location,
         drop_off_location: values.drop_off_location,
         start_time: values.start_time,
-        // end_time: ,
         end_time: endTimeTimestamp,
-
         cargo_type: values.cargo_type,
         cargo_quantity: values.cargo_quantity,
         memo: values.memo,
@@ -420,6 +597,8 @@ export default function TripsComponent() {
         trip.id === selectedTrip.id
           ? {
               ...trip,
+
+              trip_id: values.trip_id,
               requested_by: values.requested_by,
               vehicle: values.vehicle,
               pick_up_location: values.pick_up_location,
@@ -519,6 +698,24 @@ export default function TripsComponent() {
       throw error;
     }
   }
+  async function generateId(organisationId: any) {
+    try {
+      const querySnapshot = await getDocs(
+        query(
+          collection(fbDb, "trips"),
+          where("organisationId", "==", organisationId)
+        )
+      );
+      const adminCount = querySnapshot.size;
+
+      // Customize this logic based on your requirements
+      return `T${(adminCount + 1).toString().padStart(3, "0")}`;
+    } catch (error) {
+      console.error("Error fetching Drivers count:", error);
+      // Handle error or return a default value
+      return "T001";
+    }
+  }
 
   const handleSubmit = async (values: {
     requested_by: string;
@@ -574,6 +771,8 @@ export default function TripsComponent() {
         return;
       }
       const tripId = await generateTripId(values.vehicle, values.start_time);
+      const generateTripid = await generateId(organisationId);
+
       const maintenanceData = {
         organisationId: organisationId,
         requested_by: {
@@ -582,16 +781,16 @@ export default function TripsComponent() {
           phonenumber: selectedDriver.phonenumber,
         },
         tripId: tripId,
+        trip_id: generateTripid,
         vehicle: values.vehicle,
         start_time: startTimestamp,
-        // end_time: "",
         pick_up_location: values.pick_up_location,
         drop_off_location: values.drop_off_location,
         cargo_type: values.cargo_type,
         cargo_quantity: values.cargo_quantity,
         memo: values.memo,
         company: values.company,
-        trip_status: "",
+        trip_status: "Booked",
         client: values.client,
         dealValue: values.dealValue,
         fuel: values.fuel,
@@ -652,30 +851,38 @@ export default function TripsComponent() {
   const countTrips = (selectedTab: number) => {
     switch (selectedTab) {
       case 0:
-        // Count all trips`w
+        console.log("filteredTrips:", filteredTrips);
+
         return filteredTrips.length;
       case 1:
-        // Count trips where the current date is within the trip's start and end times
         return filteredTrips.filter((trip) => {
-          const startTime = new Date(trip?.start_time?.seconds * 1000);
-          const endTime = new Date(trip?.end_time?.seconds * 1000);
-          return currentDate >= startTime && currentDate < endTime;
+          return trip.trip_status === "On Route";
         }).length;
       case 2:
-      case 3:
-        // Count trips where the current date is greater than the trip's end time
         return filteredTrips.filter((trip) => {
-          const endTime = new Date(trip?.end_time?.seconds * 1000);
-          return currentDate > endTime;
+          return [
+            "At the border",
+            "Offloading dest",
+            "Mechanical",
+            "Booked",
+            "Returning the Container",
+          ].includes(trip.trip_status);
         }).length;
+      case 3:
+        return filteredTrips.filter((trip) => {
+          return trip.trip_status === "Done";
+        }).length;
+
       default:
         return 0;
     }
   };
+
   const allTripsCount = countTrips(0);
+  console.log("allTripsCount:", allTripsCount);
   const onRouteTripsCount = countTrips(1);
-  const completeTripsCount = countTrips(2);
-  const waitingTripsCount = countTrips(3);
+  const waitingTripsCount = countTrips(2);
+  const completeTripsCount = countTrips(3);
   return (
     <div>
       <p className="text-lg font-nunito font-bold mt-2 ml-10 mb-2">Trips</p>
@@ -1276,7 +1483,7 @@ export default function TripsComponent() {
                         <Field
                           disabled
                           name="requested_by"
-                          value={values.requested_by}
+                          value={values.requested_by.name}
                           className="form-input bg-grey w-48"
                         ></Field>
                       </label>
@@ -1434,7 +1641,7 @@ interface TripsTableProps {
 interface TripsPerVehicle {
   [key: string]: {
     count: number;
-    lastMonth: string; // Keep track of the last month for each vehicle
+    lastMonth: string;
   };
 }
 
@@ -1459,30 +1666,29 @@ export function TripsTable({
   const tripsPerVehicle: TripsPerVehicle = {};
   const currentDate = new Date();
 
-  const filteredAllocation = filteredTrips
-    .filter((trip) => {
-      const startTime = new Date(trip?.start_time?.seconds * 1000);
-      const endTime = new Date(trip?.end_time?.seconds * 1000);
+  const filteredAllocation = filteredTrips.filter((trip) => {
+    const startTime = new Date(trip?.start_time?.seconds * 1000);
+    const endTime = new Date(trip?.end_time?.seconds * 1000);
 
-      switch (selectedTab) {
-        case 0: // First tab: Show all trips
-          return true;
-        case 1: // Second tab: Trips whose start_time has reached but end_time hasn't
-          return currentDate >= startTime;
-        case 2: // Other tabs: Show completed trips where end_time has already passed
-          return currentDate > endTime;
-        case 3: // Other tabs: Show completed trips where end_time has already passed
-          return currentDate > endTime;
-        default:
-          return false;
-      }
-    })
-    .sort((a, b) =>
-      selectedTab === 3
-        ? Number(new Date(b.end_time.seconds * 1000)) -
-          Number(new Date(a.end_time.seconds * 1000))
-        : 0
-    );
+    switch (selectedTab) {
+      case 0: // First tab: Show all trips
+        return true;
+      case 1: // Second tab: Trips whose status is 'On Route'
+        return trip.trip_status === "On Route";
+      case 2: // Second last tab: Trips with specific statuses
+        return [
+          "At the border",
+          "Offloading dest",
+          "Mechanical",
+          "Booked",
+          "Returning the Container",
+        ].includes(trip.trip_status);
+      case 3: // Last tab: Show completed trips ('Done')
+        return trip.trip_status === "Done";
+      default:
+        return false;
+    }
+  });
 
   console.log("Selected Tab", selectedTab);
   const visibleTrips = filteredAllocation.slice(startIndex, endIndex);

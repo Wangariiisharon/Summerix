@@ -1,148 +1,215 @@
-import {Doughnut, Pie} from 'react-chartjs-2';
-import {Chart as ChartJS, ArcElement, Tooltip, ScriptableContext} from 'chart.js';
-import {ChevronDownIcon} from "@heroicons/react/24/solid";
-import {AnyObject} from "chart.js/dist/types/basic";
-import {FormEvent, Fragment, useEffect, useState} from "react";
-import { DocumentData, collection, getDocs, query, where } from "firebase/firestore";
-import { fbDb } from "@/firebase/configs"; 
-import { log } from 'console'; 
-import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
+import { Doughnut, Pie } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  ScriptableContext,
+} from "chart.js";
+import { ChevronDownIcon } from "@heroicons/react/24/solid";
+import { AnyObject } from "chart.js/dist/types/basic";
+import { FormEvent, Fragment, useEffect, useState } from "react";
+import {
+  DocumentData,
+  collection,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
+import { fbDb } from "@/firebase/configs";
+import { log } from "console";
+import {
+  AuthProvider,
+  useAuthContext,
+} from "@/components/Authentication/AuthProvider";
 
-
-ChartJS.register(ArcElement, Tooltip);
+// ChartJS.register(ArcElement, Tooltip);
 
 interface dataset {
-    datasets: {
-        backgroundColor: string[];
-        data: number[];
-        borderJoinStyle: "round" | "bevel" | "miter" | ((ctx: ScriptableContext<"doughnut">, options: AnyObject) => CanvasLineJoin | undefined) | undefined;
-        borderWidth: number;
-        borderRadius: number;
-        radius: number;
-    }[];
+  datasets: {
+    backgroundColor: string[];
+    data: number[];
+    borderJoinStyle:
+      | "round"
+      | "bevel"
+      | "miter"
+      | ((
+          ctx: ScriptableContext<"doughnut">,
+          options: AnyObject
+        ) => CanvasLineJoin | undefined)
+      | undefined;
+    borderWidth: number;
+    borderRadius: number;
+    radius: number;
+  }[];
 }
 
+export default function VehicleOverview() {
+  const [fetchedVehicles, setFetchedVehicles] = useState<DocumentData[]>([]);
+  const { organisationId } = useAuthContext();
 
+  useEffect(() => {
+    const fetchedVehicles = async () => {
+      try {
+        // Ensure organisationId is available before making the query
+        if (organisationId) {
+          const q = query(
+            collection(fbDb, "vehicles"),
+            where("organisationId", "==", organisationId)
+          );
+          const querySnapshot = await getDocs(q);
 
-export default function VehicleOverview() {  
-    const [fetchedVehicles, setFetchedVehicles] = useState<DocumentData[]>([]);  
-    const {organisationId}=useAuthContext() 
-
-    useEffect(() => {
-        const fetchedVehicles = async () => {
-            try {
-              // Ensure organisationId is available before making the query
-              if (organisationId) {
-                const q = query(collection(fbDb, 'vehicles'), where('organisationId', '==', organisationId));
-                const querySnapshot = await getDocs(q);
-      
-                const vehiclesData = querySnapshot.docs.map((doc) => ({
-                  id: doc.id,
-                  ...doc.data()
-                }));
-                setFetchedVehicles(vehiclesData);
-              } else {
-                // Handle the case when organisationId is not available
-                console.error('Organisation ID is not available.');
-              }  
-            } catch (error) {
-              console.error('Error fetching Vehicles:', error);
-            }
-          };
-        fetchedVehicles();
-    }, [organisationId]); 
-       const allVehicles= fetchedVehicles.length 
-       console.log("All Vehicles",allVehicles);
-
-       const onRouteCount = fetchedVehicles.filter((vehicle) => vehicle.availability_status === "On Route").length;
-       console.log("Vehicles On Route",onRouteCount);
-
-       const outOfServiceCount = fetchedVehicles.filter((vehicle) => vehicle.availability_status === "Out Of Service").length;
-       console.log("Vehicles Out of Service",outOfServiceCount);
-
-       const availableCount = fetchedVehicles.filter((vehicle) => vehicle.availability_status === "Available").length;
-       console.log("Available Vehicles",availableCount);
-
-    const data:dataset = {
-        datasets: [
-            {
-                backgroundColor: ['#165DFF', '#F7F8FA'],
-                data: [availableCount, allVehicles],
-                borderJoinStyle: "round",
-                borderWidth: 0,
-                borderRadius: 100,
-                radius: 80,
-            },
-            {
-                backgroundColor: ['#FFC107', '#F7F8FA'],
-                data: [outOfServiceCount, fetchedVehicles.length - outOfServiceCount],
-                borderJoinStyle: "round",
-                borderWidth: 0,
-                borderRadius: 100,
-                radius: 70
-            },
-            {
-                backgroundColor: ['#C9E2FF', '#F7F8FA'],
-                data: [onRouteCount, fetchedVehicles.length - onRouteCount],
-                borderJoinStyle: "round",
-                borderWidth: 0,
-                borderRadius: 100,
-                radius: 60
-            },
-        ],
+          const vehiclesData = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setFetchedVehicles(vehiclesData);
+        } else {
+          // Handle the case when organisationId is not available
+          console.error("Organisation ID is not available.");
+        }
+      } catch (error) {
+        console.error("Error fetching Vehicles:", error);
+      }
     };
-    const options = {
-        responsive:true,
-        cutout: 95, 
-    }
+    fetchedVehicles();
+  }, [organisationId]);
+  const allVehicles = fetchedVehicles.length;
+  console.log("All Vehicles", allVehicles);
 
-    return (
-        <>
-                <div className="w-1/3 mt-8 grid mr-4">
-                <div className=" ">
-                    {/* Description list*/} 
-                    <section aria-labelledby="applicant-information-title ">
-                        <div className="bg-white shadow sm:rounded-lg lg:min-h-[300px]">
-                            <div className="px-4 py-4 sm:px-6 flex w-full items-center justify-between">
-                                <h2 id="applicant-information-title" className="text-lg font-bold leading-6">
-                                    Vehicle Overview
-                                </h2> 
-                                <div className='text-sm flex items-center'>
-                                    This Week
-                                    <ChevronDownIcon className='ml-2 h-4 w-4'/>
-                                </div>
-                            </div>
-                            <div className="border-t border-gray-200 flex flex-row items-center">
-                                <div className=''>
-                                    <Doughnut data={data} options={options} className='!bg-white'/>
-                                </div>
-                                <div className=''>
-                                    <div className='font-bold text-xl'>Total</div>
-                                    <div className='font-bold text-2xl'>{allVehicles}</div>
+  const onRouteCount = fetchedVehicles.filter(
+    (vehicle) => vehicle.availability_status === "On Route"
+  ).length;
+  console.log("Vehicles On Route", onRouteCount);
 
-                                    <div className='flex items-center  w-full mt-6'>
-                                        <div className='h-4 w-4 rounded-md bg-d-blue mr-4'></div>
-                                        <div>Available</div>
-                                        <div className='pl-10 mr-2'>{availableCount}</div>
-                                    </div>
-                                    <div className='flex items-center  w-full mt-4'>
-                                        <div className='h-4 w-4 rounded-md bg-yellow mr-4'></div>
-                                        <div>Under <br/>
-                                            Maintenance</div>
-                                        <div className='pl-4 mr-2'>{outOfServiceCount}</div>
-                                    </div>
-                                    <div className='flex items-center  w-full mt-4'>
-                                        <div className='h-4 w-4 rounded-md bg-ll-blue mr-4'></div>
-                                        <div>On Route</div>
-                                        <div className='pl-10 mr-2'>{onRouteCount}</div>
-                                    </div>
+  const outOfServiceCount = fetchedVehicles.filter(
+    (vehicle) => vehicle.availability_status === "Out Of Service"
+  ).length;
+  console.log("Vehicles Out of Service", outOfServiceCount);
 
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                </div>
+  const availableCount = fetchedVehicles.filter(
+    (vehicle) => vehicle.availability_status === "Available"
+  ).length;
+  console.log("Available Vehicles", availableCount);
+
+  const data: dataset = {
+    datasets: [
+      {
+        backgroundColor: ["#165DFF", "#F7F8FA"],
+        data: [availableCount, allVehicles],
+        borderJoinStyle: "round",
+        borderWidth: 0,
+        borderRadius: 100,
+        radius: 60,
+      },
+      {
+        backgroundColor: ["#FFC107", "#F7F8FA"],
+        data: [outOfServiceCount, fetchedVehicles.length - outOfServiceCount],
+        borderJoinStyle: "round",
+        borderWidth: 0,
+        borderRadius: 100,
+        radius: 50,
+      },
+      {
+        backgroundColor: ["#C9E2FF", "#F7F8FA"],
+        data: [onRouteCount, fetchedVehicles.length - onRouteCount],
+        borderJoinStyle: "round",
+        borderWidth: 0,
+        borderRadius: 100,
+        radius: 40,
+      },
+    ],
+  };
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false, // Allows the chart to fill the height of the parent container
+    plugins: {
+      legend: {
+        display: false, // We will create a custom legend
+      },
+      tooltip: {
+        enabled: false, // Disable tooltips
+      },
+    },
+  };
+
+  return (
+    <>
+      <div className="bg-white rounded-lg shadow w-90 h-64 ml-4">
+        {/* <div className="w-[600px] h-[300px] flex-none p-[21px_0_29px] rounded-md bg-white"> */}
+        <div className=" ">
+          <section aria-labelledby="applicant-information-title ">
+            {/* <div className=" shadow sm:rounded-lg lg:min-h-[60]"> */}
+            <div className="px-4 py-4 sm:px-6 flex w-full items-center justify-between">
+              <h2
+                id="applicant-information-title"
+                className="text-sm font-bold leading-6"
+              >
+                Vehicle Overview
+              </h2>
             </div>
-        </>
-    )
+            <div className=" border-gray-200 flex flex-row">
+              <div className="">
+                <Doughnut data={data} options={options} className="" />
+              </div>
+              <div className="">
+                <div className="font-bold text-sm">Total</div>
+                <div className="font-bold text-sm">{allVehicles}</div>
+                <div className="mr-4">
+                  <div className="flex items-center  w-full mt-4">
+                    {/* <div className="h-4 w-4 rounded-md bg-d-blue mr-4"></div> */}
+                    <span className="fa-stack fa-lg smaller-icon">
+                      <i
+                        className="fa fa-circle fa-stack-2x text-[#F2F2F2]"
+                        aria-hidden="true"
+                      ></i>
+                      <i
+                        className="fa fa-truck fa-stack-1x fa-inverse text-[#065ad8]"
+                        aria-hidden="true"
+                      ></i>
+                    </span>
+                    <div className="text-sm">Available</div>
+                    <div className="pl-10 mr-2 text-sm">{availableCount}</div>
+                  </div>
+                  <div className="flex items-center  w-full mt-4">
+                    {/* <div className="h-4 w-4 rounded-md bg-yellow mr-4"></div> */}
+                    <span className="fa-stack fa-lg smaller-icon">
+                      <i
+                        className="fa fa-circle fa-stack-2x text-[#FFF6DB]"
+                        aria-hidden="true"
+                      ></i>
+                      <i
+                        className="fa fa-truck fa-stack-1x fa-inverse text-[#9F7801]"
+                        aria-hidden="true"
+                      ></i>
+                    </span>
+                    <div className="text-sm">
+                      Under <br />
+                      Maintenance
+                    </div>
+                    <div className="pl-4 mr-2 text-sm">{outOfServiceCount}</div>
+                  </div>
+                  <div className="flex items-center w-full mt-4">
+                    {/* <div className="h-4 w-4 rounded-md bg-ll-blue mr-4 text-sm"></div> */}
+                    <span className="fa-stack fa-lg smaller-icon">
+                      <i
+                        className="fa fa-circle fa-stack-2x text-[#ecf4ff]"
+                        aria-hidden="true"
+                      ></i>
+                      <i
+                        className="fa fa-truck fa-stack-1x fa-inverse text-[#065ad8]"
+                        aria-hidden="true"
+                      ></i>
+                    </span>
+                    <div className="text-sm">On Route</div>
+                    <div className="pl-10 mr-2">{onRouteCount}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* </div> */}
+          </section>
+        </div>
+      </div>
+    </>
+  );
 }
