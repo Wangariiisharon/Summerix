@@ -1,11 +1,15 @@
 import { AuthProvider } from "@/components/Authentication/AuthProvider";
 import Head from "next/head";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import "@/globals.css";
 import React from "react";
-import  Script  from 'next/script';
+import Script from "next/script";
+import useActivityTimeout from "./timeout";
+import { useActivityTracker } from "@/components/SessionTimeOut/useActivityTracker";
 
 export default function MyApp({ Component, pageProps }: any) {
+  useActivityTracker(300000); // 5 minutes timeout
+
   return (
     <>
       <Head>
@@ -13,19 +17,17 @@ export default function MyApp({ Component, pageProps }: any) {
         <meta name="theme-color" content="#000000" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" />      
-      </Head> 
+        <link rel="preconnect" href="https://fonts.gstatic.com" />
+      </Head>
       <Script
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE&libraries=places"
         strategy="beforeInteractive"
       />
-        <AuthProvider>
+      <AuthProvider>
         <Component {...pageProps} />
-        </AuthProvider>
+      </AuthProvider>
       <Toaster />
       <Script src="/register-service-worker.js" />
     </>
   );
-}  
-
-
+}

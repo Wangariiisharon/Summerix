@@ -1,12 +1,12 @@
-import 'firebase/auth';
-import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, Timestamp } from 'firebase/firestore';
+import "firebase/auth";
+import { initializeApp, getApps } from "firebase/app";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getFirestore, Timestamp } from "firebase/firestore";
 
 const apps = getApps();
 
 if (!apps.length || apps.length === 0) {
-  console.debug('do initialize firebase...');
+  console.debug("do initialize firebase...");
 
   try {
     const firebaseConfig = {
@@ -15,22 +15,22 @@ if (!apps.length || apps.length === 0) {
       projectId: "truck-it-bf0b2",
       storageBucket: "truck-it-bf0b2.appspot.com",
       messagingSenderId: "444807794647",
-      appId: "1:444807794647:web:a2754d536a13ff3df90592"
+      appId: "1:444807794647:web:a2754d536a13ff3df90592",
     };
 
     initializeApp(firebaseConfig);
   } catch (error) {
-    console.error('FIREBASE INIT ERROR:::', error);
+    console.error("FIREBASE INIT ERROR:::", error);
   }
 }
 
- const firebaseApp = getApps()[0];
+const firebaseApp = getApps()[0];
 export const fbDb = getFirestore(firebaseApp);
+export const auth = getAuth(firebaseApp);
 
-export default firebaseApp
+export default firebaseApp;
 
 // Check if messaging is supported and if the code is running on the client side
-
 
 // import 'firebase/auth';
 //  import { initializeApp, getApps } from 'firebase/app';
@@ -65,4 +65,3 @@ export default firebaseApp
 // export const fromMillis = Timestamp.fromMillis;
 
 // export default firebaseApp;
-
