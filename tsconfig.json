@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2015", // Updated from "es5" to "es2015" for better ES6 feature support
+    "target": "es2015",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "strict": true,
@@ -17,13 +17,17 @@
     "paths": {
       "@/*": ["./src/*"]
     },
+
     "skipLibCheck": true
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "src/pages/api/distance.js"
+    "src/pages/api/distance.js",
+    "src/pages/api/verifyToken.js",
+    "src/components/useActivityTracker.js",
+    "functions/index.js"
   ],
   "exclude": ["node_modules"]
 }
