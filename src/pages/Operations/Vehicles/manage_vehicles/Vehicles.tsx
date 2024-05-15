@@ -32,6 +32,8 @@ import {
   useAuthContext,
 } from "@/components/Authentication/AuthProvider";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+import * as Yup from "yup";
+import { ErrorMessage } from "formik";
 
 const Headers = ["VEHICLE ID", "VEHICLE TYPE", "LICENSE PLATE"];
 export default function Vehicles() {
@@ -69,9 +71,33 @@ export default function Vehicles() {
   });
   const [showLeaseInput, setShowLeaseInput] = useState(false);
   const [showEditLeaseInput, setShowEditLeaseInput] = useState(false);
-
   const { organisationId } = useAuthContext();
   console.log(" Vehicles Organisation ID:", organisationId);
+
+  const validationSchema = Yup.object({
+    cargo_capacity: Yup.string().required("Cargo Capacity is required"),
+    lisence_plate: Yup.string().required(
+      "Vehicle Identification Number is required"
+    ),
+    vehicle_type: Yup.string().required("vehicle_type is required"),
+    make: Yup.string().required("Make is required"),
+    model: Yup.string().required("Model  is required"),
+    year: Yup.string().required("Year is required"),
+    ownership_status: Yup.string().required("Ownership Status is required"),
+    truck_incurance: Yup.mixed().required("Truck incurance is required"),
+    cargo_insurance: Yup.mixed().required("Cargo Insurance is required"),
+    port_entry_permits: Yup.mixed().required("Port Entry Permits is required"),
+    inspection_certificates: Yup.mixed().required(
+      "Inspection Certificates is required"
+    ),
+    transit_permits: Yup.mixed().required("Transit Permits Fee is required"),
+  });
+
+  const allocationValidationSchema = Yup.object({
+    vehicle: Yup.string().required("Vehicle is required"),
+    company: Yup.string().required("Company is required"),
+  });
+
   const handleAllocateReset = () => {
     setShowAllocateModal(false);
     setOpen(false);
@@ -162,6 +188,7 @@ export default function Vehicles() {
       toast.error("Please fill the field  Cargo capacity");
       return;
     }
+
     if (!values.lisence_plate) {
       console.error("Required form fields are missing");
       toast.error("Please fill the field Vehicle Identification Number");
@@ -224,11 +251,6 @@ export default function Vehicles() {
       toast.error("Please fill the field Transit Permits");
       return;
     }
-    // truck_incurance: null,
-    // cargo_insurance: null,
-    // port_entry_permits: null,
-    // inspection_certificates: null,
-    // transit_permits: null,
 
     const registration_date = new Date();
     const licensePlate = values.lisence_plate;
@@ -810,13 +832,14 @@ export default function Vehicles() {
                   inspection_certificates: null,
                   transit_permits: null,
                 }}
-                onSubmit={(values) => handleSubmit(values)}
+                validationSchema={validationSchema}
+                onSubmit={(values) => handleAddVehicles()}
               >
-                {({ values }) => (
+                {({ values, errors, touched }) => (
                   <Form>
                     <div className="">
                       <div className="flex w-full justify-between mt-8">
-                        <label className="block">
+                        <div className="block">
                           <label className="form-label">
                             VEHICLE IDENTIFICATION NUMBER
                           </label>
@@ -826,7 +849,12 @@ export default function Vehicles() {
                             value={values.lisence_plate}
                             className="form-input bg-grey w-48"
                           />
-                        </label>
+                          {errors.lisence_plate && touched.lisence_plate ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.lisence_plate}
+                            </div>
+                          ) : null}
+                        </div>
 
                         <label className="block">
                           <label className="form-label">VEHICLE TYPE</label>
@@ -836,6 +864,11 @@ export default function Vehicles() {
                             value={values.vehicle_type}
                             className="form-input bg-grey w-48"
                           />
+                          {errors.vehicle_type && touched.vehicle_type ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.vehicle_type}
+                            </div>
+                          ) : null}
                         </label>
                       </div>
                       <div className="flex w-full justify-between mt-8">
@@ -847,6 +880,11 @@ export default function Vehicles() {
                             value={values.cargo_capacity}
                             className="form-input bg-grey w-48"
                           />
+                          {errors.cargo_capacity && touched.cargo_capacity ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.cargo_capacity}
+                            </div>
+                          ) : null}
                         </label>
                         <label className="block">
                           <label className="form-label">MAKE</label>
@@ -856,17 +894,22 @@ export default function Vehicles() {
                             value={values.make}
                             className="form-input bg-grey w-48"
                           />
+                          {errors.make && touched.make ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.make}
+                            </div>
+                          ) : null}
                         </label>
                       </div>
 
                       <div className="flex w-full justify-between mt-8">
                         <label className="block">
                           <label className="form-label">OWNERSHIP STATUS</label>
-                          <Field
+                          {/* <Field
                             as="select"
                             type="text"
                             name="ownership_status"
-                            value={values.ownership_status}
+                            value={formik.values.ownership_status}
                             className="form-input bg-grey w-48"
                             onChange={(e: any) => {
                               setShowLeaseInput(e.target.value === "Owned");
@@ -879,9 +922,40 @@ export default function Vehicles() {
                             <option value="">Select Status</option>
                             <option value="Owned">Owned</option>
                             <option value="Leased">Leased</option>
+                          </Field> */}
+                          <Field
+                            as="select"
+                            type="text"
+                            name="ownership_status"
+                            className="form-input bg-grey w-48"
+                          >
+                            <option value="">Select Status</option>
+                            <option value="Owned">Owned</option>
+                            <option value="Leased">Leased</option>
                           </Field>
-
-                          {(values.ownership_status === "Owned" ||
+                          {errors.ownership_status &&
+                          touched.ownership_status ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.ownership_status}
+                            </div>
+                          ) : null}
+                          {values.ownership_status === "Owned" && (
+                            <div className="mt-8">
+                              <label className="block">
+                                <label className="form-label">
+                                  PURCHASE PRICE
+                                </label>
+                                <Field
+                                  type="number"
+                                  name="lease_amount"
+                                  placeholder="Ksh"
+                                  className="form-input bg-grey w-48"
+                                />
+                              </label>
+                            </div>
+                          )}
+                          {/* 
+                          {(formik.values.ownership_status === "Owned" ||
                             showLeaseInput) && (
                             <div className="mt-8">
                               <label className="block">
@@ -891,13 +965,13 @@ export default function Vehicles() {
                                 <Field
                                   type="number"
                                   name="lease_amount"
-                                  value={values.lease_amount}
+                                  value={formik.values.lease_amount}
                                   placeholder="Ksh"
                                   className="form-input bg-grey w-48"
                                 />
                               </label>
                             </div>
-                          )}
+                          )} */}
                         </label>
                         <label className="block">
                           <label className="form-label">MODEL</label>
@@ -907,6 +981,11 @@ export default function Vehicles() {
                             value={values.model}
                             className="form-input bg-grey w-48"
                           />
+                          {errors.model && touched.model ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.model}
+                            </div>
+                          ) : null}
                         </label>
                       </div>
                       <div className="flex w-full justify-between mt-8">
@@ -918,6 +997,11 @@ export default function Vehicles() {
                             value={values.year}
                             className="form-input bg-grey w-48"
                           />
+                          {errors.year && touched.year ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.year}
+                            </div>
+                          ) : null}
                         </label>
                         <label className="block">
                           <label className="form-label">TRUCK INSURANCE</label>
@@ -934,6 +1018,11 @@ export default function Vehicles() {
                               />
                             )}
                           </Field>
+                          {errors.truck_incurance && touched.truck_incurance ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.truck_incurance}
+                            </div>
+                          ) : null}
                         </label>
                       </div>
 
@@ -953,6 +1042,11 @@ export default function Vehicles() {
                               />
                             )}
                           </Field>
+                          {errors.cargo_insurance && touched.cargo_insurance ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.cargo_insurance}
+                            </div>
+                          ) : null}
                         </label>
 
                         <label className="block ">
@@ -973,6 +1067,12 @@ export default function Vehicles() {
                               />
                             )}
                           </Field>
+                          {errors.port_entry_permits &&
+                          touched.port_entry_permits ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.port_entry_permits}
+                            </div>
+                          ) : null}
                         </label>
                       </div>
                       <div className="flex w-full justify-between mt-8">
@@ -991,6 +1091,11 @@ export default function Vehicles() {
                               />
                             )}
                           </Field>
+                          {errors.transit_permits && touched.transit_permits ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.transit_permits}
+                            </div>
+                          ) : null}
                         </label>
 
                         <label className="block">
@@ -1013,6 +1118,12 @@ export default function Vehicles() {
                               />
                             )}
                           </Field>
+                          {errors.inspection_certificates &&
+                          touched.inspection_certificates ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.inspection_certificates}
+                            </div>
+                          ) : null}
                         </label>
                       </div>
 
@@ -1056,15 +1167,15 @@ export default function Vehicles() {
                 </div>
 
                 <Formik
+                  validationSchema={validationSchema}
                   initialValues={editFormInitialValues}
                   onSubmit={handleEditSubmit}
                 >
-                  {({ values, setFieldValue }) => (
+                  {({ values, setFieldValue, errors, touched }) => (
                     <Form>
-                      {" "}
                       <div className="">
                         <div className="flex w-full justify-between mt-8">
-                          <label className="block">
+                          <div className="block">
                             <label className="form-label">
                               VEHICLE IDENTIFICATION NUMBER
                             </label>
@@ -1074,7 +1185,12 @@ export default function Vehicles() {
                               value={values.lisence_plate}
                               className="form-input bg-grey w-48"
                             />
-                          </label>
+                            {errors.lisence_plate && touched.lisence_plate ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.lisence_plate}
+                              </div>
+                            ) : null}
+                          </div>
 
                           <label className="block">
                             <label className="form-label">VEHICLE TYPE</label>
@@ -1084,6 +1200,11 @@ export default function Vehicles() {
                               value={values.vehicle_type}
                               className="form-input bg-grey w-48"
                             />
+                            {errors.vehicle_type && touched.vehicle_type ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.vehicle_type}
+                              </div>
+                            ) : null}
                           </label>
                         </div>
                         <div className="flex w-full justify-between mt-8">
@@ -1098,6 +1219,11 @@ export default function Vehicles() {
                               value={values.cargo_capacity}
                               className="form-input bg-grey w-48"
                             />
+                            {errors.cargo_capacity && touched.cargo_capacity ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.cargo_capacity}
+                              </div>
+                            ) : null}
                           </label>
                           <label className="block">
                             <label className="form-label">MAKE</label>
@@ -1107,6 +1233,11 @@ export default function Vehicles() {
                               value={values.make}
                               className="form-input bg-grey w-48"
                             />
+                            {errors.make && touched.make ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.make}
+                              </div>
+                            ) : null}
                           </label>
                         </div>
 
@@ -1115,24 +1246,41 @@ export default function Vehicles() {
                             <label className="form-label">
                               OWNERSHIP STATUS
                             </label>
+                            {/* <Field
+                           as="select"
+                           type="text"
+                           name="ownership_status"
+                           value={formik.values.ownership_status}
+                           className="form-input bg-grey w-48"
+                           onChange={(e: any) => {
+                             setShowLeaseInput(e.target.value === "Owned");
+                             console.log(
+                               "Ownership Status Changed:",
+                               e.target.value
+                             );
+                           }}
+                         >
+                           <option value="">Select Status</option>
+                           <option value="Owned">Owned</option>
+                           <option value="Leased">Leased</option>
+                         </Field> */}
                             <Field
                               as="select"
+                              type="text"
                               name="ownership_status"
                               className="form-input bg-grey w-48"
-                              onChange={(e: { target: { value: any } }) => {
-                                const { value } = e.target;
-                                setFieldValue("ownership_status", value);
-                                setShowLeaseInput(value === "Owned");
-                              }}
-                              value={values.ownership_status}
                             >
                               <option value="">Select Status</option>
                               <option value="Owned">Owned</option>
                               <option value="Leased">Leased</option>
                             </Field>
-
-                            {(values.ownership_status === "Owned" ||
-                              showLeaseInput) && (
+                            {errors.ownership_status &&
+                            touched.ownership_status ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.ownership_status}
+                              </div>
+                            ) : null}
+                            {values.ownership_status === "Owned" && (
                               <div className="mt-8">
                                 <label className="block">
                                   <label className="form-label">
@@ -1141,15 +1289,31 @@ export default function Vehicles() {
                                   <Field
                                     type="number"
                                     name="lease_amount"
-                                    value={values.lease_amount}
                                     placeholder="Ksh"
                                     className="form-input bg-grey w-48"
                                   />
                                 </label>
                               </div>
                             )}
+                            {/* 
+                         {(formik.values.ownership_status === "Owned" ||
+                           showLeaseInput) && (
+                           <div className="mt-8">
+                             <label className="block">
+                               <label className="form-label">
+                                 PURCHASE PRICE
+                               </label>
+                               <Field
+                                 type="number"
+                                 name="lease_amount"
+                                 value={formik.values.lease_amount}
+                                 placeholder="Ksh"
+                                 className="form-input bg-grey w-48"
+                               />
+                             </label>
+                           </div>
+                         )} */}
                           </label>
-
                           <label className="block">
                             <label className="form-label">MODEL</label>
                             <Field
@@ -1158,10 +1322,15 @@ export default function Vehicles() {
                               value={values.model}
                               className="form-input bg-grey w-48"
                             />
+                            {errors.model && touched.model ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.model}
+                              </div>
+                            ) : null}
                           </label>
                         </div>
                         <div className="flex w-full justify-between mt-8">
-                          <label className="block ">
+                          <label className="block">
                             <label className="form-label">YEAR</label>
                             <Field
                               type="text"
@@ -1169,6 +1338,11 @@ export default function Vehicles() {
                               value={values.year}
                               className="form-input bg-grey w-48"
                             />
+                            {errors.year && touched.year ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.year}
+                              </div>
+                            ) : null}
                           </label>
                           <label className="block">
                             <label className="form-label">
@@ -1191,11 +1365,17 @@ export default function Vehicles() {
                                 />
                               )}
                             </Field>
+                            {errors.truck_incurance &&
+                            touched.truck_incurance ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.truck_incurance}
+                              </div>
+                            ) : null}
                           </label>
                         </div>
 
                         <div className="flex w-full justify-between mt-8">
-                          <label className="block">
+                          <label className="block ml-6">
                             <label className="form-label">
                               CARGO INSURANCE
                             </label>
@@ -1216,9 +1396,15 @@ export default function Vehicles() {
                                 />
                               )}
                             </Field>
+                            {errors.cargo_insurance &&
+                            touched.cargo_insurance ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.cargo_insurance}
+                              </div>
+                            ) : null}
                           </label>
 
-                          <label className="block ml-10">
+                          <label className="block ">
                             <label className="form-label">PORT PERMITS</label>
                             <Field name="port_entry_permits">
                               {({ field, form }: any) => (
@@ -1237,10 +1423,16 @@ export default function Vehicles() {
                                 />
                               )}
                             </Field>
+                            {errors.port_entry_permits &&
+                            touched.port_entry_permits ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.port_entry_permits}
+                              </div>
+                            ) : null}
                           </label>
                         </div>
                         <div className="flex w-full justify-between mt-8">
-                          <label className="block">
+                          <label className="block ml-6">
                             <label className="form-label">
                               TRANSIT PERMITS
                             </label>
@@ -1261,9 +1453,15 @@ export default function Vehicles() {
                                 />
                               )}
                             </Field>
+                            {errors.transit_permits &&
+                            touched.transit_permits ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.transit_permits}
+                              </div>
+                            ) : null}
                           </label>
 
-                          <label className="block ml-10">
+                          <label className="block">
                             <label className="form-label">
                               INSPECTION CERTIFICATES
                             </label>
@@ -1284,17 +1482,22 @@ export default function Vehicles() {
                                 />
                               )}
                             </Field>
+                            {errors.inspection_certificates &&
+                            touched.inspection_certificates ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.inspection_certificates}
+                              </div>
+                            ) : null}
                           </label>
                         </div>
 
                         <div className="flex w-full justify-end mt-24 ">
                           <Button
                             className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
-                            handleClick={handleEditModalClose}
+                            handleClick={handleReset}
                           >
                             Reset
                           </Button>
-                          {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
                           <button
                             className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
                             type="submit"
@@ -1328,9 +1531,10 @@ export default function Vehicles() {
                 vehicle: "",
                 company: "",
               }}
+              // allocationValidationSchema={allocationValidationSchema}
               onSubmit={(values) => handleAllocateSubmit(values)}
             >
-              {({ values }) => (
+              {({ values, setFieldValue }) => (
                 <Form>
                   <div className="">
                     <div className="flex w-full justify-between">
@@ -1349,6 +1553,11 @@ export default function Vehicles() {
                             </option>
                           ))}
                         </Field>
+                        {/* {errors.vehicle && touched.vehicle ? (
+                          <div className="text-red-600 text-sm">
+                            {errors.vehicle}
+                          </div>
+                        ) : null} */}
                       </label>
 
                       <label className="block">
@@ -1367,6 +1576,11 @@ export default function Vehicles() {
                             </option>
                           ))}
                         </Field>
+                        {/* {errors.company && touched.company ? (
+                          <div className="text-red-600 text-sm">
+                            {errors.company}
+                          </div>
+                        ) : null} */}
                       </label>
                     </div>
                     <div className="flex w-full justify-end mt-24 ">
@@ -1427,7 +1641,10 @@ export function VehiclesTable({
 
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-  const visibleVehicles = sortedVehicles.slice(startIndex, endIndex);
+  const visibleVehicles = sortedVehicles
+    .slice(startIndex, endIndex)
+    .filter((admin) => !admin.archive);
+  // const visibleVehicles = sortedVehicles.slice(startIndex, endIndex);
 
   const handleReassign = () => {
     // Implement your reassign logic here
@@ -1452,6 +1669,9 @@ export function VehiclesTable({
     }
   };
   //     // const Headers = ["VEHICLE ID", "VEHICLE TYPE", "LICENSE PLATE"]
+  const handleVehicleClick = (vehicle: any) => {
+    router.push(`Operations/Vehicles/vehiclesDetails?id=${vehicle.id}`);
+  };
 
   return (
     <div className="px-4 ml-2 sm:px-6 lg:px-8">
@@ -1487,7 +1707,10 @@ export function VehiclesTable({
                   return (
                     <Fragment key={index}>
                       <tr className="hover:bg-gray-100">
-                        <td className="whitespace-nowrap font-nunito font-regular pr-3  pl-4 pr-3  text-d-blue text-base sm:pl-0">
+                        <td
+                          className="whitespace-nowrap font-nunito font-regular pr-3  pl-4 pr-3  text-d-blue text-base sm:pl-0"
+                          onClick={() => handleVehicleClick(vehicle)}
+                        >
                           {vehicle.vehiclesId}
                         </td>
                         <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">

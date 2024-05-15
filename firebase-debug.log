@@ -1,0 +1,179 @@
+[debug] [2024-05-13T08:21:30.222Z] ----------------------------------------------------------------------
+[debug] [2024-05-13T08:21:30.225Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\sharo\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only functions
+[debug] [2024-05-13T08:21:30.225Z] CLI Version:   13.8.0
+[debug] [2024-05-13T08:21:30.225Z] Platform:      win32
+[debug] [2024-05-13T08:21:30.225Z] Node Version:  v20.3.1
+[debug] [2024-05-13T08:21:30.225Z] Time:          Mon May 13 2024 11:21:30 GMT+0300 (East Africa Time)
+[debug] [2024-05-13T08:21:30.225Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-05-13T08:21:30.297Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-05-13T08:21:30.298Z] > authorizing via signed-in user (sharon@gessic.com)
+[debug] [2024-05-13T08:21:30.298Z] [iam] checking project truck-it-bf0b2 for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2024-05-13T08:21:30.300Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/truck-it-bf0b2:testIamPermissions [none]
+[debug] [2024-05-13T08:21:30.300Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/truck-it-bf0b2:testIamPermissions x-goog-quota-user=projects/truck-it-bf0b2
+[debug] [2024-05-13T08:21:30.300Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/truck-it-bf0b2:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2024-05-13T08:21:36.409Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/truck-it-bf0b2:testIamPermissions 200
+[debug] [2024-05-13T08:21:36.409Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/truck-it-bf0b2:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2024-05-13T08:21:36.409Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/truck-it-bf0b2/serviceAccounts/truck-it-bf0b2@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2024-05-13T08:21:36.409Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/truck-it-bf0b2/serviceAccounts/truck-it-bf0b2@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2024-05-13T08:22:28.400Z] *** [apiv2] error from fetch(https://iam.googleapis.com/v1/projects/truck-it-bf0b2/serviceAccounts/truck-it-bf0b2@appspot.gserviceaccount.com:testIamPermissions, {"headers":{},"method":"POST","body":"{\"permissions\":[\"iam.serviceAccounts.actAs\"]}"}): FetchError: request to https://iam.googleapis.com/v1/projects/truck-it-bf0b2/serviceAccounts/truck-it-bf0b2@appspot.gserviceaccount.com:testIamPermissions failed, reason: socket hang up
+[debug] [2024-05-13T08:22:28.401Z] [functions] service account IAM check errored, deploy may fail: Failed to make request to https://iam.googleapis.com/v1/projects/truck-it-bf0b2/serviceAccounts/truck-it-bf0b2@appspot.gserviceaccount.com:testIamPermissions {"name":"FirebaseError","children":[],"exit":1,"message":"Failed to make request to https://iam.googleapis.com/v1/projects/truck-it-bf0b2/serviceAccounts/truck-it-bf0b2@appspot.gserviceaccount.com:testIamPermissions","original":{"message":"request to https://iam.googleapis.com/v1/projects/truck-it-bf0b2/serviceAccounts/truck-it-bf0b2@appspot.gserviceaccount.com:testIamPermissions failed, reason: socket hang up","type":"system","errno":"ECONNRESET","code":"ECONNRESET"},"status":500}
+[info] 
+[info] === Deploying to 'truck-it-bf0b2'...
+[info] 
+[info] i  deploying functions 
+[debug] [2024-05-13T08:22:28.409Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/truck-it-bf0b2 [none]
+[debug] [2024-05-13T08:22:37.988Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/truck-it-bf0b2 200
+[debug] [2024-05-13T08:22:37.988Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/truck-it-bf0b2 {"projectId":"truck-it-bf0b2","projectNumber":"444807794647","displayName":"Truck IT","name":"projects/truck-it-bf0b2","resources":{"hostingSite":"truck-it-bf0b2","storageBucket":"truck-it-bf0b2.appspot.com","locationId":"us-central"},"state":"ACTIVE","etag":"1_8bfccb06-8f12-4cce-ae13-5c0a2f60b47a"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2024-05-13T08:22:37.993Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/truck-it-bf0b2/services/cloudfunctions.googleapis.com [none]
+[debug] [2024-05-13T08:22:37.993Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/truck-it-bf0b2/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/truck-it-bf0b2
+[debug] [2024-05-13T08:22:37.994Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/truck-it-bf0b2/services/runtimeconfig.googleapis.com [none]
+[debug] [2024-05-13T08:22:37.995Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/truck-it-bf0b2/services/runtimeconfig.googleapis.com x-goog-quota-user=projects/truck-it-bf0b2
+[debug] [2024-05-13T08:22:37.996Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/truck-it-bf0b2/services/cloudbuild.googleapis.com [none]
+[debug] [2024-05-13T08:22:37.996Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/truck-it-bf0b2/services/cloudbuild.googleapis.com x-goog-quota-user=projects/truck-it-bf0b2
+[debug] [2024-05-13T08:22:37.997Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/truck-it-bf0b2/services/artifactregistry.googleapis.com [none]
+[debug] [2024-05-13T08:22:37.997Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/truck-it-bf0b2/services/artifactregistry.googleapis.com x-goog-quota-user=projects/truck-it-bf0b2
+[debug] [2024-05-13T08:22:44.143Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/truck-it-bf0b2/services/artifactregistry.googleapis.com 200
+[debug] [2024-05-13T08:22:44.143Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/truck-it-bf0b2/services/artifactregistry.googleapis.com [omitted]
+[info] +  artifactregistry: required API artifactregistry.googleapis.com is enabled 
+[debug] [2024-05-13T08:22:44.201Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/truck-it-bf0b2/services/runtimeconfig.googleapis.com 200
+[debug] [2024-05-13T08:22:44.202Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/truck-it-bf0b2/services/runtimeconfig.googleapis.com [omitted]
+[debug] [2024-05-13T08:22:44.567Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/truck-it-bf0b2/services/cloudfunctions.googleapis.com 200
+[debug] [2024-05-13T08:22:44.567Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/truck-it-bf0b2/services/cloudfunctions.googleapis.com [omitted]
+[info] +  functions: required API cloudfunctions.googleapis.com is enabled 
+[debug] [2024-05-13T08:22:46.177Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/truck-it-bf0b2/services/cloudbuild.googleapis.com 200
+[debug] [2024-05-13T08:22:46.177Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/truck-it-bf0b2/services/cloudbuild.googleapis.com [omitted]
+[info] +  functions: required API cloudbuild.googleapis.com is enabled 
+[debug] [2024-05-13T08:22:46.178Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/truck-it-bf0b2/adminSdkConfig [none]
+[debug] [2024-05-13T08:22:56.612Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/truck-it-bf0b2/adminSdkConfig 200
+[debug] [2024-05-13T08:22:56.612Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/truck-it-bf0b2/adminSdkConfig {"projectId":"truck-it-bf0b2","storageBucket":"truck-it-bf0b2.appspot.com","locationId":"us-central"}
+[debug] [2024-05-13T08:22:56.613Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/truck-it-bf0b2/configs [none]
+[debug] [2024-05-13T08:23:01.523Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/truck-it-bf0b2/configs 200
+[debug] [2024-05-13T08:23:01.523Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/truck-it-bf0b2/configs {}
+[debug] [2024-05-13T08:23:01.526Z] Validating nodejs source
+[warn] !  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] !  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2024-05-13T08:23:08.275Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "18"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^11.8.0",
+    "firebase-functions": "^4.3.1"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}
+[debug] [2024-05-13T08:23:08.275Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2024-05-13T08:23:08.277Z] Could not find functions.yaml. Must use http discovery
+[debug] [2024-05-13T08:23:08.288Z] Found firebase-functions binary at 'C:\Users\sharo\truckit\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8849
+
+[debug] [2024-05-13T08:23:10.178Z] Got response from /__/functions.yaml {"endpoints":{},"specVersion":"v1alpha1","requiredAPIs":[]}
+[debug] [2024-05-13T08:23:15.238Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v1/projects/truck-it-bf0b2/locations/-/functions [none]
+[debug] [2024-05-13T08:23:21.285Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v1/projects/truck-it-bf0b2/locations/-/functions 200
+[debug] [2024-05-13T08:23:21.285Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v1/projects/truck-it-bf0b2/locations/-/functions {"functions":[{"name":"projects/truck-it-bf0b2/locations/us-central1/functions/updateTripStatus","eventTrigger":{"eventType":"google.pubsub.topic.publish","resource":"projects/truck-it-bf0b2/topics/firebase-schedule-updateTripStatus-us-central1","service":"pubsub.googleapis.com","failurePolicy":{}},"status":"OFFLINE","entryPoint":"updateTripStatus","timeout":"60s","availableMemoryMb":256,"serviceAccountEmail":"truck-it-bf0b2@appspot.gserviceaccount.com","updateTime":"2024-05-04T11:30:42.514Z","versionId":"3","labels":{"deployment-tool":"cli-firebase","deployment-scheduled":"true","firebase-functions-hash":"fe1269067a2a43041bac65c6b13b25449681e48a"},"sourceUploadUrl":"https://storage.googleapis.com/uploads-536595928110.us-central1.cloudfunctions.appspot.com/535a2c60-24a6-475c-b6d2-bfc4ef4a6f6f.zip","environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"truck-it-bf0b2\",\"storageBucket\":\"truck-it-bf0b2.appspot.com\",\"locationId\":\"us-central\"}","GCLOUD_PROJECT":"truck-it-bf0b2","EVENTARC_CLOUD_EVENT_SOURCE":"projects/truck-it-bf0b2/locations/us-central1/functions/updateTripStatus"},"runtime":"nodejs18","maxInstances":3000,"ingressSettings":"ALLOW_ALL","buildId":"fe699ca3-45d3-40f8-9018-015981decaca","buildEnvironmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"buildName":"projects/444807794647/locations/us-central1/builds/fe699ca3-45d3-40f8-9018-015981decaca","dockerRegistry":"ARTIFACT_REGISTRY","automaticUpdatePolicy":{}}]}
+[debug] [2024-05-13T08:23:21.287Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/truck-it-bf0b2/locations/-/functions filter=environment%3D%22GEN_2%22
+[debug] [2024-05-13T08:23:22.880Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/truck-it-bf0b2/locations/-/functions 200
+[debug] [2024-05-13T08:23:22.880Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/truck-it-bf0b2/locations/-/functions {"functions":[{"name":"projects/truck-it-bf0b2/locations/us-central1/functions/ssrtruckitbf0b2","buildConfig":{"build":"projects/444807794647/locations/us-central1/builds/0802e8ba-1b2a-48c1-b162-7a14b6052a5c","runtime":"nodejs20","entryPoint":"ssrtruckitbf0b2","source":{"storageSource":{"bucket":"gcf-v2-sources-444807794647-us-central1","object":"ssrtruckitbf0b2/function-source.zip","generation":"1710746988117928"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"dockerRepository":"projects/truck-it-bf0b2/locations/us-central1/repositories/gcf-artifacts","sourceProvenance":{"resolvedStorageSource":{"bucket":"gcf-v2-sources-444807794647-us-central1","object":"ssrtruckitbf0b2/function-source.zip","generation":"1710746988117928"}},"dockerRegistry":"ARTIFACT_REGISTRY"},"state":"FAILED","updateTime":"2024-04-09T07:00:34.094654600Z","labels":{"deployment-tool":"cli-firebase","firebase-functions-codebase":"firebase-frameworks-truck-it-bf0b2","firebase-functions-hash":"b3d91f1e8661230361c9a164e297256ffe88671c"},"stateMessages":[{"severity":"ERROR","type":"CloudRunServiceNotFound","message":"Cloud Run service projects/truck-it-bf0b2/locations/us-central1/services/ssrtruckitbf0b2 for the function was not found. The function will not work correctly. Please redeploy."}],"environment":"GEN_2","url":"https://us-central1-truck-it-bf0b2.cloudfunctions.net/ssrtruckitbf0b2","createTime":"2024-03-18T07:29:48.442327102Z"}]}
+[info] 
+The following functions are found in your project but do not exist in your local source code:
+	updateTripStatus(us-central1)
+
+If you are renaming a function or changing its region, it is recommended that you create the new function first before deleting the old one to prevent event loss. For more info, visit https://firebase.google.com/docs/functions/manage-functions#modify
+
+[info] i  functions: deleting Node.js 18 (1st Gen) function updateTripStatus(us-central1)... 
+[debug] [2024-05-13T08:29:50.165Z] >>> [apiv2][query] DELETE https://cloudscheduler.googleapis.com/v1/projects/truck-it-bf0b2/locations/us-central1/jobs/firebase-schedule-updateTripStatus-us-central1 [none]
+[debug] [2024-05-13T08:29:57.613Z] <<< [apiv2][status] DELETE https://cloudscheduler.googleapis.com/v1/projects/truck-it-bf0b2/locations/us-central1/jobs/firebase-schedule-updateTripStatus-us-central1 404
+[debug] [2024-05-13T08:29:57.614Z] <<< [apiv2][body] DELETE https://cloudscheduler.googleapis.com/v1/projects/truck-it-bf0b2/locations/us-central1/jobs/firebase-schedule-updateTripStatus-us-central1 {"error":{"code":404,"message":"Job not found.","status":"NOT_FOUND"}}
+[error] HTTP Error: 404, Job not found.
+[debug] [2024-05-13T08:29:57.646Z] Total Function Deployment time: 7498
+[debug] [2024-05-13T08:29:57.646Z] 1 Functions Deployed
+[debug] [2024-05-13T08:29:57.646Z] 1 Functions Errored
+[debug] [2024-05-13T08:29:57.646Z] 0 Function Deployments Aborted
+[debug] [2024-05-13T08:29:57.646Z] Average Function Deployment time: 7476
+[info] 
+[info] Functions deploy had errors with the following functions:
+	updateTripStatus(us-central1)
+[info] i  functions: cleaning up build files... 
+[debug] [2024-05-13T08:30:37.395Z] >>> [apiv2][query] DELETE https://artifactregistry.googleapis.com/v1beta2/projects/truck-it-bf0b2/locations/us-central1/repositories/gcf-artifacts/packages/update_trip_status [none]
+[debug] [2024-05-13T08:30:37.396Z] >>> [apiv2][query] GET https://us.gcr.io/v2/truck-it-bf0b2/gcf/us-central1/tags/list [none]
+[debug] [2024-05-13T08:30:39.733Z] <<< [apiv2][status] GET https://us.gcr.io/v2/truck-it-bf0b2/gcf/us-central1/tags/list 200
+[debug] [2024-05-13T08:30:39.733Z] <<< [apiv2][body] GET https://us.gcr.io/v2/truck-it-bf0b2/gcf/us-central1/tags/list {"child":[],"manifest":{},"name":"truck-it-bf0b2/gcf/us-central1","tags":[]}
+[debug] [2024-05-13T08:30:39.734Z] Could not find image for function projects/truck-it-bf0b2/locations/us-central1/functions/updateTripStatus
+[debug] [2024-05-13T08:30:42.757Z] <<< [apiv2][status] DELETE https://artifactregistry.googleapis.com/v1beta2/projects/truck-it-bf0b2/locations/us-central1/repositories/gcf-artifacts/packages/update_trip_status 404
+[debug] [2024-05-13T08:30:42.757Z] <<< [apiv2][body] DELETE https://artifactregistry.googleapis.com/v1beta2/projects/truck-it-bf0b2/locations/us-central1/repositories/gcf-artifacts/packages/update_trip_status {"error":{"code":404,"message":"Package \"projects/truck-it-bf0b2/locations/us-central1/repositories/gcf-artifacts/packages/update_trip_status\" was not found.","status":"NOT_FOUND"}}
+[debug] [2024-05-13T08:30:42.759Z] Functions deploy failed.
+[debug] [2024-05-13T08:30:42.760Z] {
+  "endpoint": {
+    "platform": "gcfv1",
+    "id": "updateTripStatus",
+    "project": "truck-it-bf0b2",
+    "region": "us-central1",
+    "scheduleTrigger": {},
+    "entryPoint": "updateTripStatus",
+    "runtime": "nodejs18",
+    "maxInstances": 3000,
+    "ingressSettings": "ALLOW_ALL",
+    "labels": {
+      "deployment-tool": "cli-firebase",
+      "deployment-scheduled": "true",
+      "firebase-functions-hash": "fe1269067a2a43041bac65c6b13b25449681e48a"
+    },
+    "environmentVariables": {
+      "FIREBASE_CONFIG": "{\"projectId\":\"truck-it-bf0b2\",\"storageBucket\":\"truck-it-bf0b2.appspot.com\",\"locationId\":\"us-central\"}",
+      "GCLOUD_PROJECT": "truck-it-bf0b2",
+      "EVENTARC_CLOUD_EVENT_SOURCE": "projects/truck-it-bf0b2/locations/us-central1/functions/updateTripStatus"
+    },
+    "sourceUploadUrl": "https://storage.googleapis.com/uploads-536595928110.us-central1.cloudfunctions.appspot.com/535a2c60-24a6-475c-b6d2-bfc4ef4a6f6f.zip",
+    "serviceAccount": "truck-it-bf0b2@appspot.gserviceaccount.com",
+    "availableMemoryMb": 256,
+    "timeoutSeconds": 60,
+    "codebase": "default",
+    "hash": "fe1269067a2a43041bac65c6b13b25449681e48a"
+  },
+  "op": "delete schedule",
+  "original": {
+    "name": "FirebaseError",
+    "children": [],
+    "context": {
+      "body": {
+        "error": {
+          "code": 404,
+          "message": "Job not found.",
+          "status": "NOT_FOUND"
+        }
+      },
+      "response": {
+        "statusCode": 404
+      }
+    },
+    "exit": 1,
+    "message": "HTTP Error: 404, Job not found.",
+    "status": 404,
+    "code": 404
+  }
+}
+[debug] [2024-05-13T08:30:47.782Z] Error: Timed out.
+    at Timeout._onTimeout (C:\Users\sharo\AppData\Roaming\npm\node_modules\firebase-tools\lib\utils.js:267:49)
+    at listOnTimeout (node:internal/timers:573:17)
+    at process.processTimers (node:internal/timers:514:7)
+[error] 
+[error] Error: An unexpected error has occurred.

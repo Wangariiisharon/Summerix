@@ -1,6 +1,12 @@
 import { Tab } from "@headlessui/react";
-import { ChangeEvent, Fragment, useEffect, useState } from "react";
-import { AddButton, Button } from "@/components/Buttons";
+import {
+  ChangeEvent,
+  Fragment,
+  useEffect,
+  useState,
+  SetStateAction,
+} from "react";
+import { AddButton, Button, EditBtn } from "@/components/Buttons";
 import Table, { DummyTable } from "@/components/Table/Table";
 import {
   CheckCircleIcon,
@@ -12,13 +18,16 @@ import { HeaderCell, BodyCell } from "../../../components/Table/Cells";
 import { TableBody } from "../../../components/Table/Row";
 import SearchBar from "../../../components/Forms/input";
 import Link from "next/link";
-import DashboardComponent from "../../Dashboard";
+
+import DashboardComponent from "../../Dashboard/dashlayout";
 import { fbDb } from "@/firebase/configs";
 import {
   DocumentData,
   getDocs,
   collection,
   addDoc,
+  doc,
+  setDoc,
   query,
   where,
   getFirestore,
@@ -31,6 +40,7 @@ import {
   AuthProvider,
   useAuthContext,
 } from "@/components/Authentication/AuthProvider";
+import * as Yup from "yup";
 
 const Headers = ["CLASS ID", "NAME"];
 export default function Class() {
@@ -38,6 +48,19 @@ export default function Class() {
   const [searchQuery, setSearchQuery] = useState("");
   const [fetchedClasses, setfetchedClasses] = useState<DocumentData[]>([]);
   const [open, setOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [showAddClassModal, setShowAddClassModal] = useState(false);
+  const [selectedClass, setSelectedClass] = useState<DocumentData | null>(null);
+  const [editFormInitialValues, setEditFormInitialValues] = useState({
+    name: "",
+    classId: "",
+    organisationId: "",
+    archive: false,
+  });
+
+  const validationSchema = Yup.object({
+    name: Yup.string().required("Name is required"),
+  });
 
   const { organisationId } = useAuthContext();
   console.log(" Class Organisation ID:", organisationId);
@@ -56,6 +79,71 @@ export default function Class() {
     const nameMatch = fullName.includes(searchQuery.toLowerCase());
     return nameMatch;
   });
+
+  const handleEditClick = (client: DocumentData) => {
+    setSelectedClass(client);
+    setEditFormInitialValues({
+      name: client.name,
+      classId: client.classId,
+      organisationId: client.organisationId,
+      archive: client.archive,
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleEditModalClose = () => {
+    setSelectedClass(null);
+    setEditModalOpen(false);
+  };
+  const handleEditSubmit = async (values: {
+    name: any;
+    classId: any;
+    organisationId: any;
+    archive: any;
+  }) => {
+    if (!selectedClass) {
+      console.error("No selected vehicle to update");
+      return;
+    }
+
+    console.log("Edited Values:", values);
+
+    try {
+      if (!values.name) {
+        console.error("Required form fields are missing");
+        toast.error("please fill the Name field");
+        return;
+      }
+      // Update the vehicle data in the database using the selectedVehicle.id
+      const vehicleRef = doc(fbDb, "classes", selectedClass.id);
+      await setDoc(vehicleRef, {
+        name: values.name,
+        classId: values.classId,
+        organisationId: values.organisationId,
+        archive: values.archive,
+      });
+
+      // Update the local fetchedVehicles state
+      const updatedVehicles = fetchedClasses.map((client) =>
+        client.id === selectedClass.id
+          ? {
+              ...client,
+              name: values.name,
+              classId: values.classId,
+              organisationId: values.organisationId,
+              archive: values.archive,
+            }
+          : client
+      );
+
+      setfetchedClasses(updatedVehicles);
+
+      setSelectedClass(null);
+      setEditModalOpen(false);
+    } catch (error) {
+      console.error("Error updating Vehicle:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchedClasses = async () => {
@@ -99,11 +187,11 @@ export default function Class() {
       const adminCount = querySnapshot.size;
 
       // Customize this logic based on your requirements
-      return `C${(adminCount + 1).toString().padStart(3, "0")}`;
+      return `CS ${(adminCount + 1).toString().padStart(3, "0")}`;
     } catch (error) {
       console.error("Error fetching Classes count:", error);
       // Handle error or return a default value
-      return "C001";
+      return "CS001";
     }
   }
   const handleAddClient = async (values: { name: any }) => {
@@ -147,6 +235,7 @@ export default function Class() {
       const clientsData = {
         name: values.name,
         classId: generatedClassId,
+        archive: false,
         organisationId: organisationId,
       };
 
@@ -160,12 +249,19 @@ export default function Class() {
       };
 
       // Prepend the new driver to the fetchedDrivers state
-      setfetchedClasses((prevClient) => [newClass, ...prevClient]);
+      setfetchedClasses((prevClasses) => [newClass, ...prevClasses]);
 
       setOpen(false);
+      setShowAddClassModal(false);
     } catch (error) {
       console.error("Error adding Class:", error);
     }
+  };
+
+  const updateFetchedClients = (
+    updatedClasses: SetStateAction<DocumentData[]>
+  ) => {
+    setfetchedClasses(updatedClasses);
   };
 
   return (
@@ -193,6 +289,8 @@ export default function Class() {
               <CitiesTable
                 clients={fetchedClasses}
                 filteredClients={filteredClients}
+                handleEditClick={handleEditClick}
+                updateFetchedClients={updateFetchedClients}
               />
             </div>
           </Tab.Panel>
@@ -213,11 +311,12 @@ export default function Class() {
               initialValues={{
                 name: "",
               }}
+              validationSchema={validationSchema}
               onSubmit={(values) => handleAddClient(values)}
 
               // onSubmit={(values) => handleEditSubmit(values)}
             >
-              {({ values }) => (
+              {({ values, errors, touched }) => (
                 <Form>
                   <div className="">
                     <div className="flex w-full justify-between">
@@ -229,6 +328,9 @@ export default function Class() {
                           value={values.name}
                           className="form-input bg-grey w-48"
                         />
+                        {errors.name && touched.name ? (
+                          <div className="text-red-600">{errors.name}</div>
+                        ) : null}
                       </label>
                     </div>
 
@@ -252,6 +354,64 @@ export default function Class() {
             </Formik>
           </div>
         </FormModal>
+
+        {editModalOpen && selectedClass && (
+          <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
+            <div>
+              <div className="flex w-full h-full justify-between items-center mb-12">
+                <div className="text-xl font-semibold ">Edit Class Details</div>
+                <Button
+                  className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
+                  handleClick={handleEditModalClose}
+                >
+                  <XMarkIcon className="h-6 w-6 text-red-400" />
+                </Button>
+              </div>
+
+              <Formik
+                initialValues={editFormInitialValues}
+                validationSchema={validationSchema}
+                onSubmit={handleEditSubmit}
+              >
+                {({ values, errors, touched }) => (
+                  <Form>
+                    <div className="">
+                      <div className="flex w-full justify-between">
+                        <label className="block">
+                          <label className="form-label">NAME</label>
+                          <Field
+                            type="text"
+                            name="name"
+                            value={values.name}
+                            className="form-input bg-grey w-48"
+                          />
+                          {errors.name && touched.name ? (
+                            <div className="text-red-600">{errors.name}</div>
+                          ) : null}
+                        </label>
+                      </div>
+
+                      <div className="flex w-full justify-end mt-24 ">
+                        <Button
+                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
+                          handleClick={handleReset}
+                        >
+                          Reset
+                        </Button>
+                        <button
+                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
+                          type="submit"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  </Form>
+                )}
+              </Formik>
+            </div>
+          </FormModal>
+        )}
       </div>
     </>
   );
@@ -260,11 +420,16 @@ export default function Class() {
 interface ClientsTableProps {
   clients: DocumentData[];
   filteredClients: DocumentData[];
+  handleEditClick: any;
+  updateFetchedClients: (updatedClasses: DocumentData[]) => void;
 }
 
-function CitiesTable({ clients }: ClientsTableProps) {
+function CitiesTable({
+  clients,
+  handleEditClick,
+  updateFetchedClients,
+}: ClientsTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [fetchedClients, setfetchedClients] = useState<DocumentData[]>([]);
   const [open, setOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const rowsPerPage = 6;
@@ -282,33 +447,35 @@ function CitiesTable({ clients }: ClientsTableProps) {
     return nameMatch;
   });
   console.log("FILTERD CLIENTS", filteredClients);
-  const visibleClasses = filteredClients.slice(startIndex, endIndex);
 
-  const handleAddClient = async (values: { name: any }) => {
-    setOpen(true);
-    console.log("Submitted Values:", values);
-
+  const sortedClasses = [...filteredClients].sort((a, b) => {
+    if (a.archive && !b.archive) {
+      return 1; // a should come after b (archived vehicles come after non-archived)
+    } else if (!a.archive && b.archive) {
+      return -1; // a should come before b
+    } else {
+      return 0; // no change in order
+    }
+  });
+  // const visibleClasses = sortedClasses.slice(startIndex, endIndex);
+  const visibleClasses = sortedClasses
+    .slice(startIndex, endIndex)
+    .filter((admin) => !admin.archive);
+  const updateVehicleStatusInDatabase = async (
+    classId: string,
+    newStatus: boolean
+  ) => {
     try {
-      if (!values) {
-        console.error("Form values are undefined");
-        return;
-      }
+      const vehicleRef = doc(fbDb, "classes", classId);
+      await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
+      console.log("Class status updated in the database:", classId);
 
-      if (!values.name) {
-        console.error("Required form fields are missing");
-        return;
-      }
-
-      const clientsData = {
-        name: values.name,
-      };
-
-      const docRef = await addDoc(collection(fbDb, "classes"), clientsData);
-      console.log("Client added with ID: ", docRef.id);
-
-      setOpen(false);
+      const updatedVehicles = clients.map((client) =>
+        client.id === classId ? { ...client, archive: newStatus } : client
+      );
+      updateFetchedClients(updatedVehicles);
     } catch (error) {
-      console.error("Error adding Client:", error);
+      console.error("Error updating Vehicle status in database:", error);
     }
   };
 
@@ -360,6 +527,25 @@ function CitiesTable({ clients }: ClientsTableProps) {
                           </td>
                           <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
                             {clients.name}
+                          </td>
+                          <td className="whitespace-nowrap px-2 py-2 relative flex flex-row">
+                            <div onClick={() => handleEditClick(clients)}>
+                              <EditBtn />
+                            </div>
+                            <div>
+                              <button
+                                className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2 ml-4"
+                                onClick={() =>
+                                  updateVehicleStatusInDatabase(
+                                    clients.id,
+                                    !clients.archive
+                                  )
+                                }
+                              >
+                                {clients.archive ? "Unarchive" : "Archive"}
+                              </button>
+                            </div>
+                            <div className="h-10"></div>
                           </td>
                         </tr>
                       </Fragment>

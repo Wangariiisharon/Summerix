@@ -25,6 +25,7 @@ import {
 } from "@/components/Authentication/AuthProvider";
 import Pending from "./pending";
 import Vehicles from "./manage_vehicles/Vehicles";
+import * as Yup from "yup";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -281,7 +282,7 @@ export function DummyTable({
 
               <tbody className=" bg-[#FAFAFB]">
                 {visibleVehicles.map((vehicle: any, index: any) => {
-                  const { seconds } = vehicle.registration_date;
+                  const { seconds } = vehicle?.registration_date;
                   const updatedDate = new Date(seconds * 1000);
                   const tripsCompleted =
                     vehicleTrips[vehicle.lisence_plate] || 0; // Get the trip count for the vehicle

@@ -26,6 +26,7 @@ import {
   getFirestore,
   onSnapshot,
   getDoc,
+  orderBy,
 } from "firebase/firestore";
 import { Field, Formik, Form, useFormik, FormikHelpers } from "formik";
 import setFieldValue from "formik";
@@ -174,10 +175,19 @@ export default function TripsComponent() {
     setFilteredTrips(
       fetchedTrips.filter((trip) => {
         const vehicleMatch = `${trip.vehicle}`.toLowerCase().includes(query);
-        const startTimeMatch = formatDate(
-          new Date(trip.start_time.seconds * 1000)
-        ).includes(query);
-        return vehicleMatch || startTimeMatch;
+        const tripIdMatch = `${trip.trip_id}`.toLowerCase().includes(query);
+        // const startTimeMatch = formatDate(
+        //   new Date(trip.start_time.seconds * 1000)
+        // ).includes(query);
+        const startTimeMatch = `${trip.start_time}`
+          .toLowerCase()
+          .includes(query);
+        const start = formatDate(new Date(trip.start_time.seconds * 1000));
+        console.log("start", start);
+        console.log("startTimeMatch", startTimeMatch);
+        console.log(searchQuery, "searchQuery");
+
+        return vehicleMatch || startTimeMatch || tripIdMatch;
       })
     );
   };
@@ -362,6 +372,7 @@ export default function TripsComponent() {
           const q = query(
             collection(fbDb, "trips"),
             where("organisationId", "==", organisationId)
+            // orderBy("start_time", "asc") // Adjust 'asc' to 'desc' if you need descending order
           );
 
           const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -579,7 +590,7 @@ export default function TripsComponent() {
         pick_up_location: values.pick_up_location,
         drop_off_location: values.drop_off_location,
         start_time: values.start_time,
-        end_time: endTimeTimestamp,
+        end_time: values.end_time,
         cargo_type: values.cargo_type,
         cargo_quantity: values.cargo_quantity,
         memo: values.memo,
@@ -861,11 +872,11 @@ export default function TripsComponent() {
       case 2:
         return filteredTrips.filter((trip) => {
           return [
-            "At the border",
-            "Offloading dest",
+            // "At the border",
+            // "Offloading dest",
             "Mechanical",
             "Booked",
-            "Returning the Container",
+            // "Returning the Container",
           ].includes(trip.trip_status);
         }).length;
       case 3:
@@ -926,7 +937,7 @@ export default function TripsComponent() {
         <div className="flex w-full flex-row mt-6">
           <div className=" ml-10 w-full">
             <SearchBar
-              placeholder="Search  Trips "
+              placeholder="Search by Trip ID and Vehicle  "
               value={searchQuery}
               onChange={handleSearchChange}
               className="w-96"
@@ -1090,7 +1101,7 @@ export default function TripsComponent() {
                       <ErrorMessage
                         name="pick_up_location"
                         component="div"
-                        className="error text-red-500 "
+                        className="error text-sm text-red-500 "
                       />
                     </div>
 
@@ -1131,7 +1142,7 @@ export default function TripsComponent() {
                       <ErrorMessage
                         name="drop_off_location"
                         component="div"
-                        className="error text-red-500 "
+                        className="error text-sm text-red-500 "
                       />
                     </div>
                   </div>
@@ -1148,7 +1159,7 @@ export default function TripsComponent() {
                       <ErrorMessage
                         name="start_time"
                         component="div"
-                        className="error text-red-500 "
+                        className="error text-sm text-red-500 "
                       />
                     </div>
                     <div className="block">
@@ -1211,7 +1222,7 @@ export default function TripsComponent() {
                       <ErrorMessage
                         name="company"
                         component="div"
-                        className="error text-red-500 "
+                        className="error text-sm text-red-500 "
                       />
                     </label>
                     <label className="block">
@@ -1256,7 +1267,7 @@ export default function TripsComponent() {
                       <ErrorMessage
                         name="company"
                         component="div"
-                        className="error text-red-500 "
+                        className="error text-sm text-red-500 "
                       />
                     </label>
                     <label className="block">
@@ -1277,7 +1288,7 @@ export default function TripsComponent() {
                       <ErrorMessage
                         name="vehicle"
                         component="div"
-                        className="error text-red-500 "
+                        className="error text-sm text-red-500 "
                       />
                     </label>
                   </div>
@@ -1294,7 +1305,7 @@ export default function TripsComponent() {
                       <ErrorMessage
                         name="dealValue"
                         component="div"
-                        className="error text-red-500 "
+                        className="error text-sm text-red-500 "
                       />
                     </label>
                     <label className="block">
@@ -1309,7 +1320,7 @@ export default function TripsComponent() {
                       <ErrorMessage
                         name="fuel"
                         component="div"
-                        className="error text-red-500 "
+                        className="error text-sm text-red-500 "
                       />
                     </label>
                   </div>
@@ -1326,7 +1337,7 @@ export default function TripsComponent() {
                       <ErrorMessage
                         name="mileage_fee"
                         component="div"
-                        className="error text-red-500 "
+                        className="error text-sm text-red-500 "
                       />
                     </label>
 
@@ -1342,7 +1353,7 @@ export default function TripsComponent() {
                       <ErrorMessage
                         name="distance"
                         component="div"
-                        className="error text-red-500 "
+                        className="error text-sm text-red-500 "
                       />
                     </label>
                   </div>
@@ -1359,7 +1370,7 @@ export default function TripsComponent() {
                       <ErrorMessage
                         name="cargo_type"
                         component="div"
-                        className="error text-red-500 "
+                        className="error text-sm text-red-500 "
                       />
                     </label>
                     <label className="block mt-8">
@@ -1373,7 +1384,7 @@ export default function TripsComponent() {
                       <ErrorMessage
                         name="cargo_quantity"
                         component="div"
-                        className="error text-red-500 "
+                        className="error text-sm text-red-500 "
                       />
                     </label>
                   </div>
@@ -1385,11 +1396,6 @@ export default function TripsComponent() {
                       value={formik.values.memo}
                       className="form-input bg-grey w-96 h-20"
                       placeholder="Optional"
-                    />
-                    <ErrorMessage
-                      name="memo"
-                      component="div"
-                      className="error text-red-500 "
                     />
                   </label>
                   <div className="flex w-full justify-end mt-24 ">
@@ -1580,23 +1586,22 @@ export default function TripsComponent() {
                       >
                         <option>Select Trip status</option>
                         <option value="Booked">Booked</option>
-                        <option value="Ready for Departure">
+                        {/* <option value="Ready for Departure">
                           Ready for Departure
-                        </option>
-                        <option value="At the border">At the border</option>
-                        <option value="Offloading dest">Offloading dest</option>
+                        </option> */}
+                        {/* <option value="At the border">At the border</option> */}
+                        {/* <option value="Offloading dest">Offloading dest</option> */}
                         <option value="On Route">On Route</option>
                         <option value="Mechanical">Mechanical</option>
                         <option value="Done">Done </option>
-                        <option value="Returning the Container">
+                        {/* <option value="Returning the Container">
                           returning with Container
-                        </option>
+                        </option> */}
                       </Field>
                     </label>
                     <label className="block mt-8">
                       <label className="form-label">Memo</label>
                       <Field
-                        disabled
                         type="text"
                         name="memo"
                         value={values.memo}
@@ -1676,13 +1681,7 @@ export function TripsTable({
       case 1: // Second tab: Trips whose status is 'On Route'
         return trip.trip_status === "On Route";
       case 2: // Second last tab: Trips with specific statuses
-        return [
-          "At the border",
-          "Offloading dest",
-          "Mechanical",
-          "Booked",
-          "Returning the Container",
-        ].includes(trip.trip_status);
+        return ["Mechanical", "Booked"].includes(trip.trip_status);
       case 3: // Last tab: Show completed trips ('Done')
         return trip.trip_status === "Done";
       default:
@@ -1744,7 +1743,7 @@ export function TripsTable({
                     scope="col"
                     className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                   >
-                    Trip Cost
+                    Trip Identification
                   </th>
                   <th
                     scope="col"
@@ -1770,19 +1769,19 @@ export function TripsTable({
                       style={{ cursor: "pointer" }}
                     >
                       <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium  text-blue-700 sm:pl-0">
-                        {trip.tripId}
+                        {trip.trip_id}
                       </td>
                       <td className="whitespace-nowrap px-2 py-2 relative">
                         {trip.vehicle}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {trip.drop_off_location}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                         {trip.pick_up_location}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        Ksh {trip.dealValue}
+                        {trip.drop_off_location}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                        {trip.tripId}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                         <button
@@ -1794,13 +1793,9 @@ export function TripsTable({
                         >
                           {[
                             "Booked",
-                            "Ready for Departure",
-                            "At the border",
-                            "Offloading dest",
                             "On Route",
                             "Mechanical",
                             "Done",
-                            "Returning the Container",
                           ].includes(trip.trip_status)
                             ? trip.trip_status
                             : "Status"}

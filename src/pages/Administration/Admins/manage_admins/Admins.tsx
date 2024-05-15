@@ -42,6 +42,7 @@ import { toast } from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import { getMessaging, getToken } from "firebase/messaging";
 import "firebase/firestore";
+import * as Yup from "yup";
 
 const Headers = ["Id", "Name", "Phone", "Admin"];
 
@@ -51,7 +52,7 @@ export default function Admins() {
   const [fetchedAdmins, setFetchedAdmins] = useState<DocumentData[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAdmin, setSelectedAdmin] = useState<DocumentData | null>(null);
-  const [fcmToken, setFcmToken] = useState("");
+  // const [fcmToken, setFcmToken] = useState("");
   const [permissions, setPermissions] = useState<string[]>([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editFormInitialValues, setEditFormInitialValues] = useState({
@@ -62,12 +63,12 @@ export default function Admins() {
     super_admin: false,
     status: true,
     additionalPermissions: [],
+    department: "",
     adminId: "",
-    fcmToken: "",
     invitationSent: false,
     organisationId: "",
     userId: "",
-    department: "",
+    archive: false,
   });
   const [departments, setDepartments] = useState<DocumentData[]>([]);
   let { currentUser, organisationId, isSuperAdmin } = useAuthContext();
@@ -91,6 +92,20 @@ export default function Admins() {
     const isStatusTrue = admin.status === true || admin.status === "true";
     return isStatusTrue && nameMatch;
   });
+  const validationSchema = Yup.object({
+    firstname: Yup.string().required("First name is required"),
+    lastname: Yup.string().required("Last name is required"),
+    email: Yup.string().required("Email details are required"),
+    phonenumber: Yup.string().required("Phone number address is required"),
+    department: Yup.string().required("Department is required"),
+  });
+  const EditvalidationSchema = Yup.object({
+    firstname: Yup.string().required("First name is required"),
+    lastname: Yup.string().required("Last name is required"),
+    email: Yup.string().required("Email details are required"),
+    phonenumber: Yup.string().required("Phone number address is required"),
+    department: Yup.string().required("Department is required"),
+  });
 
   const handleAddAdmin = () => {
     setOpen(true);
@@ -98,6 +113,11 @@ export default function Admins() {
   const handleExport = () => {};
   const handleReset = () => {
     setOpen(false);
+  };
+  const updateFetchedVehicles = (
+    updatedAdmins: SetStateAction<DocumentData[]>
+  ) => {
+    setFetchedAdmins(updatedAdmins);
   };
   useEffect(() => {
     const fetchDepartments = async () => {
@@ -157,36 +177,6 @@ export default function Admins() {
       }
     };
 
-    const initializeFcmToken = async () => {
-      try {
-        if (typeof window !== "undefined") {
-          const permission = await Notification.requestPermission();
-          if (permission === "granted") {
-            const messaging = getMessaging(firebaseApp);
-            const currentToken = await getToken(messaging, {
-              vapidKey:
-                "BMiLEy0NT-toPT6b6Tmj2t0uSi3N7Pn9vsQGFFeY5f6GjiX_2CE7NaNBdjxr4-z3EJRXdiiL34OIZMfSFVfM6yk",
-            });
-
-            if (currentToken) {
-              console.log("Token:", currentToken);
-              setFcmToken(currentToken);
-              // Send the token to your server and save it in the user document
-            } else {
-              console.log(
-                "No registration token available. Request permission to generate one."
-              );
-            }
-          } else {
-            console.log("Unable to get notification permission.");
-          }
-        }
-      } catch (err) {
-        console.log("An error occurred while initializing FCM token. ", err);
-      }
-    };
-
-    initializeFcmToken();
     fetchedAdmins();
     fetchDepartments();
   }, [organisationId]);
@@ -315,7 +305,7 @@ export default function Admins() {
         inviterUid: inviterUid,
         organisationId: organisationId,
         userId: authUid,
-        fcmToken: fcmToken,
+        archive: false,
       };
 
       const docRef = await addDoc(collection(fbDb, "admins"), adminData);
@@ -371,13 +361,13 @@ export default function Admins() {
       phonenumber: admin.phonenumber,
       super_admin: admin.super_admin,
       status: admin.status,
-      additionalPermissions: admin.additionalPermissions,
+      additionalPermissions: admin.additionalPermissions || [], // Ensure default value
       department: admin.department,
       adminId: admin.adminId,
-      fcmToken: admin.fcmToken,
       invitationSent: admin.invitationSent,
       organisationId: admin.organisationId,
       userId: admin.userId,
+      archive: admin.archive,
     });
     setEditModalOpen(true);
   };
@@ -396,11 +386,11 @@ export default function Admins() {
     status: any;
     additionalPermissions: any;
     adminId: any;
-    fcmToken: any;
     invitationSent: any;
     organisationId: any;
     userId: any;
     department: any;
+    archive: any;
   }) => {
     if (!selectedAdmin) {
       console.error("No selected Admin to update");
@@ -470,13 +460,13 @@ export default function Admins() {
         phonenumber: values.phonenumber,
         super_admin: values.super_admin,
         status: values.status,
-        additionalPermissions: values.additionalPermissions,
+        additionalPermissions: values.additionalPermissions || [],
         department: values.department,
         adminId: values.adminId,
-        fcmToken: values.fcmToken,
         invitationSent: values.invitationSent,
         organisationId: values.organisationId,
         userId: values.userId,
+        archive: values.archive,
       });
 
       // Update the local fetchedVehicles state
@@ -490,13 +480,13 @@ export default function Admins() {
               phonenumber: values.phonenumber,
               super_admin: values.super_admin,
               status: values.status,
-              additionalPermissions: values.additionalPermissions,
+              additionalPermissions: values.additionalPermissions || [],
               department: values.department,
               adminId: values.adminId,
-              fcmToken: values.fcmToken,
               invitationSent: values.invitationSent,
               organisationId: values.organisationId,
               userId: values.userId,
+              archive: values.archive,
             }
           : admin
       );
@@ -569,12 +559,13 @@ export default function Admins() {
                     super_admin: false,
                     invitationSent: false,
                   }}
+                  validationSchema={validationSchema}
                   onSubmit={(values) => {
                     handleSubmit(values);
                     console.log(values);
                   }}
                 >
-                  {({ values, setFieldValue }) => (
+                  {({ values, setFieldValue, errors, touched }) => (
                     <Form>
                       <div className="">
                         <div className="flex w-full justify-between">
@@ -586,6 +577,11 @@ export default function Admins() {
                               value={values.firstname}
                               className="form-input bg-grey w-48"
                             />
+                            {errors.firstname && touched.firstname ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.firstname}
+                              </div>
+                            ) : null}
                           </label>
                           <label className="block">
                             <label className="form-label">LASTNAME</label>
@@ -595,6 +591,11 @@ export default function Admins() {
                               value={values.lastname}
                               className="form-input bg-grey w-48"
                             />
+                            {errors.lastname && touched.lastname ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.lastname}
+                              </div>
+                            ) : null}
                           </label>
                         </div>
                         <div className="flex w-full justify-between mt-8">
@@ -606,6 +607,11 @@ export default function Admins() {
                               value={values.email}
                               className="form-input bg-grey w-48"
                             />
+                            {errors.email && touched.email ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.email}
+                              </div>
+                            ) : null}
                           </label>
                           <label className="block">
                             <label className="form-label">PHONE NUMBER</label>
@@ -615,6 +621,11 @@ export default function Admins() {
                               value={values.phonenumber}
                               className="form-input bg-grey w-48"
                             />
+                            {errors.phonenumber && touched.phonenumber ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.phonenumber}
+                              </div>
+                            ) : null}
                           </label>
                         </div>
                         <div className="flex w-full justify-between mt-8">
@@ -646,6 +657,11 @@ export default function Admins() {
                                 </option>
                               ))}
                             </Field>
+                            {errors.department && touched.department ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.department}
+                              </div>
+                            ) : null}
                           </label>
 
                           <label className="block">
@@ -697,22 +713,28 @@ export default function Admins() {
                   <Formik
                     // initialValues={editFormInitialValues}
                     // onSubmit={handleEditSubmit}
+
+                    validationSchema={EditvalidationSchema}
                     initialValues={editFormInitialValues}
                     onSubmit={handleEditSubmit}
                   >
-                    {({ values }) => (
+                    {({ values, errors, touched, setFieldValue }) => (
                       <Form>
                         <div className="">
                           <div className="flex w-full justify-between">
                             <label className="block">
-                              <label className="form-label">fIRST NAME</label>
+                              <label className="form-label">FIRSTNAME</label>
                               <Field
                                 type="text"
                                 name="firstname"
                                 value={values.firstname}
-                                disabled
                                 className="form-input bg-grey w-48"
                               />
+                              {errors.firstname && touched.firstname ? (
+                                <div className="text-red-600 text-sm">
+                                  {errors.firstname}
+                                </div>
+                              ) : null}
                             </label>
                             <label className="block">
                               <label className="form-label">LASTNAME</label>
@@ -720,35 +742,85 @@ export default function Admins() {
                                 type="text"
                                 name="lastname"
                                 value={values.lastname}
-                                disabled
                                 className="form-input bg-grey w-48"
                               />
+                              {errors.lastname && touched.lastname ? (
+                                <div className="text-red-600 text-sm">
+                                  {errors.lastname}
+                                </div>
+                              ) : null}
                             </label>
                           </div>
                           <div className="flex w-full justify-between mt-8">
                             <label className="block">
-                              <label className="form-label"> EMAIL</label>
+                              <label className="form-label">EMAIL</label>
                               <Field
                                 type="email"
                                 name="email"
                                 value={values.email}
-                                disabled
                                 className="form-input bg-grey w-48"
                               />
+                              {errors.email && touched.email ? (
+                                <div className="text-red-600 text-sm">
+                                  {errors.email}
+                                </div>
+                              ) : null}
                             </label>
                             <label className="block">
-                              <label className="form-label">STATUS</label>
+                              <label className="form-label">PHONE NUMBER</label>
                               <Field
                                 type="text"
-                                name="status"
-                                value={values.status}
+                                name="phonenumber"
+                                value={values.phonenumber}
                                 className="form-input bg-grey w-48"
                               />
+                              {errors.phonenumber && touched.phonenumber ? (
+                                <div className="text-red-600 text-sm">
+                                  {errors.phonenumber}
+                                </div>
+                              ) : null}
                             </label>
                           </div>
                           <div className="flex w-full justify-between mt-8">
                             <label className="block">
-                              <label className="form-label">Admin</label>
+                              <label className="form-label">DEPARTMENT</label>
+                              <Field
+                                as="select"
+                                name="department"
+                                value={
+                                  values.department ? values.department : ""
+                                }
+                                onChange={(
+                                  event: React.ChangeEvent<HTMLSelectElement>
+                                ) => {
+                                  const selectedDepartmentName =
+                                    event.target.value;
+                                  setFieldValue(
+                                    "department",
+                                    selectedDepartmentName
+                                  );
+                                }}
+                                className="form-input bg-grey w-48"
+                              >
+                                <option value="">Select Department</option>
+                                {departments.map((department: any) => (
+                                  <option
+                                    key={department.id}
+                                    value={department.name}
+                                  >
+                                    {department.name}
+                                  </option>
+                                ))}
+                              </Field>
+                              {errors.department && touched.department ? (
+                                <div className="text-red-600 text-sm">
+                                  {errors.department}
+                                </div>
+                              ) : null}
+                            </label>
+
+                            <label className="block">
+                              <label className="form-label">ADMIN</label>
                               <Field
                                 type="checkbox"
                                 name="super_admin"
@@ -759,11 +831,12 @@ export default function Admins() {
                           </div>
                           <div className="flex w-full justify-end mt-24 ">
                             <Button
-                              className="rounded bg-d-green w-[160px] h-8 uppercase  text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
-                              handleClick={handleEditModalClose}
+                              className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
+                              handleClick={handleReset}
                             >
                               Reset
                             </Button>
+                            {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
                             <button
                               className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
                               type="submit"
@@ -812,8 +885,29 @@ export function AdminsTable({
     router.push(`Administration/Admins/manage_admins/viewAdmin?id=${admin.id}`);
     console.log("The admin", admin);
   };
+  const updateVehicleStatusInDatabase = async (
+    vehicleId: string,
+    newStatus: boolean
+  ) => {
+    try {
+      const vehicleRef = doc(fbDb, "admins", vehicleId);
+      await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
+      console.log("Admin status updated in the database:", vehicleId);
+      toast.success("Admin archived successfully");
 
-  const visibleAdmins = filteredAdmins.slice(startIndex, endIndex);
+      const updatedVehicles = filteredAdmins.map((admin) =>
+        admin.id === vehicleId ? { ...admin, archive: newStatus } : admin
+      );
+      updateFetchedAdmins(updatedVehicles);
+    } catch (error) {
+      console.error("Error updating Vehicle status in database:", error);
+    }
+  };
+
+  // const visibleAdmins = filteredAdmins.slice(startIndex, endIndex);
+  const visibleAdmins = filteredAdmins
+    .slice(startIndex, endIndex)
+    .filter((admin) => !admin.archive);
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="flow-root">
@@ -867,13 +961,6 @@ export function AdminsTable({
                         {admin.phonenumber}
                       </td>
                       <td className="whitespace-nowrap px-2 py-2 relative flex flex-row">
-                        <div className="h-10 flex items-center">
-                          {admin.super_admin ? (
-                            <CheckCircleIcon className="h-8 w-8 text-d-green" />
-                          ) : (
-                            <XCircleIcon className="h-8 w-8 text-crimson-red" />
-                          )}
-                        </div>
                         <div
                           className="ml-4"
                           onClick={(event) => {
@@ -882,6 +969,19 @@ export function AdminsTable({
                           }}
                         >
                           <EditBtn />
+                        </div>
+                        <div>
+                          <button
+                            className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2 ml-4"
+                            onClick={() =>
+                              updateVehicleStatusInDatabase(
+                                admin.id,
+                                !admin.archive
+                              )
+                            }
+                          >
+                            {admin.archive ? "Unarchive" : "Archive"}
+                          </button>
                         </div>
                       </td>
                     </tr>

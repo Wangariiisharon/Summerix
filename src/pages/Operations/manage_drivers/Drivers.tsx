@@ -19,6 +19,7 @@ import {
   where,
   onSnapshot,
 } from "firebase/firestore";
+import * as Yup from "yup";
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import "firebase/firestore";
 import "firebase/storage";
@@ -67,6 +68,17 @@ export default function Drivers() {
 
   const { organisationId } = useAuthContext();
   console.log("Drivers Organisation ID:", organisationId);
+
+  const validationSchema = Yup.object({
+    name: Yup.string().required("Name is required"),
+    phonenumber: Yup.string().required("Phone number is required"),
+    email_adress: Yup.string().required("Email Address are required"),
+    city: Yup.string().required("City is required"),
+    profile: Yup.mixed().required("Profile are required"),
+    identity_card: Yup.mixed().required("Identity card are required"),
+    good_conduct: Yup.mixed().required("Good conduct are required"),
+    medical_report: Yup.mixed().required("Medical Report are required"),
+  });
 
   const handleAddDriver = () => {
     setOpen(true);
@@ -489,13 +501,14 @@ export default function Drivers() {
                   good_conduct: null,
                   medical_report: null,
                 }}
+                validationSchema={validationSchema}
                 onSubmit={(values) => {
                   console.log("Form Values:", values);
 
                   handleSubmit(values);
                 }}
               >
-                {({ values, setFieldValue }) => (
+                {({ values, setFieldValue, errors, touched }) => (
                   <Form>
                     <div className="">
                       <div className="flex w-full justify-between">
@@ -507,6 +520,11 @@ export default function Drivers() {
                             value={values.name}
                             className="form-input bg-grey w-48"
                           />
+                          {errors.name && touched.name ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.name}
+                            </div>
+                          ) : null}
                         </label>
                         <label className="block">
                           <label className="form-label"> PHONE NUMBER</label>
@@ -516,6 +534,11 @@ export default function Drivers() {
                             value={values.phonenumber}
                             className="form-input bg-grey w-48"
                           />
+                          {errors.phonenumber && touched.phonenumber ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.phonenumber}
+                            </div>
+                          ) : null}
                         </label>
                       </div>
                       <div className="flex w-full justify-between mt-8">
@@ -527,6 +550,11 @@ export default function Drivers() {
                             value={values.email_adress}
                             className="form-input bg-grey w-48"
                           />
+                          {errors.email_adress && touched.email_adress ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.email_adress}
+                            </div>
+                          ) : null}
                         </label>
 
                         <label className="block">
@@ -537,6 +565,11 @@ export default function Drivers() {
                             value={values.city}
                             className="form-input bg-grey w-48"
                           />
+                          {errors.city && touched.city ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.city}
+                            </div>
+                          ) : null}
                         </label>
                       </div>
 
@@ -556,6 +589,11 @@ export default function Drivers() {
                               />
                             )}
                           </Field>
+                          {errors.profile && touched.profile ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.profile}
+                            </div>
+                          ) : null}
                         </label>
 
                         <label className="block ml-6">
@@ -574,6 +612,11 @@ export default function Drivers() {
                               />
                             )}
                           </Field>
+                          {errors.good_conduct && touched.good_conduct ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.good_conduct}
+                            </div>
+                          ) : null}
                         </label>
                       </div>
                       <div className="flex w-full justify-between mt-8">
@@ -593,6 +636,11 @@ export default function Drivers() {
                               />
                             )}
                           </Field>
+                          {errors.identity_card && touched.identity_card ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.identity_card}
+                            </div>
+                          ) : null}
                         </label>
 
                         <label className="block ml-6">
@@ -611,6 +659,11 @@ export default function Drivers() {
                               />
                             )}
                           </Field>
+                          {errors.medical_report && touched.medical_report ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.medical_report}
+                            </div>
+                          ) : null}
                         </label>
                       </div>
                       <div className="flex w-full justify-end mt-24 ">
@@ -654,9 +707,10 @@ export default function Drivers() {
 
                 <Formik
                   initialValues={editFormInitialValues}
+                  validationSchema={validationSchema}
                   onSubmit={handleEditSubmit}
                 >
-                  {({ values }) => (
+                  {({ values, errors, touched }) => (
                     <Form>
                       <div className="">
                         <div className="flex w-full justify-between">
@@ -668,6 +722,11 @@ export default function Drivers() {
                               value={values.name}
                               className="form-input bg-grey w-48"
                             />
+                            {errors.name && touched.name ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.name}
+                              </div>
+                            ) : null}
                           </label>
                           <label className="block">
                             <label className="form-label"> PHONE NUMBER</label>
@@ -677,28 +736,45 @@ export default function Drivers() {
                               value={values.phonenumber}
                               className="form-input bg-grey w-48"
                             />
+                            {errors.phonenumber && touched.phonenumber ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.phonenumber}
+                              </div>
+                            ) : null}
                           </label>
                         </div>
                         <div className="flex w-full justify-between mt-8">
                           <label className="block">
-                            <label className="form-label"> EMAIL ADRESS</label>
+                            <label className="form-label"> EMAIL ADDRESS</label>
                             <Field
                               type="email"
                               name="email_adress"
                               value={values.email_adress}
                               className="form-input bg-grey w-48"
                             />
+                            {errors.email_adress && touched.email_adress ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.email_adress}
+                              </div>
+                            ) : null}
                           </label>
+
                           <label className="block">
-                            <label className="form-label">CITY</label>
+                            <label className="form-label">ADDRESS</label>
                             <Field
                               type="text"
                               name="city"
                               value={values.city}
                               className="form-input bg-grey w-48"
                             />
+                            {errors.city && touched.city ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.city}
+                              </div>
+                            ) : null}
                           </label>
                         </div>
+
                         <div className="flex w-full justify-between mt-8">
                           <label className="block">
                             <label className="form-label">
@@ -718,6 +794,11 @@ export default function Drivers() {
                                 />
                               )}
                             </Field>
+                            {errors.profile && touched.profile ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.profile}
+                              </div>
+                            ) : null}
                           </label>
 
                           <label className="block ml-6">
@@ -726,6 +807,7 @@ export default function Drivers() {
                               {({ field, form }: any) => (
                                 <input
                                   type="file"
+                                  accept=".pdf"
                                   onChange={(event) => {
                                     const file =
                                       event.currentTarget?.files?.[0];
@@ -736,6 +818,11 @@ export default function Drivers() {
                                 />
                               )}
                             </Field>
+                            {errors.good_conduct && touched.good_conduct ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.good_conduct}
+                              </div>
+                            ) : null}
                           </label>
                         </div>
                         <div className="flex w-full justify-between mt-8">
@@ -745,6 +832,7 @@ export default function Drivers() {
                               {({ field, form }: any) => (
                                 <input
                                   type="file"
+                                  accept=".pdf"
                                   onChange={(event) => {
                                     const file =
                                       event.currentTarget?.files?.[0];
@@ -755,6 +843,11 @@ export default function Drivers() {
                                 />
                               )}
                             </Field>
+                            {errors.identity_card && touched.identity_card ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.identity_card}
+                              </div>
+                            ) : null}
                           </label>
 
                           <label className="block ml-6">
@@ -763,6 +856,7 @@ export default function Drivers() {
                               {({ field, form }: any) => (
                                 <input
                                   type="file"
+                                  accept=".pdf"
                                   onChange={(event) => {
                                     const file =
                                       event.currentTarget?.files?.[0];
@@ -776,12 +870,17 @@ export default function Drivers() {
                                 />
                               )}
                             </Field>
+                            {errors.medical_report && touched.medical_report ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.medical_report}
+                              </div>
+                            ) : null}
                           </label>
                         </div>
                         <div className="flex w-full justify-end mt-24 ">
                           <Button
                             className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
-                            handleClick={handleEditModalClose}
+                            handleClick={handleReset}
                           >
                             Reset
                           </Button>
