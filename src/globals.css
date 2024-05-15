@@ -31,7 +31,9 @@
     opacity: 0;
     pointer-events: none;
   }
-
+  .field-validation-error {
+    @apply text-red-500 text-sm; /* Use Tailwind's @apply directive to apply the text-red-500 and text-lg classes */
+  }
   .form-input,
   .form-textarea {
     @apply w-full mx-auto p-2 rounded-md outline-none border border-gray-300 focus:border-blue-600 text-xs text-gray-900 focus:bg-white disabled:opacity-50 invalid:border-red-500 invalid:text-red-600
@@ -112,7 +114,52 @@
 }
 
 .smaller-icon {
-  transform: scale(0.75); /* Scale down to 75% of the original size */
+  transform: scale(0); /* Scale down to 75% of the original size */
+}
+.sidebar {
+  transition: width 0.3s ease;
+  width: 200px; /* expanded width */
+}
+
+.sidebar.collapsed {
+  width: 50px; /* collapsed width, showing only icons */
+}
+
+.sidebar li span {
+  transition: opacity 0.3s ease;
+  opacity: 1;
+}
+
+.sidebar.collapsed li span {
+  opacity: 0; /* hide text in collapsed mode */
+  pointer-events: none;
+}
+/* Ensure icons do not change size */
+.sidebar-icon {
+  width: 24px; /* or any specific size */
+  height: 24px; /* must match width for consistency */
+  display: flex; /* ensures the icon is properly aligned */
+  align-items: center; /* centers vertically */
+  justify-content: center; /* centers horizontally in its container */
+}
+
+.collapsed-sidebar .sidebar-text {
+  display: none; /* Hide text in collapsed state */
+}
+
+.collapsed-sidebar .sidebar-icon {
+  margin-left: auto;
+  margin-right: auto;
+  /* remove any padding or margin that may affect the centered alignment */
+  padding: 0;
+}
+
+.top-bar {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: 100; /* higher than sidebar for overlay */
 }
 
 @media (max-width: 768px) {

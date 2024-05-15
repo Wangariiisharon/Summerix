@@ -42,6 +42,7 @@ import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { NotificationDropdown } from "./notificationDropdown";
 import Link from "next/link";
+import { FaHome, FaTools, FaChartBar, FaFileAlt } from "react-icons/fa"; // Importing icons from react-icons
 
 interface Props {
   children: ReactNode;
@@ -124,10 +125,9 @@ export default function SiteNav({ children }: Props) {
     }
     // Function to fetch notifications and calculate the unread count
     const fetchNotifications = () => {
-      if (!currentUser || !organisationId) {
+      if (!organisationId) {
         return;
       }
-      // const notificationsRef = collection(fbDb, 'notifications');
       const notificationsRef = collection(
         fbDb,
         `user_notifications/${currentUser.uid}/notifications`
@@ -138,7 +138,6 @@ export default function SiteNav({ children }: Props) {
         where("organisationId", "==", organisationId)
       );
 
-      // Directly return the unsubscribe function from onSnapshot
       return onSnapshot(
         q,
         (snapshot) => {
@@ -155,10 +154,9 @@ export default function SiteNav({ children }: Props) {
           );
 
           setUnreadCount(unreadNotifications.length);
-
-          console.log("Unread Count", unreadCount);
-
           setNotifications(loadedNotifications);
+          console.log("Unread Count:", unreadCount);
+          console.log("Notifications:", notifications);
         },
         (error) => {
           console.error("Error fetching notifications:", error);
@@ -183,23 +181,23 @@ export default function SiteNav({ children }: Props) {
 
   const navigation = useMemo(
     () => [
-      { name: "Dashboard", href: "/Dashboard", icon: HomeIcon, visible: true },
+      { name: "Dashboard", href: "/Dashboard", icon: FaHome, visible: true },
       {
         name: "Administration",
         href: "/Administration",
-        icon: UsersIcon,
+        icon: FaTools,
         visible: isSuperAdmin,
       },
       {
         name: "Operations",
         href: "/Operations",
-        icon: DocumentDuplicateIcon,
+        icon: FaChartBar,
         visible: true,
       },
       {
         name: "Report",
         href: "/Clients",
-        icon: DocumentDuplicateIcon,
+        icon: FaFileAlt,
         visible: true,
       },
     ],
@@ -221,17 +219,16 @@ export default function SiteNav({ children }: Props) {
         <div className="flex flex-col">
           <div className="bg-[#065AD8]">
             <div
-              className={`flex flex-row fixed top-0 h-14 bg-[#065AD8] flex items-center shadow-inner ${
-                isDrawerOpen ? " w-full" : "w-full lg:w-auto"
-              }`}
+              // className={`flex flex-row fixed top-0 h-14 bg-[#065AD8] flex items-center shadow-inner ${
+              //   isDrawerOpen ? " w-full" : "w-full lg:w-auto"
+              // }`}
+              className="flex flex-row fixed top-0 h-14 bg-[#065AD8] w-full flex items-center shadow-inner "
             >
               <div className="flex h-10 py-3 pb-4 shrink-0 items-center">
                 <DashLogo />
               </div>
               <div
-                className={`ml-4 ${
-                  isDrawerOpen ? "fixed left-60 ml-16 lg:fixed" : "fixed left-7"
-                } cursor-pointer`}
+                className="fixed left-60 ml-14 cursor-pointer"
                 onClick={toggleSidebar}
               >
                 <i className="fa fa-bars text-white" aria-hidden="true"></i>
@@ -281,47 +278,48 @@ export default function SiteNav({ children }: Props) {
               </div>
             </div>
           </div>
-
           <div
             ref={drawerRef}
-            className={`flex flex-col bg-white h-screen overflow-y-auto py-10 lg:w-60 sm:w-60 ${
-              isDrawerOpen ? "block" : "hidden"
+            className={`flex flex-col bg-white h-screen overflow-y-auto py-10 ${
+              isDrawerOpen ? "" : "sidebar collapsed"
             }`}
           >
-            <nav className="mt-16 flex-1 w-full">
-              <ul className="flex flex-col gap-y-4 w-full border-[#0068dd] bg-[#ecf4ff] h-[48px] w-[275px]">
-                {/* <ul className="w-[269px] h-[48px] flex flex-col justify-center gap-y-4 m-[17px_0_6px] p-[12px_10px_12px_35px] border-2 border-[#0068dd] bg-[#ecf4ff]"> */}
-                {navigation
-                  .filter((item) => item.visible)
-                  .map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      passHref
-                      className={classNames(
+            <nav className="mt-16">
+              <ul className="flex flex-col">
+                {navigation.map((item, index) => (
+                  <Link key={index} href={item.href} passHref>
+                    <li
+                      className={`flex items-center mt-[6px] pl-6 pr-4 border-r-4 ${
                         router.pathname === item.href
-                          ? "bg-blue-100 text-[#065AD8]" // Active item style
-                          : "text-gray-700 hover:text-blue-800 hover:bg-blue-100", // Non-active item style
-                        "group flex items-center gap-x-4 rounded-md py-3 px-4 text-sm leading-6 font-semibold"
-                      )}
+                          ? "border-blue-500 bg-blue-100"
+                          : "border-transparent"
+                      } hover:bg-blue-100 cursor-pointer ${
+                        isDrawerOpen ? "" : "collapsed-sidebar"
+                      }`}
                     >
-                      {/* <div class="w-[269px] h-[48px] flex flex-col justify-center items-start gap-2.5 m-[17px_0_6px] p-[12px_10px_12px_35px] border-2 border-[#0068dd] bg-[#ecf4ff]">
-                       */}
                       <item.icon
-                        className={classNames(
+                        className={`text-lg ${
                           router.pathname === item.href
-                            ? "text-blue-800" // Active icon style
-                            : "text-gray-400 group-hover:text-blue-800", // Non-active icon style
-                          "h-4 w-4 shrink-0"
-                        )}
-                        aria-hidden="true"
+                            ? "text-blue-500"
+                            : "text-gray-500"
+                        } sidebar-icon`}
                       />
-                      <span>{item.name}</span>
-                    </Link>
-                  ))}
+                      <span
+                        className={`flex-grow text-lg ${
+                          router.pathname === item.href
+                            ? "text-blue-500 text-left text-[18px] ml-[12px] py-[12.5px] mr-[79px]"
+                            : "text-gray-700 text-left text-[18px] ml-[12px] py-[12.5px] mr-[79px]"
+                        } sidebar-text`}
+                      >
+                        {item.name}
+                      </span>
+                    </li>
+                  </Link>
+                ))}
               </ul>
             </nav>
           </div>
+
           <div className="bg-[#F34C4C]"></div>
 
           {/* <div className={`flex flex-row fixed top-0 h-10 bg-[#FFFFFF] flex items-center shadow-inner ${isDrawerOpen ? 'fixed left-72 w-full' : 'w-full'}`}> */}

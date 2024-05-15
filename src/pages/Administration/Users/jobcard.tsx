@@ -116,6 +116,15 @@ export default function Jobcard() {
       console.log("Jobcard added with ID: ", docRef.id);
       toast.success("Jobcard Successfully Added.");
 
+      const newJobcard = {
+        id: docRef.id,
+        ...JobcardData
+      };
+  
+      // Prepend the new driver to the fetchedDrivers state
+      setfetchedJobcards(prevJobcards => [newJobcard, ...prevJobcards]);
+  
+
       setOpen(false);
       setShowAddJobcardModal(false);
     } catch (error) {

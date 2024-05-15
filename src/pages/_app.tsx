@@ -6,9 +6,11 @@ import React from "react";
 import Script from "next/script";
 import useActivityTimeout from "./timeout";
 import { useActivityTracker } from "@/components/SessionTimeOut/useActivityTracker";
+import InactivityModal from "@/components/SessionTimeOut/inactivityModal";
 
 export default function MyApp({ Component, pageProps }: any) {
-  useActivityTracker(300000); // 5 minutes timeout
+  // useActivityTracker(300000); // 5 minutes timeout
+  const { isModalOpen, setModalOpen } = useActivityTracker(900000); // 5 minutes timeout
 
   return (
     <>
@@ -25,6 +27,10 @@ export default function MyApp({ Component, pageProps }: any) {
       />
       <AuthProvider>
         <Component {...pageProps} />
+        <InactivityModal
+          isOpen={isModalOpen}
+          onClose={() => setModalOpen(false)}
+        />
       </AuthProvider>
       <Toaster />
       <Script src="/register-service-worker.js" />

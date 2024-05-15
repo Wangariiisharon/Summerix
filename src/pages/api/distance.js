@@ -1,27 +1,3 @@
-// pages/api/distance.js
-
-// export default async function handler(req, res) {
-//     const { origins, destinations } = req.query;
-  
-//     if (!origins || !destinations) {
-//       return res.status(400).json({ error: 'Missing required query parameters: origins, destinations' });
-//     }
-  
-//     const apiKey = "AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE"; // Store your API key in .env.local
-//     const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origins)}&destinations=${encodeURIComponent(destinations)}&key=${apiKey}`;
-  
-//     try {
-//       const apiResponse = await fetch(url);
-//       const data = await apiResponse.json(); 
-//       console.log("Distance data",data);
-//       return res.status(200).json(data);
-//     } catch (error) {
-//       console.error('Error fetching distance:', error);
-//       return res.status(500).json({ error: 'Failed to fetch distance' });
-//     }
-//   } 
-
-// pages/api/distance.js
 
 export default async function handler(req, res) {
   const { origins, destinations } = req.query;

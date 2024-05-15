@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import AuthLayout from "../../components/Authentication/AuthLayout";
 import Seo from "../../components/Seo";
-// import firebaseApp from "../../firebase/configs"
 import { getAuth, isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { Field, Form, Formik } from "formik";
@@ -9,9 +8,6 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { toast } from 'react-hot-toast';
 import firebaseApp, { fbDb}  from "@/firebase/configs";
-import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore"; 
-import bcrypt from 'bcryptjs';    
-import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
 
 
@@ -19,49 +15,6 @@ export default function LoginPage() {
   const router = useRouter();  
   const [fcmToken, setFcmToken] = useState<string | null>(null);
 
-
-  // useEffect(() => {
-  //   const handleSignInWithEmailLink = async () => {
-  //     const auth = getAuth(firebaseApp);
-  
-  //     // Check if the URL is a valid sign-in link
-  //     if (isSignInWithEmailLink(auth, window.location.href)) {
-  //       let email = window.localStorage.getItem('emailForSignIn');
-  
-  //       // Handle the case where email is null
-  //       if (!email) {
-  //         // Prompt the user to enter their email if it's not stored in local storage
-  //         email = window.prompt('Please provide your email for confirmation');
-  //       }
-  
-  //       // Check again if email is still null before proceeding
-  //       if (email) {
-  //         // Complete the sign-in process
-  //         try {
-  //           await signInWithEmailLink(auth, email, window.location.href);
-  
-  //           // Clear the email from storage (optional)
-  //           window.localStorage.removeItem('emailForSignIn');
-  //           console.log('Successfully signed in');
-  
-  //           // Redirect or perform other necessary actions after successful sign-in
-  //           router.push('/Dashboard');
-  //         } catch (error) {
-  //           // Handle the sign-in error
-  //           console.error('Sign-in with email link failed:', error);
-  //           toast.error('Sign-in failed. Please try again.');
-  //         }
-  //       }
-  //     }
-  //   }; 
-
-
-  
-  //   // Call the function to handle sign-in with email link
-  //   handleSignInWithEmailLink();
-  // }, []);
-  
-  
   const doGoogleSignIn = async () => {
 
     const fbAuth = getAuth(firebaseApp);

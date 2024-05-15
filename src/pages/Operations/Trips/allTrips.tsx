@@ -26,6 +26,7 @@ import {
   where,
   getFirestore,
   onSnapshot,
+  orderBy,
 } from "firebase/firestore";
 import { Field, Formik, Form } from "formik";
 import setFieldValue from "formik";
@@ -68,6 +69,7 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
   const [fetchedTrips, setfetchedTrips] = useState<DocumentData[]>([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editFormInitialValues, setEditFormInitialValues] = useState({
+    trip_id: "",
     requested_by: {
       id: "",
       name: "",
@@ -121,31 +123,6 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
 
     return [year, month, day].join("-"); // Format required for date input fields
   };
-  // const handleEditClick = (trip: DocumentData) => {
-  //   const { seconds } = trip.start_time;
-  //   const startTime = trip.start_time?.toDate(); // Converts Firestore Timestamp to JavaScript Date object
-  //   const endTime = trip.end_time?.toDate();
-  //   setSelectedTrip(trip);
-  //   setEditFormInitialValues({
-  //     requested_by: trip.requested_by.name,
-  //     vehicle: trip.vehicle,
-  //     pick_up_location: trip.pick_up_location,
-  //     drop_off_location: trip.drop_off_location,
-  //     start_time: convertDateToInputString(startTime), // Convert date to string for input[type="date"]
-  //     end_time: convertDateToInputString(endTime),
-  //     cargo_type: trip.cargo_type,
-  //     cargo_quantity: trip.cargo_quantity,
-  //     memo: trip.memo,
-  //     trip_status: trip.trip_status,
-  //     organisationId: trip.organisationId,
-  //     tripId: trip.tripId,
-  //     fuel: trip.fuel,
-  //     dealValue: trip.dealValue,
-  //     mileage_fee: trip.mileage_fee,
-  //     distance: trip.distance,
-  //   });
-  //   setEditModalOpen(true);
-  // };
 
   const handleEditClick = (trip: DocumentData) => {
     // Check and convert Firestore Timestamps to Date objects safely
@@ -160,6 +137,7 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
 
     setSelectedTrip(trip);
     setEditFormInitialValues({
+      trip_id: trip.trip_id,
       requested_by: {
         id: trip.requested_by.id || "", // Assuming the 'id' field exists
         name: trip.requested_by.name || "",
@@ -190,6 +168,7 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
   };
 
   const handleEditSubmit = async (values: {
+    trip_id: any;
     requested_by: any;
     vehicle: any;
     pick_up_location: any;
@@ -241,12 +220,13 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
       const AdminRef = doc(fbDb, "trips", selectedTrip.id);
       await setDoc(AdminRef, {
         // requested_by: values.requested_by.name,
+        trip_id: values.trip_id,
         requested_by: values.requested_by, // Passing the entire object
         vehicle: values.vehicle,
         pick_up_location: values.pick_up_location,
         drop_off_location: values.drop_off_location,
         start_time: values.start_time,
-        end_time: endTimeTimestamp,
+        end_time: values.end_time,
         cargo_type: values.cargo_type,
         cargo_quantity: values.cargo_quantity,
         memo: values.memo,
@@ -264,6 +244,7 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
         trip.id === selectedTrip.id
           ? {
               ...trip,
+              trip_id: values.trip_id,
               requested_by: values.requested_by,
               vehicle: values.vehicle,
               pick_up_location: values.pick_up_location,
@@ -294,12 +275,20 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
 
   const filteredTrips = fetchedTrips.filter((trip) => {
     const fullName = `${trip.vehicle}`.toLowerCase();
-    const nameMatch = fullName.includes(searchQuery.toLowerCase());
-    const startTimeMatch = formatDate(
-      new Date(trip.start_time.seconds * 1000)
-    ).includes(searchQuery);
+    const tripIdSearch = `${trip.trip_id}`.toLowerCase();
 
-    return nameMatch || startTimeMatch;
+    const nameMatch = fullName.includes(searchQuery.toLowerCase());
+    const tripIdMatch = tripIdSearch.includes(searchQuery.toLowerCase());
+    // const startTimeMatch = formatDate(
+    //   new Date(trip.start_time.seconds * 1000)
+    // ).includes(searchQuery);
+    const startTimeMatch = `${trip.start_time}`.includes(
+      searchQuery.toLowerCase()
+    );
+    const start = formatDate(new Date(trip.start_time.seconds * 1000));
+    console.log("start", start);
+
+    return nameMatch || startTimeMatch || tripIdMatch;
   });
 
   function formatDate(date: Date): string {
@@ -400,7 +389,8 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
         if (organisationId) {
           const q = query(
             collection(db, "trips"),
-            where("organisationId", "==", organisationId)
+            where("organisationId", "==", organisationId),
+            orderBy("start_time", "asc") // Adjust 'asc' to 'desc' if you need descending order
           );
 
           const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -514,7 +504,6 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
               )}
             >
               <div className=" overflow-y-auto">
-                {/* <TripsTable selectedTab={selectedTabIndex} trips={fetchedTrips} filteredTrips={filteredTrips} handleEditClick={handleEditClick}/> */}
                 <TripsTable
                   selectedTab={selectedTabIndex}
                   trips={fetchedTrips}
@@ -708,23 +697,14 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
                       >
                         <option>Select Trip Status</option>
                         <option value="Booked">Booked</option>
-                        <option value="Ready for Departure">
-                          Ready for Departure
-                        </option>
-                        <option value="At the border">At the border</option>
-                        <option value="Offloading dest">Offloading dest</option>
                         <option value="On Route">On Route</option>
                         <option value="Mechanical">Mechanical</option>
                         <option value="Done">Done </option>
-                        <option value="Returning the Container">
-                          returning with Container
-                        </option>
                       </Field>
                     </label>
                     <label className="block mt-8">
                       <label className="form-label">Memo</label>
                       <Field
-                        disabled
                         type="text"
                         name="memo"
                         value={values.memo}
@@ -892,7 +872,7 @@ export function TripsTable({
                     scope="col"
                     className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                   >
-                    Trip Cost
+                    Trip Identification
                   </th>
                   <th
                     scope="col"
@@ -918,19 +898,19 @@ export function TripsTable({
                       style={{ cursor: "pointer" }}
                     >
                       <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium  text-blue-700 sm:pl-0">
-                        {trip.tripId}
+                        {trip.trip_id}
                       </td>
                       <td className="whitespace-nowrap px-2 py-2 relative">
                         {trip.vehicle}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {trip.drop_off_location}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                         {trip.pick_up_location}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        Ksh {trip.dealValue}
+                        {trip.drop_off_location}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                        {trip.tripId}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                         <button
@@ -942,13 +922,9 @@ export function TripsTable({
                         >
                           {[
                             "Booked",
-                            "Ready for Departure",
-                            "At the border",
-                            "Offloading dest",
                             "On Route",
                             "Mechanical",
                             "Done",
-                            "Returning the Container",
                           ].includes(trip.trip_status)
                             ? trip.trip_status
                             : "Status"}

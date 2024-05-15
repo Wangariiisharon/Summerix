@@ -224,7 +224,6 @@ export default function DashboardComponent() {
           {cards.map((card, index) => {
             return (
               <Fragment key={index}>
-                {/* <Cards name={card.name} icon={card.icon} amount={card.amount} /> */}
                 <MetricCard
                   value={card.amount}
                   label={card.name}

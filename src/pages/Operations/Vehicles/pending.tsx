@@ -25,6 +25,7 @@ import {
   onSnapshot,
   getDoc,
   setDoc,
+  orderBy,
 } from "firebase/firestore";
 import { parseISO, format } from "date-fns";
 import Jobcard from "../../Administration/Users/jobcard";
@@ -44,6 +45,8 @@ import {
   AuthProvider,
   useAuthContext,
 } from "@/components/Authentication/AuthProvider";
+import * as Yup from "yup";
+
 import Checkbox from "@mui/material/Checkbox";
 
 function classNames(...classes: string[]) {
@@ -115,13 +118,36 @@ export default function Pending() {
   const isSuperAdmin = userData?.super_admin;
 
   console.log("Maintanance Super Admin: ", isSuperAdmin);
-
+  const validationSchema = Yup.object({
+    requested_by: Yup.string().required("Requested By is required"),
+    cost: Yup.number().positive().required("Cost is required"),
+    remarks: Yup.string().required("Remarks is required"),
+    vehicle: Yup.string().required("Vehicle is required"),
+    job_cards: Yup.string().required("Maintainace Type  is required"),
+    date: Yup.string().required("Date is required"),
+    serial_number: Yup.string().required("Serial Number  is required"),
+    part: Yup.string().required(" Part is required"),
+    broken_partImage: Yup.mixed().required("Cargo Insurance is required"),
+  });
   const handleMaintenanceReset = () => {
     setShowScheduleMaintenanceModal(false);
     setOpen(false);
   };
+
   const handleDropdownClick = (event: { stopPropagation: () => void }) => {
     event.stopPropagation();
+  };
+
+  const convertDateToInputString = (date: string | number | Date) => {
+    const d = new Date(date);
+    let month = "" + (d.getMonth() + 1),
+      day = "" + d.getDate(),
+      year = d.getFullYear();
+
+    if (month.length < 2) month = "0" + month;
+    if (day.length < 2) day = "0" + day;
+
+    return [year, month, day].join("-"); // Format required for date input fields
   };
 
   useEffect(() => {
@@ -199,7 +225,8 @@ export default function Pending() {
             collection(fbDb, "maintenance"),
             where("organisationId", "==", organisationId),
             where("status", "==", "Pending"),
-            where("approvalCount", "<", 3)
+            where("approvalCount", "<", 3),
+            orderBy("date", "desc") // Adjust 'asc' to 'desc' if you need descending order
           );
 
           const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -307,18 +334,20 @@ export default function Pending() {
       }
       if (!values.part) {
         console.error("Required form fields are missing");
-        toast.error(`Please fill the field  Part`);
+        toast.error(`Please fill the field Part`);
         return;
       }
 
       // Update the vehicle data in the database using the selectedVehicle.id
-      const vehicleRef = doc(fbDb, "maintenance", selectedMaintenance.id);
+      const maintenanceRef = doc(fbDb, "maintenance", selectedMaintenance.id);
+      const dateObj = new Date(values.date);
+      const timestamp = Timestamp.fromDate(dateObj);
 
       const updatedData = {
         approvalCount: values.approvalCount + 1,
         requested_by: values.requested_by,
         vehicle: values.vehicle,
-        date: new Date(values.date.seconds * 1000), // Convert seconds to milliseconds
+        date: timestamp, // Convert seconds to milliseconds
         cost: values.cost,
         job_cards: values.job_cards,
         remarks: values.remarks,
@@ -326,7 +355,7 @@ export default function Pending() {
         part: values.part,
         status: values.status,
         approvedBy: Array.isArray(values.approvedBy)
-          ? [...values.approvedBy, approvedBy]
+          ? [...values.approvedBy, approvedBy].filter(Boolean) // Filter out undefined values
           : [approvedBy],
         organisationId: organisationId,
         notificationNeedsDisplay: true,
@@ -341,7 +370,7 @@ export default function Pending() {
         updatedData.status = "Pending";
       }
 
-      await setDoc(vehicleRef, updatedData, { merge: true });
+      await setDoc(maintenanceRef, updatedData, { merge: true });
       toast.success("Maintenance Edited Successfully");
 
       setSelectedMaintenance(null);
@@ -352,24 +381,39 @@ export default function Pending() {
     }
   };
 
+  function convertToDate(firestoreTimestamp: any) {
+    if (firestoreTimestamp instanceof Timestamp) {
+      return firestoreTimestamp.toDate();
+    } else if (typeof firestoreTimestamp === "string") {
+      return new Date(firestoreTimestamp);
+    } else {
+      return firestoreTimestamp; // Assuming it's already a Date object or null
+    }
+  }
+
   const handleEditClick = (maintenance: DocumentData) => {
     setEditModalOpen(true);
     setChecked(false);
     setSelectedMaintenance(maintenance);
+    const maintenanceDate =
+      maintenance.date && maintenance.date.toDate()
+        ? maintenance.date.toDate()
+        : convertToDate(maintenance.date);
     setEditFormInitialValues({
       requested_by: maintenance.requested_by,
       vehicle: maintenance.vehicle,
       cost: maintenance.cost,
       job_cards: maintenance.job_cards,
       remarks: maintenance.remarks,
-      date: maintenance.date,
+      date: convertDateToInputString(maintenanceDate),
       part: maintenance.part,
       status: maintenance.status,
       serial_number: maintenance.serial_number,
       approvalCount: maintenance.approvalCount,
       broken_partImage: maintenance.broken_partImage,
-      approvedBy: maintenance.approvedBy,
+      approvedBy: maintenance.approvedBy || [],
     });
+    console.log("Edit Form Initial Values:", editFormInitialValues);
   };
 
   return (
@@ -409,10 +453,11 @@ export default function Pending() {
               </Button>
             </div>
             <Formik
+              validationSchema={validationSchema}
               initialValues={editFormInitialValues}
               onSubmit={(values) => handleEditSubmit(values)}
             >
-              {({ values, setFieldValue }) => (
+              {({ values, setFieldValue, errors, touched }) => (
                 <Form>
                   <div className="">
                     <div className="flex w-full justify-between">
@@ -432,6 +477,11 @@ export default function Pending() {
                             </option>
                           ))}
                         </Field>
+                        {errors.job_cards && touched.job_cards ? (
+                          <div className="text-red-600 text-sm">
+                            {errors.job_cards}
+                          </div>
+                        ) : null}
                       </label>
                     </div>
                     <label className="block  mt-8">
@@ -450,6 +500,11 @@ export default function Pending() {
                           </option>
                         ))}
                       </Field>
+                      {errors.vehicle && touched.vehicle ? (
+                        <div className="text-red-600 text-sm">
+                          {errors.vehicle}
+                        </div>
+                      ) : null}
                     </label>
                     <div className="flex w-full justify-between  mt-8">
                       <label className="block">
@@ -468,6 +523,11 @@ export default function Pending() {
                             </option>
                           ))}
                         </Field>
+                        {errors.requested_by && touched.requested_by ? (
+                          <div className="text-red-600 text-sm">
+                            {errors.requested_by}
+                          </div>
+                        ) : null}
                       </label>
                       <label className="block">
                         <label className="form-label">DATE</label>
@@ -477,6 +537,11 @@ export default function Pending() {
                           value={values.date}
                           className="form-input bg-grey w-48"
                         />
+                        {errors.date && touched.date ? (
+                          <div className="text-red-600 text-sm">
+                            {errors.date}
+                          </div>
+                        ) : null}
                       </label>
                     </div>
                     <div className="flex w-full justify-between  mt-8">
@@ -489,6 +554,11 @@ export default function Pending() {
                           value={values.cost}
                           className="form-input bg-grey w-48"
                         />
+                        {errors.cost && touched.cost ? (
+                          <div className="text-red-600 text-sm">
+                            {errors.cost}
+                          </div>
+                        ) : null}
                       </label>
                       <label className="block">
                         <label className="form-label">PART</label>
@@ -498,6 +568,11 @@ export default function Pending() {
                           value={values.part}
                           className="form-input bg-grey w-48"
                         />
+                        {errors.part && touched.part ? (
+                          <div className="text-red-600 text-sm">
+                            {errors.part}
+                          </div>
+                        ) : null}
                       </label>
                     </div>
                     <div className="flex w-full justify-between  mt-8">
@@ -509,6 +584,11 @@ export default function Pending() {
                           value={values.serial_number}
                           className="form-input bg-grey w-48"
                         />
+                        {errors.serial_number && touched.serial_number ? (
+                          <div className="text-red-600 text-sm">
+                            {errors.serial_number}
+                          </div>
+                        ) : null}
                       </label>
 
                       <label className="block ml-24">
@@ -526,6 +606,11 @@ export default function Pending() {
                             />
                           )}
                         </Field>
+                        {errors.broken_partImage && touched.broken_partImage ? (
+                          <div className="text-red-600 text-sm">
+                            {errors.broken_partImage}
+                          </div>
+                        ) : null}
                       </label>
                     </div>
                     <label className="block mt-8">
@@ -552,6 +637,11 @@ export default function Pending() {
                         }}
                         className="form-checkbox bg-gray-200"
                       />
+                      {errors.remarks && touched.remarks ? (
+                        <div className="text-red-600 text-sm">
+                          {errors.remarks}
+                        </div>
+                      ) : null}
                     </label>
 
                     <div className="flex w-full justify-end mt-24 ">
@@ -593,7 +683,9 @@ export function MaintananceTable({
 }: VehiclesTableProps) {
   const [userApproves, setUserApproves] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
-  const rowsPerPage = 4;
+  const rowsPerPage = 6;
+  const totalTrips = maintananceList.length;
+  const totalPages = Math.ceil(totalTrips / rowsPerPage);
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
 
@@ -615,6 +707,22 @@ export function MaintananceTable({
   });
   console.log("Filtered Vehicles:", filteredMaintenance);
   const visibleClasses = filteredMaintenance.slice(startIndex, endIndex);
+  console.log("Visible Classes", visibleClasses);
+
+  const handlePageClick = (page: number) => {
+    setCurrentPage(page);
+  };
+  const pageNumbers = () => {
+    let pages = [];
+    if (totalPages <= 5) {
+      for (let i = 0; i < totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      pages = [0, 1, 2, 3, "...", totalPages - 1];
+    }
+    return pages;
+  };
 
   return (
     <div className=" ml-6 px-4 sm:px-6 lg:px-8">
@@ -726,24 +834,27 @@ export function MaintananceTable({
           </div>
         </div>
       </div>
-      <div
-        className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
-          text-sm font-nunito font-bold uppercase bg-[#FAFAFB]"
-      >
-        <button
-          className="ml-5"
-          onClick={() => setCurrentPage(currentPage - 1)}
-          disabled={currentPage === 0}
-        >
-          Prev
+      <div className="flex justify-between items-center pt-4">
+        <button onClick={() => handlePageClick(0)} disabled={currentPage === 0}>
+          {"<<"}
         </button>
-        <span className="ml-5">{currentPage + 1}</span>
+        {pageNumbers().map((num, index) => {
+          // Only render buttons for numbers, and static text for ellipsis
+          if (typeof num === "number") {
+            return (
+              <button key={index} onClick={() => handlePageClick(num)}>
+                {num + 1}
+              </button>
+            );
+          } else {
+            return <span key={index}>...</span>;
+          }
+        })}
         <button
-          className="ml-5"
-          onClick={() => setCurrentPage(currentPage + 1)}
-          disabled={endIndex >= filteredMaintenance.length}
+          onClick={() => handlePageClick(totalPages - 1)}
+          disabled={currentPage === totalPages - 1}
         >
-          Next
+          {">>"}
         </button>
       </div>
     </div>

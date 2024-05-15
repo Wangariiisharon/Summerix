@@ -13,7 +13,7 @@ import {
   useAuthContext,
 } from "@/components/Authentication/AuthProvider";
 
-export default function TripsOverView() {
+export default function OutOfServiceVehicles() {
   const [fetchedTrips, setFetchedTrips] = useState<DocumentData[]>([]);
   const { organisationId } = useAuthContext();
   useEffect(() => {

@@ -42,6 +42,7 @@ import ImageInput from "@/components/ImageInputs";
 import { toast } from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import Pending from "./pending";
+import * as Yup from "yup";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -91,6 +92,18 @@ export default function Maintenance() {
       ? { name: "PENDING", href: "#", current: selectedTabIndex === 2 }
       : null,
   ].filter(Boolean);
+
+  const validationSchema = Yup.object({
+    requested_by: Yup.string().required("Requested By is required"),
+    cost: Yup.number().positive().required("Cost is required"),
+    remarks: Yup.string().required("Remarks is required"),
+    vehicle: Yup.string().required("Vehicle is required"),
+    job_cards: Yup.string().required("Maintainace Type  is required"),
+    date: Yup.string().required("Date is required"),
+    serial_number: Yup.string().required("Serial Number  is required"),
+    part: Yup.string().required(" Part is required"),
+    broken_partImage: Yup.mixed().required("Cargo Insurance is required"),
+  });
 
   const handleMaintenanceReset = () => {
     setShowScheduleMaintenanceModal(false);
@@ -174,7 +187,9 @@ export default function Maintenance() {
           const q = query(
             collection(db, "maintenance"),
             where("organisationId", "==", organisationId),
-            orderBy("date", "asc") // Adjust 'asc' to 'desc' if you need descending order
+            where("status", "==", "Pending"),
+
+            orderBy("date", "desc") // Adjust 'asc' to 'desc' if you need descending order
           );
 
           const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -532,9 +547,10 @@ export default function Maintenance() {
               serial_number: "",
               broken_partImage: null,
             }}
+            validationSchema={validationSchema}
             onSubmit={(values) => handleScheduleMaintanace(values)}
           >
-            {({ values, setFieldValue }) => (
+            {({ values, setFieldValue, errors, touched }) => (
               <Form>
                 <div className="">
                   <div className="flex w-full justify-between">
@@ -554,6 +570,11 @@ export default function Maintenance() {
                           </option>
                         ))}
                       </Field>
+                      {errors.job_cards && touched.job_cards ? (
+                        <div className="text-red-600 text-sm">
+                          {errors.job_cards}
+                        </div>
+                      ) : null}
                     </label>
                   </div>
                   <label className="block  mt-8">
@@ -572,6 +593,11 @@ export default function Maintenance() {
                         </option>
                       ))}
                     </Field>
+                    {errors.vehicle && touched.vehicle ? (
+                      <div className="text-red-600 text-sm">
+                        {errors.vehicle}
+                      </div>
+                    ) : null}
                   </label>
                   <div className="flex w-full justify-between  mt-8">
                     <label className="block">
@@ -590,6 +616,11 @@ export default function Maintenance() {
                           </option>
                         ))}
                       </Field>
+                      {errors.requested_by && touched.requested_by ? (
+                        <div className="text-red-600 text-sm">
+                          {errors.requested_by}
+                        </div>
+                      ) : null}
                     </label>
                     <label className="block">
                       <label className="form-label">DATE</label>
@@ -599,6 +630,11 @@ export default function Maintenance() {
                         value={values.date}
                         className="form-input bg-grey w-48"
                       />
+                      {errors.date && touched.date ? (
+                        <div className="text-red-600 text-sm">
+                          {errors.date}
+                        </div>
+                      ) : null}
                     </label>
                   </div>
                   <div className="flex w-full justify-between  mt-8">
@@ -611,6 +647,11 @@ export default function Maintenance() {
                         value={values.cost}
                         className="form-input bg-grey w-48"
                       />
+                      {errors.cost && touched.cost ? (
+                        <div className="text-red-600 text-sm">
+                          {errors.cost}
+                        </div>
+                      ) : null}
                     </label>
                     <label className="block">
                       <label className="form-label">PART</label>
@@ -620,6 +661,11 @@ export default function Maintenance() {
                         value={values.part}
                         className="form-input bg-grey w-48"
                       />
+                      {errors.part && touched.part ? (
+                        <div className="text-red-600 text-sm">
+                          {errors.part}
+                        </div>
+                      ) : null}
                     </label>
                   </div>
                   <div className="flex w-full justify-between  mt-8">
@@ -631,6 +677,11 @@ export default function Maintenance() {
                         value={values.serial_number}
                         className="form-input bg-grey w-48"
                       />
+                      {errors.serial_number && touched.serial_number ? (
+                        <div className="text-red-600 text-sm">
+                          {errors.serial_number}
+                        </div>
+                      ) : null}
                     </label>
 
                     <label className="block ml-24">
@@ -648,6 +699,11 @@ export default function Maintenance() {
                           />
                         )}
                       </Field>
+                      {errors.broken_partImage && touched.broken_partImage ? (
+                        <div className="text-red-600 text-sm">
+                          {errors.broken_partImage}
+                        </div>
+                      ) : null}
                     </label>
                   </div>
                   <label className="block mt-8">
@@ -658,6 +714,11 @@ export default function Maintenance() {
                       value={values.remarks}
                       className="form-input bg-grey w-96 h-20"
                     />
+                    {errors.remarks && touched.remarks ? (
+                      <div className="text-red-600 text-sm">
+                        {errors.remarks}
+                      </div>
+                    ) : null}
                   </label>
                   <div className="flex w-full justify-end mt-24 ">
                     <button
@@ -701,6 +762,8 @@ function MaintananceTable({
   console.log("Mainanace list", maintananceList);
   const [currentPage, setCurrentPage] = useState(0);
   const rowsPerPage = 6;
+  const totalTrips = maintananceList.length;
+  const totalPages = Math.ceil(totalTrips / rowsPerPage);
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
 
@@ -726,6 +789,20 @@ function MaintananceTable({
     }
   );
   const visibleClasses = filteredMaintenance.slice(startIndex, endIndex);
+  const handlePageClick = (page: number) => {
+    setCurrentPage(page);
+  };
+  const pageNumbers = () => {
+    let pages = [];
+    if (totalPages <= 5) {
+      for (let i = 0; i < totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      pages = [0, 1, 2, 3, "...", totalPages - 1];
+    }
+    return pages;
+  };
 
   console.log("Filtered Vehicles:", filteredMaintenance);
   return (
@@ -828,24 +905,27 @@ function MaintananceTable({
           </div>
         </div>
       </div>
-      <div
-        className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
-          text-sm font-nunito font-bold uppercase bg-[#FAFAFB]"
-      >
-        <button
-          className="ml-5"
-          onClick={() => setCurrentPage(currentPage - 1)}
-          disabled={currentPage === 0}
-        >
-          Prev
+      <div className="flex justify-between items-center pt-4">
+        <button onClick={() => handlePageClick(0)} disabled={currentPage === 0}>
+          {"<<"}
         </button>
-        <span className="ml-5">{currentPage + 1}</span>
+        {pageNumbers().map((num, index) => {
+          // Only render buttons for numbers, and static text for ellipsis
+          if (typeof num === "number") {
+            return (
+              <button key={index} onClick={() => handlePageClick(num)}>
+                {num + 1}
+              </button>
+            );
+          } else {
+            return <span key={index}>...</span>;
+          }
+        })}
         <button
-          className="ml-5"
-          onClick={() => setCurrentPage(currentPage + 1)}
-          disabled={endIndex >= filteredMaintenance.length}
+          onClick={() => handlePageClick(totalPages - 1)}
+          disabled={currentPage === totalPages - 1}
         >
-          Next
+          {">>"}
         </button>
       </div>
     </div>

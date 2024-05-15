@@ -27,7 +27,7 @@
     "src/pages/api/distance.js",
     "src/pages/api/verifyToken.js",
     "src/components/useActivityTracker.js",
-    "functions/index.js"
+    "functions/index.tsx"
   ],
   "exclude": ["node_modules"]
 }
