@@ -144,6 +144,8 @@ export default function TripsComponent() {
     mileage_fee: 0,
     distance: "",
   });
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
   const router = useRouter();
 
   const validationSchema = Yup.object({
@@ -290,6 +292,11 @@ export default function TripsComponent() {
   };
 
   useEffect(() => {
+    // Retrieve the saved tab index from local storage when the component mounts
+    const savedIndex = localStorage.getItem("selectedTabIndex");
+    if (savedIndex !== null) {
+      setSelectedIndex(parseInt(savedIndex, 10));
+    }
     const fetchDrivers = async () => {
       try {
         if (organisationId) {
@@ -340,7 +347,8 @@ export default function TripsComponent() {
         if (organisationId) {
           const q = query(
             collection(fbDb, "clients"),
-            where("organisationId", "==", organisationId)
+            where("organisationId", "==", organisationId),
+            where("archive", "==", false)
           );
           const querySnapshot = await getDocs(q);
           console.log(querySnapshot);
@@ -392,29 +400,58 @@ export default function TripsComponent() {
         console.error("Error fetching Trips:", error);
       }
     };
-
     const fetchedCompanies = async () => {
       try {
         if (organisationId) {
           const q = query(
-            collection(fbDb, "classes"), // Make sure this refers to the right collection
-            where("organisationId", "==", organisationId)
+            collection(fbDb, "classes"),
+            where("organisationId", "==", organisationId),
+            where("archive", "==", false)
           );
           const querySnapshot = await getDocs(q);
+
+          if (querySnapshot.empty) {
+            console.log(
+              "No classes found for the organisationId:",
+              organisationId
+            );
+            return;
+          }
+
           const companyDetails = await Promise.all(
             querySnapshot.docs.map(async (doc) => {
               const data = doc.data();
-              // Fetch and filter vehicles based on license plates listed in company details
+              console.log("Class Data:", data);
+
+              if (!data.vehicle || !Array.isArray(data.vehicle)) {
+                console.log(
+                  "No vehicles or invalid vehicle format in class:",
+                  doc.id
+                );
+                return null;
+              }
+
               const vehiclesPromises = data.vehicle.map(
-                async (licensePlate: any) => {
+                async (licensePlate: string) => {
                   const vehicleQuery = query(
                     collection(fbDb, "vehicles"),
                     where("lisence_plate", "==", licensePlate)
                   );
                   const vehicleSnapshot = await getDocs(vehicleQuery);
+
+                  if (vehicleSnapshot.empty) {
+                    console.log(
+                      "No vehicle found for licensePlate:",
+                      licensePlate
+                    );
+                    return null;
+                  }
+
                   const vehicleDocs = vehicleSnapshot.docs.map(
                     async (vehicleDoc) => {
                       const vehicleData = vehicleDoc.data();
+                      console.log("Vehicle Data:", vehicleData);
+
                       if (
                         !vehicleData.archive &&
                         vehicleData.availability_status !== "Out Of Service"
@@ -425,18 +462,35 @@ export default function TripsComponent() {
                           where("trip_status", "==", "On Route")
                         );
                         const tripSnapshot = await getDocs(tripQuery);
+
                         if (tripSnapshot.empty) {
                           return licensePlate; // Return the license plate of available vehicles
                         }
                       }
+                      return null;
                     }
                   );
+
                   const filteredVehicles = await Promise.all(vehicleDocs);
-                  return filteredVehicles.filter((v) => v); // Filter out undefined results
+                  return filteredVehicles.filter((v) => v); // Filter out null results
                 }
               );
+
               const vehicles = await Promise.all(vehiclesPromises);
               const availableVehicles = vehicles.flat().filter((v) => v); // Flatten and filter to remove falsy values
+              console.log(
+                "Available Vehicles for class",
+                doc.id,
+                ":",
+                availableVehicles
+              );
+
+              // Ensure name is a string
+              if (typeof data.name !== "string") {
+                console.log("Invalid name format in class:", doc.id);
+                return null;
+              }
+
               return {
                 id: doc.id,
                 name: data.name,
@@ -444,18 +498,21 @@ export default function TripsComponent() {
               };
             })
           );
-          setCompanies(companyDetails);
-          if (companyDetails.length > 0) {
-            setSelectedCompany(companyDetails[0].name);
-            setSelectedCompanyVehicles(companyDetails[0].vehicle);
-          }
-        } else {
-          console.error(
-            "Organisation ID is not available for fetching Companies."
+
+          // Filter out null results and assert the correct type
+          const validCompanyDetails: {
+            id: string;
+            name: string;
+            vehicle: string[];
+          }[] = companyDetails.filter(
+            (c): c is { id: string; name: string; vehicle: string[] } =>
+              c !== null
           );
+
+          setCompanies(validCompanyDetails);
         }
       } catch (error) {
-        console.error("Error fetching Company details:", error);
+        console.error("Error fetching companies:", error);
       }
     };
 
@@ -466,6 +523,7 @@ export default function TripsComponent() {
   }, [organisationId]);
   console.log(selectedCompanyVehicles, "SelectedCompanyVehicles");
   console.log(selectedCompany, "SelectedCompany");
+  console.log("Trips Companies:", companies);
 
   function convertToDate(firestoreTimestamp: any) {
     if (firestoreTimestamp instanceof Timestamp) {
@@ -937,7 +995,7 @@ export default function TripsComponent() {
         <div className="flex w-full flex-row mt-6">
           <div className=" ml-10 w-full">
             <SearchBar
-              placeholder="Search by Trip ID and Vehicle  "
+              placeholder="Search by Trip ID ,Vehicle and Depature time YYYY-MM-DD"
               value={searchQuery}
               onChange={handleSearchChange}
               className="w-96"

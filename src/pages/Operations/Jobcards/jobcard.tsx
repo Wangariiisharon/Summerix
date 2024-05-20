@@ -118,12 +118,11 @@ export default function Jobcard() {
 
       const newJobcard = {
         id: docRef.id,
-        ...JobcardData
+        ...JobcardData,
       };
-  
+
       // Prepend the new driver to the fetchedDrivers state
-      setfetchedJobcards(prevJobcards => [newJobcard, ...prevJobcards]);
-  
+      setfetchedJobcards((prevJobcards) => [newJobcard, ...prevJobcards]);
 
       setOpen(false);
       setShowAddJobcardModal(false);

@@ -9,7 +9,7 @@ import { Field, Formik, Form } from "formik";
 import { Input, Submit } from "@/components/Forms/input";
 import SiteLayout from "@/Layout/SiteLayout";
 import { Tab } from "@headlessui/react";
-import Planned from "../../Administration/Users/jobcard";
+import Planned from "../Jobcards/jobcard";
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import {
   getDocs,
@@ -28,7 +28,7 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { parseISO, format } from "date-fns";
-import Jobcard from "../../Administration/Users/jobcard";
+import Jobcard from "../Jobcards/jobcard";
 import { serverTimestamp } from "firebase/firestore";
 import { AnyCnameRecord } from "dns";
 import {
@@ -72,6 +72,7 @@ export default function Maintenance() {
   const [approvalCount, setApprovalCount] = useState(0);
   const [checkboxState, setCheckboxState] = useState<boolean[]>([]);
   const [checkedIndexes, setCheckedIndexes] = useState<number[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   // const { isAuthenticated, userId, organisationId, userData } =
   //   useAuthContext();
@@ -114,6 +115,10 @@ export default function Maintenance() {
   };
 
   useEffect(() => {
+    const savedIndex = localStorage.getItem("selectedTabIndex");
+    if (savedIndex !== null) {
+      setSelectedIndex(parseInt(savedIndex, 10));
+    }
     const fetchVehicleNames = async () => {
       try {
         if (organisationId) {
@@ -146,7 +151,10 @@ export default function Maintenance() {
           );
           const querySnapshot = await getDocs(q);
           const names = querySnapshot.docs.map((doc) => doc.data().name);
+          console.log("Names", names);
+
           setjobcards(names);
+          console.log("JobCards", jobcards);
         } else {
           console.error(
             "Organisation ID is not available for fetching JobCard names."
@@ -188,7 +196,6 @@ export default function Maintenance() {
             collection(db, "maintenance"),
             where("organisationId", "==", organisationId),
             where("status", "==", "Pending"),
-
             orderBy("date", "desc") // Adjust 'asc' to 'desc' if you need descending order
           );
 
@@ -341,14 +348,12 @@ export default function Maintenance() {
         query(
           collection(fbDb, "admins"),
           where("super_admin", "==", true),
-          where("organisationId", "==", organisationId)
+          where("organisationId", "==", organisationId),
+          where("archive", "==", false)
         )
       );
-      const superAdmins = superAdminQuerySnapshot.docs.map(
-        (doc) => doc.data().email
-      );
+
       const superAdminEmail = userData?.email;
-      const superAdminId = userData?.userId;
       const notificationData = {
         title: "New Maintenance Request",
         message: `New maintenance request added by ${values.requested_by}.`,
@@ -363,7 +368,7 @@ export default function Maintenance() {
       superAdminQuerySnapshot.docs.forEach(async (doc) => {
         const superAdminId = doc.id; // Correctly represents each super admin's user ID
         await addDoc(
-          collection(fbDb, `user_notifications/${superAdminId}/notifications`), // Use adminId here
+          collection(fbDb, `notifications`), // Use adminId here
           notificationData
         );
       });

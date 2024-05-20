@@ -1,10 +1,10 @@
 import { Tab } from "@headlessui/react";
-import { Fragment } from "react";
+import { Fragment, useEffect } from "react";
 import Cities from "../../Operations/manage_cities/Cities";
 import Vehicles from "../../Operations/Vehicles/manage_vehicles/Vehicles";
 import Class from "../../Operations/manage_class/class";
 import Drivers from "../../Operations/manage_drivers/Drivers";
-import Jobcard from "./jobcard";
+import Jobcard from "../../Operations/Jobcards/jobcard";
 import React, { useState } from "react";
 
 function classNames(...classes: string[]) {
@@ -13,6 +13,16 @@ function classNames(...classes: string[]) {
 
 export default function UsersComponent() {
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
+
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  useEffect(() => {
+    // Retrieve the saved tab index from local storage when the component mounts
+    const savedIndex = localStorage.getItem("selectedTabIndex");
+    if (savedIndex !== null) {
+      setSelectedIndex(parseInt(savedIndex, 10));
+    }
+  }, []);
 
   const operationsTabs = [
     { name: "Class", href: "#", current: selectedTabIndex === 0 },

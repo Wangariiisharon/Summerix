@@ -1,6 +1,6 @@
 import { Header } from "@/components/Headers";
 import { Tab } from "@headlessui/react";
-import { Fragment } from "react";
+import { Fragment, useEffect, useState } from "react";
 
 import Cities from "./manage_cities/Cities";
 import Vehicles from "./Vehicles";
@@ -8,6 +8,7 @@ import Trips from "./Trips";
 import Drivers from "./manage_drivers/Drivers";
 import Class from "./manage_class/class";
 import SiteLayout from "@/Layout/SiteLayout";
+import Jobcard from "./Jobcards/jobcard";
 
 const tabs = [
   { name: "Trips", href: "#", current: false },
@@ -15,6 +16,7 @@ const tabs = [
   { name: "Class", href: "#", current: false },
   { name: "Clients", href: "#", current: false },
   { name: "Drivers", href: "#", current: false },
+  { name: "Jobcards", href: "#", current: false },
   { name: "Suppliers", href: "#", current: false },
 ];
 
@@ -23,6 +25,22 @@ function classNames(...classes: any) {
 }
 
 export default function AdministrationComponent() {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  useEffect(() => {
+    // Retrieve the saved tab index from local storage when the component mounts
+    const savedIndex = localStorage.getItem("selectedTabIndex");
+    if (savedIndex !== null) {
+      setSelectedIndex(parseInt(savedIndex, 10));
+    }
+  }, []);
+
+  const handleTabChange = (index: number) => {
+    // Save the selected tab index to local storage
+    localStorage.setItem("selectedTabIndex", index.toString());
+    setSelectedIndex(index);
+  };
+
   return (
     <SiteLayout>
       <div className=" bg-[#FAFAFB] flex flex-col">
@@ -30,7 +48,7 @@ export default function AdministrationComponent() {
 
         <div>
           <div className="mt-10">
-            <Tab.Group>
+            <Tab.Group selectedIndex={selectedIndex} onChange={handleTabChange}>
               <Tab.List className="w-full bg-[#FAFAFB] font-nunito flex justify-start mb-3">
                 {tabs.map((tab, index) => {
                   return (
@@ -61,6 +79,9 @@ export default function AdministrationComponent() {
                 <Tab.Panel className="h-full">
                   <Drivers />
                 </Tab.Panel>
+                <Tab.Panel className="h-full">
+                  <Jobcard />
+                </Tab.Panel>
                 <Tab.Panel className="h-full">{/* <Class /> */}</Tab.Panel>
               </Tab.Panels>
             </Tab.Group>
@@ -70,11 +91,3 @@ export default function AdministrationComponent() {
     </SiteLayout>
   );
 }
-// const tabs = [
-//   { name: "Trips", href: "#", current: false },
-//   { name: "Vehicles", href: "#", current: false },
-//   { name: "Clients", href: "#", current: false },
-//   { name: "Drivers", href: "#", current: false },
-//   { name: "Class", href: "#", current: false },
-//   { name: "Suppliers", href: "#", current: false },
-// ];

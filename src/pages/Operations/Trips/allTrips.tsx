@@ -93,6 +93,7 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
   });
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>("all");
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const allTripsTabs = [
     { name: "OVERVIEW", href: "#", current: selectedTabIndex === 0 },
@@ -307,6 +308,11 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
     setOpen(false);
   };
   useEffect(() => {
+    // Retrieve the saved tab index from local storage when the component mounts
+    const savedIndex = localStorage.getItem("selectedTabIndex");
+    if (savedIndex !== null) {
+      setSelectedIndex(parseInt(savedIndex, 10));
+    }
     const fetchDrivers = async () => {
       try {
         if (organisationId) {

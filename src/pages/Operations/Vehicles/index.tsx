@@ -39,6 +39,15 @@ export default function VehiclesComponent() {
   const { organisationId } = useAuthContext();
   console.log("Vehicles Page page OrganisationId", organisationId);
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  // useEffect(() => {
+  //   // Retrieve the saved tab index from local storage when the component mounts
+  //   const savedIndex = localStorage.getItem("selectedTabIndex");
+  //   if (savedIndex !== null) {
+  //     setSelectedIndex(parseInt(savedIndex, 10));
+  //   }
+  // }, []);
 
   const headers = [
     { name: "Vehicle Profile", href: "#", current: selectedTabIndex === 0 },
@@ -50,6 +59,10 @@ export default function VehiclesComponent() {
   ];
 
   useEffect(() => {
+    const savedIndex = localStorage.getItem("selectedTabIndex");
+    if (savedIndex !== null) {
+      setSelectedIndex(parseInt(savedIndex, 10));
+    }
     const fetchVehicles = async () => {
       try {
         // Ensure organisationId is available before making the query
