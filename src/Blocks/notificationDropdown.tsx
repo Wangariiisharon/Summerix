@@ -36,7 +36,12 @@ export const NotificationDropdown = ({ isOpen, onClose }: any) => {
   useEffect(() => {
     if (!organisationId || !currentUser) return;
 
-    const notificationsRef = collection(fbDb, "notifications");
+    // const notificationsRef = collection(fbDb, "notifications");
+    const notificationsRef = collection(
+      fbDb,
+      `user_notifications/${currentUser.uid}/notifications`
+    ); // Use adminId here
+
     const q = query(
       notificationsRef,
       where("organisationId", "==", organisationId)
@@ -62,7 +67,14 @@ export const NotificationDropdown = ({ isOpen, onClose }: any) => {
   const markAllAsRead = async () => {
     const batch = writeBatch(fbDb);
     notifications.forEach((notification) => {
-      const notificationRef = doc(fbDb, `notifications`, notification.id);
+      // const notificationRef = doc(fbDb, `notifications`, notification.id);
+      // `user_notifications/${currentUser.uid}/notifications`
+      const notificationRef = doc(
+        fbDb,
+        `user_notifications/${currentUser?.uid}/notifications`,
+        notification.id
+      );
+
       batch.update(notificationRef, {
         readBy: arrayUnion(currentUser?.uid),
       });

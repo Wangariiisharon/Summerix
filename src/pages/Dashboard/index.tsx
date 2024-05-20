@@ -41,18 +41,47 @@ export default function DashboardComponent() {
   const [trucksAvailable, setTrucksAvailable] = useState<number>(0);
   const [avgTruckExpense, setAvgTruckExpense] = useState<number>(0);
 
+  const [selectedYear, setSelectedYear] = useState<number>(
+    new Date().getFullYear()
+  );
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
   const { organisationId } = useAuthContext();
   console.log("Dashboard organisationId:", organisationId);
+
+  // Generate a list of years for the dropdown
+  const getYears = () => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let i = currentYear; i >= currentYear - 10; i--) {
+      years.push(i);
+    }
+    return years;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         if (organisationId) {
+          let startOfMonth, endOfMonth;
+
+          if (selectedDate) {
+            const selectedYear = selectedDate.getFullYear();
+            const selectedMonth = selectedDate.getMonth();
+            startOfMonth = new Date(selectedYear, selectedMonth, 1);
+            endOfMonth = new Date(selectedYear, selectedMonth + 1, 0);
+          } else {
+            startOfMonth = new Date(selectedYear, 0, 1); // January 1st of the selected year
+            endOfMonth = new Date(selectedYear, 11, 31); // December 31st of the selected year
+          }
+
           // Fetch trips data
           const tripsQuerySnapshot = await getDocs(
             query(
               collection(fbDb, "trips"),
-              where("organisationId", "==", organisationId)
+              where("organisationId", "==", organisationId),
+              where("start_time", ">=", startOfMonth),
+              where("start_time", "<=", endOfMonth)
             )
           );
           const tripsData: DocumentData[] = tripsQuerySnapshot.docs.map(
@@ -67,7 +96,9 @@ export default function DashboardComponent() {
           const maintenanceQuerySnapshot = await getDocs(
             query(
               collection(fbDb, "maintenance"),
-              where("organisationId", "==", organisationId)
+              where("organisationId", "==", organisationId),
+              where("date", ">=", startOfMonth),
+              where("date", "<=", endOfMonth)
             )
           );
           const maintenanceData: DocumentData[] =
@@ -81,7 +112,9 @@ export default function DashboardComponent() {
           const vehiclesQuerySnapshot = await getDocs(
             query(
               collection(fbDb, "vehicles"),
-              where("organisationId", "==", organisationId)
+              where("organisationId", "==", organisationId),
+              where("registration_date", ">=", startOfMonth),
+              where("registration_date", "<=", endOfMonth)
             )
           );
           const vehiclesData: DocumentData[] = vehiclesQuerySnapshot.docs.map(
@@ -91,66 +124,60 @@ export default function DashboardComponent() {
             })
           );
           setFetchedVehicles(vehiclesData);
+          console.log("vehiclesData", vehiclesData);
 
-          // Calculate company costs
-          const totalFuelCost = tripsData.reduce(
-            (acc, trip) => acc + trip.fuel,
-            0
-          );
-          const totalMileageFee = tripsData.reduce(
-            (acc, trip) => acc + trip.mileage_fee,
-            0
-          );
-          const totalPurchasePrice = vehiclesData.reduce(
-            (acc, vehicle) => acc + vehicle.lease_amount,
-            0
-          );
+          const totalFuelCost = tripsData.reduce((acc, trip) => {
+            const fuelCost = parseFloat(trip.fuel);
+            return acc + (isNaN(fuelCost) ? 0 : fuelCost);
+          }, 0);
+          console.log("totalFuelCost", totalFuelCost);
+
+          const totalMileageFee = tripsData.reduce((acc, trip) => {
+            const mileageFee = parseFloat(trip.mileage_fee);
+            return acc + (isNaN(mileageFee) ? 0 : mileageFee);
+          }, 0);
+          console.log("totalMileageFee", totalMileageFee);
+
+          const totalPurchasePrice = vehiclesData.reduce((acc, vehicle) => {
+            const leaseAmount = parseFloat(vehicle.lease_amount);
+            return acc + (isNaN(leaseAmount) ? 0 : leaseAmount);
+          }, 0);
+          console.log("totalPurchasePrice", totalPurchasePrice);
+
           const totalMaintenanceCost = maintenanceData.reduce(
-            (acc, maintenance) => acc + maintenance.cost,
+            (acc, maintenance) => {
+              const cost = parseFloat(maintenance.cost);
+              return acc + (isNaN(cost) ? 0 : cost);
+            },
             0
           );
+          console.log("totalMaintenanceCost", totalMaintenanceCost);
 
-          const totalCompanyCost =
+          const totalCost =
             totalFuelCost +
             totalMileageFee +
             totalPurchasePrice +
             totalMaintenanceCost;
-          const roundedCompanyCost = Math.floor(totalCompanyCost);
-          setCompanyCost(roundedCompanyCost);
-          const totalVehicles = vehiclesData.length;
-          setTrucksAvailable(totalVehicles);
-          // Calculate overall earnings and other metrics... //
-          // Calculate overall earnings
-          const totalDealValue = tripsData.reduce((acc, trip) => {
-            const dealValue = parseFloat(trip.dealValue); // Convert to a floating-point number
-            return !isNaN(dealValue) ? acc + dealValue : acc; // Add to the accumulator if it's a valid number
+          setCompanyCost(totalCost);
+
+          const totalEarnings = tripsData.reduce((acc, trip) => {
+            const earnings = parseFloat(trip.dealValue);
+            return acc + (isNaN(earnings) ? 0 : earnings);
           }, 0);
+          console.log("totalEarnings", totalEarnings);
+          setOverallEarnings(totalEarnings);
 
-          // Round down the totalDealValue to remove decimals
-          const roundedTotalDealValue = Math.floor(totalDealValue);
-          setOverallEarnings(roundedTotalDealValue);
-          // Calculate earnings per truck
-          const earningsPerTruckValue =
-            totalVehicles > 0 ? totalDealValue / totalVehicles : 0;
-          // Round down the earningsPerTruckValue to remove decimals
-          const roundedEarningsPerTruck = Math.floor(earningsPerTruckValue);
+          const validTotalCost = isNaN(totalEarnings) ? 0 : totalEarnings;
+          const validTotalEarnings = isNaN(totalCost) ? 0 : totalCost;
 
-          setEarningsPerTruck(
-            isNaN(roundedEarningsPerTruck) ? 0 : roundedEarningsPerTruck
-          );
+          // Average Profit per Truck = (Total Income - Total Expenses) /number of Trucks
+          const expensesPerTruck =
+            (validTotalEarnings - validTotalCost) / vehiclesData.length;
+          setEarningsPerTruck(expensesPerTruck);
 
-          const vehiclesOnTrip = tripsData.map((trip) => trip.vehicleId);
-          const vehiclesOutOfService = vehiclesData
-            .filter((vehicle) => vehicle.outOfService)
-            .map((vehicle) => vehicle.id);
-
-          // Calculate available trucks
-          const availableTrucks =
-            totalVehicles - vehiclesOnTrip.length - vehiclesOutOfService.length;
-          // setTrucksAvailable(availableTrucks);
-          // setTrucksAvailable(isNaN(availableTrucks) ? 0 : availableTrucks);
-
-          console.error("Organisation ID is not available.");
+          // Average Expense per Truck = Total Expense/number of Trucks
+          const avg = validTotalCost / vehiclesData.length;
+          setAvgTruckExpense(avg);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -158,9 +185,19 @@ export default function DashboardComponent() {
     };
 
     fetchData();
-  }, [organisationId]);
+  }, [organisationId, selectedYear, selectedDate]);
 
-  // Rest of your code...
+  const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const year = parseInt(event.target.value, 10);
+    setSelectedYear(year);
+    setSelectedDate(null); // Reset the date when the year changes
+  };
+
+  const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const date = new Date(event.target.value);
+    setSelectedDate(date);
+  };
+
   const cards = [
     {
       amount: overallEarnings.toString(),
@@ -183,9 +220,8 @@ export default function DashboardComponent() {
       name: "Average Profit per Truck",
       border: "#14E9E2",
     },
-
     {
-      amount: companyCost.toString(),
+      amount: avgTruckExpense.toString(),
       href: "#",
       icon: "/icons/cashIcon.png",
       name: "Average Expenses per Truck",
@@ -195,51 +231,51 @@ export default function DashboardComponent() {
 
   return (
     <SiteNav>
-      <div className=" w-full h-[1595px] bg-[#f7f8fa]">
+      <div className="w-full h-[1595px] bg-[#f7f8fa]">
         <div className="h-[70px] pl-[35px] bg-white flex justify-between w-full">
-          <div className=" flex items-center py-2">
-            <h1 className="text-base font-semibold text-gray-800 mr-4 ml-4 ">
+          <div className="flex items-center py-2">
+            <h1 className="text-base font-semibold text-gray-800 mr-4 ml-4">
               Analytics
             </h1>
           </div>
           <div className="flex items-center">
-            <button className="border border-[#065AD8] bg-[#fff] text-gray-700 px-3 py-1 rounded-md mr-2 text-[#065AD8]">
-              <i
-                className="fa fa-calendar text-[#065AD8] text-base mr-2"
-                aria-hidden="true"
-              ></i>
-              Select Year
-            </button>
-            <button className="border border-[#065AD8] bg-[#fff] text-gray-700 px-3 py-1 rounded-md mr-2 text-[#065AD8]">
-              <i
-                className="fa fa-calendar text-[#065AD8] text-base mr-2"
-                aria-hidden="true"
-              ></i>
-              Select Date
-            </button>
+            <select
+              className="border border-[#065AD8] bg-[#fff] text-gray-700 px-3 py-1 rounded-md mr-2 text-[#065AD8]"
+              onChange={handleYearChange}
+              value={selectedYear}
+            >
+              {getYears().map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+            <input
+              type="date"
+              onChange={handleDateChange}
+              className="border border-[#065AD8] bg-[#fff] text-gray-700 px-3 py-1 rounded-md mr-2 text-[#065AD8]"
+            />
           </div>
         </div>
 
-        <div className="mt-4 flex justify-between py-4 px-4 ">
-          {cards.map((card, index) => {
-            return (
-              <Fragment key={index}>
-                <MetricCard
-                  value={card.amount}
-                  label={card.name}
-                  icon={card.icon}
-                  lineColor={card.border}
-                />
-              </Fragment>
-            );
-          })}
+        <div className="mt-4 flex justify-between py-4 px-4">
+          {cards.map((card, index) => (
+            <Fragment key={index}>
+              <MetricCard
+                value={card.amount}
+                label={card.name}
+                icon={card.icon}
+                lineColor={card.border}
+              />
+            </Fragment>
+          ))}
         </div>
-        <div className=" flex justify-between">
+        <div className="flex justify-between">
           <VehicleOverview />
           <OutOfServiceVehicles />
           <TripsPieGraph />
         </div>
-        <div className=" flex justify-between mt-8">
+        <div className="flex justify-between mt-8">
           <OnRoute />
         </div>
       </div>

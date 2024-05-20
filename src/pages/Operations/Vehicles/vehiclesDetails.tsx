@@ -105,6 +105,7 @@ export default function VehiclesDetails() {
   const [open, setOpen] = useState(false);
   const [availabilityValue, setAvailabilityValue] = useState(70);
   const isMounted = useRef(true);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const [data, setData] = useState({
     datasets: [
@@ -124,6 +125,11 @@ export default function VehiclesDetails() {
     setOpen(false);
   };
   useEffect(() => {
+    const savedIndex = localStorage.getItem("selectedTabIndex");
+    if (savedIndex !== null) {
+      setSelectedIndex(parseInt(savedIndex, 10));
+    }
+
     const fetchVehiclesDetails = async () => {
       if (id) {
         try {
@@ -301,15 +307,13 @@ export default function VehiclesDetails() {
   }
 
   console.log("Trip trip Details", tripDetails);
+  const hrefValue = `/Operations`; // or use template literals
 
   return (
     <SiteLayout>
       <div className="flex flex-row mt-2">
         <div className="mt-2">
-          <Link
-            href="/Operations"
-            className="text-xs font-inter text-[#4FD1C5]"
-          >
+          <Link href={hrefValue} className="text-xs font-inter text-[#4FD1C5]">
             <i className="fa fa-arrow-left" aria-hidden="true"></i>
             Back
           </Link>

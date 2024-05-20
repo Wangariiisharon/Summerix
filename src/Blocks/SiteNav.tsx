@@ -124,56 +124,97 @@ export default function SiteNav({ children }: Props) {
       return;
     }
     // Function to fetch notifications and calculate the unread count
-    const fetchNotifications = () => {
-      if (!organisationId) {
-        return;
-      }
-      const notificationsRef = collection(
-        fbDb,
-        `user_notifications/${currentUser.uid}/notifications`
-      );
+    // const fetchNotifications = () => {
+    //   if (!organisationId) {
+    //     return;
+    //   }
+    //   const notificationsRef = collection(
+    //     fbDb,
+    //     `user_notifications/${currentUser.uid}/notifications`
+    //   );
 
-      const q = query(
-        notificationsRef,
-        where("organisationId", "==", organisationId)
-      );
+    //   const q = query(
+    //     notificationsRef,
+    //     where("organisationId", "==", organisationId)
+    //   );
 
-      return onSnapshot(
-        q,
-        (snapshot) => {
+    //   return onSnapshot(
+    //     q,
+    //     (snapshot) => {
+    //       const loadedNotifications = snapshot.docs.map((doc) => ({
+    //         id: doc.id,
+    //         readBy: doc.data().readBy || [], // Ensure readBy is always an array
+    //         ...doc.data(),
+    //       }));
+    //       console.log("Loaded Notifications:", loadedNotifications);
+
+    //       const unreadNotifications = loadedNotifications.filter(
+    //         (notification) =>
+    //           notification.readBy &&
+    //           !notification.readBy.includes(currentUser.uid)
+    //       );
+    //       setUnreadCount(unreadNotifications.length);
+    //       setNotifications(loadedNotifications);
+    //       console.log("Unread Count:", unreadCount);
+    //       console.log("Notifications:", notifications);
+    //     },
+    //     (error) => {
+    //       console.error("Error fetching notifications:", error);
+    //     }
+    //   );
+    // };
+    const fetchNotifications = async () => {
+      try {
+        // Reference to the notifications sub-collection for the current user
+        const notificationsRef = collection(
+          fbDb,
+          `user_notifications/${currentUser.uid}/notifications`
+        );
+
+        const q = query(
+          notificationsRef,
+          where("organisationId", "==", organisationId)
+        );
+        console.log("Q", q);
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
           const loadedNotifications = snapshot.docs.map((doc) => ({
             id: doc.id,
             readBy: doc.data().readBy || [], // Ensure readBy is always an array
-            ...doc.data(),
+            ...doc.data(), // Get all data from the document
           }));
+          console.log("loadedNotifications", loadedNotifications);
 
           const unreadNotifications = loadedNotifications.filter(
             (notification) =>
               notification.readBy &&
               !notification.readBy.includes(currentUser.uid)
           );
+          console.log("unreadNotifications", unreadNotifications);
 
           setUnreadCount(unreadNotifications.length);
+          console.log("unreadCount", unreadCount);
+
           setNotifications(loadedNotifications);
-          console.log("Unread Count:", unreadCount);
-          console.log("Notifications:", notifications);
-        },
-        (error) => {
-          console.error("Error fetching notifications:", error);
-        }
-      );
+          console.log("notifications", notifications);
+        });
+
+        return unsubscribe;
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
     };
 
     fetchAdmin();
+    fetchNotifications();
 
-    const unsubscribeNotifications = fetchNotifications();
-
-    // Cleanup function
-    return () => {
-      if (typeof unsubscribeNotifications === "function") {
-        unsubscribeNotifications();
-      }
-    };
+    // const unsubscribeNotifications = fetchNotifications();
+    // // Cleanup function
+    // return () => {
+    //   if (typeof unsubscribeNotifications === "function") {
+    //     unsubscribeNotifications();
+    //   }
+    // };
   }, [organisationId]);
 
   // const isSuperAdmin = adminDetails?.super_admin;

@@ -9,7 +9,7 @@ import { Field, Formik, Form } from "formik";
 import { Input, Submit } from "@/components/Forms/input";
 import SiteLayout from "@/Layout/SiteLayout";
 import { Tab } from "@headlessui/react";
-import Planned from "../../Administration/Users/jobcard";
+import Planned from "../Jobcards/jobcard";
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import {
   getDocs,
@@ -28,7 +28,7 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { parseISO, format } from "date-fns";
-import Jobcard from "../../Administration/Users/jobcard";
+import Jobcard from "../Jobcards/jobcard";
 import { serverTimestamp } from "firebase/firestore";
 import { AnyCnameRecord } from "dns";
 import {

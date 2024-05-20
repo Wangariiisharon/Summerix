@@ -35,6 +35,11 @@ import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import * as Yup from "yup";
 import { ErrorMessage } from "formik";
 
+interface Vehicle {
+  id: string;
+  lisence_plate: string;
+}
+
 const Headers = ["VEHICLE ID", "VEHICLE TYPE", "LICENSE PLATE"];
 export default function Vehicles() {
   const [open, setOpen] = useState(false);
@@ -42,6 +47,8 @@ export default function Vehicles() {
   const [selectedVehicle, setSelectedVehicle] = useState<DocumentData | null>(
     null
   );
+  const [unallocatedVehicles, setUnallocatedVehicles] = useState<Vehicle[]>([]);
+  const [error, setError] = useState(null);
   const [selectedTab, setSelectedTab] = useState<number>(0);
   const [fetchedVehicles, setFetchedVehicles] = useState<DocumentData[]>([]);
   const [fetchedCompanies, setFetchedCompanies] = useState<DocumentData[]>([]);
@@ -73,6 +80,7 @@ export default function Vehicles() {
   const [showEditLeaseInput, setShowEditLeaseInput] = useState(false);
   const { organisationId } = useAuthContext();
   console.log(" Vehicles Organisation ID:", organisationId);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const validationSchema = Yup.object({
     cargo_capacity: Yup.string().required("Cargo Capacity is required"),
@@ -181,79 +189,10 @@ export default function Vehicles() {
     inspection_certificates: any;
     transit_permits: any;
   }) => {
-    console.log("Ownership Status:", values.ownership_status);
-
-    if (!values.cargo_capacity) {
-      console.error("Required form fields are missing");
-      toast.error("Please fill the field  Cargo capacity");
-      return;
-    }
-
-    if (!values.lisence_plate) {
-      console.error("Required form fields are missing");
-      toast.error("Please fill the field Vehicle Identification Number");
-      return;
-    }
-    if (!values.vehicle_type) {
-      console.error("Required form fields are missing");
-      toast.error("Please fill the field Vehicle type");
-      return;
-    }
-    if (!values.make) {
-      console.error("Required form fields are missing");
-      toast.error("Please fill the field Make");
-      return;
-    }
-    if (!values.model) {
-      console.error("Required form fields are missing");
-      toast.error("Please fill the field Model");
-      return;
-    }
-    if (!values.year) {
-      console.error("Required form fields are missing");
-      toast.error("Please fill the field year");
-      return;
-    }
-    if (!values.ownership_status) {
-      console.error("Required form fields are missing");
-      toast.error("Please fill the field Ownership Status");
-      return;
-    }
-    if (values.ownership_status === "Owned") {
-      if (!values.lease_amount) {
-        console.error("Required form fields are missing");
-        toast.error("Please fill the field Lease Amount");
-        return;
-      }
-    }
-    if (!values.truck_incurance) {
-      console.error("Required form fields are missing");
-      toast.error("Please fill the field Truck  Insurance");
-      return;
-    }
-    if (!values.cargo_insurance) {
-      console.error("Required form fields are missing");
-      toast.error("Please fill the field Cargo Insurance");
-      return;
-    }
-    if (!values.port_entry_permits) {
-      console.error("Required form fields are missing");
-      toast.error("Please fill the field Port Entry Permits");
-      return;
-    }
-    if (!values.inspection_certificates) {
-      console.error("Required form fields are missing");
-      toast.error("Please fill the field Inspection Certificates");
-      return;
-    }
-    if (!values.transit_permits) {
-      console.error("Required form fields are missing");
-      toast.error("Please fill the field Transit Permits");
-      return;
-    }
+    setShowAddVehicleModal(true);
+    setOpen(true);
 
     const registration_date = new Date();
-    const licensePlate = values.lisence_plate;
     const vehiclesCollection = collection(fbDb, "vehicles");
 
     const existingDepartmentQuery = query(
@@ -399,10 +338,16 @@ export default function Vehicles() {
       }
 
       // Check if the vehicle is already allocated to a company
-      const vehicleAllocationsCollectionRef = collection(
-        fbDb,
-        "vehicleAllocations"
+      // const vehicleAllocationsCollectionRef = collection(
+      //   fbDb,
+      //   "vehicleAllocations"
+      // );
+
+      const vehicleAllocationsCollectionRef = query(
+        collection(fbDb, "vehicleAllocations"),
+        where("organisationId", "==", organisationId)
       );
+
       const vehicleQuerySnapshot = await getDocs(
         vehicleAllocationsCollectionRef
       );
@@ -437,7 +382,13 @@ export default function Vehicles() {
         return;
       }
 
-      const companiesCollectionRef = collection(fbDb, "classes");
+      // const companiesCollectionRef = collection(fbDb, "classes");
+      const companiesCollectionRef = query(
+        collection(fbDb, "classes"),
+        where("organisationId", "==", organisationId),
+        where("archive", "==", false)
+      );
+
       const querySnapshot = await getDocs(companiesCollectionRef);
 
       let companyDocRef;
@@ -491,6 +442,7 @@ export default function Vehicles() {
         collection(fbDb, "vehicleAllocations"),
         AllocationData
       );
+
       console.log("Allocation added with ID: ", docRef.id);
     } catch (error) {
       console.error("Error allocating Vehicle:", error);
@@ -501,6 +453,65 @@ export default function Vehicles() {
   };
 
   useEffect(() => {
+    const savedIndex = localStorage.getItem("selectedTabIndex");
+    if (savedIndex !== null) {
+      setSelectedIndex(parseInt(savedIndex, 10));
+    }
+    const fetchUnallocatedVehicles = async () => {
+      try {
+        if (organisationId) {
+          // Fetch all vehicles
+          // const vehiclesSnapshot = await getDocs(collection(fbDb, "vehicles"));
+
+          const vehiclesSnapshot = await getDocs(
+            query(
+              collection(fbDb, "vehicles"),
+              where("organisationId", "==", organisationId),
+              where("archive", "==", false)
+            )
+          );
+
+          const vehicles: Vehicle[] = vehiclesSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          })) as Vehicle[];
+
+          // Fetch all companies
+          // const companiesSnapshot = await getDocs(collection(fbDb, "classes"));
+
+          const companiesSnapshot = await getDocs(
+            query(
+              collection(fbDb, "classes"),
+              where("organisationId", "==", organisationId),
+              where("archive", "==", false)
+            )
+          );
+
+          const allocatedVehicles = new Set<string>();
+          companiesSnapshot.forEach((doc) => {
+            const companyData = doc.data();
+            if (companyData.vehicles) {
+              companyData.vehicles.forEach((plate: string) =>
+                allocatedVehicles.add(plate)
+              );
+            }
+          });
+
+          // Filter unallocated vehicles
+          const unallocatedVehiclesList = vehicles.filter(
+            (vehicle) => !allocatedVehicles.has(vehicle.lisence_plate)
+          );
+
+          setUnallocatedVehicles(unallocatedVehiclesList);
+          console.log("Unallocated Vehicles:", unallocatedVehiclesList);
+        } else {
+          console.error("Organisation ID is not available.");
+        }
+      } catch (err) {
+        console.error("Error fetching vehicles:", err);
+      }
+    };
+
     const fetchedVehicles = async () => {
       const db = getFirestore();
 
@@ -508,7 +519,8 @@ export default function Vehicles() {
         if (organisationId) {
           const q = query(
             collection(db, "vehicles"),
-            where("organisationId", "==", organisationId)
+            where("organisationId", "==", organisationId),
+            where("archive", "==", false)
           );
 
           const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -533,7 +545,8 @@ export default function Vehicles() {
         if (organisationId) {
           const q = query(
             collection(fbDb, "classes"),
-            where("organisationId", "==", organisationId)
+            where("organisationId", "==", organisationId),
+            where("archive", "==", false)
           );
           const querySnapshot = await getDocs(q);
 
@@ -552,6 +565,8 @@ export default function Vehicles() {
 
     fetchedVehicles();
     fetchedCompanies();
+    fetchUnallocatedVehicles();
+
     console.log(fetchedCompanies);
   }, [organisationId]);
 
@@ -751,10 +766,7 @@ export default function Vehicles() {
           <div className="flex w-full justify-end mt-4">
             <div className="flex justify-end text-base mr-2">
               <div className="ml-2 flex flex-row">
-                <AddButton
-                  name="Add Vehicle"
-                  handleAddClick={handleAddVehicles}
-                />
+                <AddButton name="Add Vehicle" handleAddClick={handleSubmit} />
                 <div className="ml-2">
                   <Button
                     className="rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2 "
@@ -833,7 +845,7 @@ export default function Vehicles() {
                   transit_permits: null,
                 }}
                 validationSchema={validationSchema}
-                onSubmit={(values) => handleAddVehicles()}
+                onSubmit={(values) => handleSubmit(values)}
               >
                 {({ values, errors, touched }) => (
                   <Form>
@@ -905,24 +917,7 @@ export default function Vehicles() {
                       <div className="flex w-full justify-between mt-8">
                         <label className="block">
                           <label className="form-label">OWNERSHIP STATUS</label>
-                          {/* <Field
-                            as="select"
-                            type="text"
-                            name="ownership_status"
-                            value={formik.values.ownership_status}
-                            className="form-input bg-grey w-48"
-                            onChange={(e: any) => {
-                              setShowLeaseInput(e.target.value === "Owned");
-                              console.log(
-                                "Ownership Status Changed:",
-                                e.target.value
-                              );
-                            }}
-                          >
-                            <option value="">Select Status</option>
-                            <option value="Owned">Owned</option>
-                            <option value="Leased">Leased</option>
-                          </Field> */}
+
                           <Field
                             as="select"
                             type="text"
@@ -954,24 +949,6 @@ export default function Vehicles() {
                               </label>
                             </div>
                           )}
-                          {/* 
-                          {(formik.values.ownership_status === "Owned" ||
-                            showLeaseInput) && (
-                            <div className="mt-8">
-                              <label className="block">
-                                <label className="form-label">
-                                  PURCHASE PRICE
-                                </label>
-                                <Field
-                                  type="number"
-                                  name="lease_amount"
-                                  value={formik.values.lease_amount}
-                                  placeholder="Ksh"
-                                  className="form-input bg-grey w-48"
-                                />
-                              </label>
-                            </div>
-                          )} */}
                         </label>
                         <label className="block">
                           <label className="form-label">MODEL</label>
@@ -1547,7 +1524,7 @@ export default function Vehicles() {
                           className="form-input bg-grey w-48"
                         >
                           <option value="">Select Vehicle</option>
-                          {fetchedVehicles.map((vehicle, index) => (
+                          {unallocatedVehicles.map((vehicle, index) => (
                             <option key={index} value={vehicle.lisence_plate}>
                               {vehicle.lisence_plate}
                             </option>
@@ -1576,11 +1553,6 @@ export default function Vehicles() {
                             </option>
                           ))}
                         </Field>
-                        {/* {errors.company && touched.company ? (
-                          <div className="text-red-600 text-sm">
-                            {errors.company}
-                          </div>
-                        ) : null} */}
                       </label>
                     </div>
                     <div className="flex w-full justify-end mt-24 ">

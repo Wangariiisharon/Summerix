@@ -1,6 +1,6 @@
 import { Header } from "@/components/Headers";
 import { Tab } from "@headlessui/react";
-import { Fragment } from "react";
+import { Fragment, useEffect, useState } from "react";
 import Admins from "./Admins/manage_admins/Admins";
 import AdminsComponent from "./Admins";
 import UsersComponent from "./Users";
@@ -27,6 +27,16 @@ function classNames(...classes: any) {
 }
 
 export default function AdministrationComponent() {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  useEffect(() => {
+    // Retrieve the saved tab index from local storage when the component mounts
+    const savedIndex = localStorage.getItem("selectedTabIndex");
+    if (savedIndex !== null) {
+      setSelectedIndex(parseInt(savedIndex, 10));
+    }
+  }, []);
+
   return (
     <SiteLayout>
       <div className=" bg-[#FAFAFB] flex flex-col">

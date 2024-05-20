@@ -1,6 +1,6 @@
 import { Header } from "@/components/Headers";
 import { Tab } from "@headlessui/react";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import Admins from "./manage_admins/Admins";
 import Roles from "./manage_roles/Roles";
 import Departments from "./manage_department/Departments";
@@ -12,6 +12,16 @@ function classNames(...classes: any) {
 }
 export default function AdminsComponent() {
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
+
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  useEffect(() => {
+    // Retrieve the saved tab index from local storage when the component mounts
+    const savedIndex = localStorage.getItem("selectedTabIndex");
+    if (savedIndex !== null) {
+      setSelectedIndex(parseInt(savedIndex, 10));
+    }
+  }, []);
 
   const userTabs = [
     { name: "Users", href: "#", current: selectedTabIndex === 0 },
