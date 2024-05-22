@@ -3,13 +3,15 @@ import {
   DocumentData,
   addDoc,
   collection,
+  doc,
   getDocs,
   getFirestore,
   onSnapshot,
   query,
+  setDoc,
   where,
 } from "firebase/firestore";
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment, SetStateAction, useEffect, useState } from "react";
 import { parseISO, format } from "date-fns";
 import { AddButton, Button, DeleteBtn, EditBtn } from "@/components/Buttons";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
@@ -20,6 +22,7 @@ import {
   AuthProvider,
   useAuthContext,
 } from "@/components/Authentication/AuthProvider";
+import * as Yup from "yup";
 
 export default function Jobcard() {
   const [open, setOpen] = useState(false);
@@ -32,9 +35,25 @@ export default function Jobcard() {
   const rowsPerPage = 6;
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedJobCard, setSelectedJobCard] = useState<DocumentData | null>(
+    null
+  );
+  const [editFormInitialValues, setEditFormInitialValues] = useState({
+    name: "",
+    organisationId: "",
+    archive: false,
+  });
   const { organisationId } = useAuthContext();
   console.log("Jobcards Organisation ID:", organisationId);
+
+  const validationSchema = Yup.object({
+    name: Yup.string().required("Name is required"),
+  });
+
+  const handleReset = () => {
+    setOpen(false);
+  };
 
   useEffect(() => {
     const fetchedJobcards = async () => {
@@ -65,6 +84,82 @@ export default function Jobcard() {
     };
     fetchedJobcards();
   }, [organisationId]);
+  const handleEditClick = (jobcard: DocumentData) => {
+    setSelectedJobCard(jobcard);
+    setEditFormInitialValues({
+      name: jobcard.name,
+      organisationId: jobcard.organisationId,
+      archive: jobcard.archive,
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleEditModalClose = () => {
+    setSelectedJobCard(null);
+    setEditModalOpen(false);
+  };
+  const handleEditSubmit = async (values: {
+    name: any;
+    organisationId: any;
+    archive: any;
+  }) => {
+    if (!selectedJobCard) {
+      console.error("No selected vehicle to update");
+      return;
+    }
+
+    console.log("Edited Values:", values);
+
+    try {
+      if (!values.name) {
+        console.error("Required form fields are missing");
+        toast.error("please fill the Name field");
+        return;
+      }
+      // Update the vehicle data in the database using the selectedVehicle.id
+      const vehicleRef = doc(fbDb, "jobcard", selectedJobCard.id);
+      await setDoc(vehicleRef, {
+        name: values.name,
+        organisationId: values.organisationId,
+        archive: values.archive,
+      });
+
+      // Update the local fetchedVehicles state
+      const updatedVehicles = fetchedJobcards.map((jobcard) =>
+        jobcard.id === selectedJobCard.id
+          ? {
+              ...jobcard,
+              name: values.name,
+              organisationId: values.organisationId,
+              archive: values.archive,
+            }
+          : jobcard
+      );
+
+      setfetchedJobcards(updatedVehicles);
+
+      setSelectedJobCard(null);
+      setEditModalOpen(false);
+    } catch (error) {
+      console.error("Error updating Jobcard:", error);
+    }
+  };
+  const updateJobcardStatus = async (classId: string, newStatus: boolean) => {
+    try {
+      // Update the vehicle status in the database
+      const vehicleRef = doc(fbDb, "jobcard", classId);
+      await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
+      console.log("Jobcard status updated in the database:", classId);
+
+      // Update the local state with the new status
+      const updatedVehicles = fetchedJobcards.map((jobcard) =>
+        jobcard.id === classId ? { ...jobcard, archive: newStatus } : jobcard
+      );
+      setfetchedJobcards(updatedVehicles); // Ensure the state update function is correctly named
+    } catch (error) {
+      console.error("Error updating vehicle status in database:", error);
+    }
+  };
 
   const handleJobCardReset = () => {
     setShowAddJobcardModal(false);
@@ -109,6 +204,7 @@ export default function Jobcard() {
       const JobcardData = {
         name: values.name,
         status: true,
+        archive: false,
         organisationId: organisationId,
       };
 
@@ -195,6 +291,25 @@ export default function Jobcard() {
                             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
                               {jobcard.name}
                             </td>
+                            <td className="whitespace-nowrap px-2 py-2 relative flex flex-row">
+                              <div onClick={() => handleEditClick(jobcard)}>
+                                <EditBtn />
+                              </div>
+                              <div>
+                                <button
+                                  className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2 ml-4"
+                                  onClick={() =>
+                                    updateJobcardStatus(
+                                      jobcard.id,
+                                      !jobcard.archive
+                                    )
+                                  }
+                                >
+                                  {jobcard.archive ? "Unarchive" : "Archive"}
+                                </button>
+                              </div>
+                              <div className="h-10"></div>
+                            </td>
                           </tr>
                         </Fragment>
                       );
@@ -223,11 +338,12 @@ export default function Jobcard() {
             initialValues={{
               name: "",
             }}
+            validationSchema={validationSchema}
             onSubmit={(values) => handleAddJobcard(values)}
 
             // onSubmit={(values) => handleEditSubmit(values)}
           >
-            {({ values }) => (
+            {({ values, errors, touched }) => (
               <Form>
                 <div className="">
                   <div className="flex w-full justify-between">
@@ -239,6 +355,9 @@ export default function Jobcard() {
                         value={values.name}
                         className="form-input bg-grey w-48"
                       />
+                      {errors.name && touched.name ? (
+                        <div className="text-red-600">{errors.name}</div>
+                      ) : null}
                     </label>
                   </div>
 
@@ -263,6 +382,64 @@ export default function Jobcard() {
           </Formik>
         </div>
       </FormModal>
+
+      {editModalOpen && selectedJobCard && (
+        <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
+          <div>
+            <div className="flex w-full h-full justify-between items-center mb-12">
+              <div className="text-xl font-semibold ">Edit Class Details</div>
+              <Button
+                className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
+                handleClick={handleEditModalClose}
+              >
+                <XMarkIcon className="h-6 w-6 text-red-400" />
+              </Button>
+            </div>
+
+            <Formik
+              initialValues={editFormInitialValues}
+              validationSchema={validationSchema}
+              onSubmit={handleEditSubmit}
+            >
+              {({ values, errors, touched }) => (
+                <Form>
+                  <div className="">
+                    <div className="flex w-full justify-between">
+                      <label className="block">
+                        <label className="form-label">NAME</label>
+                        <Field
+                          type="text"
+                          name="name"
+                          value={values.name}
+                          className="form-input bg-grey w-48"
+                        />
+                        {errors.name && touched.name ? (
+                          <div className="text-red-600">{errors.name}</div>
+                        ) : null}
+                      </label>
+                    </div>
+
+                    <div className="flex w-full justify-end mt-24 ">
+                      <Button
+                        className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
+                        handleClick={handleReset}
+                      >
+                        Reset
+                      </Button>
+                      <button
+                        className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
+                        type="submit"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                </Form>
+              )}
+            </Formik>
+          </div>
+        </FormModal>
+      )}
 
       <div
         className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none

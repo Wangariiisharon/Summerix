@@ -458,9 +458,8 @@ function CitiesTable({
     }
   });
   // const visibleClasses = sortedClasses.slice(startIndex, endIndex);
-  const visibleClasses = sortedClasses
-    .slice(startIndex, endIndex)
-    .filter((admin) => !admin.archive);
+  const visibleClasses = sortedClasses.slice(startIndex, endIndex);
+  // .filter((admin) => !admin.archive);
   const updateVehicleStatusInDatabase = async (
     classId: string,
     newStatus: boolean
@@ -491,10 +490,7 @@ function CitiesTable({
           className="ml-5"
         />
       </div>
-      {/* <div className="flex justify-end mr-20 bg-[#FAFAFB]">
-            <p>Nairobi,Kenya</p> 
-           <i className="fa fa-angle-down" aria-hidden="true"></i>
-           </div> */}
+
       <div className="ml-2 px-4 sm:px-6 lg:px-8">
         <div className="flow-root">
           <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
