@@ -2,8 +2,7 @@ import { Header } from "@/components/Headers";
 import { Tab } from "@headlessui/react";
 import { Fragment, useEffect, useState } from "react";
 import Admins from "./Admins/manage_admins/Admins";
-import AdminsComponent from "./Admins";
-import UsersComponent from "./Users";
+
 import CompanyProfile from "./Users/companyProfile";
 import Avatar_profile_photo from "../../../public/Avatar_profile_photo.png";
 import Cities from "../Operations/manage_cities/Cities";
@@ -20,6 +19,7 @@ import Image from "next/image";
 const tabs = [
   { name: "Company Profile", href: "#", current: false },
   { name: "User Management", href: "#", current: false },
+  { name: "Departments", href: "#", current: false },
 ];
 
 function classNames(...classes: any) {
@@ -113,6 +113,9 @@ export default function AdministrationComponent() {
                 </Tab.Panel>
                 <Tab.Panel className="h-full">
                   <Admins />
+                </Tab.Panel>
+                <Tab.Panel className="h-full">
+                  <Departments />
                 </Tab.Panel>
               </Tab.Panels>
             </Tab.Group>

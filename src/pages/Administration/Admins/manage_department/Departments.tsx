@@ -1,6 +1,6 @@
 import { Tab } from "@headlessui/react";
 import { Fragment, SetStateAction, useEffect, useState } from "react";
-import { AddButton, Button } from "@/components/Buttons";
+import { AddButton, Button, EditBtn } from "@/components/Buttons";
 import Table, { DummyTable } from "@/components/Table/Table";
 import {
   CheckCircleIcon,
@@ -13,12 +13,15 @@ import {
   DocumentData,
   addDoc,
   collection,
+  doc,
   getDocs,
   getFirestore,
   onSnapshot,
   query,
+  setDoc,
   where,
 } from "firebase/firestore";
+import * as Yup from "yup";
 import { fbDb } from "@/firebase/configs";
 import { FormModal } from "@/components/Modals/FormModal";
 import { Formik, Field, Form } from "formik/dist/index";
@@ -33,10 +36,23 @@ export default function Departments() {
   const [fetchedDepartments, setFetchedDepartments] = useState<DocumentData[]>(
     []
   );
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [showAddClassModal, setShowAddClassModal] = useState(false);
+  const [selectedDepartment, setSelectedDepartment] =
+    useState<DocumentData | null>(null);
+  const [editFormInitialValues, setEditFormInitialValues] = useState({
+    departmentId: "",
+    name: "",
+    updated: "",
+    archive: false,
+    organisationId: "",
+  });
 
   const { organisationId } = useAuthContext();
   console.log("Departments Organisation ID:", organisationId);
-
+  const validationSchema = Yup.object({
+    name: Yup.string().required("Name is required"),
+  });
   const handleAdd = () => {
     setOpen(true);
   };
@@ -73,6 +89,75 @@ export default function Departments() {
     };
     fetchedDepartments();
   }, [organisationId]);
+
+  const handleEditClick = (department: DocumentData) => {
+    setSelectedDepartment(department);
+    setEditFormInitialValues({
+      departmentId: department.departmentId,
+      name: department.name,
+      organisationId: department.organisationId,
+      archive: department.archive,
+      updated: department.updated,
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleEditModalClose = () => {
+    setSelectedDepartment(null);
+    setEditModalOpen(false);
+  };
+  const handleEditSubmit = async (values: {
+    departmentId: any;
+    name: any;
+    organisationId: any;
+    archive: any;
+    updated: any;
+  }) => {
+    if (!selectedDepartment) {
+      console.error("No selected vehicle to update");
+      return;
+    }
+
+    console.log("Edited Values:", values);
+
+    try {
+      if (!values.name) {
+        console.error("Required form fields are missing");
+        toast.error("please fill the Name field");
+        return;
+      }
+      // Update the vehicle data in the database using the selectedVehicle.id
+      const vehicleRef = doc(fbDb, "departments", selectedDepartment.id);
+      await setDoc(vehicleRef, {
+        departmentId: values.departmentId,
+        name: values.name,
+        organisationId: values.organisationId,
+        archive: values.archive,
+        updated: values.updated,
+      });
+
+      // Update the local fetchedVehicles state
+      const updatedVehicles = fetchedDepartments.map((client) =>
+        client.id === selectedDepartment.id
+          ? {
+              ...client,
+              departmentId: values.departmentId,
+              name: values.name,
+              organisationId: values.organisationId,
+              archive: values.archive,
+              updated: values.updated,
+            }
+          : client
+      );
+
+      setFetchedDepartments(updatedVehicles);
+
+      setSelectedDepartment(null);
+      setEditModalOpen(false);
+    } catch (error) {
+      console.error("Error updating Vehicle:", error);
+    }
+  };
 
   // Function to generate departmentId based on the count of departments
   async function generateDepartmentId(organisationId: string) {
@@ -136,7 +221,7 @@ export default function Departments() {
         departmentId: generatedDepartmentId,
         name: values.name,
         updated: updated,
-        status: true,
+        archive: false,
         organisationId: organisationId,
       };
 
@@ -190,6 +275,7 @@ export default function Departments() {
                 <DepartmentsTable
                   departments={fetchedDepartments}
                   updateFetchedDepartments={updatefetchedDepartments}
+                  handleEditClick={handleEditClick}
                 />
               </div>
             </Tab.Panel>
@@ -252,6 +338,66 @@ export default function Departments() {
               </Formik>
             </div>
           </FormModal>
+
+          {editModalOpen && selectedDepartment && (
+            <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
+              <div>
+                <div className="flex w-full h-full justify-between items-center mb-12">
+                  <div className="text-xl font-semibold ">
+                    Edit Department Details
+                  </div>
+                  <Button
+                    className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
+                    handleClick={handleEditModalClose}
+                  >
+                    <XMarkIcon className="h-6 w-6 text-red-400" />
+                  </Button>
+                </div>
+
+                <Formik
+                  initialValues={editFormInitialValues}
+                  validationSchema={validationSchema}
+                  onSubmit={handleEditSubmit}
+                >
+                  {({ values, errors, touched }) => (
+                    <Form>
+                      <div className="">
+                        <div className="flex w-full justify-between">
+                          <label className="block">
+                            <label className="form-label">NAME</label>
+                            <Field
+                              type="text"
+                              name="name"
+                              value={values.name}
+                              className="form-input bg-grey w-48"
+                            />
+                            {errors.name && touched.name ? (
+                              <div className="text-red-600">{errors.name}</div>
+                            ) : null}
+                          </label>
+                        </div>
+
+                        <div className="flex w-full justify-end mt-24 ">
+                          <Button
+                            className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
+                            handleClick={handleReset}
+                          >
+                            Reset
+                          </Button>
+                          <button
+                            className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
+                            type="submit"
+                          >
+                            Save
+                          </button>
+                        </div>
+                      </div>
+                    </Form>
+                  )}
+                </Formik>
+              </div>
+            </FormModal>
+          )}
         </div>
       </div>
     </>
@@ -261,25 +407,34 @@ export default function Departments() {
 interface VehiclesTableProps {
   departments: DocumentData[];
   updateFetchedDepartments: (updatedDepartments: DocumentData[]) => void;
+  handleEditClick: any;
 }
 
 export function DepartmentsTable({
   departments,
   updateFetchedDepartments,
+  handleEditClick,
 }: VehiclesTableProps) {
   const [currentPage, setCurrentPage] = useState(0);
 
-  const handleDeactivate = (id: string) => {
-    // Implement your deactivation logic here
-    console.log(`Deactivating department with ID: ${id}`);
+  const updateVehicleStatusInDatabase = async (
+    classId: string,
+    newStatus: boolean
+  ) => {
+    try {
+      const vehicleRef = doc(fbDb, "departments", classId);
+      await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
+      console.log("Class status updated in the database:", classId);
 
-    // Filter out the deactivated department from the list
-    const updatedDepartments = departments.filter(
-      (department) => department.id !== id
-    );
-
-    // Update the state with the filtered list of departments
-    updateFetchedDepartments(updatedDepartments);
+      const updatedVehicles = departments.map((department) =>
+        department.id === classId
+          ? { ...department, archive: newStatus }
+          : department
+      );
+      updateFetchedDepartments(updatedVehicles);
+    } catch (error) {
+      console.error("Error updating Department status in database:", error);
+    }
   };
   //   const Headers = ["GROUP ID", "NAME","UPDATED"]
   const rowsPerPage = 6;
@@ -331,7 +486,7 @@ export function DepartmentsTable({
                     return (
                       <Fragment key={index}>
                         <tr className="hover:bg-gray-100">
-                          <td className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 text-d-blue text-base sm:pl-0 flex flex-row">
+                          {/* <td className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 text-d-blue text-base sm:pl-0 flex flex-row">
                             {departments.departmentId}
                             <ViewMenu
                               departmentId={departments.id}
@@ -339,12 +494,31 @@ export function DepartmentsTable({
                                 handleDeactivate(departments.id)
                               }
                             />
-                          </td>
+                          </td> */}
                           <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
                             {departments.name}
                           </td>
                           <td className="whitespace-nowrap px-2 py-2 relative">
                             {formatDistanceToNow(updatedDate)} ago
+                          </td>
+                          <td className="whitespace-nowrap px-2 py-2 relative flex flex-row">
+                            <div onClick={() => handleEditClick(departments)}>
+                              <EditBtn />
+                            </div>
+                            <div>
+                              <button
+                                className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2 ml-4"
+                                onClick={() =>
+                                  updateVehicleStatusInDatabase(
+                                    departments.id,
+                                    !departments.archive
+                                  )
+                                }
+                              >
+                                {departments.archive ? "Unarchive" : "Archive"}
+                              </button>
+                            </div>
+                            <div className="h-10"></div>
                           </td>
                           <div className="h-10 font-nunito font-regular"></div>
                         </tr>

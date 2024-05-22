@@ -789,7 +789,7 @@ export function TripsTable({
     if (selectedTab === 0) {
       return true;
     } else if (selectedTab === 1) {
-      return currentDate < maintenanceDate;
+      return currentDate > maintenanceDate;
     }
 
     return true;

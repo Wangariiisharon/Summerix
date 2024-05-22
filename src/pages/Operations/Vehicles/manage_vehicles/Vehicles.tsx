@@ -189,6 +189,7 @@ export default function Vehicles() {
     inspection_certificates: any;
     transit_permits: any;
   }) => {
+    console.log("Values:", values);
     setShowAddVehicleModal(true);
     setOpen(true);
 
@@ -317,6 +318,7 @@ export default function Vehicles() {
     setOpen(false);
     setShowAddVehicleModal(false);
   };
+
   interface CompanyData {
     name: string;
     vehicle?: string[]; // Assuming 'vehicle' is an array of strings
@@ -462,7 +464,6 @@ export default function Vehicles() {
         if (organisationId) {
           // Fetch all vehicles
           // const vehiclesSnapshot = await getDocs(collection(fbDb, "vehicles"));
-
           const vehiclesSnapshot = await getDocs(
             query(
               collection(fbDb, "vehicles"),
@@ -519,8 +520,7 @@ export default function Vehicles() {
         if (organisationId) {
           const q = query(
             collection(db, "vehicles"),
-            where("organisationId", "==", organisationId),
-            where("archive", "==", false)
+            where("organisationId", "==", organisationId)
           );
 
           const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -766,7 +766,10 @@ export default function Vehicles() {
           <div className="flex w-full justify-end mt-4">
             <div className="flex justify-end text-base mr-2">
               <div className="ml-2 flex flex-row">
-                <AddButton name="Add Vehicle" handleAddClick={handleSubmit} />
+                <AddButton
+                  name="Add Vehicle"
+                  handleAddClick={handleAddVehicles}
+                />
                 <div className="ml-2">
                   <Button
                     className="rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2 "
@@ -1223,24 +1226,7 @@ export default function Vehicles() {
                             <label className="form-label">
                               OWNERSHIP STATUS
                             </label>
-                            {/* <Field
-                           as="select"
-                           type="text"
-                           name="ownership_status"
-                           value={formik.values.ownership_status}
-                           className="form-input bg-grey w-48"
-                           onChange={(e: any) => {
-                             setShowLeaseInput(e.target.value === "Owned");
-                             console.log(
-                               "Ownership Status Changed:",
-                               e.target.value
-                             );
-                           }}
-                         >
-                           <option value="">Select Status</option>
-                           <option value="Owned">Owned</option>
-                           <option value="Leased">Leased</option>
-                         </Field> */}
+
                             <Field
                               as="select"
                               type="text"
@@ -1272,24 +1258,6 @@ export default function Vehicles() {
                                 </label>
                               </div>
                             )}
-                            {/* 
-                         {(formik.values.ownership_status === "Owned" ||
-                           showLeaseInput) && (
-                           <div className="mt-8">
-                             <label className="block">
-                               <label className="form-label">
-                                 PURCHASE PRICE
-                               </label>
-                               <Field
-                                 type="number"
-                                 name="lease_amount"
-                                 value={formik.values.lease_amount}
-                                 placeholder="Ksh"
-                                 className="form-input bg-grey w-48"
-                               />
-                             </label>
-                           </div>
-                         )} */}
                           </label>
                           <label className="block">
                             <label className="form-label">MODEL</label>
@@ -1613,9 +1581,8 @@ export function VehiclesTable({
 
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-  const visibleVehicles = sortedVehicles
-    .slice(startIndex, endIndex)
-    .filter((admin) => !admin.archive);
+  const visibleVehicles = sortedVehicles.slice(startIndex, endIndex);
+  // .filter((admin) => !admin.archive);
   // const visibleVehicles = sortedVehicles.slice(startIndex, endIndex);
 
   const handleReassign = () => {

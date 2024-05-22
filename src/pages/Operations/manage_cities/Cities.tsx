@@ -687,9 +687,8 @@ function CitiesTable({
   console.log("These are the sortedVehicles", sortedClients);
 
   // const visibleClients = sortedClients.slice(startIndex, endIndex);
-  const visibleClients = sortedClients
-    .slice(startIndex, endIndex)
-    .filter((client) => !client.archive);
+  const visibleClients = sortedClients.slice(startIndex, endIndex);
+  // .filter((client) => !client.archive);
   const updateVehicleStatusInDatabase = async (
     clientId: string,
     newStatus: boolean

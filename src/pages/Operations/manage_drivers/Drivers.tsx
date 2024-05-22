@@ -928,7 +928,7 @@ export function DriversTable({
   // Filter and sort drivers
   const filteredDrivers = drivers.filter((driver) => {
     const fullName = `${driver.name}`.toLowerCase();
-    return !driver.archive && fullName.includes(searchQuery.toLowerCase());
+    return fullName.includes(searchQuery.toLowerCase());
   });
 
   const sortedDrivers = [...filteredDrivers].sort((a, b) =>
