@@ -210,41 +210,13 @@ export default function Admins() {
     phonenumber: any;
     super_admin: boolean;
     invitationSent: boolean;
-    // department: DocumentReference;
     department: string; // Ensure correct type for department
   }) => {
     console.log("Submitted Values:", values);
     console.log("User", user);
 
     try {
-      if (!values.firstname) {
-        console.error(`Please fill the field ${values.firstname}`);
-        toast.error(`Please fill the field FirstName`);
-        return;
-      }
-      if (!values.lastname) {
-        console.error(`Please fill the field ${values.firstname}`);
-        toast.error(`Please fill the field LastName`);
-        return;
-      }
-      if (!values.email) {
-        console.error(`Please fill the field ${values.firstname}`);
-        toast.error(`Please fill the field Email`);
-        return;
-      }
-      if (!values.phonenumber) {
-        console.error(`Please fill the field ${values.firstname}`);
-        toast.error(`Please fill the field Phone number`);
-        return;
-      }
-      if (!values.department) {
-        console.error(`Please fill the field ${values.department}`);
-        toast.error(`Please fill the field Department`);
-        return;
-      }
-
       const auth = getAuth(firebaseApp);
-
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         values.email,
@@ -285,7 +257,6 @@ export default function Admins() {
 
         // Access the organisationId from inviterData
         organisationId = inviterData.organisationId;
-
         // Now you can use organisationId as needed
         console.log("Organisation ID:", organisationId);
       } else {
@@ -400,57 +371,6 @@ export default function Admins() {
     console.log("Edited Values:", values);
 
     try {
-      if (!values.firstname) {
-        console.error(`Please fill the field FirstName`);
-        toast.error(`Please fill the field FirstName`);
-        return;
-      }
-      if (!values.lastname) {
-        console.error(`Please fill the field LastName`);
-        toast.error(`Please fill the field LastName`);
-        return;
-      }
-      if (!values.email) {
-        console.error(`Please fill the field Email`);
-        toast.error(`Please fill the field Email`);
-        return;
-      }
-      if (!values.phonenumber) {
-        console.error(`Please fill the field  Phone number`);
-        toast.error(`Please fill the field Phone number`);
-        return;
-      }
-      if (!values.department) {
-        console.error(`Please fill the field Department`);
-        toast.error(`Please fill the field Department`);
-        return;
-      }
-      if (!values.firstname) {
-        console.error(`Please fill the field ${values.firstname}`);
-        toast.error(`Please fill the field FirstName`);
-        return;
-      }
-      if (!values.lastname) {
-        console.error(`Please fill the field ${values.firstname}`);
-        toast.error(`Please fill the field LastName`);
-        return;
-      }
-      if (!values.email) {
-        console.error(`Please fill the field ${values.firstname}`);
-        toast.error(`Please fill the field Email`);
-        return;
-      }
-      if (!values.phonenumber) {
-        console.error(`Please fill the field ${values.firstname}`);
-        toast.error(`Please fill the field Phone number`);
-        return;
-      }
-      if (!values.department) {
-        console.error(`Please fill the field ${values.department}`);
-        toast.error(`Please fill the field Department`);
-        return;
-      }
-
       // Update the vehicle data in the database using the selectedVehicle.id
       const AdminRef = doc(fbDb, "admins", selectedAdmin.id);
       await setDoc(AdminRef, {
@@ -497,10 +417,6 @@ export default function Admins() {
     } catch (error) {
       console.error("Error updating Admin:", error);
     }
-  };
-
-  const handleDropdownClick = (event: { stopPropagation: () => void }) => {
-    event.stopPropagation();
   };
 
   return (
@@ -875,9 +791,11 @@ export function AdminsTable({
 }: AdminsTableProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const rowsPerPage = 6;
-  console.log("AdminsTable Rendering with selectedTab:", selectedTab);
+  const totalTrips = filteredAdmins.length;
+  const totalPages = Math.ceil(totalTrips / rowsPerPage);
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
+  const router = useRouter();
   console.log("Filterd Admins", filteredAdmins);
 
   const handleUserClick = (admin: any) => {
@@ -904,10 +822,24 @@ export function AdminsTable({
     }
   };
 
+  const handlePageClick = (page: number) => {
+    setCurrentPage(page);
+  };
+  const pageNumbers = () => {
+    let pages = [];
+    if (totalPages <= 5) {
+      for (let i = 0; i < totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      pages = [0, 1, 2, 3, "...", totalPages - 1];
+    }
+    return pages;
+  };
+
   // const visibleAdmins = filteredAdmins.slice(startIndex, endIndex);
-  const visibleAdmins = filteredAdmins
-    .slice(startIndex, endIndex)
-    .filter((admin) => !admin.archive);
+  const visibleAdmins = filteredAdmins.slice(startIndex, endIndex);
+  // .filter((admin) => !admin.archive);
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="flow-root">
@@ -992,25 +924,27 @@ export function AdminsTable({
           </div>
         </div>
       </div>
-
-      <div
-        className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
-          text-sm font-nunito font-bold uppercase bg-[#FAFAFB]"
-      >
-        <button
-          className="ml-5"
-          onClick={() => setCurrentPage(currentPage - 1)}
-          disabled={currentPage === 0}
-        >
-          Prev
+      <div className="flex justify-between items-center pt-4">
+        <button onClick={() => handlePageClick(0)} disabled={currentPage === 0}>
+          {"<<"}
         </button>
-        <span className="ml-5">{currentPage + 1}</span>
+        {pageNumbers().map((num, index) => {
+          // Only render buttons for numbers, and static text for ellipsis
+          if (typeof num === "number") {
+            return (
+              <button key={index} onClick={() => handlePageClick(num)}>
+                {num + 1}
+              </button>
+            );
+          } else {
+            return <span key={index}>...</span>;
+          }
+        })}
         <button
-          className="ml-5"
-          onClick={() => setCurrentPage(currentPage + 1)}
-          disabled={endIndex >= filteredAdmins.length}
+          onClick={() => handlePageClick(totalPages - 1)}
+          disabled={currentPage === totalPages - 1}
         >
-          Next
+          {">>"}
         </button>
       </div>
     </div>

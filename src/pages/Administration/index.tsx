@@ -2,19 +2,35 @@ import { Header } from "@/components/Headers";
 import { Tab } from "@headlessui/react";
 import { Fragment, useEffect, useState } from "react";
 import Admins from "./Admins/manage_admins/Admins";
-
 import CompanyProfile from "./Users/companyProfile";
 import Avatar_profile_photo from "../../../public/Avatar_profile_photo.png";
-import Cities from "../Operations/manage_cities/Cities";
-import Vehicles from "../Operations/Vehicles/manage_vehicles/Vehicles";
-import Drivers from "../Operations/manage_drivers/Drivers";
-import Roles from "./Admins/manage_roles/Roles";
 import Departments from "./Admins/manage_department/Departments";
 import SiteLayout from "@/Layout/SiteLayout";
-import Profile from "../Profile";
-import HamburgerMenu from "@/components/hamburgerMenu";
-import AssignRole from "./Admins/manage_roles/assignRole";
 import Image from "next/image";
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  onSnapshot,
+  setDoc,
+  doc,
+  getDoc,
+  updateDoc,
+} from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
+import toast from "react-hot-toast";
+
+interface JobCardData {
+  id: string;
+  publicProfile: string;
+  phoneNumber: string;
+  country: string;
+  timezone: string;
+  currency: string;
+  photoURL?: string;
+}
 
 const tabs = [
   { name: "Company Profile", href: "#", current: false },
@@ -27,6 +43,18 @@ function classNames(...classes: any) {
 }
 
 export default function AdministrationComponent() {
+  const [fetchedJobcards, setFetchedJobcards] = useState<JobCardData[]>([]);
+  const { organisationId } = useAuthContext();
+  const [companySettings, setCompanySettings] = useState<JobCardData>({
+    id: "",
+    publicProfile: "",
+    phoneNumber: "",
+    country: "",
+    timezone: "",
+    currency: "",
+    photoURL: "",
+  });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   useEffect(() => {
@@ -36,6 +64,114 @@ export default function AdministrationComponent() {
       setSelectedIndex(parseInt(savedIndex, 10));
     }
   }, []);
+
+  useEffect(() => {
+    const fetchJobcards = async () => {
+      const db = getFirestore();
+
+      try {
+        if (organisationId) {
+          const q = query(
+            collection(db, "companyProfile"),
+            where("organisationId", "==", organisationId)
+          );
+
+          const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const jobcardData = querySnapshot.docs.map((doc) => ({
+              id: doc.id,
+              publicProfile: doc.data().publicProfile,
+              phoneNumber: doc.data().phoneNumber,
+              country: doc.data().country,
+              timezone: doc.data().timezone,
+              currency: doc.data().currency,
+              photoURL: doc.data().photoURL || "",
+            })) as JobCardData[];
+            setFetchedJobcards(jobcardData);
+            if (jobcardData.length > 0) {
+              setCompanySettings(jobcardData[0]);
+            }
+          });
+
+          return () => unsubscribe();
+        } else {
+          console.error("Organisation ID is not available.");
+        }
+      } catch (error) {
+        console.error("Error fetching Company settings:", error);
+      }
+    };
+    fetchJobcards();
+  }, [organisationId]);
+  console.log("fetchedJobcards", fetchedJobcards);
+
+  const handleSaveChanges = async () => {
+    const db = getFirestore();
+    const settingsRef = doc(
+      db,
+      "companyProfile",
+      companySettings.id || doc(collection(db, "companyProfile")).id
+    );
+
+    try {
+      await setDoc(
+        settingsRef,
+        {
+          organisationId,
+          ...companySettings,
+        },
+        { merge: true }
+      );
+
+      console.log("Settings successfully updated!");
+      toast.success("Settings successfully updated!");
+    } catch (error) {
+      console.error("Error updating settings: ", error);
+      toast.error("Error updating settings");
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+      await handleUploadPhoto(e.target.files[0]);
+    }
+  };
+
+  const handleUploadPhoto = async (file: File) => {
+    const storage = getStorage();
+    const storageRef = ref(storage, `companyProfiles/${file.name}`);
+
+    try {
+      await uploadBytes(storageRef, file);
+      const photoURL = await getDownloadURL(storageRef);
+      setCompanySettings((prevSettings) => ({ ...prevSettings, photoURL }));
+
+      const db = getFirestore();
+      const settingsRef = doc(
+        db,
+        "companyProfile",
+        companySettings.id || doc(collection(db, "companyProfile")).id
+      );
+
+      const docSnap = await getDoc(settingsRef);
+
+      if (docSnap.exists()) {
+        await updateDoc(settingsRef, { photoURL });
+      } else {
+        await setDoc(
+          settingsRef,
+          { organisationId, photoURL },
+          { merge: true }
+        );
+      }
+
+      console.log("Photo successfully uploaded and settings updated!");
+      toast.success("Photo successfully uploaded and settings updated!");
+    } catch (error) {
+      console.error("Error uploading photo: ", error);
+      toast.error("Error uploading photo");
+    }
+  };
 
   return (
     <SiteLayout>
@@ -49,7 +185,13 @@ export default function AdministrationComponent() {
         </div>
         <div className="flex flex-row mt-[30px] pl-9">
           <div className="mt-custom1 mr-custom2 mb-custom3 rounded-custom shadow-custom border-custom border-white">
-            <Image src={Avatar_profile_photo} alt={"logo"} priority={true} />
+            <Image
+              src={companySettings.photoURL || Avatar_profile_photo}
+              alt="logo"
+              width={100}
+              height={100}
+              priority={true}
+            />
           </div>
           <div className="flex-grow-0 flex flex-col justify-start items-start gap-2.5 py-2.5 px-2.5 ml-[31px] ">
             <div className="flex-grow-0 flex flex-col justify-start items-start gap-1 p-0">
@@ -61,19 +203,23 @@ export default function AdministrationComponent() {
               </div>
             </div>
             <div className="flex flex row">
-              <div className="flex-grow-0 flex justify-center items-center gap-2.5 py-2 px-6 rounded bg-teal-400">
+              <div className="flex-grow-0 flex justify-center items-center gap-2.5 py-2 px-6 rounded bg-teal-400  rounded hover:bg-teal-600">
                 <div className="self-center flex-grow-0 object-contain">
                   <i className="fa fa-camera text-white" aria-hidden="true"></i>
                 </div>
-                <div
-                  className="flex-grow-0 text-base font-normal text-left text-white"
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  style={{ display: "none" }}
+                  id="fileInput"
+                />
+                <label
+                  htmlFor="fileInput"
+                  className="flex-grow-0 text-base font-normal text-left text-white cursor-pointer"
                   style={{ lineHeight: "0.75" }}
                 >
                   Upload a new photo
-                </div>
-              </div>
-              <div className="flex-grow-0 flex justify-center items-center gap-2.5 py-2 px-8 rounded border border-gray-200 bg-gray-50 ml-[15px]">
-                Reset
+                </label>
               </div>
             </div>
           </div>
@@ -84,7 +230,10 @@ export default function AdministrationComponent() {
 
         <div>
           <div className="pl-9 mt-[16px]">
-            <Tab.Group>
+            <Tab.Group
+              selectedIndex={selectedIndex}
+              onChange={setSelectedIndex}
+            >
               <Tab.List
                 className="flex justify-start
                items-center gap-2.5 py-2.5 px-4 border-b border-gray-300 rounded-lg"

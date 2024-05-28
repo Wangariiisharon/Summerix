@@ -1,46 +1,59 @@
-// Import required modules
 const functions = require("firebase-functions");
-const next = require("next");
 const admin = require("firebase-admin");
 const axios = require("axios");
 
-// Initialize Firebase Admin SDK
 admin.initializeApp();
+const db = admin.firestore();
 
-// Define your function
+const getSettingsCurrencies = async () => {
+  const snapshot = await db.collection("settings").doc("currencies").get();
+  if (snapshot.exists) {
+    return Object.keys(snapshot.data());
+  }
+  return [];
+};
+
 const getOpenExchangeCurrency = async () => {
   try {
-    // Get currencies from settings > currency collectionN
-    const currencies = await getSettingsCurrencies(); // As Array
-    if (currencies) {
+    const currencies = await getSettingsCurrencies();
+    if (currencies.length > 0) {
       const options = {
         method: "GET",
         url: "https://openexchangerates.org/api/latest.json",
         params: {
-          app_id: "", // pass app ID provided during registration
-          base: "usd",
+          app_id: "1cfa9b9f86664a7db05a07b977b41ccd", // Replace with your OpenExchangeRates app ID
+          base: "USD",
           symbols: currencies.join(","),
-          prettyprint: false,
-          show_alternative: false,
         },
         headers: {
           accept: "application/json",
         },
       };
+
       const response = await axios.request(options);
       if (response.data) {
-        console.log("response", response.data.rates);
+        const rates = response.data.rates;
+        const updateData = {};
         currencies.forEach((currency) => {
-          const currencyRate = response.data.rates[currency];
-          console.log("currency rate", currencyRate);
-          // TODO: update the rate on the currency settings page for this currency
+          if (rates[currency.toUpperCase()]) {
+            updateData[currency] = rates[currency.toUpperCase()];
+          }
         });
+
+        await db
+          .collection("settings")
+          .doc("currencies")
+          .set(updateData, { merge: true });
+        console.log("Currency rates updated successfully.");
       }
     }
   } catch (error) {
-    console.error("error", error);
+    console.error("Error fetching currency rates:", error);
   }
 };
 
-// Export your function using CommonJS syntax
-module.exports = { getOpenExchangeCurrency };
+exports.getOpenExchangeCurrency = functions.pubsub
+  .schedule("every 24 hours")
+  .onRun(async (context) => {
+    await getOpenExchangeCurrency();
+  });
