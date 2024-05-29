@@ -175,7 +175,7 @@ export default function CompanyProfile() {
   };
 
   return (
-    <div className="pl-9">
+    <div className="bg-[#FFFFFF] pl-9 bg">
       <div className="flex flex-row border-b border-gray-300">
         <div className="flex flex-col justify-start items-start gap-2 mt-2 mr-[110px] mb-2">
           <div className="flex-grow-0 text-base font-bold text-left text-dark-blue font-outfit">

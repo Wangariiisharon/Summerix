@@ -43,8 +43,21 @@ import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import { getMessaging, getToken } from "firebase/messaging";
 import "firebase/firestore";
 import * as Yup from "yup";
+import { FaEdit, FaTrash, FaArchive } from "react-icons/fa";
 
-const Headers = ["Id", "Name", "Phone", "Admin"];
+interface DepartmentData {
+  name: string;
+}
+interface AdminData {
+  id: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+  department: DocumentReference<DocumentData> | string;
+  status: boolean;
+  super_admin: boolean;
+  archive: boolean;
+}
 
 export default function Admins() {
   const [open, setOpen] = useState(false);
@@ -52,7 +65,6 @@ export default function Admins() {
   const [fetchedAdmins, setFetchedAdmins] = useState<DocumentData[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAdmin, setSelectedAdmin] = useState<DocumentData | null>(null);
-  // const [fcmToken, setFcmToken] = useState("");
   const [permissions, setPermissions] = useState<string[]>([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editFormInitialValues, setEditFormInitialValues] = useState({
@@ -76,22 +88,6 @@ export default function Admins() {
   const [departmentReference, setDepartmentReference] =
     useState<DocumentReference<DocumentData> | null>(null);
 
-  const router = useRouter();
-  // let { organisationId } = useAuthContext();
-  console.log("Admins Organisation ID:", organisationId);
-  const handleSearchChange = (e: any) => {
-    const query = e.target.value;
-    console.log("Search Query:", query);
-    setSearchQuery(query);
-  };
-
-  const filteredAdmins = fetchedAdmins.filter((admin) => {
-    const fullName = `${admin.firstname} ${admin.lastname}`.toLowerCase();
-    const nameMatch = fullName.includes(searchQuery.toLowerCase());
-    // Check if status is true (either boolean or string 'true')
-    const isStatusTrue = admin.status === true || admin.status === "true";
-    return isStatusTrue && nameMatch;
-  });
   const validationSchema = Yup.object({
     firstname: Yup.string().required("First name is required"),
     lastname: Yup.string().required("Last name is required"),
@@ -146,25 +142,68 @@ export default function Admins() {
       }
     };
 
+    // const fetchedAdmins = async () => {
+    //   const db = getFirestore();
+
+    //   try {
+    //     if (organisationId) {
+    //       const q = query(
+    //         collection(db, "admins"),
+    //         where("organisationId", "==", organisationId)
+    //       );
+
+    //       const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    //         const adminsData = querySnapshot.docs.map((doc) => {
+    //           const departmentRef = doc.data().department;
+    //           return {
+    //             id: doc.id,
+    //             departmentRef,
+    //             ...doc.data(),
+    //           };
+    //         });
+    //         setFetchedAdmins(adminsData);
+    //       });
+
+    //       return () => unsubscribe();
+    //     } else {
+    //       console.error("Organisation ID is not available.");
+    //     }
+    //   } catch (error) {
+    //     console.error("Error fetching Admins:", error);
+    //   }
+    // };
     const fetchedAdmins = async () => {
       const db = getFirestore();
 
       try {
         if (organisationId) {
           const q = query(
-            collection(db, "admins"),
+            collection(fbDb, "admins"),
             where("organisationId", "==", organisationId)
           );
 
-          const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const adminsData = querySnapshot.docs.map((doc) => {
-              const departmentRef = doc.data().department;
-              return {
-                id: doc.id,
-                departmentRef,
-                ...doc.data(),
-              };
-            });
+          const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+            const adminsData = await Promise.all(
+              querySnapshot.docs.map(async (doc) => {
+                const adminData = doc.data() as AdminData;
+                let departmentName = "Unknown Department";
+
+                if (adminData.department instanceof DocumentReference) {
+                  const deptDoc = await getDoc(adminData.department);
+                  if (deptDoc.exists()) {
+                    const deptData = deptDoc.data() as DepartmentData;
+                    departmentName = deptData.name;
+                  }
+                } else {
+                  departmentName = adminData.department;
+                }
+
+                return {
+                  ...adminData,
+                  department: departmentName,
+                };
+              })
+            );
             setFetchedAdmins(adminsData);
           });
 
@@ -421,18 +460,17 @@ export default function Admins() {
 
   return (
     <>
-      <div className="bg-[#FAFAFB]">
+      <div className="bg-[#FFFFFF]">
         <div className="mt-2 max-h-[700px]">
           <Tab.Group>
-            <div className="mb-2 flex w-full justify-end">
-              <div className="bg-[#FAFAFB]"></div>
+            <div className="mb-2 flex w-full">
+              <div className="mr-[550px] flex flex-col ml-6">
+                <h2 className="font-semibold text-[#030229]">Users</h2>
+                <div className="mt-[8px] text-sm text-[#6b6b73]">
+                  Manage your teams & user permissions.
+                </div>
+              </div>
               <div className="flex justify-end text-base mr-2">
-                <SearchBar
-                  placeholder="Search User"
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  className="h-6"
-                />
                 <div className="ml-2">
                   <AddButton name="Add User" handleAddClick={handleAddAdmin} />
                 </div>
@@ -445,7 +483,7 @@ export default function Admins() {
                   <AdminsTable
                     selectedTab={selectedTab}
                     admins={fetchedAdmins}
-                    filteredAdmins={filteredAdmins}
+                    filteredAdmins={fetchedAdmins}
                     updateFetchedAdmins={updateFetchedAdmins}
                     handleEditClick={handleEditClick}
                   />
@@ -627,9 +665,6 @@ export default function Admins() {
                   </div>
 
                   <Formik
-                    // initialValues={editFormInitialValues}
-                    // onSubmit={handleEditSubmit}
-
                     validationSchema={EditvalidationSchema}
                     initialValues={editFormInitialValues}
                     onSubmit={handleEditSubmit}
@@ -797,9 +832,22 @@ export function AdminsTable({
   const endIndex = startIndex + rowsPerPage;
   const router = useRouter();
   console.log("Filterd Admins", filteredAdmins);
+  const [searchQuery, setSearchQuery] = useState("");
+  const handleSearchChange = (e: any) => {
+    const query = e.target.value;
+    console.log("Search Query:", query);
+    setSearchQuery(query);
+  };
+
+  const fetchedAdmins = admins.filter((admin) => {
+    const fullName = `${admin.firstname} ${admin.lastname}`.toLowerCase();
+    const nameMatch = fullName.includes(searchQuery.toLowerCase());
+    // Check if status is true (either boolean or string 'true')
+    const isStatusTrue = admin.status === true || admin.status === "true";
+    return isStatusTrue && nameMatch;
+  });
 
   const handleUserClick = (admin: any) => {
-    // router.push(`Administration/Admins/manage_admins/viewAdmins?id=${admin.id}`);
     router.push(`Administration/Admins/manage_admins/viewAdmin?id=${admin.id}`);
     console.log("The admin", admin);
   };
@@ -813,7 +861,7 @@ export function AdminsTable({
       console.log("Admin status updated in the database:", vehicleId);
       toast.success("Admin archived successfully");
 
-      const updatedVehicles = filteredAdmins.map((admin) =>
+      const updatedVehicles = fetchedAdmins.map((admin) =>
         admin.id === vehicleId ? { ...admin, archive: newStatus } : admin
       );
       updateFetchedAdmins(updatedVehicles);
@@ -837,115 +885,116 @@ export function AdminsTable({
     return pages;
   };
 
-  // const visibleAdmins = filteredAdmins.slice(startIndex, endIndex);
-  const visibleAdmins = filteredAdmins.slice(startIndex, endIndex);
-  // .filter((admin) => !admin.archive);
+  const visibleAdmins = fetchedAdmins.slice(startIndex, endIndex);
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
-      <div className="flow-root">
-        <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-            <table className="min-w-full divide-y divide-gray-300">
-              <thead>
-                <tr>
-                  <th
-                    scope="col"
-                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                  >
-                    ID
-                  </th>
-                  <th
-                    scope="col"
-                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                  >
-                    NAME
-                  </th>
-                  <th
-                    scope="col"
-                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                  >
-                    PHONE
-                  </th>
-                  <th
-                    scope="col"
-                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                  >
-                    ADMIN
-                  </th>
-                  <th
-                    scope="col"
-                    className="relative whitespace-nowrap py-3.5 pl-3 pr-4 sm:pr-0"
-                  ></th>
-                </tr>
-              </thead>
-              <tbody className="bg-[#FAFAFB]">
-                {visibleAdmins.map((admin: any, index: any) => (
-                  <Fragment key={index}>
-                    <tr className="hover:bg-gray-100">
-                      <td
-                        className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 pr-3 text-d-blue text-base sm:pl-0"
-                        onClick={() => handleUserClick(admin)}
-                      >
-                        {admin.adminId}
-                      </td>
-                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">{`${admin.firstname} ${admin.lastname}`}</td>
-                      <td className="whitespace-nowrap px-2 py-2 relative">
-                        {admin.phonenumber}
-                      </td>
-                      <td className="whitespace-nowrap px-2 py-2 relative flex flex-row">
-                        <div
-                          className="ml-4"
-                          onClick={(event) => {
-                            event.stopPropagation(); // Stop the event from bubbling up
-                            handleEditClick(admin);
-                          }}
-                        >
-                          <EditBtn />
-                        </div>
-                        <div>
-                          <button
-                            className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2 ml-4"
-                            onClick={() =>
-                              updateVehicleStatusInDatabase(
-                                admin.id,
-                                !admin.archive
-                              )
-                            }
-                          >
-                            {admin.archive ? "Unarchive" : "Archive"}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  </Fragment>
-                ))}
-              </tbody>
-            </table>
+    <div className="container mx-auto p-4 bg-white">
+      <div className="overflow-x-auto bg-gray-100 shadow-md rounded-lg">
+        <div className="flex flex-row">
+          <h2 className="font-semibold py-3 px-6 text-[#030229]">
+            Manage Users
+          </h2>
+          <div className="ml-[470px] py-3 px-6">
+            <SearchBar
+              placeholder="Search User"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              className="h-6"
+            />
           </div>
         </div>
-      </div>
-      <div className="flex justify-between items-center pt-4">
-        <button onClick={() => handlePageClick(0)} disabled={currentPage === 0}>
-          {"<<"}
-        </button>
-        {pageNumbers().map((num, index) => {
-          // Only render buttons for numbers, and static text for ellipsis
-          if (typeof num === "number") {
-            return (
-              <button key={index} onClick={() => handlePageClick(num)}>
-                {num + 1}
-              </button>
-            );
-          } else {
-            return <span key={index}>...</span>;
-          }
-        })}
-        <button
-          onClick={() => handlePageClick(totalPages - 1)}
-          disabled={currentPage === totalPages - 1}
-        >
-          {">>"}
-        </button>
+        <div className="overflow-y-auto flow-root max-h-96">
+          <table className="min-w-full bg-white ">
+            <thead className="bg-gray-100 text-gray-600 sticky top-0 z-10 ">
+              <tr>
+                {/* <th className="py-3 px-6 text-left ">Name</th> */}
+                <th className="py-3 px-6 text-left">
+                  <input type="checkbox" className="mr-3" />
+                  Name
+                </th>
+                <th className="py-3 px-6 text-left">Role</th>
+                <th className="py-3 px-6 text-left">Department</th>
+                <th className="py-3 px-6 text-left">Status</th>
+                <th className="py-3 px-6 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="text-gray-700">
+              {fetchedAdmins.map((admin: any, index: any) => (
+                <tr key={index} className="border-b">
+                  <td className="py-3 px-6">
+                    <div className="flex items-center">
+                      <input type="checkbox" className="mr-3" />
+                      <div>
+                        <p className="font-semibold">
+                          {admin.firstname} {admin.lastname}
+                        </p>
+                        <p className="text-sm text-gray-600">{admin.email}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-3 px-6">
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm ${
+                        admin.super_admin
+                          ? "bg-[#065ad8] text-white"
+                          : "bg-[#065ad8] text-white"
+                      }`}
+                    >
+                      {admin.super_admin ? "Admin" : "User"}
+                    </span>
+                  </td>
+                  <td className="py-3 px-6">
+                    <span className="px-3 py-1 rounded-full text-sm bg-[#f7d4d6] text-[#c91010]">
+                      {admin.department}
+                    </span>
+                  </td>
+                  <td className="py-3 px-6">
+                    <span
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
+                        admin.status
+                          ? "bg-[#b9f9cf] text-[#11a849]"
+                          : "bg-[#f4f4f4] text-[#030229]"
+                      }`}
+                    >
+                      <span
+                        className={`h-2 w-2 rounded-full mr-2 ${
+                          admin.status ? "bg-[#11a849]" : "bg-[#030229]"
+                        }`}
+                      ></span>
+                      {admin.status ? "Active" : "Inactive"}
+                    </span>
+                  </td>
+                  <td className="py-3 px-6">
+                    <div className="flex space-x-2">
+                      <button
+                        className="text-blue-500 hover:text-blue-600"
+                        onClick={(event) => {
+                          event.stopPropagation(); // Stop the event from bubbling up
+                          handleEditClick(admin);
+                        }}
+                      >
+                        <FaEdit />
+                      </button>
+                      <button className="text-red-500 hover:text-red-600">
+                        <FaTrash />
+                      </button>
+                      <button
+                        className="bg-[#eae8fd] text-[#786cf1] h-8 w-18 py-1 px-2 ml-4"
+                        onClick={() =>
+                          updateVehicleStatusInDatabase(
+                            admin.id,
+                            !admin.archive
+                          )
+                        }
+                      >
+                        {admin.archive ? "Unarchive" : "Archive"}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
