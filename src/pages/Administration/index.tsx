@@ -175,7 +175,7 @@ export default function AdministrationComponent() {
 
   return (
     <SiteLayout>
-      <div className=" bg-[#FAFAFB] flex flex-col">
+      <div className="bg-[#FFFFFF] flex flex-col">
         <div className="flex flex-col justify-center items-start gap-2.5 mt-17.5 mb-13 py-2.5 pl-9 bg-white">
           <div className="flex-grow-0 flex justify-center items-center gap-2.5 py-2.5 px-4">
             <div className="flex-grow-0 font-custom text-custom-size flex justify-center font-semibold text-left text-custom-color">
@@ -203,7 +203,7 @@ export default function AdministrationComponent() {
               </div>
             </div>
             <div className="flex flex row">
-              <div className="flex-grow-0 flex justify-center items-center gap-2.5 py-2 px-6 rounded bg-teal-400  rounded hover:bg-teal-600">
+              <div className="flex-grow-0 mr-[10px] flex justify-center items-center gap-2.5 py-2 px-6 rounded bg-teal-400  rounded hover:bg-teal-600">
                 <div className="self-center flex-grow-0 object-contain">
                   <i className="fa fa-camera text-white" aria-hidden="true"></i>
                 </div>
@@ -221,6 +221,9 @@ export default function AdministrationComponent() {
                   Upload a new photo
                 </label>
               </div>
+              <button className="border border-gray-300 text-gray-700 mr-[15px] font-medium py-2 px-6 rounded-md hover:bg-gray-100">
+                Cancel
+              </button>
             </div>
           </div>
         </div>
