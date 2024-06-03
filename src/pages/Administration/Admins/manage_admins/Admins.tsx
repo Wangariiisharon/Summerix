@@ -1,22 +1,15 @@
 import firebase from "firebase/app";
 import "firebase/firestore";
 import { Tab } from "@headlessui/react";
-import { AddButton, Button, EditBtn } from "@/components/Buttons";
-import { Fragment, SetStateAction, useEffect, useState, Dispatch } from "react";
+import { AddButton, Button } from "@/components/Buttons";
+import { SetStateAction, useEffect, useState } from "react";
 import SearchBar from "../../../../components/Forms/input";
-import Table, { DummyTable } from "../../../../components/Table/Table";
-import { BodyCell, HeaderCell } from "../../../../components/Table/Cells";
-import { TableBody } from "../../../../components/Table/Row";
-import {
-  CheckCircleIcon,
-  CheckIcon,
-  XCircleIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import router, { useRouter } from "next/router";
-import { FormModal } from "@/components/Modals/FormModal";
-import { Formik, Field, Form, useFormikContext } from "formik/dist/index";
+import { FormModal, NewFormModal } from "@/components/Modals/FormModal";
+import { Formik, Field, Form } from "formik/dist/index";
 import firebaseApp, { fbDb } from "@/firebase/configs";
+import AddAdmin from "./AddAdmin";
 import {
   User,
   createUserWithEmailAndPassword,
@@ -40,33 +33,53 @@ import {
 } from "firebase/firestore";
 import { toast } from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
-import { getMessaging, getToken } from "firebase/messaging";
+import axios from "axios";
 import "firebase/firestore";
 import * as Yup from "yup";
 import { FaEdit, FaTrash, FaArchive } from "react-icons/fa";
+import json2csv from "json2csv"; // Ensure this import matches your library setup
 
 interface DepartmentData {
   name: string;
 }
-interface AdminData {
-  id: string;
+// interface AdminData {
+//   id: string;
+//   firstname: string;
+//   lastname: string;
+//   email: string;
+//   department: DocumentReference<DocumentData> | string;
+//   status: boolean;
+//   super_admin: boolean;
+//   archive: boolean;
+// }
+interface Admin {
+  id: number;
   firstname: string;
   lastname: string;
   email: string;
-  department: DocumentReference<DocumentData> | string;
-  status: boolean;
   super_admin: boolean;
+  department: any;
+  status: boolean;
   archive: boolean;
+}
+interface Country {
+  cca3: string;
+  name: {
+    common: string;
+  };
 }
 
 export default function Admins() {
   const [open, setOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState<number>(0);
-  const [fetchedAdmins, setFetchedAdmins] = useState<DocumentData[]>([]);
+  const [fetchedAdmins, setFetchedAdmins] = useState<Admin[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAdmin, setSelectedAdmin] = useState<DocumentData | null>(null);
   const [permissions, setPermissions] = useState<string[]>([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [editFormInitialValues, setEditFormInitialValues] = useState({
     firstname: "",
     lastname: "",
@@ -88,13 +101,6 @@ export default function Admins() {
   const [departmentReference, setDepartmentReference] =
     useState<DocumentReference<DocumentData> | null>(null);
 
-  const validationSchema = Yup.object({
-    firstname: Yup.string().required("First name is required"),
-    lastname: Yup.string().required("Last name is required"),
-    email: Yup.string().required("Email details are required"),
-    phonenumber: Yup.string().required("Phone number address is required"),
-    department: Yup.string().required("Department is required"),
-  });
   const EditvalidationSchema = Yup.object({
     firstname: Yup.string().required("First name is required"),
     lastname: Yup.string().required("Last name is required"),
@@ -110,68 +116,10 @@ export default function Admins() {
   const handleReset = () => {
     setOpen(false);
   };
-  const updateFetchedVehicles = (
-    updatedAdmins: SetStateAction<DocumentData[]>
-  ) => {
+  const updateFetchedVehicles = (updatedAdmins: SetStateAction<Admin[]>) => {
     setFetchedAdmins(updatedAdmins);
   };
   useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const departmentQuery = query(
-          collection(fbDb, "departments"),
-          where("organisationId", "==", organisationId) // Filter by organisationId
-        );
-        const departmentSnapshot = await getDocs(departmentQuery);
-
-        if (departmentSnapshot.empty) {
-          console.log("No departments found for the given organisation.");
-          setDepartments([]);
-          return;
-        }
-
-        const departmentData = departmentSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          name: doc.data().name, // Assuming department name is stored in the 'name' field
-        }));
-
-        setDepartments(departmentData);
-        console.log("Departments:", departmentData);
-      } catch (error) {
-        console.error("Error fetching departments:", error);
-      }
-    };
-
-    // const fetchedAdmins = async () => {
-    //   const db = getFirestore();
-
-    //   try {
-    //     if (organisationId) {
-    //       const q = query(
-    //         collection(db, "admins"),
-    //         where("organisationId", "==", organisationId)
-    //       );
-
-    //       const unsubscribe = onSnapshot(q, (querySnapshot) => {
-    //         const adminsData = querySnapshot.docs.map((doc) => {
-    //           const departmentRef = doc.data().department;
-    //           return {
-    //             id: doc.id,
-    //             departmentRef,
-    //             ...doc.data(),
-    //           };
-    //         });
-    //         setFetchedAdmins(adminsData);
-    //       });
-
-    //       return () => unsubscribe();
-    //     } else {
-    //       console.error("Organisation ID is not available.");
-    //     }
-    //   } catch (error) {
-    //     console.error("Error fetching Admins:", error);
-    //   }
-    // };
     const fetchedAdmins = async () => {
       const db = getFirestore();
 
@@ -185,7 +133,7 @@ export default function Admins() {
           const unsubscribe = onSnapshot(q, async (querySnapshot) => {
             const adminsData = await Promise.all(
               querySnapshot.docs.map(async (doc) => {
-                const adminData = doc.data() as AdminData;
+                const adminData = doc.data() as Admin;
                 let departmentName = "Unknown Department";
 
                 if (adminData.department instanceof DocumentReference) {
@@ -217,147 +165,9 @@ export default function Admins() {
     };
 
     fetchedAdmins();
-    fetchDepartments();
   }, [organisationId]);
-  async function generateAdminId(organisationId: string | null) {
-    try {
-      const querySnapshot = await getDocs(
-        query(
-          collection(fbDb, "admins"),
-          where("organisationId", "==", organisationId)
-        )
-      );
-      const adminCount = querySnapshot.size;
 
-      // Customize this logic based on your requirements
-      return `U${(adminCount + 1).toString().padStart(3, "0")}`;
-    } catch (error) {
-      console.error("Error fetching admins count:", error);
-      // Handle error or return a default value
-      return "U001";
-    }
-  }
-  const auth = getAuth(firebaseApp);
-  // const user = currentUser(auth);
-  const user = auth.currentUser;
-  const inviterUid = user ? user.uid : null;
-
-  const handleSubmit = async (values: {
-    firstname: any;
-    lastname: any;
-    email: any;
-    phonenumber: any;
-    super_admin: boolean;
-    invitationSent: boolean;
-    department: string; // Ensure correct type for department
-  }) => {
-    console.log("Submitted Values:", values);
-    console.log("User", user);
-
-    try {
-      const auth = getAuth(firebaseApp);
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        values.email,
-        "Random"
-      );
-      const authUid = userCredential.user.uid;
-
-      // Check if user with the given email already exists
-      const existingAdminQuery = query(
-        collection(fbDb, "admins"),
-        where("email", "==", values.email),
-        where("organisationId", "==", organisationId)
-      );
-
-      const existingAdminSnapshot = await getDocs(existingAdminQuery);
-
-      if (!existingAdminSnapshot.empty) {
-        console.error(
-          "User with this email already exists in the organization"
-        );
-        toast.error(
-          `A User with the Email '${values.email}' already exists in the organization`
-        );
-        return;
-      }
-      // Assuming 'inviters' is the collection where inviter data is stored
-      const inviterQuery = query(
-        collection(fbDb, "admins"),
-        where("userId", "==", inviterUid)
-      );
-      const inviterSnapshot = await getDocs(inviterQuery);
-
-      console.log("Inviter Snapshot:", inviterSnapshot);
-
-      if (!inviterSnapshot.empty) {
-        // The inviter's data is found
-        const inviterData = inviterSnapshot.docs[0].data();
-
-        // Access the organisationId from inviterData
-        organisationId = inviterData.organisationId;
-        // Now you can use organisationId as needed
-        console.log("Organisation ID:", organisationId);
-      } else {
-        // Inviter not found
-        console.error("Inviter not found");
-      }
-      const generatedAdminId = await generateAdminId(organisationId);
-      const adminData = {
-        adminId: generatedAdminId,
-        firstname: values.firstname,
-        lastname: values.lastname,
-        email: values.email,
-        phonenumber: values.phonenumber,
-        status: true,
-        super_admin: values.super_admin,
-        department: values.department, // Use the selected department reference directly
-        inviterUid: inviterUid,
-        organisationId: organisationId,
-        userId: authUid,
-        archive: false,
-      };
-
-      const docRef = await addDoc(collection(fbDb, "admins"), adminData);
-      console.log("Admin added with ID: ", docRef.id);
-      toast.success("Admin Successfully Added.");
-      const newAdmin = {
-        id: docRef.id,
-        ...adminData,
-      };
-
-      setFetchedAdmins((prevAdmins) => [newAdmin, ...prevAdmins]);
-
-      if (!values.invitationSent) {
-        // Authentication
-        const auth = getAuth(firebaseApp);
-
-        // Send invitation email
-        const actionCodeSettings = {
-          url: `https://truck-it-bf0b2.web.app/auth?adminId=${docRef.id}`,
-          handleCodeInApp: true,
-        };
-
-        await sendSignInLinkToEmail(auth, values.email, actionCodeSettings);
-
-        // Mark the invitation as sent in Firestore
-        await updateDoc(docRef, {
-          invitationSent: true,
-        });
-
-        console.log("Invitation email sent successfully");
-      }
-
-      // Close your form or perform any other necessary actions
-      setOpen(false);
-    } catch (error) {
-      console.error("Error adding admin:", error);
-    }
-  };
-
-  const updateFetchedAdmins = (
-    updatedAdmins: SetStateAction<DocumentData[]>
-  ) => {
+  const updateFetchedAdmins = (updatedAdmins: SetStateAction<Admin[]>) => {
     setFetchedAdmins(updatedAdmins);
   };
 
@@ -492,163 +302,8 @@ export default function Admins() {
             </Tab.Panels>
           </Tab.Group>
           <div>
-            <FormModal open={open} setOpen={setOpen}>
-              <div className="p-5">
-                <div className="flex w-full h-full justify-between items-center mb-12">
-                  <div className="text-xl font-semibold ">New User</div>
-                  <Button
-                    className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
-                    handleClick={handleReset}
-                  >
-                    <XMarkIcon className="h-6 w-6 text-red-400" />
-                  </Button>
-                </div>
-                <Formik
-                  initialValues={{
-                    firstname: "",
-                    lastname: "",
-                    email: "",
-                    phonenumber: "",
-                    department: "",
-                    super_admin: false,
-                    invitationSent: false,
-                  }}
-                  validationSchema={validationSchema}
-                  onSubmit={(values) => {
-                    handleSubmit(values);
-                    console.log(values);
-                  }}
-                >
-                  {({ values, setFieldValue, errors, touched }) => (
-                    <Form>
-                      <div className="">
-                        <div className="flex w-full justify-between">
-                          <label className="block">
-                            <label className="form-label">FIRSTNAME</label>
-                            <Field
-                              type="text"
-                              name="firstname"
-                              value={values.firstname}
-                              className="form-input bg-grey w-48"
-                            />
-                            {errors.firstname && touched.firstname ? (
-                              <div className="text-red-600 text-sm">
-                                {errors.firstname}
-                              </div>
-                            ) : null}
-                          </label>
-                          <label className="block">
-                            <label className="form-label">LASTNAME</label>
-                            <Field
-                              type="text"
-                              name="lastname"
-                              value={values.lastname}
-                              className="form-input bg-grey w-48"
-                            />
-                            {errors.lastname && touched.lastname ? (
-                              <div className="text-red-600 text-sm">
-                                {errors.lastname}
-                              </div>
-                            ) : null}
-                          </label>
-                        </div>
-                        <div className="flex w-full justify-between mt-8">
-                          <label className="block">
-                            <label className="form-label">EMAIL</label>
-                            <Field
-                              type="email"
-                              name="email"
-                              value={values.email}
-                              className="form-input bg-grey w-48"
-                            />
-                            {errors.email && touched.email ? (
-                              <div className="text-red-600 text-sm">
-                                {errors.email}
-                              </div>
-                            ) : null}
-                          </label>
-                          <label className="block">
-                            <label className="form-label">PHONE NUMBER</label>
-                            <Field
-                              type="text"
-                              name="phonenumber"
-                              value={values.phonenumber}
-                              className="form-input bg-grey w-48"
-                            />
-                            {errors.phonenumber && touched.phonenumber ? (
-                              <div className="text-red-600 text-sm">
-                                {errors.phonenumber}
-                              </div>
-                            ) : null}
-                          </label>
-                        </div>
-                        <div className="flex w-full justify-between mt-8">
-                          <label className="block">
-                            <label className="form-label">DEPARTMENT</label>
-                            <Field
-                              as="select"
-                              name="department"
-                              value={values.department ? values.department : ""}
-                              onChange={(
-                                event: React.ChangeEvent<HTMLSelectElement>
-                              ) => {
-                                const selectedDepartmentName =
-                                  event.target.value;
-                                setFieldValue(
-                                  "department",
-                                  selectedDepartmentName
-                                );
-                              }}
-                              className="form-input bg-grey w-48"
-                            >
-                              <option value="">Select Department</option>
-                              {departments.map((department: any) => (
-                                <option
-                                  key={department.id}
-                                  value={department.name}
-                                >
-                                  {department.name}
-                                </option>
-                              ))}
-                            </Field>
-                            {errors.department && touched.department ? (
-                              <div className="text-red-600 text-sm">
-                                {errors.department}
-                              </div>
-                            ) : null}
-                          </label>
+            <AddAdmin open={open} setOpen={setOpen} />
 
-                          <label className="block">
-                            <label className="form-label">ADMIN</label>
-                            <Field
-                              type="checkbox"
-                              name="super_admin"
-                              checked={values.super_admin}
-                              className="form-checkbox bg-gray-200"
-                            />
-                          </label>
-                        </div>
-                        <div className="flex w-full justify-end mt-24 ">
-                          <Button
-                            className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
-                            handleClick={handleReset}
-                          >
-                            Reset
-                          </Button>
-                          {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
-                          <button
-                            className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
-                            type="submit"
-                          >
-                            Save
-                          </button>
-                        </div>
-                      </div>
-                    </Form>
-                  )}
-                </Formik>
-              </div>
-            </FormModal>
             {editModalOpen && selectedAdmin && (
               <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
                 <div>
@@ -663,7 +318,6 @@ export default function Admins() {
                       <XMarkIcon className="h-6 w-6 text-red-400" />
                     </Button>
                   </div>
-
                   <Formik
                     validationSchema={EditvalidationSchema}
                     initialValues={editFormInitialValues}
@@ -811,9 +465,9 @@ export default function Admins() {
 
 interface AdminsTableProps {
   selectedTab: number;
-  admins: DocumentData[];
-  filteredAdmins: DocumentData[];
-  updateFetchedAdmins: (updatedAdmins: DocumentData[]) => void;
+  admins: Admin[];
+  filteredAdmins: Admin[];
+  updateFetchedAdmins: (updatedAdmins: Admin[]) => void;
   handleEditClick: any;
 }
 
@@ -825,38 +479,86 @@ export function AdminsTable({
   filteredAdmins,
 }: AdminsTableProps) {
   const [currentPage, setCurrentPage] = useState(0);
-  const rowsPerPage = 6;
-  const totalTrips = filteredAdmins.length;
-  const totalPages = Math.ceil(totalTrips / rowsPerPage);
-  const startIndex = currentPage * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const router = useRouter();
-  console.log("Filterd Admins", filteredAdmins);
   const [searchQuery, setSearchQuery] = useState("");
-  const handleSearchChange = (e: any) => {
+  const [selectAll, setSelectAll] = useState(false);
+
+  console.log("Filtered Admins", filteredAdmins);
+  const [selectedAdmins, setSelectedAdmins] = useState<Admin[]>([]);
+
+  const handleCheckboxChange = (admin: Admin) => {
+    const isAdminSelected = selectedAdmins.includes(admin);
+    if (isAdminSelected) {
+      setSelectedAdmins(selectedAdmins.filter((a) => a.id !== admin.id));
+    } else {
+      setSelectedAdmins([...selectedAdmins, admin]);
+    }
+  };
+  const handleSelectAllChange = () => {
+    if (selectAll) {
+      setSelectedAdmins([]);
+    } else {
+      setSelectedAdmins(filteredAdmins);
+    }
+    setSelectAll(!selectAll);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     console.log("Search Query:", query);
     setSearchQuery(query);
   };
 
-  const fetchedAdmins = admins.filter((admin) => {
-    const fullName = `${admin.firstname} ${admin.lastname}`.toLowerCase();
-    const nameMatch = fullName.includes(searchQuery.toLowerCase());
-    // Check if status is true (either boolean or string 'true')
-    const isStatusTrue = admin.status === true || admin.status === "true";
-    return isStatusTrue && nameMatch;
-  });
+  const fetchedAdmins: Admin[] = admins.filter(
+    (admin: DocumentData): admin is Admin => {
+      const fullName = `${admin.firstname} ${admin.lastname}`.toLowerCase();
+      const nameMatch = fullName.includes(searchQuery.toLowerCase());
+      const isStatusTrue = admin.status === true || admin.status === "true";
+      return isStatusTrue && nameMatch;
+    }
+  );
 
-  const handleUserClick = (admin: any) => {
-    router.push(`Administration/Admins/manage_admins/viewAdmin?id=${admin.id}`);
-    console.log("The admin", admin);
+  const deleteSelectedUsers = () => {
+    // Your delete handler logic here
   };
+
+  const downloadSelectedFiles = () => {
+    const fields = [
+      { label: "ID", value: "adminId" },
+      { label: "First Name", value: "firstname" },
+      { label: "Last Name", value: "lastname" },
+      { label: "Email", value: "email" },
+      {
+        label: "Role",
+        value: (row: Admin) => (row.super_admin ? "Admin" : "User"),
+      },
+      { label: "Department", value: "department" },
+      {
+        label: "Status",
+        value: (row: Admin) => (row.status ? "Active" : "Inactive"),
+      },
+      {
+        label: "Archive",
+        value: (row: Admin) => (row.archive ? "Archived" : "Not Archived"),
+      },
+    ];
+    const opts = { fields };
+    const csv = json2csv.parse(selectedAdmins, opts);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "selected_admins.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const updateVehicleStatusInDatabase = async (
-    vehicleId: string,
+    vehicleId: number,
     newStatus: boolean
   ) => {
     try {
-      const vehicleRef = doc(fbDb, "admins", vehicleId);
+      const vehicleRef = doc(fbDb, "admins", vehicleId.toString());
       await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
       console.log("Admin status updated in the database:", vehicleId);
       toast.success("Admin archived successfully");
@@ -873,19 +575,7 @@ export function AdminsTable({
   const handlePageClick = (page: number) => {
     setCurrentPage(page);
   };
-  const pageNumbers = () => {
-    let pages = [];
-    if (totalPages <= 5) {
-      for (let i = 0; i < totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      pages = [0, 1, 2, 3, "...", totalPages - 1];
-    }
-    return pages;
-  };
 
-  const visibleAdmins = fetchedAdmins.slice(startIndex, endIndex);
   return (
     <div className="container mx-auto p-4 bg-white">
       <div className="overflow-x-auto bg-gray-100 shadow-md rounded-lg">
@@ -903,12 +593,15 @@ export function AdminsTable({
           </div>
         </div>
         <div className="overflow-y-auto flow-root max-h-96">
-          <table className="min-w-full bg-white ">
-            <thead className="bg-gray-100 text-gray-600 sticky top-0 z-10 ">
+          <table className="min-w-full bg-white">
+            <thead className="bg-gray-100 text-gray-600 sticky top-0 z-10">
               <tr>
-                {/* <th className="py-3 px-6 text-left ">Name</th> */}
                 <th className="py-3 px-6 text-left">
-                  <input type="checkbox" className="mr-3" />
+                  <input
+                    type="checkbox"
+                    className="mr-3"
+                    onChange={handleSelectAllChange}
+                  />
                   Name
                 </th>
                 <th className="py-3 px-6 text-left">Role</th>
@@ -918,11 +611,16 @@ export function AdminsTable({
               </tr>
             </thead>
             <tbody className="text-gray-700">
-              {fetchedAdmins.map((admin: any, index: any) => (
-                <tr key={index} className="border-b">
+              {fetchedAdmins.map((admin) => (
+                <tr key={admin.id} className="border-b">
                   <td className="py-3 px-6">
                     <div className="flex items-center">
-                      <input type="checkbox" className="mr-3" />
+                      <input
+                        type="checkbox"
+                        className="mr-3"
+                        checked={selectedAdmins.includes(admin)}
+                        onChange={() => handleCheckboxChange(admin)}
+                      />
                       <div>
                         <p className="font-semibold">
                           {admin.firstname} {admin.lastname}
@@ -968,13 +666,16 @@ export function AdminsTable({
                       <button
                         className="text-blue-500 hover:text-blue-600"
                         onClick={(event) => {
-                          event.stopPropagation(); // Stop the event from bubbling up
+                          event.stopPropagation();
                           handleEditClick(admin);
                         }}
                       >
                         <FaEdit />
                       </button>
-                      <button className="text-red-500 hover:text-red-600">
+                      <button
+                        className="text-red-500 hover:text-red-600"
+                        onClick={deleteSelectedUsers}
+                      >
                         <FaTrash />
                       </button>
                       <button
@@ -994,6 +695,36 @@ export function AdminsTable({
               ))}
             </tbody>
           </table>
+          {Object.keys(selectedAdmins).filter(
+            (key) => selectedAdmins[Number(key)]
+          ).length > 0 && (
+            <div className="flex justify-between items-center mt-4 bg-gray-100 p-4 rounded-lg shadow-md">
+              <div className="flex flex-row">
+                <span>
+                  {
+                    Object.keys(selectedAdmins).filter(
+                      (key) => selectedAdmins[Number(key)]
+                    ).length
+                  }{" "}
+                  selected
+                </span>
+                <p
+                  className="text-red-500  px-4 rounded mr-2 	text-decoration-line: underline"
+                  onClick={deleteSelectedUsers}
+                >
+                  Delete
+                </p>
+              </div>
+              <div>
+                <button
+                  className="bg-blue-500 text-white py-2 px-4 rounded"
+                  onClick={downloadSelectedFiles}
+                >
+                  Download Files
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
