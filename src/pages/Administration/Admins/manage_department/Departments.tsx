@@ -19,6 +19,7 @@ import {
   onSnapshot,
   query,
   setDoc,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import * as Yup from "yup";
@@ -29,17 +30,28 @@ import { formatDistanceToNow } from "date-fns";
 import ViewMenu from "./viewMenu";
 import toast from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
-const Headers = ["GROUP ID", "NAME", "UPDATED"];
+import { FaEdit, FaTrash, FaArchive } from "react-icons/fa";
+import json2csv from "json2csv";
+interface Department {
+  status: boolean;
+  members: number;
+  id: string;
+  departmentId: string;
+  name: string;
+  updated: string | { seconds: number; nanoseconds: number }; // Allow updated to be a string or a Firestore timestamp
+  organisationId: string;
+  archive: boolean;
+}
 export default function Departments() {
   const [open, setOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState<number>(0);
-  const [fetchedDepartments, setFetchedDepartments] = useState<DocumentData[]>(
+  const [fetchedDepartments, setFetchedDepartments] = useState<Department[]>(
     []
   );
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [showAddClassModal, setShowAddClassModal] = useState(false);
   const [selectedDepartment, setSelectedDepartment] =
-    useState<DocumentData | null>(null);
+    useState<Department | null>(null);
   const [editFormInitialValues, setEditFormInitialValues] = useState({
     departmentId: "",
     name: "",
@@ -72,10 +84,24 @@ export default function Departments() {
           );
 
           const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const departmentsData = querySnapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            }));
+            const departmentsData = querySnapshot.docs.map((doc) => {
+              const data = doc.data();
+              const updated = data.updated?.seconds
+                ? new Date(data.updated.seconds * 1000).toISOString()
+                : data.updated;
+
+              return {
+                id: doc.id,
+                name: data.name,
+                status: data.status,
+                members: data.members,
+                departmentId: data.departmentId,
+                updated: updated, // Use the converted updated field
+                archive: data.archive,
+                organisationId: data.organisationId,
+                ...data,
+              };
+            });
             setFetchedDepartments(departmentsData);
           });
 
@@ -90,14 +116,18 @@ export default function Departments() {
     fetchedDepartments();
   }, [organisationId]);
 
-  const handleEditClick = (department: DocumentData) => {
+  const handleEditClick = (department: Department) => {
     setSelectedDepartment(department);
+    const updated =
+      typeof department.updated === "object" && "seconds" in department.updated
+        ? new Date(department.updated.seconds * 1000).toISOString()
+        : department.updated;
     setEditFormInitialValues({
       departmentId: department.departmentId,
       name: department.name,
       organisationId: department.organisationId,
       archive: department.archive,
-      updated: department.updated,
+      updated: updated,
     });
     setEditModalOpen(true);
   };
@@ -187,9 +217,9 @@ export default function Departments() {
         console.error("Required form fields are missing");
         console.log("Submitted Values:", values);
         toast.error("Please fill in the name field");
-
         return;
       }
+
       const existingDepartmentQuery = query(
         collection(fbDb, "departments"),
         where("name", "==", values.name),
@@ -207,20 +237,23 @@ export default function Departments() {
         );
         return;
       }
+
       if (organisationId === null) {
         console.error("organisationId is null");
-        // Handle the null case, maybe show an error or return
         return;
       }
 
       // Use the generateDepartmentId function to get the appropriate departmentId
       const generatedDepartmentId = await generateDepartmentId(organisationId);
 
-      const updated = new Date();
+      const updated = new Date().toISOString(); // Convert Date to string
+
       const DepartmentsData = {
+        status: true,
+        members: 6,
         departmentId: generatedDepartmentId,
         name: values.name,
-        updated: updated,
+        updated: updated, // Ensure this is a string
         archive: false,
         organisationId: organisationId,
       };
@@ -230,14 +263,16 @@ export default function Departments() {
         DepartmentsData
       );
       console.log("Department added with ID: ", docRef.id);
+      await updateDoc(docRef, { id: docRef.id });
+
       toast.success("Department Successfully Added.");
 
-      const newDepartment = {
+      const newDepartment: Department = {
         id: docRef.id,
         ...DepartmentsData,
       };
 
-      // Prepend the new driver to the fetchedDrivers state
+      // Prepend the new department to the fetchedDepartments state
       setFetchedDepartments((prevDepartments) => [
         newDepartment,
         ...prevDepartments,
@@ -250,7 +285,7 @@ export default function Departments() {
   };
 
   const updatefetchedDepartments = (
-    updatedDepartments: SetStateAction<DocumentData[]>
+    updatedDepartments: SetStateAction<Department[]>
   ) => {
     setFetchedDepartments(updatedDepartments);
   };
@@ -259,12 +294,16 @@ export default function Departments() {
     <>
       <div className="mt-2 max-h-[700px]">
         <Tab.Group>
-          <div className="mb-2 flex w-full justify-end">
-            <div className="bg-white"></div>
-
+          <div className="mb-2 flex w-full">
+            <div className="mr-[550px] flex flex-col ml-6">
+              <h2 className="font-semibold text-[#030229]">Users</h2>
+              <div className="mt-[8px] text-sm text-[#6b6b73]">
+                Manage your teams & user permissions.
+              </div>
+            </div>
             <div className="flex justify-end text-base mr-2">
               <div className="ml-2">
-                <AddButton name="Add Group" handleAddClick={handleAdd} />
+                <AddButton name="Add Deparment" handleAddClick={handleAdd} />
               </div>
             </div>
           </div>
@@ -405,8 +444,8 @@ export default function Departments() {
 }
 
 interface VehiclesTableProps {
-  departments: DocumentData[];
-  updateFetchedDepartments: (updatedDepartments: DocumentData[]) => void;
+  departments: Department[];
+  updateFetchedDepartments: (updatedDepartments: Department[]) => void;
   handleEditClick: any;
 }
 
@@ -416,7 +455,52 @@ export function DepartmentsTable({
   handleEditClick,
 }: VehiclesTableProps) {
   const [currentPage, setCurrentPage] = useState(0);
+  const [selectAll, setSelectAll] = useState(false);
+  const [selectedDepartments, setSelectedDepartments] = useState<Department[]>(
+    []
+  );
 
+  const handleCheckboxChange = (department: Department) => {
+    const isAdminSelected = selectedDepartments.includes(department);
+    if (isAdminSelected) {
+      setSelectedDepartments(
+        selectedDepartments.filter((a) => a.id !== department.id)
+      );
+    } else {
+      setSelectedDepartments([...selectedDepartments, department]);
+    }
+  };
+  const handleSelectAllChange = () => {
+    if (selectAll) {
+      setSelectedDepartments([]);
+    } else {
+      setSelectedDepartments(departments);
+    }
+    setSelectAll(!selectAll);
+  };
+  const deleteSelectedUsers = () => {};
+
+  const downloadSelectedFiles = () => {
+    const fields = [
+      { label: "name", value: "name" },
+      { label: "updated", value: "updated" },
+      { label: "Department", value: "department" },
+      {
+        label: "Archive",
+        value: (row: Department) => (row.archive ? "Archived" : "Not Archived"),
+      },
+    ];
+    const opts = { fields };
+    const csv = json2csv.parse(selectedDepartments, opts);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "selectedDepartments.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   const updateVehicleStatusInDatabase = async (
     classId: string,
     newStatus: boolean
@@ -444,113 +528,144 @@ export function DepartmentsTable({
   const visibleDepartments = departments.slice(startIndex, endIndex);
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
-      <div className="flow-root">
-        <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-            <table className="min-w-full divide-y divide-gray-300">
-              <thead>
-                <tr>
-                  <th
-                    scope="col"
-                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                  >
-                    DEPARTMENT ID
-                  </th>
-                  <th
-                    scope="col"
-                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                  >
-                    NAME
-                  </th>
-                  <th
-                    scope="col"
-                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                  >
-                    UPDATED
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-[#FAFAFB]">
-                {visibleDepartments.map((departments, index) => {
-                  const { seconds } = departments?.updated || {}; // Use optional chaining
-                  if (seconds !== undefined) {
-                    const updatedDate = new Date(seconds * 1000);
-                    const departmentId = `D${(index + 1)
-                      .toString()
-                      .padStart(3, "0")}`;
-                    console.log("Vehicle ID", departmentId);
-
-                    console.log("Vehicle ID", departmentId);
-
-                    return (
-                      <Fragment key={index}>
-                        <tr className="hover:bg-gray-100">
-                          {/* <td className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 text-d-blue text-base sm:pl-0 flex flex-row">
-                            {departments.departmentId}
-                            <ViewMenu
-                              departmentId={departments.id}
-                              onDeactivate={() =>
-                                handleDeactivate(departments.id)
-                              }
-                            />
-                          </td> */}
-                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
-                            {departments.name}
-                          </td>
-                          <td className="whitespace-nowrap px-2 py-2 relative">
-                            {formatDistanceToNow(updatedDate)} ago
-                          </td>
-                          <td className="whitespace-nowrap px-2 py-2 relative flex flex-row">
-                            <div onClick={() => handleEditClick(departments)}>
-                              <EditBtn />
-                            </div>
-                            <div>
-                              <button
-                                className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2 ml-4"
-                                onClick={() =>
-                                  updateVehicleStatusInDatabase(
-                                    departments.id,
-                                    !departments.archive
-                                  )
-                                }
-                              >
-                                {departments.archive ? "Unarchive" : "Archive"}
-                              </button>
-                            </div>
-                            <div className="h-10"></div>
-                          </td>
-                          <div className="h-10 font-nunito font-regular"></div>
-                        </tr>
-                      </Fragment>
-                    );
-                  }
-                })}
-              </tbody>
-            </table>
-          </div>
+    <div className="container mx-auto p-4 bg-white">
+      <div className="overflow-x-auto bg-gray-100 shadow-md rounded-lg">
+        <div className="flex flex-row">
+          <h2 className="font-semibold py-3 px-6 text-[#030229]">
+            Manage Users
+          </h2>
         </div>
-      </div>
+        <div className="overflow-y-auto flow-root max-h-96">
+          <table className="min-w-full bg-white">
+            <thead className="bg-gray-100 text-gray-600 sticky top-0 z-10">
+              <tr>
+                <th className="py-3 px-6 text-left">
+                  <input
+                    type="checkbox"
+                    className="mr-3"
+                    onChange={handleSelectAllChange}
+                  />
+                  Name
+                </th>
+                <th className="py-3 px-6 text-left">Status</th>
+                <th className="py-3 px-6 text-left">Members</th>
+                <th className="py-3 px-6 text-left">Updated</th>
+                <th className="py-3 px-6 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="text-gray-700">
+              {departments.map((department) => {
+                let updatedDate;
+                if (
+                  typeof department.updated === "object" &&
+                  "seconds" in department.updated
+                ) {
+                  updatedDate = new Date(department.updated.seconds * 1000); // Convert Firestore timestamp to Date
+                } else {
+                  updatedDate = new Date(department.updated); // Parse ISO string date
+                }
+                return (
+                  <tr key={department.id} className="border-b">
+                    <td className="py-3 px-6">
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          className="mr-3"
+                          checked={selectedDepartments.includes(department)}
+                          onChange={() => handleCheckboxChange(department)}
+                        />
+                        <div>
+                          <p className="font-semibold">{department.name}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-6">
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
+                          department.status
+                            ? "bg-[#b9f9cf] text-[#11a849]"
+                            : "bg-[#f4f4f4] text-[#030229]"
+                        }`}
+                      >
+                        <span
+                          className={`h-2 w-2 rounded-full mr-2 ${
+                            department.status ? "bg-[#11a849]" : "bg-[#065ad8]"
+                          }`}
+                        ></span>
+                        {department.status ? "Active" : "Offline"}
+                      </span>
+                    </td>
 
-      <div
-        className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
-          text-sm font-nunito font-bold uppercase bg-[#FAFAFB]"
-      >
-        <button
-          className="ml-5"
-          onClick={() => setCurrentPage(currentPage - 1)}
-          disabled={currentPage === 0}
-        >
-          Prev
-        </button>
-        <span className="ml-5">{currentPage + 1}</span>
-        <button
-          className="ml-5"
-          onClick={() => setCurrentPage(currentPage + 1)}
-          disabled={endIndex >= departments.length}
-        >
-          Next
-        </button>
+                    <td className="py-3 px-6">6</td>
+                    <td className="py-3 px-6">
+                      {formatDistanceToNow(updatedDate)} ago
+                    </td>
+                    <td className="py-3 px-6">
+                      <div className="flex space-x-2">
+                        <button
+                          className="text-blue-500 hover:text-blue-600"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleEditClick(department);
+                          }}
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          className="text-red-500 hover:text-red-600"
+                          onClick={deleteSelectedUsers}
+                        >
+                          <FaTrash />
+                        </button>
+                        <button
+                          className="bg-[#eae8fd] text-[#786cf1] h-8 w-18 py-1 px-2 ml-4"
+                          onClick={() =>
+                            updateVehicleStatusInDatabase(
+                              department.id,
+                              !department.archive
+                            )
+                          }
+                        >
+                          {department.archive ? "Unarchive" : "Archive"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          {Object.keys(selectedDepartments).filter(
+            (key) => selectedDepartments[Number(key)]
+          ).length > 0 && (
+            <div className="flex justify-between items-center mt-4 bg-gray-100 p-4 rounded-lg shadow-md">
+              <div className="flex flex-row">
+                <span>
+                  {
+                    Object.keys(selectedDepartments).filter(
+                      (key) => selectedDepartments[Number(key)]
+                    ).length
+                  }{" "}
+                  selected
+                </span>
+                <p
+                  className="text-red-500  px-4 rounded mr-2 	text-decoration-line: underline"
+                  onClick={deleteSelectedUsers}
+                >
+                  Delete
+                </p>
+              </div>
+              <div>
+                <button
+                  className="bg-blue-500 text-white py-2 px-4 rounded"
+                  onClick={downloadSelectedFiles}
+                >
+                  Download Files
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

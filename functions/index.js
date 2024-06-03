@@ -1,6 +1,7 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const axios = require("axios");
+const cors = require("cors")({ origin: true });
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -57,3 +58,21 @@ exports.getOpenExchangeCurrency = functions.pubsub
   .onRun(async (context) => {
     await getOpenExchangeCurrency();
   });
+
+exports.getCountries = functions.https.onRequest((req, res) => {
+  cors(req, res, () => {
+    getCountries().then((countries) => {
+      res.status(200).json(countries);
+    });
+  });
+});
+
+const getCountries = async () => {
+  try {
+    const response = await axios.get("https://restcountries.com/v3.1/all");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching countries:", error);
+    return [];
+  }
+};
