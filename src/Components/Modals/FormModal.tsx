@@ -48,9 +48,8 @@ interface NewModalProps {
   open: boolean;
   heading: string;
   setOpen: (value: boolean) => void;
-  children: ReactNode;
+  children: React.ReactNode;
 }
-
 export function NewFormModal({
   open,
   setOpen,
@@ -110,21 +109,6 @@ export function NewFormModal({
                   </button>
                 </div>
                 <div className="space-y-4">{children}</div>
-                <div className="flex justify-end mt-4">
-                  <button
-                    type="button"
-                    className="inline-flex justify-center rounded-md border border-transparent bg-gray-300 px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-400 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                    onClick={() => setOpen(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit" // Make this button of type submit
-                    className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-[#4FD1C5] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
-                  >
-                    + Add member
-                  </button>
-                </div>
               </Dialog.Panel>
             </Transition.Child>
           </div>

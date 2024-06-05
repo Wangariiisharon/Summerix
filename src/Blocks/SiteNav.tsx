@@ -123,46 +123,7 @@ export default function SiteNav({ children }: Props) {
     if (!currentUser) {
       return;
     }
-    // Function to fetch notifications and calculate the unread count
-    // const fetchNotifications = () => {
-    //   if (!organisationId) {
-    //     return;
-    //   }
-    //   const notificationsRef = collection(
-    //     fbDb,
-    //     `user_notifications/${currentUser.uid}/notifications`
-    //   );
 
-    //   const q = query(
-    //     notificationsRef,
-    //     where("organisationId", "==", organisationId)
-    //   );
-
-    //   return onSnapshot(
-    //     q,
-    //     (snapshot) => {
-    //       const loadedNotifications = snapshot.docs.map((doc) => ({
-    //         id: doc.id,
-    //         readBy: doc.data().readBy || [], // Ensure readBy is always an array
-    //         ...doc.data(),
-    //       }));
-    //       console.log("Loaded Notifications:", loadedNotifications);
-
-    //       const unreadNotifications = loadedNotifications.filter(
-    //         (notification) =>
-    //           notification.readBy &&
-    //           !notification.readBy.includes(currentUser.uid)
-    //       );
-    //       setUnreadCount(unreadNotifications.length);
-    //       setNotifications(loadedNotifications);
-    //       console.log("Unread Count:", unreadCount);
-    //       console.log("Notifications:", notifications);
-    //     },
-    //     (error) => {
-    //       console.error("Error fetching notifications:", error);
-    //     }
-    //   );
-    // };
     const fetchNotifications = async () => {
       try {
         // Reference to the notifications sub-collection for the current user
