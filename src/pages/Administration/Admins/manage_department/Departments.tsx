@@ -24,10 +24,9 @@ import {
 } from "firebase/firestore";
 import * as Yup from "yup";
 import { fbDb } from "@/firebase/configs";
-import { FormModal } from "@/components/Modals/FormModal";
+import { FormModal, NewFormModal } from "@/components/Modals/FormModal";
 import { Formik, Field, Form } from "formik/dist/index";
 import { formatDistanceToNow } from "date-fns";
-import ViewMenu from "./viewMenu";
 import toast from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import { FaEdit, FaTrash, FaArchive } from "react-icons/fa";
@@ -48,6 +47,8 @@ export default function Departments() {
   const [fetchedDepartments, setFetchedDepartments] = useState<Department[]>(
     []
   );
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [showAddClassModal, setShowAddClassModal] = useState(false);
   const [selectedDepartment, setSelectedDepartment] =
@@ -66,7 +67,7 @@ export default function Departments() {
     name: Yup.string().required("Name is required"),
   });
   const handleAdd = () => {
-    setOpen(true);
+    setIsModalOpen(true);
   };
   const handleReset = () => {
     setOpen(false);
@@ -289,10 +290,13 @@ export default function Departments() {
   ) => {
     setFetchedDepartments(updatedDepartments);
   };
+  const handleClose = () => {
+    setIsModalOpen(false);
+  };
 
   return (
     <>
-      <div className="mt-2 max-h-[700px]">
+      <div className="container mx-auto p-4 bg-white">
         <Tab.Group>
           <div className="mb-2 flex w-full">
             <div className="mr-[550px] flex flex-col ml-6">
@@ -321,10 +325,15 @@ export default function Departments() {
           </Tab.Panels>
         </Tab.Group>
         <div>
-          <FormModal open={open} setOpen={setOpen}>
+          <NewFormModal
+            open={isModalOpen}
+            setOpen={setIsModalOpen}
+            heading="Add Department"
+          >
+            {" "}
             <div className="p-5">
               <div className="flex w-full h-full justify-between items-center mb-12">
-                <div className="text-xl font-semibold ">New GROUP</div>
+                <div className="text-xl font-semibold ">New Department</div>
                 <Button
                   className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
                   handleClick={handleReset}
@@ -335,11 +344,9 @@ export default function Departments() {
               <Formik
                 initialValues={{
                   name: "",
-                  // members: 0,
                 }}
                 onSubmit={(values) => {
                   console.log("Form Values:", values);
-
                   handleSubmit(values);
                 }}
               >
@@ -376,7 +383,7 @@ export default function Departments() {
                 )}
               </Formik>
             </div>
-          </FormModal>
+          </NewFormModal>
 
           {editModalOpen && selectedDepartment && (
             <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
@@ -565,7 +572,7 @@ export function DepartmentsTable({
                   updatedDate = new Date(department.updated); // Parse ISO string date
                 }
                 return (
-                  <tr key={department.id} className="border-b">
+                  <tr key={department.departmentId} className="border-b">
                     <td className="py-3 px-6">
                       <div className="flex items-center">
                         <input
