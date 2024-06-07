@@ -41,16 +41,18 @@ interface Department {
   organisationId: string;
   archive: boolean;
 }
+
+const validationSchema = Yup.object({
+  name: Yup.string().required("Name is required"),
+});
+
 export default function Departments() {
   const [open, setOpen] = useState(false);
-  const [selectedTab, setSelectedTab] = useState<number>(0);
   const [fetchedDepartments, setFetchedDepartments] = useState<Department[]>(
     []
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [showAddClassModal, setShowAddClassModal] = useState(false);
   const [selectedDepartment, setSelectedDepartment] =
     useState<Department | null>(null);
   const [editFormInitialValues, setEditFormInitialValues] = useState({
@@ -60,15 +62,12 @@ export default function Departments() {
     archive: false,
     organisationId: "",
   });
-
   const { organisationId } = useAuthContext();
-  console.log("Departments Organisation ID:", organisationId);
-  const validationSchema = Yup.object({
-    name: Yup.string().required("Name is required"),
-  });
+  
   const handleAdd = () => {
     setIsModalOpen(true);
   };
+
   const handleReset = () => {
     setOpen(false);
   };
@@ -137,6 +136,7 @@ export default function Departments() {
     setSelectedDepartment(null);
     setEditModalOpen(false);
   };
+
   const handleEditSubmit = async (values: {
     departmentId: any;
     name: any;
@@ -148,8 +148,6 @@ export default function Departments() {
       console.error("No selected vehicle to update");
       return;
     }
-
-    console.log("Edited Values:", values);
 
     try {
       if (!values.name) {
@@ -216,7 +214,6 @@ export default function Departments() {
     try {
       if (!values.name) {
         console.error("Required form fields are missing");
-        console.log("Submitted Values:", values);
         toast.error("Please fill in the name field");
         return;
       }
@@ -263,9 +260,7 @@ export default function Departments() {
         collection(fbDb, "departments"),
         DepartmentsData
       );
-      console.log("Department added with ID: ", docRef.id);
       await updateDoc(docRef, { id: docRef.id });
-
       toast.success("Department Successfully Added.");
 
       const newDepartment: Department = {
@@ -346,7 +341,6 @@ export default function Departments() {
                   name: "",
                 }}
                 onSubmit={(values) => {
-                  console.log("Form Values:", values);
                   handleSubmit(values);
                 }}
               >
@@ -515,7 +509,6 @@ export function DepartmentsTable({
     try {
       const vehicleRef = doc(fbDb, "departments", classId);
       await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
-      console.log("Class status updated in the database:", classId);
 
       const updatedVehicles = departments.map((department) =>
         department.id === classId
@@ -527,9 +520,9 @@ export function DepartmentsTable({
       console.error("Error updating Department status in database:", error);
     }
   };
+  
   //   const Headers = ["GROUP ID", "NAME","UPDATED"]
   const rowsPerPage = 6;
-  console.log("DepatmensTable Rendering with selectedTab:");
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const visibleDepartments = departments.slice(startIndex, endIndex);

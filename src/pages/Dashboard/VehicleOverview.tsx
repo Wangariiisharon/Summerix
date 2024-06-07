@@ -1,13 +1,7 @@
-import { Doughnut, Pie } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  ScriptableContext,
-} from "chart.js";
-import { ChevronDownIcon } from "@heroicons/react/24/solid";
+import { Doughnut } from "react-chartjs-2";
+import { Chart as ChartJS, ScriptableContext } from "chart.js";
 import { AnyObject } from "chart.js/dist/types/basic";
-import { FormEvent, Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DocumentData,
   collection,
@@ -16,11 +10,7 @@ import {
   where,
 } from "firebase/firestore";
 import { fbDb } from "@/firebase/configs";
-import { log } from "console";
-import {
-  AuthProvider,
-  useAuthContext,
-} from "@/components/Authentication/AuthProvider";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 
 // ChartJS.register(ArcElement, Tooltip);
 
@@ -73,23 +63,17 @@ export default function VehicleOverview() {
     };
     fetchedVehicles();
   }, [organisationId]);
-  const allVehicles = fetchedVehicles.length;
-  console.log("All Vehicles", allVehicles);
 
+  const allVehicles = fetchedVehicles.length;
   const onRouteCount = fetchedVehicles.filter(
     (vehicle) => vehicle.availability_status === "On Route"
   ).length;
-  console.log("Vehicles On Route", onRouteCount);
-
   const outOfServiceCount = fetchedVehicles.filter(
     (vehicle) => vehicle.availability_status === "Out Of Service"
   ).length;
-  console.log("Vehicles Out of Service", outOfServiceCount);
-
   const availableCount = fetchedVehicles.filter(
     (vehicle) => vehicle.availability_status === "Available"
   ).length;
-  console.log("Available Vehicles", availableCount);
 
   const data: dataset = {
     datasets: [
@@ -119,6 +103,7 @@ export default function VehicleOverview() {
       },
     ],
   };
+
   const options = {
     responsive: true,
     maintainAspectRatio: false, // Allows the chart to fill the height of the parent container

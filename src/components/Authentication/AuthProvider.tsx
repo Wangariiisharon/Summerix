@@ -75,8 +75,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const querySnapshot = await getDocs(adminsQuery);
         if (!querySnapshot.empty) {
           setUserData(querySnapshot.docs[0].data() as AdminData);
-        } else {
-          console.log("No admin data found.");
         }
       } else {
         setCurrentUser(null);

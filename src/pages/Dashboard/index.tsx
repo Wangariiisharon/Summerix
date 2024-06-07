@@ -1,16 +1,7 @@
-import Card from "@/components/Cards/Card";
-import SiteLayout from "@/Layout/SiteLayout";
-import { Cards } from "@/components/Cards/SmallCard";
 import VehicleOverview from "@/pages/Dashboard/VehicleOverview";
-import FuelCostOverView from "@/pages/Dashboard/FuelCostOverView";
 import TripsPieGraph from "@/pages/Dashboard/TripsPieGraph";
-import TripsOverView from "@/pages/Dashboard/TripsOverView";
-import ClientsOverView from "@/pages/Dashboard/ClientsOverView";
 import OnRoute from "@/pages/Dashboard/OnRoute";
-import OutOfService from "@/pages/Dashboard/OutOfService";
-import { Header } from "@/components/Headers";
 import { Fragment, useState, useEffect } from "react";
-import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import { fbDb } from "@/firebase/configs";
 import {
   DocumentData,
@@ -22,7 +13,6 @@ import {
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import SiteNav from "@/Blocks/SiteNav";
 import MetricCard from "./metrics";
-import SearchIcon from "@heroicons/react/24/outline";
 import OutOfServiceVehicles from "./OutOfService";
 
 export default function DashboardComponent() {
@@ -30,24 +20,16 @@ export default function DashboardComponent() {
   const [fetchedMaintenace, setFetchedMaintenace] = useState<DocumentData[]>(
     []
   );
-  const [searchTerm, setSearchTerm] = useState("");
-
   const [companyCost, setCompanyCost] = useState<number>(0);
-  const [mileageFee, setMileageFee] = useState<number>(0);
-
   const [fetchedVehicles, setFetchedVehicles] = useState<DocumentData[]>([]);
   const [overallEarnings, setOverallEarnings] = useState<number>(0);
   const [earningsPerTruck, setEarningsPerTruck] = useState<number>(0);
-  const [trucksAvailable, setTrucksAvailable] = useState<number>(0);
   const [avgTruckExpense, setAvgTruckExpense] = useState<number>(0);
-
   const [selectedYear, setSelectedYear] = useState<number>(
     new Date().getFullYear()
   );
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-
   const { organisationId } = useAuthContext();
-  console.log("Dashboard organisationId:", organisationId);
 
   // Generate a list of years for the dropdown
   const getYears = () => {
@@ -124,25 +106,21 @@ export default function DashboardComponent() {
             })
           );
           setFetchedVehicles(vehiclesData);
-          console.log("vehiclesData", vehiclesData);
 
           const totalFuelCost = tripsData.reduce((acc, trip) => {
             const fuelCost = parseFloat(trip.fuel);
             return acc + (isNaN(fuelCost) ? 0 : fuelCost);
           }, 0);
-          console.log("totalFuelCost", totalFuelCost);
 
           const totalMileageFee = tripsData.reduce((acc, trip) => {
             const mileageFee = parseFloat(trip.mileage_fee);
             return acc + (isNaN(mileageFee) ? 0 : mileageFee);
           }, 0);
-          console.log("totalMileageFee", totalMileageFee);
 
           const totalPurchasePrice = vehiclesData.reduce((acc, vehicle) => {
             const leaseAmount = parseFloat(vehicle.lease_amount);
             return acc + (isNaN(leaseAmount) ? 0 : leaseAmount);
           }, 0);
-          console.log("totalPurchasePrice", totalPurchasePrice);
 
           const totalMaintenanceCost = maintenanceData.reduce(
             (acc, maintenance) => {
@@ -151,7 +129,6 @@ export default function DashboardComponent() {
             },
             0
           );
-          console.log("totalMaintenanceCost", totalMaintenanceCost);
 
           const totalCost =
             totalFuelCost +
@@ -164,7 +141,6 @@ export default function DashboardComponent() {
             const earnings = parseFloat(trip.dealValue);
             return acc + (isNaN(earnings) ? 0 : earnings);
           }, 0);
-          console.log("totalEarnings", totalEarnings);
           setOverallEarnings(totalEarnings);
 
           const validTotalCost = isNaN(totalEarnings) ? 0 : totalEarnings;

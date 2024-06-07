@@ -7,27 +7,14 @@ import {
   onSnapshot,
   updateDoc,
 } from "firebase/firestore";
-import React, { Fragment, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { fbDb } from "@/firebase/configs";
 import { useRouter } from "next/router";
 import SiteLayout from "@/Layout/SiteLayout";
-import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { Button } from "@/components/Buttons";
 import { Example } from "@/components/Cards/template";
 import { AllPermissions } from "@/components/Cards/template";
-import { BodyCell } from "@/components/Table/Cells";
 import { formatDistanceToNow } from "date-fns";
 import toast from "react-hot-toast";
-
-import { FieldValue } from "firebase/firestore";
-
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
 
 interface DepatmentDetailsProps {
   departmentId: string;
@@ -44,21 +31,11 @@ export default function ViewDepatment() {
   const [departments, setdepartments] = useState<
     DepatmentDetailsProps["department"] | null
   >(null);
-  const [fetchedDepartments, setFetchedDepartments] = useState<DocumentData[]>(
-    []
-  );
   const [fetchedPermisions, setFetchedPermisions] = useState<DocumentData[]>(
     []
   );
-  const [departmentPermissions, setDepartmentPermissions] = useState<
-    DocumentData[]
-  >([]);
-
-  const [loading, setLoading] = useState(true);
-
   const router = useRouter();
   const { id } = router.query;
-  console.log("This is the ID", id);
 
   function handleAddPermissions() {}
   function handleAddMembers() {}
@@ -67,8 +44,7 @@ export default function ViewDepatment() {
   // Function to add a permission to the department
 
   async function addPermission(departmentId: string, permissionId: string) {
-    console.log("permissionId", permissionId);
-    console.log("departmentId", departmentId);
+    console.log("addPermission:", { permissionId, departmentId });
 
     try {
       const departmentRef = doc(fbDb, "departments", departmentId);
@@ -85,10 +61,7 @@ export default function ViewDepatment() {
 
         // Retrieve the name of the permission document
         const permissionDocRef = doc(fbDb, "permisions", permissionId);
-        console.log("permissionDocRef", permissionDocRef);
-
         const permissionDocSnap = await getDoc(permissionDocRef);
-
         if (permissionDocSnap.exists()) {
           const permissionName = permissionDocSnap.data()?.name;
 
@@ -96,18 +69,17 @@ export default function ViewDepatment() {
           if (permissions && !permissions.includes(permissionName)) {
             permissions.push(permissionName); // Add the new permission name
             await updateDoc(departmentRef, { permissions }); // Update the permissions array in the document
-            console.log("Permission added successfully");
             toast.success("Permission added successfully");
           } else {
-            console.log("Permission already exists");
+            console.error("Permission already exists");
             toast.error("Permission already exists");
           }
         } else {
-          console.log("Permission document not found");
+          console.error("Permission document not found");
           toast.error("Permission document not found");
         }
       } else {
-        console.log("Department not found");
+        console.error("Department not found");
         toast.error("Department not found");
       }
     } catch (error) {
@@ -117,8 +89,8 @@ export default function ViewDepatment() {
   }
   // Function to remove a permission from the department
   async function removePermission(departmentId: string, permissionId: string) {
-    console.log("permissionId", permissionId);
-    console.log("departmentId", departmentId);
+    console.log("removePermission:", { permissionId, departmentId });
+
     try {
       const departmentRef = doc(fbDb, "departments", departmentId);
       const departmentDocSnap = await getDoc(departmentRef);
@@ -137,14 +109,13 @@ export default function ViewDepatment() {
         if (index !== -1) {
           permissions.splice(index, 1);
           await updateDoc(departmentRef, { permissions });
-          console.log("Permission removed successfully");
           toast.success("Permission removed successfully");
         } else {
-          console.log("Permission not found");
+          console.error("Permission not found");
           toast.error("Permission not found");
         }
       } else {
-        console.log("Department not found");
+        console.error("Department not found");
         toast.error("Department not found");
       }
     } catch (error) {

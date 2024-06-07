@@ -6,10 +6,7 @@ interface MapComponentProps {
   pickUpLocationName: string;
 }
 
-const MapComponent: React.FC<MapComponentProps> = ({ dropOffLocationName, pickUpLocationName }) => {  
-  console.log("dropOffLocationName",dropOffLocationName); 
-  console.log("pickUpLocationName",pickUpLocationName);
-
+const MapComponent: React.FC<MapComponentProps> = ({ dropOffLocationName, pickUpLocationName }) => {
   const [dropOffLocation, setDropOffLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [pickUpLocation, setPickUpLocation] = useState<{ lat: number; lng: number } | null>(null);
 

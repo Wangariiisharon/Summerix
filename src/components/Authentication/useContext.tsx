@@ -54,7 +54,6 @@ export const AuthProvider = ({ children }: any) => {
                 ...userData, // Combine Firebase user data with extended data
               });
             } else {
-              console.log("No such document!");
               setIsSuperAdmin(false);
               setUser(null);
             }

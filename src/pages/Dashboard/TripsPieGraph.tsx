@@ -37,10 +37,9 @@ export default function TripsPieGraph() {
             collection(fbDb, "trips"),
             where("organisationId", "==", organisationId)
           );
-          const querySnapshot = await getDocs(q);
-          const tripsData: DocumentData[] = [];
-          console.log(tripsData);
 
+          const tripsData: DocumentData[] = [];
+          const querySnapshot = await getDocs(q);
           querySnapshot.forEach((doc) => {
             const trips = {
               id: doc.id,
@@ -74,7 +73,6 @@ export default function TripsPieGraph() {
   const passedTripsCount = fetchedTrips.filter(
     (trip) => trip.start_time < currentDate || trip.end_time < currentDate
   ).length;
-  console.log("Passed trips count", passedTripsCount);
 
   interface dataset {
     datasets: {

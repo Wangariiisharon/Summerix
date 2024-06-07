@@ -1,15 +1,9 @@
-import { Header, HeaderBar } from "@/components/Headers";
-import { AddButton, Button, DeleteBtn, EditBtn } from "@/components/Buttons";
+import { Button } from "@/components/Buttons";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { headers } from "next/headers";
-import { DummyTable } from "@/components/Table/Table";
-import { FormEvent, Fragment, ReactNode, useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { FormModal } from "@/components/Modals/FormModal";
 import { Field, Formik, Form } from "formik";
-import { Input, Submit } from "@/components/Forms/input";
-import SiteLayout from "@/Layout/SiteLayout";
 import { Tab } from "@headlessui/react";
-import Planned from "../Jobcards/jobcard";
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import {
   getDocs,
@@ -24,21 +18,10 @@ import {
   getFirestore,
   onSnapshot,
   getDoc,
-  setDoc,
   orderBy,
 } from "firebase/firestore";
-import { parseISO, format } from "date-fns";
-import Jobcard from "../Jobcards/jobcard";
-import { serverTimestamp } from "firebase/firestore";
-import { AnyCnameRecord } from "dns";
-import {
-  FirebaseStorage,
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytes,
-} from "firebase/storage";
-import ImageInput from "@/components/ImageInputs";
+import { format } from "date-fns";
+import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { toast } from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import Pending from "./pending";
@@ -47,10 +30,12 @@ import * as Yup from "yup";
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
+
 interface UserData {
   email: string;
   super_admin: boolean;
 }
+
 interface AuthContextData {
   organisationId: string;
   userData: UserData;
@@ -58,7 +43,6 @@ interface AuthContextData {
 
 export default function Maintenance() {
   const [open, setOpen] = useState(false);
-  const [selectedTab, setSelectedTab] = useState<number>(0);
   const [fetchedMaintanance, setFetchedMaintanance] = useState<DocumentData[]>(
     []
   );
@@ -69,22 +53,12 @@ export default function Maintenance() {
   const [showScheduleMaintenanceModal, setShowScheduleMaintenanceModal] =
     useState(false);
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
-  const [approvalCount, setApprovalCount] = useState(0);
   const [checkboxState, setCheckboxState] = useState<boolean[]>([]);
   const [checkedIndexes, setCheckedIndexes] = useState<number[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
-
-  // const { isAuthenticated, userId, organisationId, userData } =
-  //   useAuthContext();
-  const { currentUser, organisationId, isSuperAdmin, userData } =
-    useAuthContext();
-
-  console.log("Maintanance Page OrganisationId: ", organisationId);
-  console.log("Maintanance Page UserData: ", userData);
+  const { organisationId, isSuperAdmin, userData } = useAuthContext();
 
   const approvedBy = userData?.email;
-
-  console.log("Maintanance Super Admin: ", isSuperAdmin);
 
   const MaintainanceTabs = [
     { name: "PLANNED", href: "#", current: selectedTabIndex === 0 },
@@ -151,10 +125,7 @@ export default function Maintenance() {
           );
           const querySnapshot = await getDocs(q);
           const names = querySnapshot.docs.map((doc) => doc.data().name);
-          console.log("Names", names);
-
           setjobcards(names);
-          console.log("JobCards", jobcards);
         } else {
           console.error(
             "Organisation ID is not available for fetching JobCard names."
@@ -341,7 +312,6 @@ export default function Maintenance() {
         collection(fbDb, "maintenance"),
         maintenanceData
       );
-      console.log("Maintenance added with ID: ", docRef.id);
       toast.success("Maintenance Request Successfully Added.");
 
       const superAdminQuerySnapshot = await getDocs(
@@ -395,7 +365,7 @@ export default function Maintenance() {
 
     try {
       if (checkedIndexes.includes(index)) {
-        console.log("Checkbox already checked.");
+        console.error("Checkbox already checked.");
         toast.error("Checkbox already checked.");
         return;
       }

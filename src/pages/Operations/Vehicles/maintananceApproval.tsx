@@ -1,73 +1,79 @@
+import { fbDb } from "@/firebase/configs";
+import {
+  getDocs,
+  collection,
+  doc,
+  query,
+  where,
+  runTransaction,
+} from "firebase/firestore";
+import toast from "react-hot-toast";
 
-import firebaseApp, { fbDb } from "@/firebase/configs";
-import { getDocs, collection, DocumentData, addDoc, Timestamp, updateDoc, doc, query, where, getFirestore, onSnapshot, runTransaction } from "firebase/firestore";
-import { FirebaseStorage, getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
-import { toast } from 'react-hot-toast';
-import { AuthProvider, useAuthContext } from "@/components/Authentication/AuthProvider";
-import { Formik, Field, Form } from 'formik/dist/index';
+export default function maintananceApproval() {
+  // Function to fetch pending data for a specific user
 
+  const fetchPendingData = async (userId: string) => {
+    try {
+      const q = query(
+        collection(fbDb, "maintenance"),
+        where("status", "==", "Pending")
+      );
+      const querySnapshot = await getDocs(q);
 
-export default function maintananceApproval() { 
-    // Function to fetch pending data for a specific user
-
-    const fetchPendingData = async (userId: string) => {
-        try {
-            const q = query(collection(fbDb, 'maintenance'), where('status', '==', 'Pending'));
-            const querySnapshot = await getDocs(q);
-    
-            const pendingData: { id: string; }[] = [];
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                if (!data.approvals.includes(userId)) {
-                    pendingData.push({ id: doc.id, ...data });
-                }
-            });
-    
-            return pendingData;
-        } catch (error) {
-            console.error('Error fetching pending data:', error);
-            throw error;
+      const pendingData: { id: string }[] = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (!data.approvals.includes(userId)) {
+          pendingData.push({ id: doc.id, ...data });
         }
-    };
+      });
 
-// Function to approve or reject data
-const approveData = async (docId: string | undefined, userId: any, isApproved: any) => {
-    const docRef = doc(collection(fbDb, 'maintenance'), docId);
+      return pendingData;
+    } catch (error) {
+      console.error("Error fetching pending data:", error);
+      throw error;
+    }
+  };
+
+  // Function to approve or reject data
+  const approveData = async (
+    docId: string | undefined,
+    userId: any,
+    isApproved: any
+  ) => {
+    const docRef = doc(collection(fbDb, "maintenance"), docId);
 
     try {
-        await runTransaction(fbDb, async (transaction) => {
-            const doc = await transaction.get(docRef);
+      await runTransaction(fbDb, async (transaction) => {
+        const doc = await transaction.get(docRef);
 
-            if (!doc.exists()) {
-                throw new Error('Document does not exist!');
-            }
+        if (!doc.exists()) {
+          throw new Error("Document does not exist!");
+        }
 
-            const data = doc.data();
+        const data = doc.data();
 
-            if (data.approvals.includes(userId)) {
-                throw new Error('User has already approved this data.');
-            }
+        if (data.approvals.includes(userId)) {
+          throw new Error("User has already approved this data.");
+        }
 
-            if (isApproved) {
-                data.approvals.push(userId);
-            }
+        if (isApproved) {
+          data.approvals.push(userId);
+        }
 
-            // Update status to 'Approved' if approvals reach three
-            if (data.approvals.length === 3) {
-                data.status = 'Approved';
-            }
+        // Update status to 'Approved' if approvals reach three
+        if (data.approvals.length === 3) {
+          data.status = "Approved";
+        }
 
-            transaction.update(docRef, data);
-        });
+        transaction.update(docRef, data);
+      });
 
-        console.log('Data approval updated successfully.');
+      toast.success("Data approval updated successfully.");
     } catch (error) {
-        console.error('Error updating data approval:', error);
+      console.error("Error updating data approval:", error);
     }
-};
+  };
 
-  return (
-    <div>
-    </div>
-  )
+  return <div></div>;
 }

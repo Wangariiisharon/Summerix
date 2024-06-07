@@ -37,7 +37,6 @@ export default function SiteNav({ children }: Props) {
   // const isSuperAdmin = useMemo(() => adminDetails?.roles.includes('super_admin'), [adminDetails]);
 
   const toggleNotificationDropdown = () => {
-    console.log("Toggling dropdown");
     setShowDropdown(!showDropdown);
   };
 
@@ -64,7 +63,6 @@ export default function SiteNav({ children }: Props) {
                 if (!querySnapshot.empty) {
                   querySnapshot.forEach((doc) => {
                     const adminData = doc.data();
-                    console.log("Admin Data:", adminData);
                     setadminDetails(adminData);
 
                     // Update user initials based on firstname and lastname
@@ -73,15 +71,11 @@ export default function SiteNav({ children }: Props) {
                       adminData.lastname?.charAt(0).toUpperCase();
                     setUserInitials(initials);
                   });
-                } else {
-                  console.log("Admin document not found");
                 }
               })
               .catch((error) => {
                 console.error("Error fetching admin:", error);
               });
-          } else {
-            console.log("User not logged in");
           }
         });
       } catch (error) {
@@ -105,7 +99,6 @@ export default function SiteNav({ children }: Props) {
           notificationsRef,
           where("organisationId", "==", organisationId)
         );
-        console.log("Q", q);
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
           const loadedNotifications = snapshot.docs.map((doc) => ({
@@ -120,13 +113,9 @@ export default function SiteNav({ children }: Props) {
               notification.readBy &&
               !notification.readBy.includes(currentUser.uid)
           );
-          console.log("unreadNotifications", unreadNotifications);
 
           setUnreadCount(unreadNotifications.length);
-          console.log("unreadCount", unreadCount);
-
           setNotifications(loadedNotifications);
-          console.log("notifications", notifications);
         });
 
         return unsubscribe;
@@ -146,9 +135,6 @@ export default function SiteNav({ children }: Props) {
     //   }
     // };
   }, [currentUser, notifications, organisationId, unreadCount]);
-
-  // const isSuperAdmin = adminDetails?.super_admin;
-  console.log("Admin Details", adminDetails);
 
   const navigation = useMemo(
     () => [
