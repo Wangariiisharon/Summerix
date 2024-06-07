@@ -29,23 +29,23 @@ interface AdminData {
 }
 
 interface AuthContextType {
-  currentUser: User | null;
   isAuthenticated: boolean;
+  isSuperAdmin: boolean;
+  currentUser: User | null;
   userId: string | null;
   organisationId: string | null;
   userData: AdminData | null;
   hasPermission: (permissionKey: string) => boolean;
-  isSuperAdmin: boolean;
 }
 
 const defaultContextValue: AuthContextType = {
-  currentUser: null,
   isAuthenticated: false,
+  isSuperAdmin: false,
+  currentUser: null,
   userId: null,
   organisationId: null,
   userData: null,
   hasPermission: () => false,
-  isSuperAdmin: false,
 };
 
 export const AuthContext = createContext<AuthContextType>(defaultContextValue);
@@ -58,7 +58,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const hasPermission = (permissionKey: string) =>
     userData?.departments.includes(permissionKey) ?? false;
-  // const isSuperAdmin = userData?.super_admin ?? false; // Ensure boolean type
   const isSuperAdmin = useMemo(() => {
     return userData?.super_admin ?? false;
   }, [userData]);
