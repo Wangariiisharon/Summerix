@@ -1,7 +1,5 @@
-import firebase from "firebase/app";
-import "firebase/firestore";
 import { useEffect, useState } from "react";
-import { FormModal, NewFormModal } from "@/components/Modals/FormModal";
+import { NewFormModal } from "@/components/Modals/FormModal";
 import { Formik, Field, Form } from "formik/dist/index";
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import country from "country-list-js";
@@ -272,166 +270,170 @@ export default function AddAdmin({
   }, [organisationId]);
 
   return (
-    <NewFormModal
-      open={isModalOpen}
-      setOpen={setIsModalOpen}
-      heading="Add Member"
-    >
-      <div className="p-5">
-        <Formik
-          initialValues={{
-            firstname: "",
-            lastname: "",
-            email: "",
-            phonenumber: "",
-            department: "",
-            country: "",
-            role: "",
-            invitationSent: false,
-          }}
-          validationSchema={validationSchema}
-          onSubmit={(values, { setSubmitting }) => {
-            console.log("Form Submitted with values:", values);
-            handleSubmit(values).finally(() => setSubmitting(false));
-          }}
+    <>
+      {isModalOpen && (
+        <NewFormModal
+          isOpen={isModalOpen}
+          setOpen={setIsModalOpen}
+          heading="Add Member"
         >
-          {({ values, setFieldValue, errors, touched, isSubmitting }) => (
-            <Form>
-              <div className="space-y-6">
-                <div className="flex justify-between space-x-4">
-                  <label className="block w-1/2">
-                    <span className="form-label">First Name</span>
-                    <Field
-                      type="text"
-                      name="firstname"
-                      value={values.firstname}
-                      className="form-input mt-1 block w-full bg-gray-100"
-                    />
-                    {errors.firstname && touched.firstname ? (
-                      <div className="text-red-600 text-sm mt-1">
-                        {errors.firstname}
-                      </div>
-                    ) : null}
-                  </label>
-                  <label className="block w-1/2">
-                    <span className="form-label">Last Name</span>
-                    <Field
-                      type="text"
-                      name="lastname"
-                      value={values.lastname}
-                      className="form-input mt-1 block w-full bg-gray-100"
-                    />
-                    {errors.lastname && touched.lastname ? (
-                      <div className="text-red-600 text-sm mt-1">
-                        {errors.lastname}
-                      </div>
-                    ) : null}
-                  </label>
-                </div>
-                <label className="block">
-                  <span className="form-label">Email</span>
-                  <Field
-                    type="email"
-                    name="email"
-                    value={values.email}
-                    className="form-input mt-1 block w-full bg-gray-100"
-                  />
-                  {errors.email && touched.email ? (
-                    <div className="text-red-600 text-sm mt-1">
-                      {errors.email}
+          <div className="p-5">
+            <Formik
+              initialValues={{
+                firstname: "",
+                lastname: "",
+                email: "",
+                phonenumber: "",
+                department: "",
+                country: "",
+                role: "",
+                invitationSent: false,
+              }}
+              validationSchema={validationSchema}
+              onSubmit={(values, { setSubmitting }) => {
+                console.log("Form Submitted with values:", values);
+                handleSubmit(values).finally(() => setSubmitting(false));
+              }}
+            >
+              {({ values, setFieldValue, errors, touched, isSubmitting }) => (
+                <Form>
+                  <div className="space-y-6">
+                    <div className="flex justify-between space-x-4">
+                      <label className="block w-1/2">
+                        <span className="form-label">First Name</span>
+                        <Field
+                          type="text"
+                          name="firstname"
+                          value={values.firstname}
+                          className="form-input mt-1 block w-full bg-gray-100"
+                        />
+                        {errors.firstname && touched.firstname ? (
+                          <div className="text-red-600 text-sm mt-1">
+                            {errors.firstname}
+                          </div>
+                        ) : null}
+                      </label>
+                      <label className="block w-1/2">
+                        <span className="form-label">Last Name</span>
+                        <Field
+                          type="text"
+                          name="lastname"
+                          value={values.lastname}
+                          className="form-input mt-1 block w-full bg-gray-100"
+                        />
+                        {errors.lastname && touched.lastname ? (
+                          <div className="text-red-600 text-sm mt-1">
+                            {errors.lastname}
+                          </div>
+                        ) : null}
+                      </label>
                     </div>
-                  ) : null}
-                </label>
-                <label className="block">
-                  <span className="form-label">Role</span>
-                  <Field
-                    as="select"
-                    name="role"
-                    value={values.role || ""}
-                    className="form-input mt-1 block w-full bg-gray-100"
-                    onChange={(event: any) =>
-                      setFieldValue("role", event.target.value)
-                    }
-                  >
-                    <option value="">Select Role</option>
-                    <option value="Admin">Admin</option>
-                    <option value="User">User</option>
-                  </Field>
-                  {errors.role && touched.role ? (
-                    <div className="text-red-600 text-sm mt-1">
-                      {errors.role}
-                    </div>
-                  ) : null}
-                </label>
-                <label className="block">
-                  <span className="form-label">Country</span>
-                  <Field
-                    as="select"
-                    name="country"
-                    value={values.country || ""}
-                    className="form-input mt-1 block w-full bg-gray-100"
-                    onChange={(event: any) =>
-                      setFieldValue("country", event.target.value)
-                    }
-                  >
-                    <option value="">Select Country</option>
-                    {countries.map((country, index) => (
-                      <option key={index} value={country}>
-                        {country}
-                      </option>
-                    ))}
-                  </Field>
-                  {errors.country && touched.country ? (
-                    <div className="text-red-600 text-sm mt-1">
-                      {errors.country}
-                    </div>
-                  ) : null}
-                </label>
-                <label className="block">
-                  <span className="form-label">Assign To Department</span>
-                  <Field
-                    as="select"
-                    name="department"
-                    value={values.department || ""}
-                    className="form-input mt-1 block w-full bg-gray-100"
-                    onChange={(event: any) =>
-                      setFieldValue("department", event.target.value)
-                    }
-                  >
-                    <option value="">Select Department</option>
-                    {departments.map((department) => (
-                      <option key={department.id} value={department.name}>
-                        {department.name}
-                      </option>
-                    ))}
-                  </Field>
-                  {errors.department && touched.department ? (
-                    <div className="text-red-600 text-sm mt-1">
-                      {errors.department}
-                    </div>
-                  ) : null}
-                </label>
-              </div>
-              <div className="flex justify-end mt-4">
-                <button
-                  type="button"
-                  className="inline-flex justify-center rounded-md border border-transparent bg-gray-300 px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-400 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-[#4FD1C5] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
-                >
-                  + Add member
-                </button>
-              </div>
-            </Form>
-          )}
-        </Formik>
-      </div>
-    </NewFormModal>
+                    <label className="block">
+                      <span className="form-label">Email</span>
+                      <Field
+                        type="email"
+                        name="email"
+                        value={values.email}
+                        className="form-input mt-1 block w-full bg-gray-100"
+                      />
+                      {errors.email && touched.email ? (
+                        <div className="text-red-600 text-sm mt-1">
+                          {errors.email}
+                        </div>
+                      ) : null}
+                    </label>
+                    <label className="block">
+                      <span className="form-label">Role</span>
+                      <Field
+                        as="select"
+                        name="role"
+                        value={values.role || ""}
+                        className="form-input mt-1 block w-full bg-gray-100"
+                        onChange={(event: any) =>
+                          setFieldValue("role", event.target.value)
+                        }
+                      >
+                        <option value="">Select Role</option>
+                        <option value="Admin">Admin</option>
+                        <option value="User">User</option>
+                      </Field>
+                      {errors.role && touched.role ? (
+                        <div className="text-red-600 text-sm mt-1">
+                          {errors.role}
+                        </div>
+                      ) : null}
+                    </label>
+                    <label className="block">
+                      <span className="form-label">Country</span>
+                      <Field
+                        as="select"
+                        name="country"
+                        value={values.country || ""}
+                        className="form-input mt-1 block w-full bg-gray-100"
+                        onChange={(event: any) =>
+                          setFieldValue("country", event.target.value)
+                        }
+                      >
+                        <option value="">Select Country</option>
+                        {countries.map((country, index) => (
+                          <option key={index} value={country}>
+                            {country}
+                          </option>
+                        ))}
+                      </Field>
+                      {errors.country && touched.country ? (
+                        <div className="text-red-600 text-sm mt-1">
+                          {errors.country}
+                        </div>
+                      ) : null}
+                    </label>
+                    <label className="block">
+                      <span className="form-label">Assign To Department</span>
+                      <Field
+                        as="select"
+                        name="department"
+                        value={values.department || ""}
+                        className="form-input mt-1 block w-full bg-gray-100"
+                        onChange={(event: any) =>
+                          setFieldValue("department", event.target.value)
+                        }
+                      >
+                        <option value="">Select Department</option>
+                        {departments.map((department) => (
+                          <option key={department.id} value={department.name}>
+                            {department.name}
+                          </option>
+                        ))}
+                      </Field>
+                      {errors.department && touched.department ? (
+                        <div className="text-red-600 text-sm mt-1">
+                          {errors.department}
+                        </div>
+                      ) : null}
+                    </label>
+                  </div>
+                  <div className="flex justify-end mt-4">
+                    <button
+                      type="button"
+                      className="inline-flex justify-center rounded-md border border-transparent bg-gray-300 px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-400 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                      onClick={() => setIsModalOpen(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-[#4FD1C5] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
+                    >
+                      + Add member
+                    </button>
+                  </div>
+                </Form>
+              )}
+            </Formik>
+          </div>
+        </NewFormModal>
+      )}
+    </>
   );
 }

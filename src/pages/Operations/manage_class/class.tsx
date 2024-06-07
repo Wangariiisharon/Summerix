@@ -276,65 +276,68 @@ export default function Class() {
             </div>
           </Tab.Panel>
         </Tab.Group>
-        <FormModal open={open} setOpen={setOpen}>
-          <div className="p-5">
-            <div className="flex w-full h-full justify-between items-center mb-12">
-              <div className="text-xl font-semibold ">NEW CLASS</div>
-              <Button
-                className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
-                handleClick={handleReset}
+
+        {open && (
+          <FormModal open={open} setOpen={setOpen}>
+            <div className="p-5">
+              <div className="flex w-full h-full justify-between items-center mb-12">
+                <div className="text-xl font-semibold ">NEW CLASS</div>
+                <Button
+                  className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
+                  handleClick={handleReset}
+                >
+                  <XMarkIcon className="h-6 w-6 text-red-400" />
+                </Button>
+              </div>
+
+              <Formik
+                initialValues={{
+                  name: "",
+                }}
+                validationSchema={validationSchema}
+                onSubmit={(values) => handleAddClient(values)}
+
+                // onSubmit={(values) => handleEditSubmit(values)}
               >
-                <XMarkIcon className="h-6 w-6 text-red-400" />
-              </Button>
+                {({ values, errors, touched }) => (
+                  <Form>
+                    <div className="">
+                      <div className="flex w-full justify-between">
+                        <label className="block">
+                          <label className="form-label">NAME</label>
+                          <Field
+                            type="text"
+                            name="name"
+                            value={values.name}
+                            className="form-input bg-grey w-48"
+                          />
+                          {errors.name && touched.name ? (
+                            <div className="text-red-600">{errors.name}</div>
+                          ) : null}
+                        </label>
+                      </div>
+
+                      <div className="flex w-full justify-end mt-24 ">
+                        <Button
+                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
+                          handleClick={handleReset}
+                        >
+                          Reset
+                        </Button>
+                        <button
+                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
+                          type="submit"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  </Form>
+                )}
+              </Formik>
             </div>
-
-            <Formik
-              initialValues={{
-                name: "",
-              }}
-              validationSchema={validationSchema}
-              onSubmit={(values) => handleAddClient(values)}
-
-              // onSubmit={(values) => handleEditSubmit(values)}
-            >
-              {({ values, errors, touched }) => (
-                <Form>
-                  <div className="">
-                    <div className="flex w-full justify-between">
-                      <label className="block">
-                        <label className="form-label">NAME</label>
-                        <Field
-                          type="text"
-                          name="name"
-                          value={values.name}
-                          className="form-input bg-grey w-48"
-                        />
-                        {errors.name && touched.name ? (
-                          <div className="text-red-600">{errors.name}</div>
-                        ) : null}
-                      </label>
-                    </div>
-
-                    <div className="flex w-full justify-end mt-24 ">
-                      <Button
-                        className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
-                        handleClick={handleReset}
-                      >
-                        Reset
-                      </Button>
-                      <button
-                        className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
-                        type="submit"
-                      >
-                        Save
-                      </button>
-                    </div>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </div>
-        </FormModal>
+          </FormModal>
+        )}
 
         {editModalOpen && selectedClass && (
           <FormModal open={editModalOpen} setOpen={handleEditModalClose}>

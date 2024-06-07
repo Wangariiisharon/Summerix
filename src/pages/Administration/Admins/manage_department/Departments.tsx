@@ -63,7 +63,7 @@ export default function Departments() {
     organisationId: "",
   });
   const { organisationId } = useAuthContext();
-  
+
   const handleAdd = () => {
     setIsModalOpen(true);
   };
@@ -319,9 +319,10 @@ export default function Departments() {
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>
-        <div>
+
+        {isModalOpen && (
           <NewFormModal
-            open={isModalOpen}
+            isOpen={isModalOpen}
             setOpen={setIsModalOpen}
             heading="Add Department"
           >
@@ -378,67 +379,67 @@ export default function Departments() {
               </Formik>
             </div>
           </NewFormModal>
+        )}
 
-          {editModalOpen && selectedDepartment && (
-            <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
-              <div>
-                <div className="flex w-full h-full justify-between items-center mb-12">
-                  <div className="text-xl font-semibold ">
-                    Edit Department Details
-                  </div>
-                  <Button
-                    className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
-                    handleClick={handleEditModalClose}
-                  >
-                    <XMarkIcon className="h-6 w-6 text-red-400" />
-                  </Button>
+        {editModalOpen && selectedDepartment && (
+          <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
+            <div>
+              <div className="flex w-full h-full justify-between items-center mb-12">
+                <div className="text-xl font-semibold ">
+                  Edit Department Details
                 </div>
-
-                <Formik
-                  initialValues={editFormInitialValues}
-                  validationSchema={validationSchema}
-                  onSubmit={handleEditSubmit}
+                <Button
+                  className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
+                  handleClick={handleEditModalClose}
                 >
-                  {({ values, errors, touched }) => (
-                    <Form>
-                      <div className="">
-                        <div className="flex w-full justify-between">
-                          <label className="block">
-                            <label className="form-label">NAME</label>
-                            <Field
-                              type="text"
-                              name="name"
-                              value={values.name}
-                              className="form-input bg-grey w-48"
-                            />
-                            {errors.name && touched.name ? (
-                              <div className="text-red-600">{errors.name}</div>
-                            ) : null}
-                          </label>
-                        </div>
-
-                        <div className="flex w-full justify-end mt-24 ">
-                          <Button
-                            className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
-                            handleClick={handleReset}
-                          >
-                            Reset
-                          </Button>
-                          <button
-                            className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
-                            type="submit"
-                          >
-                            Save
-                          </button>
-                        </div>
-                      </div>
-                    </Form>
-                  )}
-                </Formik>
+                  <XMarkIcon className="h-6 w-6 text-red-400" />
+                </Button>
               </div>
-            </FormModal>
-          )}
-        </div>
+
+              <Formik
+                initialValues={editFormInitialValues}
+                validationSchema={validationSchema}
+                onSubmit={handleEditSubmit}
+              >
+                {({ values, errors, touched }) => (
+                  <Form>
+                    <div className="">
+                      <div className="flex w-full justify-between">
+                        <label className="block">
+                          <label className="form-label">NAME</label>
+                          <Field
+                            type="text"
+                            name="name"
+                            value={values.name}
+                            className="form-input bg-grey w-48"
+                          />
+                          {errors.name && touched.name ? (
+                            <div className="text-red-600">{errors.name}</div>
+                          ) : null}
+                        </label>
+                      </div>
+
+                      <div className="flex w-full justify-end mt-24 ">
+                        <Button
+                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
+                          handleClick={handleReset}
+                        >
+                          Reset
+                        </Button>
+                        <button
+                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
+                          type="submit"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  </Form>
+                )}
+              </Formik>
+            </div>
+          </FormModal>
+        )}
       </div>
     </>
   );
@@ -520,7 +521,7 @@ export function DepartmentsTable({
       console.error("Error updating Department status in database:", error);
     }
   };
-  
+
   //   const Headers = ["GROUP ID", "NAME","UPDATED"]
   const rowsPerPage = 6;
   const startIndex = currentPage * rowsPerPage;

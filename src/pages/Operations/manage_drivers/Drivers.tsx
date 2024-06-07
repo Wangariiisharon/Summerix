@@ -474,7 +474,8 @@ export default function Drivers() {
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>
-        <div>
+
+        {open && (
           <FormModal open={open} setOpen={setOpen}>
             <div className="p-5">
               <div className="flex w-full h-full justify-between items-center mb-12">
@@ -684,219 +685,207 @@ export default function Drivers() {
               </Formik>
             </div>
           </FormModal>
-        </div>
-        <div>
-          {/*Edit Form modal goes Here  */}
+        )}
 
-          {editModalOpen && selectedDriver && (
-            <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
-              <div>
-                <div className="flex w-full h-full justify-between items-center mb-12">
-                  <div className="text-xl font-semibold ">
-                    Edit Drivers Details
-                  </div>
-                  <Button
-                    className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
-                    handleClick={handleEditModalClose}
-                  >
-                    <XMarkIcon className="h-6 w-6 text-red-400" />
-                  </Button>
+        {editModalOpen && selectedDriver && (
+          <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
+            <div>
+              <div className="flex w-full h-full justify-between items-center mb-12">
+                <div className="text-xl font-semibold ">
+                  Edit Drivers Details
                 </div>
-
-                <Formik
-                  initialValues={editFormInitialValues}
-                  validationSchema={validationSchema}
-                  onSubmit={handleEditSubmit}
+                <Button
+                  className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
+                  handleClick={handleEditModalClose}
                 >
-                  {({ values, errors, touched }) => (
-                    <Form>
-                      <div className="">
-                        <div className="flex w-full justify-between">
-                          <label className="block">
-                            <label className="form-label">NAME</label>
-                            <Field
-                              type="text"
-                              name="name"
-                              value={values.name}
-                              className="form-input bg-grey w-48"
-                            />
-                            {errors.name && touched.name ? (
-                              <div className="text-red-600 text-sm">
-                                {errors.name}
-                              </div>
-                            ) : null}
-                          </label>
-                          <label className="block">
-                            <label className="form-label"> PHONE NUMBER</label>
-                            <Field
-                              type="text"
-                              name="phonenumber"
-                              value={values.phonenumber}
-                              className="form-input bg-grey w-48"
-                            />
-                            {errors.phonenumber && touched.phonenumber ? (
-                              <div className="text-red-600 text-sm">
-                                {errors.phonenumber}
-                              </div>
-                            ) : null}
-                          </label>
-                        </div>
-                        <div className="flex w-full justify-between mt-8">
-                          <label className="block">
-                            <label className="form-label"> EMAIL ADDRESS</label>
-                            <Field
-                              type="email"
-                              name="email_adress"
-                              value={values.email_adress}
-                              className="form-input bg-grey w-48"
-                            />
-                            {errors.email_adress && touched.email_adress ? (
-                              <div className="text-red-600 text-sm">
-                                {errors.email_adress}
-                              </div>
-                            ) : null}
-                          </label>
-
-                          <label className="block">
-                            <label className="form-label">ADDRESS</label>
-                            <Field
-                              type="text"
-                              name="city"
-                              value={values.city}
-                              className="form-input bg-grey w-48"
-                            />
-                            {errors.city && touched.city ? (
-                              <div className="text-red-600 text-sm">
-                                {errors.city}
-                              </div>
-                            ) : null}
-                          </label>
-                        </div>
-
-                        <div className="flex w-full justify-between mt-8">
-                          <label className="block">
-                            <label className="form-label">
-                              DRIVING LICENSE
-                            </label>
-                            <Field name="profile">
-                              {({ field, form }: any) => (
-                                <input
-                                  type="file"
-                                  onChange={(event) => {
-                                    const file =
-                                      event.currentTarget?.files?.[0];
-                                    if (file) {
-                                      form.setFieldValue("profile", file);
-                                    }
-                                  }}
-                                />
-                              )}
-                            </Field>
-                            {errors.profile && touched.profile ? (
-                              <div className="text-red-600 text-sm">
-                                {errors.profile}
-                              </div>
-                            ) : null}
-                          </label>
-
-                          <label className="block ml-6">
-                            <label className="form-label">GOOD CONDUCT</label>
-                            <Field name="good_conduct">
-                              {({ field, form }: any) => (
-                                <input
-                                  type="file"
-                                  accept=".pdf"
-                                  onChange={(event) => {
-                                    const file =
-                                      event.currentTarget?.files?.[0];
-                                    if (file) {
-                                      form.setFieldValue("good_conduct", file);
-                                    }
-                                  }}
-                                />
-                              )}
-                            </Field>
-                            {errors.good_conduct && touched.good_conduct ? (
-                              <div className="text-red-600 text-sm">
-                                {errors.good_conduct}
-                              </div>
-                            ) : null}
-                          </label>
-                        </div>
-                        <div className="flex w-full justify-between mt-8">
-                          <label className="block">
-                            <label className="form-label">ID</label>
-                            <Field name="identity_card">
-                              {({ field, form }: any) => (
-                                <input
-                                  type="file"
-                                  accept=".pdf"
-                                  onChange={(event) => {
-                                    const file =
-                                      event.currentTarget?.files?.[0];
-                                    if (file) {
-                                      form.setFieldValue("identity_card", file);
-                                    }
-                                  }}
-                                />
-                              )}
-                            </Field>
-                            {errors.identity_card && touched.identity_card ? (
-                              <div className="text-red-600 text-sm">
-                                {errors.identity_card}
-                              </div>
-                            ) : null}
-                          </label>
-
-                          <label className="block ml-6">
-                            <label className="form-label">MEDICAL REPORT</label>
-                            <Field name="medical_report">
-                              {({ field, form }: any) => (
-                                <input
-                                  type="file"
-                                  accept=".pdf"
-                                  onChange={(event) => {
-                                    const file =
-                                      event.currentTarget?.files?.[0];
-                                    if (file) {
-                                      form.setFieldValue(
-                                        "medical_report",
-                                        file
-                                      );
-                                    }
-                                  }}
-                                />
-                              )}
-                            </Field>
-                            {errors.medical_report && touched.medical_report ? (
-                              <div className="text-red-600 text-sm">
-                                {errors.medical_report}
-                              </div>
-                            ) : null}
-                          </label>
-                        </div>
-                        <div className="flex w-full justify-end mt-24 ">
-                          <Button
-                            className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
-                            handleClick={handleReset}
-                          >
-                            Reset
-                          </Button>
-                          <button
-                            className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
-                            type="submit"
-                          >
-                            Save
-                          </button>
-                        </div>
-                      </div>
-                    </Form>
-                  )}
-                </Formik>
+                  <XMarkIcon className="h-6 w-6 text-red-400" />
+                </Button>
               </div>
-            </FormModal>
-          )}
-        </div>
+
+              <Formik
+                initialValues={editFormInitialValues}
+                validationSchema={validationSchema}
+                onSubmit={handleEditSubmit}
+              >
+                {({ values, errors, touched }) => (
+                  <Form>
+                    <div className="">
+                      <div className="flex w-full justify-between">
+                        <label className="block">
+                          <label className="form-label">NAME</label>
+                          <Field
+                            type="text"
+                            name="name"
+                            value={values.name}
+                            className="form-input bg-grey w-48"
+                          />
+                          {errors.name && touched.name ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.name}
+                            </div>
+                          ) : null}
+                        </label>
+                        <label className="block">
+                          <label className="form-label"> PHONE NUMBER</label>
+                          <Field
+                            type="text"
+                            name="phonenumber"
+                            value={values.phonenumber}
+                            className="form-input bg-grey w-48"
+                          />
+                          {errors.phonenumber && touched.phonenumber ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.phonenumber}
+                            </div>
+                          ) : null}
+                        </label>
+                      </div>
+                      <div className="flex w-full justify-between mt-8">
+                        <label className="block">
+                          <label className="form-label"> EMAIL ADDRESS</label>
+                          <Field
+                            type="email"
+                            name="email_adress"
+                            value={values.email_adress}
+                            className="form-input bg-grey w-48"
+                          />
+                          {errors.email_adress && touched.email_adress ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.email_adress}
+                            </div>
+                          ) : null}
+                        </label>
+
+                        <label className="block">
+                          <label className="form-label">ADDRESS</label>
+                          <Field
+                            type="text"
+                            name="city"
+                            value={values.city}
+                            className="form-input bg-grey w-48"
+                          />
+                          {errors.city && touched.city ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.city}
+                            </div>
+                          ) : null}
+                        </label>
+                      </div>
+
+                      <div className="flex w-full justify-between mt-8">
+                        <label className="block">
+                          <label className="form-label">DRIVING LICENSE</label>
+                          <Field name="profile">
+                            {({ field, form }: any) => (
+                              <input
+                                type="file"
+                                onChange={(event) => {
+                                  const file = event.currentTarget?.files?.[0];
+                                  if (file) {
+                                    form.setFieldValue("profile", file);
+                                  }
+                                }}
+                              />
+                            )}
+                          </Field>
+                          {errors.profile && touched.profile ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.profile}
+                            </div>
+                          ) : null}
+                        </label>
+
+                        <label className="block ml-6">
+                          <label className="form-label">GOOD CONDUCT</label>
+                          <Field name="good_conduct">
+                            {({ field, form }: any) => (
+                              <input
+                                type="file"
+                                accept=".pdf"
+                                onChange={(event) => {
+                                  const file = event.currentTarget?.files?.[0];
+                                  if (file) {
+                                    form.setFieldValue("good_conduct", file);
+                                  }
+                                }}
+                              />
+                            )}
+                          </Field>
+                          {errors.good_conduct && touched.good_conduct ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.good_conduct}
+                            </div>
+                          ) : null}
+                        </label>
+                      </div>
+                      <div className="flex w-full justify-between mt-8">
+                        <label className="block">
+                          <label className="form-label">ID</label>
+                          <Field name="identity_card">
+                            {({ field, form }: any) => (
+                              <input
+                                type="file"
+                                accept=".pdf"
+                                onChange={(event) => {
+                                  const file = event.currentTarget?.files?.[0];
+                                  if (file) {
+                                    form.setFieldValue("identity_card", file);
+                                  }
+                                }}
+                              />
+                            )}
+                          </Field>
+                          {errors.identity_card && touched.identity_card ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.identity_card}
+                            </div>
+                          ) : null}
+                        </label>
+
+                        <label className="block ml-6">
+                          <label className="form-label">MEDICAL REPORT</label>
+                          <Field name="medical_report">
+                            {({ field, form }: any) => (
+                              <input
+                                type="file"
+                                accept=".pdf"
+                                onChange={(event) => {
+                                  const file = event.currentTarget?.files?.[0];
+                                  if (file) {
+                                    form.setFieldValue("medical_report", file);
+                                  }
+                                }}
+                              />
+                            )}
+                          </Field>
+                          {errors.medical_report && touched.medical_report ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.medical_report}
+                            </div>
+                          ) : null}
+                        </label>
+                      </div>
+                      <div className="flex w-full justify-end mt-24 ">
+                        <Button
+                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
+                          handleClick={handleReset}
+                        >
+                          Reset
+                        </Button>
+                        <button
+                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
+                          type="submit"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  </Form>
+                )}
+              </Formik>
+            </div>
+          </FormModal>
+        )}
       </div>
     </>
   );

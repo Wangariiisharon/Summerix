@@ -513,6 +513,7 @@ export default function ViewDepatment() {
               </div>
             </div>
           </div>
+          
           {editModalOpen && (
             <FormModal open={editModalOpen} setOpen={setEditModalOpen}>
               <div className="p-8">
