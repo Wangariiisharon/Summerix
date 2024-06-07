@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import firebaseApp from "@/firebase/configs";
-import admin from "@/firebase/admin";
 
 const useFirebaseAuth = () => {
   useEffect(() => {
