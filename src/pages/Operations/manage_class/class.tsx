@@ -42,9 +42,13 @@ import {
 } from "@/components/Authentication/AuthProvider";
 import * as Yup from "yup";
 
+const validationSchema = Yup.object({
+  name: Yup.string().required("Name is required"),
+});
+
 const Headers = ["CLASS ID", "NAME"];
+
 export default function Class() {
-  const handleAdd = () => {};
   const [searchQuery, setSearchQuery] = useState("");
   const [fetchedClasses, setfetchedClasses] = useState<DocumentData[]>([]);
   const [open, setOpen] = useState(false);
@@ -57,13 +61,9 @@ export default function Class() {
     organisationId: "",
     archive: false,
   });
-
-  const validationSchema = Yup.object({
-    name: Yup.string().required("Name is required"),
-  });
-
   const { organisationId } = useAuthContext();
-  console.log(" Class Organisation ID:", organisationId);
+
+  const handleAdd = () => {};
 
   const handleReset = () => {
     setOpen(false);
@@ -71,9 +71,9 @@ export default function Class() {
 
   const handleSearchChange = (e: any) => {
     const query = e.target.value;
-    console.log("Search Query:", query);
     setSearchQuery(query);
   };
+
   const filteredClients = fetchedClasses.filter((client) => {
     const fullName = `${client.name}`.toLowerCase();
     const nameMatch = fullName.includes(searchQuery.toLowerCase());
@@ -95,6 +95,7 @@ export default function Class() {
     setSelectedClass(null);
     setEditModalOpen(false);
   };
+
   const handleEditSubmit = async (values: {
     name: any;
     classId: any;
@@ -195,8 +196,8 @@ export default function Class() {
     }
   }
   const handleAddClient = async (values: { name: any }) => {
-    setOpen(true);
     console.log("Submitted Values:", values);
+    setOpen(true);
 
     try {
       if (!values) {

@@ -1,17 +1,10 @@
 import { FaHome } from "react-icons/fa";
 import { FaPlusCircle } from "react-icons/fa";
 import { toast } from "react-hot-toast";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import {
-  AuthProvider,
-  useAuthContext,
-} from "@/components/Authentication/AuthProvider";
-import { fbDb } from "@/firebase/configs";
-import {
-  DocumentData,
-  addDoc,
   collection,
   doc,
-  getDocs,
   getFirestore,
   onSnapshot,
   query,
@@ -19,15 +12,8 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import React, { Fragment, SetStateAction, useEffect, useState } from "react";
-import { FormModal } from "@/components/Modals/FormModal";
-import { Button } from "@/components/Buttons";
+import React, { useEffect, useState } from "react";
 import { Formik, Field, Form } from "formik/dist/index";
-import {
-  CheckCircleIcon,
-  XCircleIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
 import Modal from "./modal"; // Adjust the path if necessary
 
 interface JobCardData {
@@ -39,6 +25,7 @@ interface JobCardData {
   currency: string[];
   photoURL: string;
 }
+
 export default function CompanyProfile() {
   const { organisationId } = useAuthContext();
   const [fetchedJobcards, setFetchedJobcards] = useState<JobCardData[]>([]);
@@ -55,7 +42,6 @@ export default function CompanyProfile() {
   const [rates, setRates] = useState({});
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
-  const [currencies, setCurrencies] = useState([]);
 
   const handleAdd = () => {
     setOpen(true);
@@ -99,6 +85,7 @@ export default function CompanyProfile() {
         console.error("Error fetching Company settings:", error);
       }
     };
+
     const fetchRates = async () => {
       try {
         const response = await fetch("../../api/currencies");
@@ -106,7 +93,6 @@ export default function CompanyProfile() {
         try {
           const data = JSON.parse(text); // parse the text as JSON
           setRates(data.rates);
-          console.log("Rates", data.rates);
           setLoading(false);
         } catch (error) {
           console.error("Error parsing JSON:", error);
@@ -137,8 +123,6 @@ export default function CompanyProfile() {
         },
         { merge: true }
       );
-
-      console.log("Settings successfully updated!");
       toast.success("Settings successfully updated!");
     } catch (error) {
       console.error("Error updating settings: ", error);
@@ -163,7 +147,6 @@ export default function CompanyProfile() {
         );
 
         await updateDoc(settingsRef, { currency: newCurrencyArray });
-        console.log("Currency successfully updated!");
         toast.success("Currency successfully updated!");
       } catch (error) {
         console.error("Error updating currency: ", error);

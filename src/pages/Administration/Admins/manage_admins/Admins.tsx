@@ -213,7 +213,6 @@ export default function Admins() {
 
   const handleEditClick = (admin: DocumentData) => {
     setSelectedAdmin(admin);
-    console.log("Edit clicked for:", admin.firstname); // Check if this logs when clicked
     setEditFormInitialValues({
       firstname: admin.firstname,
       lastname: admin.lastname,
@@ -260,8 +259,6 @@ export default function Admins() {
       console.error("No selected Admin to update");
       return;
     }
-
-    console.log("Edited Values:", values);
 
     try {
       // Update the vehicle data in the database using the selectedVehicle.id

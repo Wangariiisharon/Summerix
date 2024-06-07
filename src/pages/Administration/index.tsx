@@ -102,7 +102,6 @@ export default function AdministrationComponent() {
     };
     fetchJobcards();
   }, [organisationId]);
-  console.log("fetchedJobcards", fetchedJobcards);
 
   const handleSaveChanges = async () => {
     const db = getFirestore();
@@ -122,7 +121,6 @@ export default function AdministrationComponent() {
         { merge: true }
       );
 
-      console.log("Settings successfully updated!");
       toast.success("Settings successfully updated!");
     } catch (error) {
       console.error("Error updating settings: ", error);

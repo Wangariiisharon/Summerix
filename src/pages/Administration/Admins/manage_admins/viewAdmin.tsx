@@ -90,7 +90,6 @@ export default function ViewDepatment() {
   });
   const router = useRouter();
   const { id } = router.query;
-  console.log("This is the ID", id);
 
   function handleAddPermissions() {}
   function handleAddMembers() {}
@@ -133,8 +132,6 @@ export default function ViewDepatment() {
     organisationId: any;
     userId: any;
   }) => {
-    console.log("Edited Values:", values);
-
     try {
       if (!values.firstname) {
         console.error(`Please fill the field FirstName`);
@@ -222,7 +219,7 @@ export default function ViewDepatment() {
 
         // Check if permission already exists in combinedPermissions
         if (combinedPermissions.includes(permissionData.name)) {
-          console.log("Permission already exists in combined permissions");
+          console.error("Permission already exists in combined permissions");
           toast.error("Permission already exists in Selected");
           return;
         }
@@ -236,14 +233,13 @@ export default function ViewDepatment() {
           await updateDoc(adminRef, {
             additionalPermissions: adminData.additionalPermissions,
           });
-          console.log("Permission added successfully");
           toast.success("Permission added successfully");
         } else {
-          console.log("Permission already exists");
+          console.error("Permission already exists");
           toast.error("Permission already exists");
         }
       } else {
-        console.log("Admin or permission document not found");
+        console.error("Admin or permission document not found");
         toast.error("Admin or permission document not found");
       }
     } catch (error) {
@@ -254,8 +250,8 @@ export default function ViewDepatment() {
 
   // // Function to remove a permission from the department
   const removePermission = async (adminId: string, permissionId: string) => {
-    console.log("permissionId", permissionId);
-    console.log("adminId", adminId);
+    console.log("removePermission:", { adminId, permissionId });
+
     try {
       const adminRef = doc(fbDb, "admins", adminId);
       const adminDocSnap = await getDoc(adminRef);
@@ -269,7 +265,7 @@ export default function ViewDepatment() {
 
         // Check if the permission is a department permission
         if (departmentPermissions.includes(permissionId)) {
-          console.log("Cannot remove department permissions");
+          console.error("Cannot remove department permissions");
           toast.error("Cannot remove department permissions");
           return; // Stop execution if it is a department permission
         }
@@ -278,14 +274,13 @@ export default function ViewDepatment() {
         if (index !== -1) {
           additionalPermissions.splice(index, 1);
           await updateDoc(adminRef, { additionalPermissions });
-          console.log("Permission removed successfully");
           toast.success("Permission removed successfully");
         } else {
-          console.log("Permission not found");
+          console.error("Permission not found");
           toast.error("Permission not found");
         }
       } else {
-        console.log("Admin not found");
+        console.error("Admin not found");
         toast.error("Admin not found");
       }
     } catch (error) {
@@ -310,7 +305,7 @@ export default function ViewDepatment() {
       const adminDocSnap = await getDoc(adminRef);
 
       if (!adminDocSnap.exists()) {
-        console.log("Admin not found.");
+        console.error("Admin not found.");
         setUserData([]);
         setAdditionalPermissions([]);
         setCombinedPermissions([]);
@@ -338,8 +333,8 @@ export default function ViewDepatment() {
       }
 
       setCombinedPermissions([...allPermissions]);
-      console.log("Combined permissions:", [...allPermissions]);
     };
+
     const fetchPermissions = async () => {
       const querySnapshot = await getDocs(collection(fbDb, "permisions"));
       const permissionsData: DocumentData[] = [];
@@ -352,7 +347,6 @@ export default function ViewDepatment() {
         permissionsData.push(permission);
       });
       setFetchedPermisions(permissionsData);
-      console.log("permissionsData", fetchedPermisions);
     };
 
     const fetchAdmins = async () => {
@@ -366,14 +360,13 @@ export default function ViewDepatment() {
       const adminSnapshot = await getDoc(adminRef);
 
       if (!adminSnapshot.exists()) {
-        console.log("Admin not found.");
+        console.error("Admin not found.");
         setUserData([]);
         return;
       }
 
       const adminData = adminSnapshot.data() as AdminData;
       setUserData([adminData]); // Set data as an array with a single admin's data
-      console.log("THIS IS THE USER DATA", adminData);
 
       // After the admin is fetched, you may want to fetch permissions related to this admin
     };
@@ -394,11 +387,11 @@ export default function ViewDepatment() {
         });
 
         setAllDepartments(departmentData);
-        console.log("Departments:", departmentData);
       } catch (error) {
         console.error("Error fetching departments:", error);
       }
     };
+
     fetchPermissions();
     fetchDepartments();
     fetchAdmins();
@@ -420,7 +413,7 @@ export default function ViewDepatment() {
       const querySnapshot = await getDocs(deptQuery);
 
       if (querySnapshot.empty) {
-        console.log(
+        console.warn(
           "No matching department found for the name:",
           departmentName
         );
@@ -431,12 +424,8 @@ export default function ViewDepatment() {
       const departmentDoc = querySnapshot.docs[0];
       const departmentData = departmentDoc.data();
 
-      console.log("Department Found: ", departmentData);
-
       // Extracting permissions if available
       const permissions = departmentData.permissions || [];
-
-      console.log("Permissions for Department:", permissions);
       return permissions;
     } catch (error) {
       console.error("Error fetching department permissions:", error);

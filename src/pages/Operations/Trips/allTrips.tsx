@@ -1,25 +1,13 @@
-import { Header, HeaderBar } from "@/components/Headers";
-import DummyTable, { ClientsTable } from "@/components/Table/Table";
-import { Input, Submit } from "@/components/Forms/input";
-import { AddButton, Button } from "@/components/Buttons";
-import {
-  ArrowDownTrayIcon,
-  ChevronDownIcon,
-  InboxArrowDownIcon,
-  PlusIcon,
-} from "@heroicons/react/24/solid";
+import { Button } from "@/components/Buttons";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { FormModal } from "@/components/Modals/FormModal";
 import { Fragment, useEffect, useState } from "react";
-import SearchBar from "../../../components/Forms/input";
-import SiteLayout from "@/Layout/SiteLayout";
 import { fbDb } from "@/firebase/configs";
 import {
   getDocs,
   collection,
   DocumentData,
   Timestamp,
-  addDoc,
   doc,
   setDoc,
   query,
@@ -29,30 +17,22 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { Field, Formik, Form } from "formik";
-import setFieldValue from "formik";
 import { Tab } from "@headlessui/react";
-import Maintenance from "../Vehicles/maintanance";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
-import {
-  AuthProvider,
-  useAuthContext,
-} from "@/components/Authentication/AuthProvider";
-import { AnyPtrRecord } from "dns";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 
 const tabs = [
   { name: "OVERVIEW", href: "#", current: false },
   { name: "UPCOMING TRIPS", href: "#", current: false },
 ];
+
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
-export default function AllTrips({ searchQuery, setSearchQuery }: any) {
+
+export default function AllTrips({ searchQuery }: any) {
   const [open, setOpen] = useState(false);
-  const [showAddJobcardModal, setShowAddJobcardModal] = useState(false);
-  const [showScheduleMaintenanceModal, setShowScheduleMaintenanceModal] =
-    useState(false);
-  const [vehicleSList, setVehiclesList] = useState([]);
   const [drivers, setDrivers] = useState<
     { id: string; name: string; phonenumber: string }[]
   >([]);
@@ -65,7 +45,6 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
     }[]
   >([]);
   const [selectedTrip, setSelectedTrip] = useState<DocumentData | null>(null);
-  const [vehicleNames, setVehicleNames] = useState<string[]>([]);
   const [fetchedTrips, setfetchedTrips] = useState<DocumentData[]>([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editFormInitialValues, setEditFormInitialValues] = useState({
@@ -102,7 +81,6 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
 
   const router = useRouter();
   const { organisationId } = useAuthContext();
-  console.log("AllTrips Page OrganisationId: ", organisationId);
 
   function convertToDate(firestoreTimestamp: any) {
     if (firestoreTimestamp instanceof Timestamp) {
@@ -113,6 +91,7 @@ export default function AllTrips({ searchQuery, setSearchQuery }: any) {
       return firestoreTimestamp; // Assuming it's already a Date object or null
     }
   }
+  
   const convertDateToInputString = (date: string | number | Date) => {
     const d = new Date(date);
     let month = "" + (d.getMonth() + 1),

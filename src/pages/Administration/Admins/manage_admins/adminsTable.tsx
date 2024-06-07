@@ -34,11 +34,8 @@ export default function AdminsTable({
   admins,
   filteredAdmins,
 }: AdminsTableProps) {
-  const [currentPage, setCurrentPage] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectAll, setSelectAll] = useState(false);
-
-  console.log("Filtered Admins", filteredAdmins);
   const [selectedAdmins, setSelectedAdmins] = useState<Admin[]>([]);
 
   const handleCheckboxChange = (admin: Admin) => {
@@ -63,7 +60,6 @@ export default function AdminsTable({
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
-    console.log("Search Query:", query);
     setSearchQuery(query);
   };
 
@@ -121,14 +117,8 @@ export default function AdminsTable({
         throw new Error("Vehicle ID is undefined or null");
       }
 
-      console.log("Updating vehicle status with ID:", vehicleId);
-      console.log("Firestore instance:", fbDb);
-
       const vehicleRef = doc(fbDb, "admins", vehicleId);
-      console.log("Document reference created:", vehicleRef);
-
       await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
-      console.log("Admin status updated in the database:", vehicleId);
       toast.success("Admin archived successfully");
 
       const updatedVehicles = fetchedAdmins.map((admin) =>

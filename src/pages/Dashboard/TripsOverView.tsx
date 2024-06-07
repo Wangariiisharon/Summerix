@@ -37,8 +37,6 @@ export default function OutOfServiceVehicles() {
           });
 
           setFetchedTrips(tripsData);
-        } else {
-          console.log("Organisation ID is not available for fetching Trips .");
         }
       } catch (error) {
         console.error("Error fetching Trips:", error);
@@ -47,6 +45,7 @@ export default function OutOfServiceVehicles() {
 
     fetchTrips();
   }, [organisationId]);
+
   const currentDate = new Date().toISOString();
   const liveTripsCount = fetchedTrips.filter(
     (trip) => currentDate >= trip.start_time && currentDate < trip.end_time
@@ -61,9 +60,6 @@ export default function OutOfServiceVehicles() {
       trip.start_time <= new Date().toISOString() &&
       trip.end_time <= new Date().toISOString()
   ).length;
-  console.log("Live Trips Count", liveTripsCount);
-  console.log("Scheduled Trips Count", scheduledTripsCount);
-  console.log("Completed Trips Count", completedTripsCount);
 
   const trips = [
     {

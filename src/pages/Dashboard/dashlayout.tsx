@@ -1,16 +1,9 @@
-import Card from "@/components/Cards/Card";
-import SiteLayout from "@/Layout/SiteLayout";
 import { Cards } from "@/components/Cards/SmallCard";
 import VehicleOverview from "@/pages/Dashboard/VehicleOverview";
-import FuelCostOverView from "@/pages/Dashboard/FuelCostOverView";
 import TripsPieGraph from "@/pages/Dashboard/TripsPieGraph";
-import TripsOverView from "@/pages/Dashboard/TripsOverView";
-import ClientsOverView from "@/pages/Dashboard/ClientsOverView";
 import OnRoute from "@/pages/Dashboard/OnRoute";
 import OutOfService from "@/pages/Dashboard/OutOfService";
-import { Header } from "@/components/Headers";
 import { Fragment, useState, useEffect } from "react";
-import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import { fbDb } from "@/firebase/configs";
 import {
   DocumentData,
@@ -28,16 +21,11 @@ export default function DashboardComponent() {
     []
   );
   const [companyCost, setCompanyCost] = useState<number>(0);
-  const [mileageFee, setMileageFee] = useState<number>(0);
-
   const [fetchedVehicles, setFetchedVehicles] = useState<DocumentData[]>([]);
   const [overallEarnings, setOverallEarnings] = useState<number>(0);
   const [earningsPerTruck, setEarningsPerTruck] = useState<number>(0);
   const [trucksAvailable, setTrucksAvailable] = useState<number>(0);
-  const [avgTruckExpense, setAvgTruckExpense] = useState<number>(0);
-
   const { organisationId } = useAuthContext();
-  console.log("Dashboard organisationId:", organisationId);
 
   useEffect(() => {
     const fetchData = async () => {

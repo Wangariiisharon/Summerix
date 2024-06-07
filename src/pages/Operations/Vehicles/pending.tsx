@@ -1,53 +1,28 @@
-import { Header, HeaderBar } from "@/components/Headers";
-import { AddButton, Button, DeleteBtn, EditBtn } from "@/components/Buttons";
-import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { headers } from "next/headers";
-import { DummyTable } from "@/components/Table/Table";
-import { FormEvent, Fragment, ReactNode, useEffect, useState } from "react";
+import { Button } from "@/components/Buttons";
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import { Fragment, useEffect, useState } from "react";
 import { FormModal } from "@/components/Modals/FormModal";
 import { Field, Formik, Form } from "formik";
-import { Input, Submit } from "@/components/Forms/input";
-import SiteLayout from "@/Layout/SiteLayout";
 import { Tab } from "@headlessui/react";
-import Planned from "../Jobcards/jobcard";
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import {
   getDocs,
   collection,
   DocumentData,
-  addDoc,
   Timestamp,
-  updateDoc,
   doc,
   query,
   where,
   getFirestore,
   onSnapshot,
-  getDoc,
   setDoc,
   orderBy,
 } from "firebase/firestore";
-import { parseISO, format } from "date-fns";
-import Jobcard from "../Jobcards/jobcard";
-import { serverTimestamp } from "firebase/firestore";
-import { AnyCnameRecord } from "dns";
-import {
-  FirebaseStorage,
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytes,
-} from "firebase/storage";
-import ImageInput from "@/components/ImageInputs";
+import { format } from "date-fns";
+import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { toast } from "react-hot-toast";
-// import  Notifications from "./notifications"
-import {
-  AuthProvider,
-  useAuthContext,
-} from "@/components/Authentication/AuthProvider";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import * as Yup from "yup";
-
-import Checkbox from "@mui/material/Checkbox";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -75,6 +50,19 @@ interface MaintenanceData {
   serial_number: any;
   broken_partImage: null;
 }
+
+const validationSchema = Yup.object({
+  requested_by: Yup.string().required("Requested By is required"),
+  cost: Yup.number().positive().required("Cost is required"),
+  remarks: Yup.string().required("Remarks is required"),
+  vehicle: Yup.string().required("Vehicle is required"),
+  job_cards: Yup.string().required("Maintainace Type  is required"),
+  date: Yup.string().required("Date is required"),
+  serial_number: Yup.string().required("Serial Number  is required"),
+  part: Yup.string().required(" Part is required"),
+  broken_partImage: Yup.mixed().required("Cargo Insurance is required"),
+});
+
 export default function Pending() {
   const [open, setOpen] = useState(false);
   const [selectedMaintenance, setSelectedMaintenance] =
@@ -85,12 +73,10 @@ export default function Pending() {
   const [vehicleNames, setVehicleNames] = useState<string[]>([]);
   const [jobcards, setjobcards] = useState<string[]>([]);
   const [drivers, setdrivers] = useState<string[]>([]);
-  const [showAddJobcardModal, setShowAddJobcardModal] = useState(false);
   const [showScheduleMaintenanceModal, setShowScheduleMaintenanceModal] =
     useState(false);
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [checkboxState, setCheckboxState] = useState<boolean[]>([]);
-  const [checkedIndexes, setCheckedIndexes] = useState<number[]>([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editFormInitialValues, setEditFormInitialValues] = useState({
     requested_by: "",
@@ -107,28 +93,10 @@ export default function Pending() {
     approvedBy: [],
   });
   const [approvalCount, setApprovalCount] = useState(0);
-  const [approvedEmails, setApprovedEmails] = useState<string[]>([]);
-
   const [checked, setChecked] = useState(false);
-
   const { organisationId, userData } = useAuthContext() as AuthContextData;
-  console.log("Maintanance Page OrganisationId: ", organisationId);
-  console.log("Maintanance Page UserData: ", userData);
-
   const isSuperAdmin = userData?.super_admin;
 
-  console.log("Maintanance Super Admin: ", isSuperAdmin);
-  const validationSchema = Yup.object({
-    requested_by: Yup.string().required("Requested By is required"),
-    cost: Yup.number().positive().required("Cost is required"),
-    remarks: Yup.string().required("Remarks is required"),
-    vehicle: Yup.string().required("Vehicle is required"),
-    job_cards: Yup.string().required("Maintainace Type  is required"),
-    date: Yup.string().required("Date is required"),
-    serial_number: Yup.string().required("Serial Number  is required"),
-    part: Yup.string().required(" Part is required"),
-    broken_partImage: Yup.mixed().required("Cargo Insurance is required"),
-  });
   const handleMaintenanceReset = () => {
     setShowScheduleMaintenanceModal(false);
     setOpen(false);
@@ -676,26 +644,15 @@ interface VehiclesTableProps {
   handleEditClick: any;
 }
 export function MaintananceTable({
-  selectedTab,
   maintananceList,
-  isSuperAdmin,
   handleEditClick,
 }: VehiclesTableProps) {
-  const [userApproves, setUserApproves] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const rowsPerPage = 6;
   const totalTrips = maintananceList.length;
   const totalPages = Math.ceil(totalTrips / rowsPerPage);
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-
-  const [fetchedMaintanance, setFetchedMaintanance] = useState<DocumentData[]>(
-    []
-  );
-  console.log("MaintananceTable Rendering with selectedTab:", selectedTab);
-  console.log("Mainanace list", maintananceList);
-
-  const currentDate = new Date();
 
   const filteredMaintenance = maintananceList.filter((maintenance: any) => {
     if (!maintenance.date || !maintenance.date.seconds) {
@@ -705,9 +662,7 @@ export function MaintananceTable({
 
     return maintenance.status === "Pending";
   });
-  console.log("Filtered Vehicles:", filteredMaintenance);
   const visibleClasses = filteredMaintenance.slice(startIndex, endIndex);
-  console.log("Visible Classes", visibleClasses);
 
   const handlePageClick = (page: number) => {
     setCurrentPage(page);

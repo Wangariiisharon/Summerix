@@ -1,12 +1,4 @@
-import { Header, HeaderBar } from "@/components/Headers";
-import { AddButton, Button, DeleteBtn, EditBtn } from "@/components/Buttons";
-import { headers } from "next/headers";
-import { FormEvent, Fragment, useEffect, useState } from "react";
-import { FormModal } from "@/components/Modals/FormModal";
-import { Form } from "@/components/Forms/Form";
-import { Input, Submit } from "@/components/Forms/input";
-import SiteNav from "@/Blocks/SiteNav";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { Fragment, useEffect, useState } from "react";
 import { Tab } from "@headlessui/react";
 import {
   DocumentData,
@@ -16,28 +8,20 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { fbDb } from "@/firebase/configs";
-import { parseISO, format } from "date-fns";
+import { format } from "date-fns";
 import Maintenance from "./maintanance";
 import { useRouter } from "next/router";
-import {
-  AuthProvider,
-  useAuthContext,
-} from "@/components/Authentication/AuthProvider";
-import Pending from "./pending";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import Vehicles from "./manage_vehicles/Vehicles";
-import * as Yup from "yup";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
 export default function VehiclesComponent() {
-  const [open, setOpen] = useState(false);
-  const [selectedTab, setSelectedTab] = useState<number>(0);
   const [fetchedVehicles, setFetchedVehicles] = useState<DocumentData[]>([]);
   const [vehicleTrips, setVehicleTrips] = useState<Record<string, number>>({}); // To store the trip counts for each vehicle
   const { organisationId } = useAuthContext();
-  console.log("Vehicles Page page OrganisationId", organisationId);
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -117,7 +101,6 @@ export default function VehiclesComponent() {
         });
 
         setVehicleTrips(updatedVehicleTrips);
-        console.log("Most recent trips:", recentTrips);
       } catch (error) {
         console.error("Error fetching Trips:", error);
       }
@@ -213,24 +196,18 @@ interface VehiclesTableProps {
   vehicleTrips: Record<string, number>;
 }
 
+const Headers = ["License Plate ", "Status", "Registration", "Trips Completed"];
+
 export function DummyTable({
   selectedTab,
   vehicles,
   vehicleTrips,
 }: VehiclesTableProps) {
-  console.log("Vehicle Trips:", vehicleTrips);
   const [currentPage, setCurrentPage] = useState(0);
   const rowsPerPage = 6;
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-
-  console.log("VehiclesTable Rendering with selectedTab:", selectedTab);
-  const Headers = [
-    "License Plate ",
-    "Status",
-    "Registration",
-    "Trips Completed",
-  ];
+  const router = useRouter();
 
   const filteredVehicles = vehicles.filter(
     (vehicles) =>
@@ -242,13 +219,11 @@ export function DummyTable({
         vehicles.availability_status === "Out Of Service ") ||
       (selectedTab === 5 && vehicles)
   );
-  const router = useRouter();
+  const visibleVehicles = filteredVehicles.slice(startIndex, endIndex);
+
   const handleVehicleClick = (vehicle: any) => {
     router.push(`Operations/Vehicles/vehiclesDetails?id=${vehicle.id}`);
   };
-  console.log("Filtered Vehicles:", filteredVehicles);
-
-  const visibleVehicles = filteredVehicles.slice(startIndex, endIndex);
 
   return (
     <div className="px-4 ml-1 sm:px-6 lg:px-8">

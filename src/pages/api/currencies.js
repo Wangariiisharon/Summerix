@@ -10,12 +10,12 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
+// eslint-disable-next-line import/no-anonymous-default-export
 export default async (req, res) => {
   try {
     const snapshot = await db.collection("settings").doc("currencies").get();
     if (snapshot.exists) {
       const rates = snapshot.data();
-      console.log("Rates Rares", rates);
       res.status(200).json({ rates });
     } else {
       res.status(404).json({ error: "No currency rates found" });

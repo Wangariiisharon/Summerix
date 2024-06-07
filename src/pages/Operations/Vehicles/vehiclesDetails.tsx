@@ -10,28 +10,19 @@ import React, { useEffect, useRef, useState } from "react";
 import { fbDb } from "@/firebase/configs";
 import SiteLayout from "@/Layout/SiteLayout";
 import Link from "next/link";
-import { Doughnut } from "react-chartjs-2";
 import { Timestamp } from "firebase/firestore";
-import Image from "next/image";
-import { AddButton, Button, DeleteBtn, EditBtn } from "@/components/Buttons";
+import { Button } from "@/components/Buttons";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Field, Formik, Form } from "formik";
 import { FormModal } from "@/components/Modals/FormModal";
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  ScriptableContext,
-} from "chart.js";
-import { AnyObject } from "chart.js/dist/types/basic";
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
-import { getFirestore, updateDoc } from "firebase/firestore";
+import { Chart as ChartJS, ArcElement, Tooltip } from "chart.js";
+import { updateDoc } from "firebase/firestore";
 import { format } from "date-fns";
 import MapComponent from "../../../components/Exports/maps";
 import { toast } from "react-hot-toast";
-import { log } from "console";
 
 ChartJS.register(ArcElement, Tooltip);
+
 const data = {
   datasets: [
     {
@@ -94,7 +85,6 @@ export default function VehiclesDetails() {
   const [vehicleDetails, setvehicleDetails] = useState<
     VehicleDetailsProps["vehicle"] | null
   >(null);
-  const [Vehicles, setVehicles] = useState<string[]>([]);
   const [fetchedTrips, setFetchedTrips] = useState<DocumentData[]>([]);
   const [tripDetails, setTripDetails] = useState({
     start_time: 0,
@@ -121,9 +111,6 @@ export default function VehiclesDetails() {
     ],
   });
 
-  const handleAvailabilityReset = () => {
-    setOpen(false);
-  };
   useEffect(() => {
     const savedIndex = localStorage.getItem("selectedTabIndex");
     if (savedIndex !== null) {
@@ -176,8 +163,6 @@ export default function VehiclesDetails() {
 
             // After fetching vehicle details, fetch associated trip data
             fetchData(vehicleData);
-          } else {
-            console.log("Vehicle not found");
           }
         } catch (error) {
           console.error("Error fetching vehicle:", error);
@@ -251,6 +236,10 @@ export default function VehiclesDetails() {
 
     fetchVehiclesDetails();
   }, [id]);
+
+  const handleAvailabilityReset = () => {
+    setOpen(false);
+  };
 
   if (!vehicleDetails) {
     return <div>Loading...</div>;

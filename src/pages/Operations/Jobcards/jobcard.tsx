@@ -24,9 +24,12 @@ import {
 } from "@/components/Authentication/AuthProvider";
 import * as Yup from "yup";
 
+const validationSchema = Yup.object({
+  name: Yup.string().required("Name is required"),
+});
+
 export default function Jobcard() {
   const [open, setOpen] = useState(false);
-  const [jobcards, setjobcards] = useState<string[]>([]);
   const [showAddJobcardModal, setShowAddJobcardModal] = useState(false);
   const [showScheduleMaintenanceModal, setShowScheduleMaintenanceModal] =
     useState(false);
@@ -45,11 +48,6 @@ export default function Jobcard() {
     archive: false,
   });
   const { organisationId } = useAuthContext();
-  console.log("Jobcards Organisation ID:", organisationId);
-
-  const validationSchema = Yup.object({
-    name: Yup.string().required("Name is required"),
-  });
 
   const handleReset = () => {
     setOpen(false);
@@ -144,12 +142,13 @@ export default function Jobcard() {
       console.error("Error updating Jobcard:", error);
     }
   };
+
   const updateJobcardStatus = async (classId: string, newStatus: boolean) => {
     try {
       // Update the vehicle status in the database
       const vehicleRef = doc(fbDb, "jobcard", classId);
       await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
-      console.log("Jobcard status updated in the database:", classId);
+      toast.success("Job card status updated");
 
       // Update the local state with the new status
       const updatedVehicles = fetchedJobcards.map((jobcard) =>
@@ -165,6 +164,7 @@ export default function Jobcard() {
     setShowAddJobcardModal(false);
     setOpen(false);
   };
+
   const handleAddJobcard = async (values: { name: any }) => {
     setShowAddJobcardModal(true);
     setShowScheduleMaintenanceModal(false);
@@ -209,7 +209,6 @@ export default function Jobcard() {
       };
 
       const docRef = await addDoc(jobcardCollection, JobcardData);
-      console.log("Jobcard added with ID: ", docRef.id);
       toast.success("Jobcard Successfully Added.");
 
       const newJobcard = {

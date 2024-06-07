@@ -30,6 +30,17 @@ import ExportDriverDataToCSV from "../../../components/Exports/driversExport";
 import { toast } from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 
+const validationSchema = Yup.object({
+  name: Yup.string().required("Name is required"),
+  phonenumber: Yup.string().required("Phone number is required"),
+  email_adress: Yup.string().required("Email Address are required"),
+  city: Yup.string().required("City is required"),
+  profile: Yup.mixed().required("Profile are required"),
+  identity_card: Yup.mixed().required("Identity card are required"),
+  good_conduct: Yup.mixed().required("Good conduct are required"),
+  medical_report: Yup.mixed().required("Medical Report are required"),
+});
+
 interface DriverDetails {
   name: string;
   phonenumber: string;
@@ -67,28 +78,17 @@ export default function Drivers() {
   const [isExporting, setIsExporting] = useState(false);
 
   const { organisationId } = useAuthContext();
-  console.log("Drivers Organisation ID:", organisationId);
-
-  const validationSchema = Yup.object({
-    name: Yup.string().required("Name is required"),
-    phonenumber: Yup.string().required("Phone number is required"),
-    email_adress: Yup.string().required("Email Address are required"),
-    city: Yup.string().required("City is required"),
-    profile: Yup.mixed().required("Profile are required"),
-    identity_card: Yup.mixed().required("Identity card are required"),
-    good_conduct: Yup.mixed().required("Good conduct are required"),
-    medical_report: Yup.mixed().required("Medical Report are required"),
-  });
 
   const handleAddDriver = () => {
     setOpen(true);
   };
+
   const handleReset = () => {
     setOpen(false);
   };
+
   const handleSearchChange = (e: any) => {
     const query = e.target.value;
-    console.log("Search Query:", query);
     setSearchQuery(query);
   };
 
@@ -503,8 +503,6 @@ export default function Drivers() {
                 }}
                 validationSchema={validationSchema}
                 onSubmit={(values) => {
-                  console.log("Form Values:", values);
-
                   handleSubmit(values);
                 }}
               >

@@ -57,7 +57,6 @@ export default function OnRoute() {
         });
 
         setFetchedTrips(tripsData);
-        console.log("Trips Data:", tripsData);
       } else {
         console.log("Organisation ID is not avaiSlable for fetching trips.");
       }
@@ -69,7 +68,6 @@ export default function OnRoute() {
       console.error("Error fetching trips:", error);
     }
   }, [organisationId]);
-  console.log();
 
   return (
     <div className=" h-[376px] w-full ml-[20px] mr-[20px] py-[20px] bg-white">

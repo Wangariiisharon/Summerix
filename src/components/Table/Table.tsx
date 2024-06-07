@@ -168,8 +168,6 @@ interface VehiclesTableProps {
 }
 
 export function DummyTable({ selectedTab }: VehiclesTableProps) {
-        console.log("VehiclesTable Rendering with selectedTab:", selectedTab);
-
     const filteredVehicles = vehicles.filter(vehicles =>
         selectedTab === 0 ||
         (selectedTab === 1 && vehicles.status === 'On Route') ||
@@ -179,7 +177,6 @@ export function DummyTable({ selectedTab }: VehiclesTableProps) {
         (selectedTab === 5 && vehicles )
     );
 
-    console.log("Filtered Vehicles:", filteredVehicles); 
     return (
         <div className="px-4 sm:px-6 lg:px-8">
             <div className="mt-8 flow-root">

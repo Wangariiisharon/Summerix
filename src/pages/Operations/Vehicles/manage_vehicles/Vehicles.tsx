@@ -1,9 +1,6 @@
 import { Tab } from "@headlessui/react";
 import { Fragment, SetStateAction, useEffect, useState } from "react";
-import { AddButton, Button, DeleteBtn, EditBtn } from "@/components/Buttons";
-import Table, { DummyTable } from "@/components/Table/Table";
-import { HeaderCell, BodyCell } from "@/components/Table/Cells";
-import { TableBody } from "@/components/Table/Row";
+import { AddButton, Button, EditBtn } from "@/components/Buttons";
 import { Formik, Field, Form } from "formik/dist/index";
 import { FormModal } from "@/components/Modals/FormModal";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
@@ -23,17 +20,10 @@ import {
 } from "firebase/firestore";
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import { useRouter } from "next/router";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import SiteLayout from "@/Layout/SiteLayout";
 import { toast } from "react-hot-toast";
-import {
-  AuthProvider,
-  useAuthContext,
-} from "@/components/Authentication/AuthProvider";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import * as Yup from "yup";
-import { ErrorMessage } from "formik";
 
 interface Vehicle {
   id: string;
@@ -41,6 +31,7 @@ interface Vehicle {
 }
 
 const Headers = ["VEHICLE ID", "VEHICLE TYPE", "LICENSE PLATE"];
+
 export default function Vehicles() {
   const [open, setOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -48,13 +39,11 @@ export default function Vehicles() {
     null
   );
   const [unallocatedVehicles, setUnallocatedVehicles] = useState<Vehicle[]>([]);
-  const [error, setError] = useState(null);
   const [selectedTab, setSelectedTab] = useState<number>(0);
   const [fetchedVehicles, setFetchedVehicles] = useState<DocumentData[]>([]);
   const [fetchedCompanies, setFetchedCompanies] = useState<DocumentData[]>([]);
   const [showAllocateModal, setShowAllocateModal] = useState(false);
   const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
-  const [companies, setCompanies] = useState<string[]>([]);
   const [editFormInitialValues, setEditFormInitialValues] = useState({
     cargo_capacity: "",
     lisence_plate: "",
@@ -76,10 +65,7 @@ export default function Vehicles() {
     vehiclesId: "", // Assign the result of the function
     organisationId: "",
   });
-  const [showLeaseInput, setShowLeaseInput] = useState(false);
-  const [showEditLeaseInput, setShowEditLeaseInput] = useState(false);
   const { organisationId } = useAuthContext();
-  console.log(" Vehicles Organisation ID:", organisationId);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const validationSchema = Yup.object({
@@ -110,6 +96,7 @@ export default function Vehicles() {
     setShowAllocateModal(false);
     setOpen(false);
   };
+
   const handleEditClick = (vehicle: DocumentData) => {
     setSelectedVehicle(vehicle);
     setEditFormInitialValues({
@@ -566,8 +553,6 @@ export default function Vehicles() {
     fetchedVehicles();
     fetchedCompanies();
     fetchUnallocatedVehicles();
-
-    console.log(fetchedCompanies);
   }, [organisationId]);
 
   const updateFetchedVehicles = (
@@ -1557,7 +1542,6 @@ interface VehiclesTableProps {
 }
 
 export function VehiclesTable({
-  selectedTab,
   vehicles,
   updateFetchedVehicles,
   handleEditClick,
@@ -1577,7 +1561,6 @@ export function VehiclesTable({
       return 0; // no change in order
     }
   });
-  console.log("These are the sortedVehicles", sortedVehicles);
 
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;

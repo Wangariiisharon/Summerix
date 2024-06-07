@@ -25,14 +25,33 @@ import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 
 const Headers = ["CLIENT ID", "NAME"];
+
+const validationSchema = Yup.object({
+  name: Yup.string().required("Name is required"),
+  address: Yup.string().required("Address is required"),
+  contact_details: Yup.string().required("Contact details are required"),
+  representative_address: Yup.string().required(
+    "Representative address is required"
+  ),
+  client_details: Yup.mixed().required("Client details are required"),
+});
+
+const EditvalidationSchema = Yup.object({
+  name: Yup.string().required("Name is required"),
+  address: Yup.string().required("Address is required"),
+  contact_details: Yup.string().required("Contact details are required"),
+  representative_address: Yup.string().required(
+    "Representative address is required"
+  ),
+  client_details: Yup.mixed().required("Client details are required"),
+});
+
 export default function Cities() {
-  const handleAdd = () => {};
   const [searchQuery, setSearchQuery] = useState("");
   const [fetchedClients, setfetchedClients] = useState<DocumentData[]>([]);
   const [open, setOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [showAddClientModal, setShowAddClientModal] = useState(false);
-
   const [selectedClient, setSelectedClient] = useState<DocumentData | null>(
     null
   );
@@ -47,43 +66,25 @@ export default function Cities() {
     organisationId: "",
     archive: false,
   });
-
   const { organisationId } = useAuthContext();
-  console.log(" Clienst Organisation ID:", organisationId);
 
-  const validationSchema = Yup.object({
-    name: Yup.string().required("Name is required"),
-    address: Yup.string().required("Address is required"),
-    contact_details: Yup.string().required("Contact details are required"),
-    representative_address: Yup.string().required(
-      "Representative address is required"
-    ),
-    client_details: Yup.mixed().required("Client details are required"),
-  });
+  const handleAdd = () => {};
 
-  const EditvalidationSchema = Yup.object({
-    name: Yup.string().required("Name is required"),
-    address: Yup.string().required("Address is required"),
-    contact_details: Yup.string().required("Contact details are required"),
-    representative_address: Yup.string().required(
-      "Representative address is required"
-    ),
-    client_details: Yup.mixed().required("Client details are required"),
-  });
   const handleReset = () => {
     setOpen(false);
   };
 
   const handleSearchChange = (e: any) => {
     const query = e.target.value;
-    console.log("Search Query:", query);
     setSearchQuery(query);
   };
+
   const filteredClients = fetchedClients.filter((client) => {
     const fullName = `${client.name}`.toLowerCase();
     const nameMatch = fullName.includes(searchQuery.toLowerCase());
     return nameMatch;
   });
+
   const handleEditClick = (client: DocumentData) => {
     setSelectedClient(client);
     setEditFormInitialValues({
@@ -103,6 +104,7 @@ export default function Cities() {
     setSelectedClient(null);
     setEditModalOpen(false);
   };
+
   const handleEditSubmit = async (values: {
     name: any;
     address: any;
@@ -656,25 +658,22 @@ function CitiesTable({
   handleEditClick,
 }: ClientsTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [fetchedClients, setfetchedClients] = useState<DocumentData[]>([]);
-  const [open, setOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const rowsPerPage = 6;
-  console.log("AdminsTable Rendering with selectedTab:");
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
 
   const handleSearchChange = (e: any) => {
     const query = e.target.value;
-    console.log("Search Query:", query);
     setSearchQuery(query);
   };
+
   const filteredClients = clients.filter((client) => {
     const fullName = `${client.name}`.toLowerCase();
     const nameMatch = fullName.includes(searchQuery.toLowerCase());
     return nameMatch;
   });
-  console.log("FILTERD CLIENTS", filteredClients);
+
   const sortedClients = [...filteredClients].sort((a, b) => {
     if (a.archive && !b.archive) {
       return 1; // a should come after b (archived vehicles come after non-archived)
@@ -684,7 +683,6 @@ function CitiesTable({
       return 0; // no change in order
     }
   });
-  console.log("These are the sortedVehicles", sortedClients);
 
   // const visibleClients = sortedClients.slice(startIndex, endIndex);
   const visibleClients = sortedClients.slice(startIndex, endIndex);
@@ -706,7 +704,8 @@ function CitiesTable({
       console.error("Error updating Vehicle status in database:", error);
     }
   };
-  //     // const Headers = ["VEHICLE ID", "VEHICLE TYPE", "LICENSE PLATE"]
+
+  // const Headers = ["VEHICLE ID", "VEHICLE TYPE", "LICENSE PLATE"]
 
   return (
     <>
@@ -743,14 +742,15 @@ function CitiesTable({
                 </thead>
                 <tbody className="bg-[#FAFAFB]">
                   {visibleClients.map((clients, index) => {
-                    const clientId = `C${(index + 1)
-                      .toString()
-                      .padStart(3, "0")}`;
-                    console.log("Client ID", clientId);
+                    // const clientId = `C${(index + 1)
+                    //   .toString()
+                    //   .padStart(3, "0")}`;
+                    // console.log("Client ID", clientId);
+                    
                     return (
                       <Fragment key={index}>
                         <tr className="hover:bg-gray-100">
-                          <td className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 pr-3 text-d-blue text-base sm:pl-0">
+                          <td className="whitespace-nowrap font-nunito font-regular pt-1 pl-4 pr-3 text-d-blue text-base sm:pl-0">
                             {clients.clientId}
                           </td>
                           <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
