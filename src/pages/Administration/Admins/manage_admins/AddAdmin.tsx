@@ -72,28 +72,25 @@ interface FormValues {
   invitationSent: boolean;
 }
 
+const validationSchema = Yup.object({
+  firstname: Yup.string().required("First name is required"),
+  lastname: Yup.string().required("Last name is required"),
+  email: Yup.string().required("Email is required"),
+  phonenumber: Yup.string().required("Phone number is required"),
+  department: Yup.string().required("Department is required"),
+  country: Yup.string().required("Country is required"),
+  role: Yup.string().required("Role is required"),
+});
+
 export default function AddAdmin({
   isModalOpen,
   setIsModalOpen,
 }: AddAdminProps) {
-  const [selectedTab, setSelectedTab] = useState<number>(0);
-
-  const [error, setError] = useState<null | string>(null);
   const { currentUser, organisationId, isSuperAdmin } = useAuthContext();
   const [departments, setDepartments] = useState<DocumentData[]>([]);
   const [fetchedAdmins, setFetchedAdmins] = useState<DocumentData[]>([]);
   const [countries, setCountries] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const validationSchema = Yup.object({
-    firstname: Yup.string().required("First name is required"),
-    lastname: Yup.string().required("Last name is required"),
-    email: Yup.string().required("Email is required"),
-    phonenumber: Yup.string().required("Phone number is required"),
-    department: Yup.string().required("Department is required"),
-    country: Yup.string().required("Country is required"),
-    role: Yup.string().required("Role is required"),
-  });
 
   async function generateAdminId(organisationId: string | null) {
     try {

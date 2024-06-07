@@ -1,4 +1,4 @@
-import { Fragment, ReactNode, useState } from "react";
+import { Fragment, ReactNode } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 
 interface Props {
@@ -6,6 +6,7 @@ interface Props {
   setOpen: (value: boolean) => void;
   children: ReactNode;
 }
+
 export function FormModal({ open, setOpen, children }: Props) {
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -50,6 +51,7 @@ interface NewModalProps {
   setOpen: (value: boolean) => void;
   children: React.ReactNode;
 }
+
 export function NewFormModal({
   open,
   setOpen,
