@@ -1,10 +1,9 @@
 import { AuthProvider } from "@/components/Authentication/AuthProvider";
 import Head from "next/head";
-import toast, { Toaster } from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
 import "@/globals.css";
 import React from "react";
 import Script from "next/script";
-import useActivityTimeout from "./timeout";
 import { useActivityTracker } from "@/components/SessionTimeOut/useActivityTracker";
 import InactivityModal from "@/components/SessionTimeOut/inactivityModal";
 
@@ -21,10 +20,6 @@ export default function MyApp({ Component, pageProps }: any) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" />
       </Head>
-      <Script
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE&libraries=places"
-        strategy="beforeInteractive"
-      />
       <AuthProvider>
         <Component {...pageProps} />
         <InactivityModal
