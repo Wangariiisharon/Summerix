@@ -1,20 +1,13 @@
-import firebase from "firebase/app";
-import "firebase/firestore";
 import { Tab } from "@headlessui/react";
-import { AddButton, Button, AddButtons } from "@/components/Buttons";
+import { Button, AddButtons } from "@/components/Buttons";
 import { SetStateAction, useEffect, useState } from "react";
-import SearchBar from "../../../../components/Forms/input";
-import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import router, { useRouter } from "next/router";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { FormModal, NewFormModal } from "@/components/Modals/FormModal";
 import { Formik, Field, Form } from "formik/dist/index";
 import firebaseApp, { fbDb } from "@/firebase/configs";
-import AddAdmin from "./AddAdmin";
 import AdminsTable from "./adminsTable";
 import country from "country-list-js";
-
 import {
-  User,
   createUserWithEmailAndPassword,
   getAuth,
   sendSignInLinkToEmail,
@@ -36,11 +29,7 @@ import {
 } from "firebase/firestore";
 import { toast } from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
-import axios from "axios";
-import "firebase/firestore";
 import * as Yup from "yup";
-import { FaEdit, FaTrash, FaArchive } from "react-icons/fa";
-import json2csv from "json2csv"; // Ensure this import matches your library setup
 
 interface DepartmentData {
   name: string;
@@ -57,15 +46,32 @@ interface Admin {
   status: boolean;
   archive: boolean;
   country: string;
+  // super_admin: any;
 }
+
+const validationSchema = Yup.object({
+  firstname: Yup.string().required("First name is required"),
+  lastname: Yup.string().required("Last name is required"),
+  email: Yup.string().required("Email is required"),
+  phonenumber: Yup.string().required("Phone number is required"),
+  department: Yup.string().required("Department is required"),
+  country: Yup.string().required("Country is required"),
+  role: Yup.string().required("Role is required"),
+});
+
+const EditvalidationSchema = Yup.object({
+  firstname: Yup.string().required("First name is required"),
+  lastname: Yup.string().required("Last name is required"),
+  email: Yup.string().required("Email details are required"),
+  phonenumber: Yup.string().required("Phone number address is required"),
+  department: Yup.string().required("Department is required"),
+});
 
 export default function Admins() {
   const [open, setOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState<number>(0);
   const [fetchedAdmins, setFetchedAdmins] = useState<Admin[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedAdmin, setSelectedAdmin] = useState<DocumentData | null>(null);
-  const [permissions, setPermissions] = useState<string[]>([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -88,26 +94,6 @@ export default function Admins() {
   const [departments, setDepartments] = useState<DocumentData[]>([]);
   let { currentUser, organisationId, isSuperAdmin } = useAuthContext();
 
-  const [departmentReference, setDepartmentReference] =
-    useState<DocumentReference<DocumentData> | null>(null);
-  const validationSchema = Yup.object({
-    firstname: Yup.string().required("First name is required"),
-    lastname: Yup.string().required("Last name is required"),
-    email: Yup.string().required("Email is required"),
-    phonenumber: Yup.string().required("Phone number is required"),
-    department: Yup.string().required("Department is required"),
-    country: Yup.string().required("Country is required"),
-    role: Yup.string().required("Role is required"),
-  });
-
-  const EditvalidationSchema = Yup.object({
-    firstname: Yup.string().required("First name is required"),
-    lastname: Yup.string().required("Last name is required"),
-    email: Yup.string().required("Email details are required"),
-    phonenumber: Yup.string().required("Phone number address is required"),
-    department: Yup.string().required("Department is required"),
-  });
-
   async function generateAdminId(organisationId: string | null) {
     try {
       const querySnapshot = await getDocs(
@@ -127,13 +113,17 @@ export default function Admins() {
   const handleAddAdmin = () => {
     setIsModalOpen(true);
   };
+
   const handleExport = () => {};
+
   const handleReset = () => {
     setOpen(false);
   };
+
   const updateFetchedVehicles = (updatedAdmins: SetStateAction<Admin[]>) => {
     setFetchedAdmins(updatedAdmins);
   };
+
   useEffect(() => {
     const fetchedAdmins = async () => {
       const db = getFirestore();
@@ -246,6 +236,7 @@ export default function Admins() {
     setSelectedAdmin(null);
     setEditModalOpen(false);
   };
+
   const handleAddAdminClick = () => {
     setIsModalOpen(true);
   };
@@ -320,6 +311,7 @@ export default function Admins() {
       console.error("Error updating Admin:", error);
     }
   };
+
   const handleSubmit = async (values: {
     firstname: any;
     lastname: any;

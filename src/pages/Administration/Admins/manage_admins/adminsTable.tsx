@@ -1,24 +1,11 @@
-import firebase from "firebase/app";
-import "firebase/firestore";
-import { Tab } from "@headlessui/react";
-import { AddButton, Button, AddButtons } from "@/components/Buttons";
-import { SetStateAction, useEffect, useState } from "react";
-import SearchBar from "../../../../components/Forms/input";
-import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import router, { useRouter } from "next/router";
-import { FormModal, NewFormModal } from "@/components/Modals/FormModal";
-import { Formik, Field, Form } from "formik/dist/index";
-import firebaseApp, { fbDb } from "@/firebase/configs";
-import AddAdmin from "./AddAdmin";
-import {
-  DocumentData,
-  DocumentReference,
-  doc,
-  setDoc,
-} from "firebase/firestore";
+import { useState } from "react";
+import { fbDb } from "@/firebase/configs";
+import { DocumentData, doc, setDoc } from "firebase/firestore";
 import json2csv from "json2csv";
 import toast from "react-hot-toast";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import SearchBar from "@/components/Forms/input";
+
 interface Admin {
   // id: string;
   adminId: string;
@@ -31,7 +18,9 @@ interface Admin {
   status: boolean;
   archive: boolean;
   country: string;
+  super_admin?: any;
 }
+
 interface AdminsTableProps {
   selectedTab: number;
   admins: Admin[];
@@ -41,7 +30,6 @@ interface AdminsTableProps {
 }
 
 export default function AdminsTable({
-  selectedTab,
   updateFetchedAdmins,
   handleEditClick,
   admins,
@@ -64,6 +52,7 @@ export default function AdminsTable({
       setSelectedAdmins([...selectedAdmins, admin]);
     }
   };
+
   const handleSelectAllChange = () => {
     if (selectAll) {
       setSelectedAdmins([]);
