@@ -1,25 +1,8 @@
 import { Tab } from "@headlessui/react";
-import {
-  ChangeEvent,
-  Fragment,
-  useEffect,
-  useState,
-  SetStateAction,
-} from "react";
-import { AddButton, Button, EditBtn } from "@/components/Buttons";
-import Table, { DummyTable } from "@/components/Table/Table";
-import {
-  CheckCircleIcon,
-  PlusIcon,
-  XCircleIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
-import { HeaderCell, BodyCell } from "../../../components/Table/Cells";
-import { TableBody } from "../../../components/Table/Row";
+import { Fragment, useEffect, useState, SetStateAction } from "react";
+import { Button, EditBtn } from "@/components/Buttons";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import SearchBar from "../../../components/Forms/input";
-import Link from "next/link";
-
-import DashboardComponent from "../../Dashboard/dashlayout";
 import { fbDb } from "@/firebase/configs";
 import {
   DocumentData,
@@ -36,10 +19,7 @@ import {
 import { FormModal } from "@/components/Modals/FormModal";
 import { Formik, Field, Form } from "formik/dist/index";
 import toast from "react-hot-toast";
-import {
-  AuthProvider,
-  useAuthContext,
-} from "@/components/Authentication/AuthProvider";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import * as Yup from "yup";
 
 const validationSchema = Yup.object({
@@ -447,7 +427,6 @@ function CitiesTable({
     const nameMatch = fullName.includes(searchQuery.toLowerCase());
     return nameMatch;
   });
-  console.log("FILTERD CLIENTS", filteredClients);
 
   const sortedClasses = [...filteredClients].sort((a, b) => {
     if (a.archive && !b.archive) {

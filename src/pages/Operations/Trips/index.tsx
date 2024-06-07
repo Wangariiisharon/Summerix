@@ -1,17 +1,8 @@
-import { Header, HeaderBar } from "@/components/Headers";
-import DummyTable, { ClientsTable } from "@/components/Table/Table";
-import { Input, Submit } from "@/components/Forms/input";
-import { AddButton, Button } from "@/components/Buttons";
-import {
-  ArrowDownTrayIcon,
-  ChevronDownIcon,
-  InboxArrowDownIcon,
-  PlusIcon,
-} from "@heroicons/react/24/solid";
+import { Button } from "@/components/Buttons";
+import { ArrowDownTrayIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { FormModal } from "@/components/Modals/FormModal";
 import { Fragment, SetStateAction, useEffect, useState } from "react";
-import SiteLayout from "@/Layout/SiteLayout";
 import { fbDb } from "@/firebase/configs";
 import {
   getDocs,
@@ -25,31 +16,18 @@ import {
   where,
   getFirestore,
   onSnapshot,
-  getDoc,
-  orderBy,
 } from "firebase/firestore";
-import { Field, Formik, Form, useFormik, FormikHelpers } from "formik";
-import setFieldValue from "formik";
+import { Field, Formik, Form } from "formik";
 import { Tab } from "@headlessui/react";
-import Maintenance from "../Vehicles/maintanance";
 import { useRouter } from "next/router";
 import AllTrips from "./allTrips";
-import { AnyIfEmpty } from "react-redux";
 import { ErrorMessage } from "formik";
 import { exportDataToCSV } from "../../../components/Exports/tripsExport";
 import toast from "react-hot-toast";
-import { startOfMonth, endOfMonth, format, parse } from "date-fns";
-import {
-  AuthProvider,
-  useAuthContext,
-} from "@/components/Authentication/AuthProvider";
+import { startOfMonth, endOfMonth, format } from "date-fns";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import PlacesAutocomplete from "react-places-autocomplete";
-import { AnyARecord, AnyRecord } from "dns";
 import * as Yup from "yup";
-import { RiLoginBoxFill } from "react-icons/ri";
-import { log } from "console";
-
-// Update the import path
 
 interface TripCounts {
   [key: string]: number;
@@ -87,10 +65,32 @@ const SearchBar = ({ placeholder, value, onChange }: any) => {
     />
   );
 };
+
 type Coordinates = {
   lat: number;
   lng: number;
 };
+
+const validationSchema = Yup.object({
+  requested_by: Yup.string().required("Driver is required"),
+  vehicle: Yup.string().required("Vehicle is required"),
+  pick_up_location: Yup.string().required("Pick up location is required"),
+  drop_off_location: Yup.string().required("Drop off location is required"),
+  start_time: Yup.date().required("Start time is required"),
+  // end_time: Yup.date().required("End time is required"),
+  cargo_type: Yup.string().required("Cargo type is required"),
+  cargo_quantity: Yup.string().required("Cargo quantity is required"),
+  company: Yup.string().required("Company is required"),
+  client: Yup.string().required("Client is required"),
+  dealValue: Yup.number().positive().required("Deal Value is required"),
+  fuel: Yup.number().positive().required("Fuel is required"),
+  mileage_fee: Yup.number().positive().required("Mileage Fee is required"),
+});
+
+const editValidationSchema = Yup.object({
+  end_time: Yup.date().required("End time is required"),
+  status: Yup.number().positive().required("Status is required"),
+});
 
 export default function TripsComponent() {
   const [open, setOpen] = useState(false);
@@ -101,7 +101,6 @@ export default function TripsComponent() {
   const [companies, setCompanies] = useState<
     { id: string; name: string; vehicle: string[] }[]
   >([]);
-  const [selected, setSelected] = useState("");
   const [selectedCompanyVehicles, setSelectedCompanyVehicles] = useState<
     string[]
   >([]);
@@ -116,11 +115,7 @@ export default function TripsComponent() {
   const [selectedTrip, setSelectedTrip] = useState<DocumentData | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [pickUpLocation, setPickUpLocation] = useState<string>("");
-  const [dropOffLocation, setDropOffLocation] = useState<string>("");
   const [distance, setDistance] = useState<string>("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [editFormInitialValues, setEditFormInitialValues] = useState({
     trip_id: "",
     requested_by: {
@@ -145,29 +140,6 @@ export default function TripsComponent() {
     distance: "",
   });
   const [selectedIndex, setSelectedIndex] = useState(0);
-
-  const router = useRouter();
-
-  const validationSchema = Yup.object({
-    requested_by: Yup.string().required("Driver is required"),
-    vehicle: Yup.string().required("Vehicle is required"),
-    pick_up_location: Yup.string().required("Pick up location is required"),
-    drop_off_location: Yup.string().required("Drop off location is required"),
-    start_time: Yup.date().required("Start time is required"),
-    // end_time: Yup.date().required("End time is required"),
-    cargo_type: Yup.string().required("Cargo type is required"),
-    cargo_quantity: Yup.string().required("Cargo quantity is required"),
-    company: Yup.string().required("Company is required"),
-    client: Yup.string().required("Client is required"),
-    dealValue: Yup.number().positive().required("Deal Value is required"),
-    fuel: Yup.number().positive().required("Fuel is required"),
-    mileage_fee: Yup.number().positive().required("Mileage Fee is required"),
-  });
-  const editValidationSchema = Yup.object({
-    end_time: Yup.date().required("End time is required"),
-    status: Yup.number().positive().required("Status is required"),
-  });
-
   const { organisationId } = useAuthContext();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -521,9 +493,6 @@ export default function TripsComponent() {
     fetchedClients();
     fetchedCompanies();
   }, [organisationId]);
-  console.log(selectedCompanyVehicles, "SelectedCompanyVehicles");
-  console.log(selectedCompany, "SelectedCompany");
-  console.log("Trips Companies:", companies);
 
   function convertToDate(firestoreTimestamp: any) {
     if (firestoreTimestamp instanceof Timestamp) {
@@ -920,8 +889,6 @@ export default function TripsComponent() {
   const countTrips = (selectedTab: number) => {
     switch (selectedTab) {
       case 0:
-        console.log("filteredTrips:", filteredTrips);
-
         return filteredTrips.length;
       case 1:
         return filteredTrips.filter((trip) => {
@@ -948,10 +915,10 @@ export default function TripsComponent() {
   };
 
   const allTripsCount = countTrips(0);
-  console.log("allTripsCount:", allTripsCount);
   const onRouteTripsCount = countTrips(1);
   const waitingTripsCount = countTrips(2);
   const completeTripsCount = countTrips(3);
+  
   return (
     <div>
       <p className="text-lg font-nunito font-bold mt-2 ml-10 mb-2">Trips</p>
