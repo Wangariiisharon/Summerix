@@ -726,22 +726,17 @@ interface VehiclesTableProps {
   handleCheckboxClick: any;
   checkboxState: any;
 }
+
 function MaintananceTable({
   selectedTab,
   maintananceList,
-  isSuperAdmin,
-  handleCheckboxClick,
-  checkboxState,
 }: VehiclesTableProps) {
-  console.log("MaintananceTable Rendering with selectedTab:", selectedTab);
-  console.log("Mainanace list", maintananceList);
   const [currentPage, setCurrentPage] = useState(0);
   const rowsPerPage = 6;
   const totalTrips = maintananceList.length;
   const totalPages = Math.ceil(totalTrips / rowsPerPage);
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-
   const currentDate = new Date();
 
   const filteredApprovedMaintenance = maintananceList.filter(
@@ -764,9 +759,11 @@ function MaintananceTable({
     }
   );
   const visibleClasses = filteredMaintenance.slice(startIndex, endIndex);
+  
   const handlePageClick = (page: number) => {
     setCurrentPage(page);
   };
+
   const pageNumbers = () => {
     let pages = [];
     if (totalPages <= 5) {
@@ -779,7 +776,6 @@ function MaintananceTable({
     return pages;
   };
 
-  console.log("Filtered Vehicles:", filteredMaintenance);
   return (
     <div className="ml-4 px-4 sm:px-6 lg:px-8">
       <div className="mt-6 flow-root">

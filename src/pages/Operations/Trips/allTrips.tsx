@@ -91,7 +91,7 @@ export default function AllTrips({ searchQuery }: any) {
       return firestoreTimestamp; // Assuming it's already a Date object or null
     }
   }
-  
+
   const convertDateToInputString = (date: string | number | Date) => {
     const d = new Date(date);
     let month = "" + (d.getMonth() + 1),
