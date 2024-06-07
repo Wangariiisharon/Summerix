@@ -22,7 +22,6 @@ interface Admin {
 }
 
 interface AdminsTableProps {
-  selectedTab: number;
   admins: Admin[];
   filteredAdmins: Admin[];
   updateFetchedAdmins: (updatedAdmins: Admin[]) => void;
