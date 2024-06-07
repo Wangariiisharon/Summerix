@@ -1,48 +1,20 @@
-import {
-  Fragment,
-  ReactNode,
-  useRef,
-  useState,
-  useEffect,
-  useContext,
-  useMemo,
-} from "react";
-import {
-  CalendarIcon,
-  ChartPieIcon,
-  HomeIcon,
-  DocumentDuplicateIcon,
-  FolderIcon,
-  UsersIcon,
-  TruckIcon,
-  ArrowUpRightIcon,
-  ArrowTrendingUpIcon,
-} from "@heroicons/react/24/outline";
-import { DashLogo } from "@/components/images";
+import { ReactNode, useRef, useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
 import React from "react";
 import {
-  getFirestore,
   collection,
-  doc,
-  setDoc,
-  addDoc,
   getDocs,
-  DocumentData,
-  getDoc,
   where,
   query,
   onSnapshot,
-  orderBy,
-  Timestamp,
 } from "firebase/firestore";
 import firebaseApp, { fbDb } from "@/firebase/configs";
-import { createContext } from "react";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { NotificationDropdown } from "./notificationDropdown";
 import Link from "next/link";
 import { FaHome, FaTools, FaChartBar, FaFileAlt } from "react-icons/fa"; // Importing icons from react-icons
+import Image from "next/image";
 
 interface Props {
   children: ReactNode;
@@ -55,15 +27,12 @@ export default function SiteNav({ children }: Props) {
   const router = useRouter();
   const drawerRef = useRef<HTMLDivElement | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
-  const [fetchedAdmins, setFetchedAdmins] = useState<DocumentData[]>([]);
   const [adminDetails, setadminDetails] = useState<any | null>(null);
   const [userInitials, setUserInitials] = useState<string>("");
   const { currentUser, organisationId, isSuperAdmin } = useAuthContext();
   const [showDropdown, setShowDropdown] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const { hasPermission } = useAuthContext();
-  const [searchTerm, setSearchTerm] = useState("");
 
   // const isSuperAdmin = useMemo(() => adminDetails?.roles.includes('super_admin'), [adminDetails]);
 
@@ -176,7 +145,7 @@ export default function SiteNav({ children }: Props) {
     //     unsubscribeNotifications();
     //   }
     // };
-  }, [organisationId]);
+  }, [currentUser, notifications, organisationId, unreadCount]);
 
   // const isSuperAdmin = adminDetails?.super_admin;
   console.log("Admin Details", adminDetails);
@@ -224,10 +193,15 @@ export default function SiteNav({ children }: Props) {
               // className={`flex flex-row fixed top-0 h-14 bg-[#065AD8] flex items-center shadow-inner ${
               //   isDrawerOpen ? " w-full" : "w-full lg:w-auto"
               // }`}
-              className="flex flex-row fixed top-0 h-14 bg-[#065AD8] w-full flex items-center shadow-inner "
+              className="flex flex-row fixed top-0 h-14 bg-[#065AD8] w-full items-center shadow-inner "
             >
-              <div className="flex h-10 py-3 pb-4 shrink-0 items-center">
-                <DashLogo />
+              <div className="p-4">
+                <Image
+                  src="dashlogo.png"
+                  alt="company logo"
+                  width={150}
+                  height={100}
+                />
               </div>
               <div
                 className="fixed left-60 ml-14 cursor-pointer"
