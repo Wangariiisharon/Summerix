@@ -1,4 +1,4 @@
-import { Tab } from "@headlessui/react";
+import { TabGroup, TabPanel, TabPanels } from "@headlessui/react";
 import { Button, AddButtons } from "@/components/Buttons";
 import { SetStateAction, useEffect, useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
@@ -404,7 +404,7 @@ export default function Admins() {
     <>
       <div className="bg-[#FFFFFF]">
         <div className="mt-2 max-h-[700px]">
-          <Tab.Group>
+          <TabGroup>
             <div className="mb-2 flex w-full">
               <div className="mr-[550px] flex flex-col ml-6">
                 <h2 className="font-semibold text-[#030229]">Users</h2>
@@ -423,21 +423,21 @@ export default function Admins() {
               </div>
             </div>
 
-            <Tab.Panels>
-              <Tab.Panel>
+            <TabPanels>
+              <TabPanel>
                 <div className="h-full overflow-y-auto">
                   <AdminsTable
-                    selectedTab={selectedTab}
                     admins={fetchedAdmins}
                     filteredAdmins={fetchedAdmins}
                     updateFetchedAdmins={updateFetchedAdmins}
                     handleEditClick={handleEditClick}
                   />
                 </div>
-              </Tab.Panel>
-            </Tab.Panels>
-          </Tab.Group>
-          <div>
+              </TabPanel>
+            </TabPanels>
+          </TabGroup>
+
+          {isModalOpen && (
             <NewFormModal
               open={isModalOpen}
               setOpen={setIsModalOpen}
@@ -611,160 +611,158 @@ export default function Admins() {
                 </Formik>
               </div>
             </NewFormModal>
+          )}
 
-            {editModalOpen && selectedAdmin && (
-              <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
-                <div>
-                  <div className="flex w-full h-full justify-between items-center mb-12">
-                    <div className="text-xl font-semibold ">
-                      Edit User Details
-                    </div>
-                    <Button
-                      className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
-                      handleClick={handleEditModalClose}
-                    >
-                      <XMarkIcon className="h-6 w-6 text-red-400" />
-                    </Button>
+          {editModalOpen && selectedAdmin && (
+            <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
+              <div>
+                <div className="flex w-full h-full justify-between items-center mb-12">
+                  <div className="text-xl font-semibold ">
+                    Edit User Details
                   </div>
-                  <Formik
-                    validationSchema={EditvalidationSchema}
-                    initialValues={editFormInitialValues}
-                    onSubmit={handleEditSubmit}
+                  <Button
+                    className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
+                    handleClick={handleEditModalClose}
                   >
-                    {({ values, errors, touched, setFieldValue }) => (
-                      <Form>
-                        <div className="">
-                          <div className="flex w-full justify-between">
-                            <label className="block">
-                              <label className="form-label">FIRSTNAME</label>
-                              <Field
-                                type="text"
-                                name="firstname"
-                                value={values.firstname}
-                                className="form-input bg-grey w-48"
-                              />
-                              {errors.firstname && touched.firstname ? (
-                                <div className="text-red-600 text-sm">
-                                  {errors.firstname}
-                                </div>
-                              ) : null}
-                            </label>
-                            <label className="block">
-                              <label className="form-label">LASTNAME</label>
-                              <Field
-                                type="text"
-                                name="lastname"
-                                value={values.lastname}
-                                className="form-input bg-grey w-48"
-                              />
-                              {errors.lastname && touched.lastname ? (
-                                <div className="text-red-600 text-sm">
-                                  {errors.lastname}
-                                </div>
-                              ) : null}
-                            </label>
-                          </div>
-                          <div className="flex w-full justify-between mt-8">
-                            <label className="block">
-                              <label className="form-label">EMAIL</label>
-                              <Field
-                                type="email"
-                                name="email"
-                                value={values.email}
-                                className="form-input bg-grey w-48"
-                              />
-                              {errors.email && touched.email ? (
-                                <div className="text-red-600 text-sm">
-                                  {errors.email}
-                                </div>
-                              ) : null}
-                            </label>
-                            <label className="block">
-                              <label className="form-label">PHONE NUMBER</label>
-                              <Field
-                                type="text"
-                                name="phonenumber"
-                                value={values.phonenumber}
-                                className="form-input bg-grey w-48"
-                              />
-                              {errors.phonenumber && touched.phonenumber ? (
-                                <div className="text-red-600 text-sm">
-                                  {errors.phonenumber}
-                                </div>
-                              ) : null}
-                            </label>
-                          </div>
-                          <div className="flex w-full justify-between mt-8">
-                            <label className="block">
-                              <label className="form-label">DEPARTMENT</label>
-                              <Field
-                                as="select"
-                                name="department"
-                                value={
-                                  values.department ? values.department : ""
-                                }
-                                onChange={(
-                                  event: React.ChangeEvent<HTMLSelectElement>
-                                ) => {
-                                  const selectedDepartmentName =
-                                    event.target.value;
-                                  setFieldValue(
-                                    "department",
-                                    selectedDepartmentName
-                                  );
-                                }}
-                                className="form-input bg-grey w-48"
-                              >
-                                <option value="">Select Department</option>
-                                {departments.map((department: any) => (
-                                  <option
-                                    key={department.id}
-                                    value={department.name}
-                                  >
-                                    {department.name}
-                                  </option>
-                                ))}
-                              </Field>
-                              {errors.department && touched.department ? (
-                                <div className="text-red-600 text-sm">
-                                  {errors.department}
-                                </div>
-                              ) : null}
-                            </label>
-
-                            <label className="block">
-                              <label className="form-label">ADMIN</label>
-                              <Field
-                                type="checkbox"
-                                name="super_admin"
-                                checked={values.super_admin}
-                                className="form-checkbox bg-gray-200"
-                              />
-                            </label>
-                          </div>
-                          <div className="flex w-full justify-end mt-24 ">
-                            <Button
-                              className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
-                              handleClick={handleReset}
-                            >
-                              Reset
-                            </Button>
-                            {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
-                            <button
-                              className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
-                              type="submit"
-                            >
-                              Save
-                            </button>
-                          </div>
-                        </div>
-                      </Form>
-                    )}
-                  </Formik>
+                    <XMarkIcon className="h-6 w-6 text-red-400" />
+                  </Button>
                 </div>
-              </FormModal>
-            )}
-          </div>
+                <Formik
+                  validationSchema={EditvalidationSchema}
+                  initialValues={editFormInitialValues}
+                  onSubmit={handleEditSubmit}
+                >
+                  {({ values, errors, touched, setFieldValue }) => (
+                    <Form>
+                      <div className="">
+                        <div className="flex w-full justify-between">
+                          <label className="block">
+                            <label className="form-label">FIRSTNAME</label>
+                            <Field
+                              type="text"
+                              name="firstname"
+                              value={values.firstname}
+                              className="form-input bg-grey w-48"
+                            />
+                            {errors.firstname && touched.firstname ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.firstname}
+                              </div>
+                            ) : null}
+                          </label>
+                          <label className="block">
+                            <label className="form-label">LASTNAME</label>
+                            <Field
+                              type="text"
+                              name="lastname"
+                              value={values.lastname}
+                              className="form-input bg-grey w-48"
+                            />
+                            {errors.lastname && touched.lastname ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.lastname}
+                              </div>
+                            ) : null}
+                          </label>
+                        </div>
+                        <div className="flex w-full justify-between mt-8">
+                          <label className="block">
+                            <label className="form-label">EMAIL</label>
+                            <Field
+                              type="email"
+                              name="email"
+                              value={values.email}
+                              className="form-input bg-grey w-48"
+                            />
+                            {errors.email && touched.email ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.email}
+                              </div>
+                            ) : null}
+                          </label>
+                          <label className="block">
+                            <label className="form-label">PHONE NUMBER</label>
+                            <Field
+                              type="text"
+                              name="phonenumber"
+                              value={values.phonenumber}
+                              className="form-input bg-grey w-48"
+                            />
+                            {errors.phonenumber && touched.phonenumber ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.phonenumber}
+                              </div>
+                            ) : null}
+                          </label>
+                        </div>
+                        <div className="flex w-full justify-between mt-8">
+                          <label className="block">
+                            <label className="form-label">DEPARTMENT</label>
+                            <Field
+                              as="select"
+                              name="department"
+                              value={values.department ? values.department : ""}
+                              onChange={(
+                                event: React.ChangeEvent<HTMLSelectElement>
+                              ) => {
+                                const selectedDepartmentName =
+                                  event.target.value;
+                                setFieldValue(
+                                  "department",
+                                  selectedDepartmentName
+                                );
+                              }}
+                              className="form-input bg-grey w-48"
+                            >
+                              <option value="">Select Department</option>
+                              {departments.map((department: any) => (
+                                <option
+                                  key={department.id}
+                                  value={department.name}
+                                >
+                                  {department.name}
+                                </option>
+                              ))}
+                            </Field>
+                            {errors.department && touched.department ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.department}
+                              </div>
+                            ) : null}
+                          </label>
+
+                          <label className="block">
+                            <label className="form-label">ADMIN</label>
+                            <Field
+                              type="checkbox"
+                              name="super_admin"
+                              checked={values.super_admin}
+                              className="form-checkbox bg-gray-200"
+                            />
+                          </label>
+                        </div>
+                        <div className="flex w-full justify-end mt-24 ">
+                          <Button
+                            className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
+                            handleClick={handleReset}
+                          >
+                            Reset
+                          </Button>
+                          {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
+                          <button
+                            className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
+                            type="submit"
+                          >
+                            Save
+                          </button>
+                        </div>
+                      </div>
+                    </Form>
+                  )}
+                </Formik>
+              </div>
+            </FormModal>
+          )}
         </div>
       </div>
     </>
