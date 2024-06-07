@@ -13,7 +13,9 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
-import firebaseApp from "@/firebase/configs";
+import firebaseApp, { fbDb } from "@/firebase/configs";
+import { AdminUser } from "@/lib/types/admin.model";
+import { useRouter } from "next/navigation";
 
 interface User {
   uid: string;
@@ -21,6 +23,7 @@ interface User {
 }
 
 interface AdminData {
+  docId: string;
   organisationId: string;
   departments: string[];
   super_admin: boolean;
@@ -31,6 +34,7 @@ interface AdminData {
 interface AuthContextType {
   isAuthenticated: boolean;
   isSuperAdmin: boolean;
+  currentAdmin: AdminUser | null;
   currentUser: User | null;
   userId: string | null;
   organisationId: string | null;
@@ -41,6 +45,7 @@ interface AuthContextType {
 const defaultContextValue: AuthContextType = {
   isAuthenticated: false,
   isSuperAdmin: false,
+  currentAdmin: null,
   currentUser: null,
   userId: null,
   organisationId: null,
@@ -53,11 +58,14 @@ export const AuthContext = createContext<AuthContextType>(defaultContextValue);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const [currentAdmin, setCurrentAdmin] = useState<AdminUser | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<AdminData | null>(null);
+  const router = useRouter();
 
   const hasPermission = (permissionKey: string) =>
     userData?.departments.includes(permissionKey) ?? false;
+
   const isSuperAdmin = useMemo(() => {
     return userData?.super_admin ?? false;
   }, [userData]);
@@ -65,8 +73,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const auth = getAuth(firebaseApp);
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      // console.log("onAuthStateChanged > user:", user);
+
       if (user) {
         setCurrentUser(user);
+
         const firestore = getFirestore(firebaseApp);
         const adminsQuery = query(
           collection(firestore, "admins"),
@@ -75,18 +86,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const querySnapshot = await getDocs(adminsQuery);
         if (!querySnapshot.empty) {
           setUserData(querySnapshot.docs[0].data() as AdminData);
+
+          const data = querySnapshot.docs[0].data() as AdminUser;
+          data.docId = querySnapshot.docs[0].id;
+
+          // derive initials from firstname and lastname
+          data.initials =
+            data.firstname?.charAt(0)?.toUpperCase() +
+            data.lastname?.charAt(0)?.toUpperCase();
+          setCurrentAdmin(data);
         }
       } else {
+        // redirect to signin page
+        router.push("/signin");
         setCurrentUser(null);
         setUserData(null);
       }
     });
+
     return () => unsubscribe();
-  }, []);
+  }, [router]);
 
   return (
     <AuthContext.Provider
       value={{
+        currentAdmin,
         currentUser,
         isAuthenticated: !!currentUser,
         userId: currentUser?.uid || null,

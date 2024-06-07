@@ -1,16 +1,9 @@
 import { ReactNode, useRef, useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
 import React from "react";
-import {
-  collection,
-  getDocs,
-  where,
-  query,
-  onSnapshot,
-} from "firebase/firestore";
-import firebaseApp, { fbDb } from "@/firebase/configs";
+import { collection, where, query, onSnapshot } from "firebase/firestore";
+import { fbDb } from "@/firebase/configs";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { NotificationDropdown } from "./notificationDropdown";
 import Link from "next/link";
 import { FaHome, FaTools, FaChartBar, FaFileAlt } from "react-icons/fa"; // Importing icons from react-icons
@@ -27,14 +20,11 @@ export default function SiteNav({ children }: Props) {
   const router = useRouter();
   const drawerRef = useRef<HTMLDivElement | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
-  const [adminDetails, setadminDetails] = useState<any | null>(null);
-  const [userInitials, setUserInitials] = useState<string>("");
-  const { currentUser, organisationId, isSuperAdmin } = useAuthContext();
+  const { currentAdmin, currentUser, organisationId, isSuperAdmin } =
+    useAuthContext();
   const [showDropdown, setShowDropdown] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-
-  // const isSuperAdmin = useMemo(() => adminDetails?.roles.includes('super_admin'), [adminDetails]);
 
   const toggleNotificationDropdown = () => {
     setShowDropdown(!showDropdown);
@@ -45,96 +35,47 @@ export default function SiteNav({ children }: Props) {
   };
 
   useEffect(() => {
-    const fetchAdmin = async () => {
-      try {
-        const auth = getAuth(firebaseApp);
-
-        onAuthStateChanged(auth, (user) => {
-          if (user) {
-            const email = user.email;
-            const adminsCollectionRef = collection(fbDb, "admins");
-            const queryRef = query(
-              adminsCollectionRef,
-              where("email", "==", email)
-            );
-
-            getDocs(queryRef)
-              .then((querySnapshot) => {
-                if (!querySnapshot.empty) {
-                  querySnapshot.forEach((doc) => {
-                    const adminData = doc.data();
-                    setadminDetails(adminData);
-
-                    // Update user initials based on firstname and lastname
-                    const initials =
-                      adminData.firstname?.charAt(0).toUpperCase() +
-                      adminData.lastname?.charAt(0).toUpperCase();
-                    setUserInitials(initials);
-                  });
-                }
-              })
-              .catch((error) => {
-                console.error("Error fetching admin:", error);
-              });
-          }
-        });
-      } catch (error) {
-        console.error("Error fetching admin:", error);
-      }
-    };
-
-    if (!currentUser) {
-      return;
-    }
-
     const fetchNotifications = async () => {
       try {
-        // Reference to the notifications sub-collection for the current user
-        const notificationsRef = collection(
-          fbDb,
-          `user_notifications/${currentUser.uid}/notifications`
-        );
-
-        const q = query(
-          notificationsRef,
-          where("organisationId", "==", organisationId)
-        );
-
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-          const loadedNotifications = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            readBy: doc.data().readBy || [], // Ensure readBy is always an array
-            ...doc.data(), // Get all data from the document
-          }));
-          console.log("loadedNotifications", loadedNotifications);
-
-          const unreadNotifications = loadedNotifications.filter(
-            (notification) =>
-              notification.readBy &&
-              !notification.readBy.includes(currentUser.uid)
+        if (currentUser && currentUser.uid) {
+          // Reference to the notifications sub-collection for the current user
+          const notificationsRef = collection(
+            fbDb,
+            `user_notifications/${currentUser.uid}/notifications`
           );
 
-          setUnreadCount(unreadNotifications.length);
-          setNotifications(loadedNotifications);
-        });
+          const q = query(
+            notificationsRef,
+            where("organisationId", "==", organisationId)
+          );
 
-        return unsubscribe;
+          const unsubscribe = onSnapshot(q, (snapshot) => {
+            const loadedNotifications = snapshot.docs.map((doc) => ({
+              id: doc.id,
+              readBy: doc.data().readBy || [], // Ensure readBy is always an array
+              ...doc.data(), // Get all data from the document
+            }));
+            console.log("loadedNotifications:", loadedNotifications);
+
+            const unreadNotifications = loadedNotifications.filter(
+              (notification) =>
+                notification.readBy &&
+                !notification.readBy.includes(currentUser.uid)
+            );
+
+            setUnreadCount(unreadNotifications.length);
+            setNotifications(loadedNotifications);
+          });
+
+          return unsubscribe;
+        }
       } catch (error) {
         console.error("Error fetching notifications:", error);
       }
     };
 
-    fetchAdmin();
     fetchNotifications();
-
-    // const unsubscribeNotifications = fetchNotifications();
-    // // Cleanup function
-    // return () => {
-    //   if (typeof unsubscribeNotifications === "function") {
-    //     unsubscribeNotifications();
-    //   }
-    // };
-  }, [currentUser, notifications, organisationId, unreadCount]);
+  }, [currentUser, organisationId]);
 
   const navigation = useMemo(
     () => [
@@ -221,21 +162,25 @@ export default function SiteNav({ children }: Props) {
                   </div>
 
                   {/* User initials, name, and email */}
-                  <div className="flex items-center text-sm">
-                    <div className="flex items-center justify-center w-8 h-8 bg-blue-800 rounded-full text-white">
-                      <span className="font-bold">{userInitials}</span>
+                  {currentAdmin && (
+                    <div className="flex items-center text-sm">
+                      <div className="flex items-center justify-center w-8 h-8 bg-blue-800 rounded-full text-white">
+                        <span className="font-bold">
+                          {currentAdmin?.initials}
+                        </span>
+                      </div>
+                      <div className="flex flex-col ml-2 mr-2 text-white">
+                        <span>{`${currentAdmin?.firstname} ${currentAdmin?.lastname}`}</span>
+                        <span>{currentAdmin?.email}</span>
+                      </div>
+                      <button className="focus:outline-none">
+                        <i
+                          className="fa fa-chevron-down text-white"
+                          aria-hidden="true"
+                        ></i>
+                      </button>
                     </div>
-                    <div className="flex flex-col ml-2 mr-2 text-white">
-                      <span>{`${adminDetails?.firstname} ${adminDetails?.lastname}`}</span>
-                      <span>{adminDetails?.email}</span>
-                    </div>
-                    <button className="focus:outline-none">
-                      <i
-                        className="fa fa-chevron-down text-white"
-                        aria-hidden="true"
-                      ></i>
-                    </button>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
