@@ -63,7 +63,7 @@ export default function AdminsTable({
     setSearchQuery(query);
   };
 
-  const fetchedAdmins: Admin[] = admins.filter(
+  const fetchedAdmins: Admin[] = (admins || []).filter(
     (admin: DocumentData): admin is Admin => {
       const fullName = `${admin.firstname} ${admin.lastname}`.toLowerCase();
       const nameMatch = fullName.includes(searchQuery.toLowerCase());

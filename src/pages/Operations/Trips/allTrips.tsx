@@ -515,6 +515,7 @@ export default function AllTrips({ searchQuery }: any) {
           </Tab.Panels>
         </Tab.Group>
       </div>
+      
       {editModalOpen && selectedTrip && (
         <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
           <div>

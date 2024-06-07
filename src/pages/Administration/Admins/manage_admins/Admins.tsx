@@ -69,7 +69,6 @@ const EditvalidationSchema = Yup.object({
 
 export default function Admins() {
   const [open, setOpen] = useState(false);
-  const [selectedTab, setSelectedTab] = useState<number>(0);
   const [fetchedAdmins, setFetchedAdmins] = useState<Admin[]>([]);
   const [selectedAdmin, setSelectedAdmin] = useState<DocumentData | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -121,7 +120,7 @@ export default function Admins() {
   };
 
   const updateFetchedVehicles = (updatedAdmins: SetStateAction<Admin[]>) => {
-    setFetchedAdmins(updatedAdmins);
+    setFetchedAdmins(updatedAdmins || []);
   };
 
   useEffect(() => {
@@ -157,7 +156,7 @@ export default function Admins() {
                 };
               })
             );
-            setFetchedAdmins(adminsData);
+            setFetchedAdmins(adminsData || []);
           });
 
           return () => unsubscribe();
@@ -208,7 +207,7 @@ export default function Admins() {
   }, [organisationId]);
 
   const updateFetchedAdmins = (updatedAdmins: SetStateAction<Admin[]>) => {
-    setFetchedAdmins(updatedAdmins);
+    setFetchedAdmins(updatedAdmins || []);
   };
 
   const handleEditClick = (admin: DocumentData) => {
@@ -300,7 +299,7 @@ export default function Admins() {
             }
           : admin
       );
-      setFetchedAdmins(updatedVehicles);
+      setFetchedAdmins(updatedVehicles || []);
 
       setSelectedAdmin(null);
       setEditModalOpen(false);
@@ -424,8 +423,8 @@ export default function Admins() {
               <TabPanel>
                 <div className="h-full overflow-y-auto">
                   <AdminsTable
-                    admins={fetchedAdmins}
-                    filteredAdmins={fetchedAdmins}
+                    admins={fetchedAdmins || []}
+                    filteredAdmins={fetchedAdmins || []}
                     updateFetchedAdmins={updateFetchedAdmins}
                     handleEditClick={handleEditClick}
                   />
@@ -436,7 +435,7 @@ export default function Admins() {
 
           {isModalOpen && (
             <NewFormModal
-              open={isModalOpen}
+              isOpen={isModalOpen}
               setOpen={setIsModalOpen}
               heading="Add Member"
             >

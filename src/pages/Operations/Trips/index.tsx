@@ -918,7 +918,7 @@ export default function TripsComponent() {
   const onRouteTripsCount = countTrips(1);
   const waitingTripsCount = countTrips(2);
   const completeTripsCount = countTrips(3);
-  
+
   return (
     <div>
       <p className="text-lg font-nunito font-bold mt-2 ml-10 mb-2">Trips</p>
@@ -1046,403 +1046,411 @@ export default function TripsComponent() {
           </Tab.Panels>
         </Tab.Group>
       </div>
-      <FormModal open={open} setOpen={setOpen}>
-        <div className="p-8">
-          <div>
-            <div className="flex w-full h-full justify-between items-center ">
-              <div className="text-xl font-semibold ">New Trip</div>
-              <Button
-                className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
-                handleClick={handleReset}
-              >
-                <XMarkIcon className="h-6 w-6 text-red-400" />
-              </Button>
-            </div>
-            <p className="text-red-500 text-xs mt-3">All fields are required</p>
-          </div>
-          <Formik
-            initialValues={{
-              requested_by: "",
-              vehicle: "",
-              pick_up_location: "",
-              drop_off_location: "",
-              start_time: "",
-              end_time: "",
-              cargo_type: "",
-              cargo_quantity: "",
-              memo: "",
-              company: "",
-              client: "",
-              dealValue: 0,
-              fuel: 0,
-              mileage_fee: 0,
-            }}
-            validationSchema={validationSchema}
-            onSubmit={(values, { setSubmitting }) => {
-              handleSubmit(values);
-              // toast.success("Trip successfully saved!");
-              setSubmitting(false);
-              setOpen(false);
-            }}
-          >
-            {(formik) => (
-              <Form>
-                <div className="">
-                  <div className="flex w-full justify-between mt-6">
-                    {/* PICK UP LOCATION with Autocomplete */}
-                    <div className="block">
-                      <label className="form-label">PICK UP LOCATION</label>
-                      <PlacesAutocomplete
-                        value={formik.values.pick_up_location}
-                        onChange={(address) =>
-                          formik.setFieldValue("pick_up_location", address)
-                        }
-                      >
-                        {({
-                          getInputProps,
-                          suggestions,
-                          getSuggestionItemProps,
-                          loading,
-                        }) => (
-                          <div>
-                            <input
-                              {...getInputProps({
-                                className: "form-input bg-grey w-48",
-                                placeholder: "Enter Pick Up Location",
-                              })}
-                            />
-                            {loading && <div>Loading...</div>}
-                            {suggestions.map((suggestion, index) => (
-                              <div
-                                {...getSuggestionItemProps(suggestion)}
-                                key={index}
-                              >
-                                {suggestion.description}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </PlacesAutocomplete>
-                      <ErrorMessage
-                        name="pick_up_location"
-                        component="div"
-                        className="error text-sm text-red-500 "
-                      />
-                    </div>
 
-                    {/* DROP OFF LOCATION with Autocomplete */}
-                    <div className="block">
-                      <label className="form-label">DROP OFF LOCATION</label>
-                      <PlacesAutocomplete
-                        value={formik.values.drop_off_location}
-                        onChange={(address) =>
-                          formik.setFieldValue("drop_off_location", address)
-                        }
-                      >
-                        {({
-                          getInputProps,
-                          suggestions,
-                          getSuggestionItemProps,
-                          loading,
-                        }) => (
-                          <div>
-                            <input
-                              {...getInputProps({
-                                className: "form-input bg-grey w-48",
-                                placeholder: "Enter Drop Off Location",
-                              })}
-                            />
-                            {loading && <div>Loading...</div>}
-                            {suggestions.map((suggestion, index) => (
-                              <div
-                                {...getSuggestionItemProps(suggestion)}
-                                key={index}
-                              >
-                                {suggestion.description}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </PlacesAutocomplete>
-                      <ErrorMessage
-                        name="drop_off_location"
-                        component="div"
-                        className="error text-sm text-red-500 "
-                      />
+      {open && (
+        <FormModal open={open} setOpen={setOpen}>
+          <div className="p-8">
+            <div>
+              <div className="flex w-full h-full justify-between items-center ">
+                <div className="text-xl font-semibold ">New Trip</div>
+                <Button
+                  className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
+                  handleClick={handleReset}
+                >
+                  <XMarkIcon className="h-6 w-6 text-red-400" />
+                </Button>
+              </div>
+              <p className="text-red-500 text-xs mt-3">
+                All fields are required
+              </p>
+            </div>
+            <Formik
+              initialValues={{
+                requested_by: "",
+                vehicle: "",
+                pick_up_location: "",
+                drop_off_location: "",
+                start_time: "",
+                end_time: "",
+                cargo_type: "",
+                cargo_quantity: "",
+                memo: "",
+                company: "",
+                client: "",
+                dealValue: 0,
+                fuel: 0,
+                mileage_fee: 0,
+              }}
+              validationSchema={validationSchema}
+              onSubmit={(values, { setSubmitting }) => {
+                handleSubmit(values);
+                // toast.success("Trip successfully saved!");
+                setSubmitting(false);
+                setOpen(false);
+              }}
+            >
+              {(formik) => (
+                <Form>
+                  <div className="">
+                    <div className="flex w-full justify-between mt-6">
+                      {/* PICK UP LOCATION with Autocomplete */}
+                      <div className="block">
+                        <label className="form-label">PICK UP LOCATION</label>
+                        <PlacesAutocomplete
+                          value={formik.values.pick_up_location}
+                          onChange={(address) =>
+                            formik.setFieldValue("pick_up_location", address)
+                          }
+                        >
+                          {({
+                            getInputProps,
+                            suggestions,
+                            getSuggestionItemProps,
+                            loading,
+                          }) => (
+                            <div>
+                              <input
+                                {...getInputProps({
+                                  className: "form-input bg-grey w-48",
+                                  placeholder: "Enter Pick Up Location",
+                                })}
+                              />
+                              {loading && <div>Loading...</div>}
+                              {suggestions.map((suggestion, index) => (
+                                <div
+                                  {...getSuggestionItemProps(suggestion)}
+                                  key={index}
+                                >
+                                  {suggestion.description}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </PlacesAutocomplete>
+                        <ErrorMessage
+                          name="pick_up_location"
+                          component="div"
+                          className="error text-sm text-red-500 "
+                        />
+                      </div>
+
+                      {/* DROP OFF LOCATION with Autocomplete */}
+                      <div className="block">
+                        <label className="form-label">DROP OFF LOCATION</label>
+                        <PlacesAutocomplete
+                          value={formik.values.drop_off_location}
+                          onChange={(address) =>
+                            formik.setFieldValue("drop_off_location", address)
+                          }
+                        >
+                          {({
+                            getInputProps,
+                            suggestions,
+                            getSuggestionItemProps,
+                            loading,
+                          }) => (
+                            <div>
+                              <input
+                                {...getInputProps({
+                                  className: "form-input bg-grey w-48",
+                                  placeholder: "Enter Drop Off Location",
+                                })}
+                              />
+                              {loading && <div>Loading...</div>}
+                              {suggestions.map((suggestion, index) => (
+                                <div
+                                  {...getSuggestionItemProps(suggestion)}
+                                  key={index}
+                                >
+                                  {suggestion.description}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </PlacesAutocomplete>
+                        <ErrorMessage
+                          name="drop_off_location"
+                          component="div"
+                          className="error text-sm text-red-500 "
+                        />
+                      </div>
                     </div>
-                  </div>
-                  {/* START TIME and END TIME */}
-                  <div className="flex w-full justify-between mt-8">
-                    <div className="block">
-                      <label className="form-label">START TIME</label>
-                      <Field
-                        type="date"
-                        value={formik.values.start_time}
-                        name="start_time"
-                        className="form-input bg-grey w-48"
-                      />
-                      <ErrorMessage
-                        name="start_time"
-                        component="div"
-                        className="error text-sm text-red-500 "
-                      />
-                    </div>
-                    <div className="block">
-                      <label className="form-label">END TIME</label>
-                      <Field
-                        disabled
-                        type="date"
-                        name="end_time"
-                        value={formik.values.end_time}
-                        className="form-input bg-grey w-48"
-                      />
-                      {/* <ErrorMessage
+                    {/* START TIME and END TIME */}
+                    <div className="flex w-full justify-between mt-8">
+                      <div className="block">
+                        <label className="form-label">START TIME</label>
+                        <Field
+                          type="date"
+                          value={formik.values.start_time}
+                          name="start_time"
+                          className="form-input bg-grey w-48"
+                        />
+                        <ErrorMessage
+                          name="start_time"
+                          component="div"
+                          className="error text-sm text-red-500 "
+                        />
+                      </div>
+                      <div className="block">
+                        <label className="form-label">END TIME</label>
+                        <Field
+                          disabled
+                          type="date"
+                          name="end_time"
+                          value={formik.values.end_time}
+                          className="form-input bg-grey w-48"
+                        />
+                        {/* <ErrorMessage
                         name="end_time"
                         component="div"
                         className="error text-red-500 "
                       /> */}
+                      </div>
+                    </div>
+
+                    <div className="flex w-full justify-between  mt-8">
+                      <label className="block">
+                        <label className="form-label">CLASS</label>
+                        <Field
+                          as="select"
+                          name="company"
+                          value={formik.values.company}
+                          onChange={async (e: any) => {
+                            const selectedCompanyName = e.target.value;
+                            handleCompanyChange(selectedCompanyName);
+                            console.log(
+                              "selectedCompanyName",
+                              selectedCompanyName
+                            );
+
+                            // Disable the submit button and reset the fetched flag
+                            setCompanyDetailsFetched(false);
+                            // Find the selected company's vehicles and set them
+                            const selectedCompanyDetails = companies.find(
+                              (company) => company.name === selectedCompanyName
+                            );
+                            setSelectedCompanyVehicles(
+                              selectedCompanyDetails
+                                ? selectedCompanyDetails.vehicle
+                                : []
+                            );
+                            // Enable the submit button and set the fetched flag
+                            setCompanyDetailsFetched(true);
+                            console.log(selectedCompanyDetails);
+                            formik.setFieldValue(
+                              "company",
+                              selectedCompanyName
+                            );
+                          }}
+                          className="form-input bg-grey w-48"
+                        >
+                          <option value="">Select Class</option>
+                          {companies.map((company, index) => (
+                            <option key={index} value={company.name}>
+                              {company.name}
+                            </option>
+                          ))}
+                        </Field>
+                        <ErrorMessage
+                          name="company"
+                          component="div"
+                          className="error text-sm text-red-500 "
+                        />
+                      </label>
+                      <label className="block">
+                        <label className="form-label">CLIENT</label>
+                        <Field
+                          as="select"
+                          name="client"
+                          value={formik.values.client}
+                          className="form-input bg-grey w-48"
+                        >
+                          <option value="">Select Client</option>
+                          {fetchedClients.map((client, index) => (
+                            <option key={index} value={client.name}>
+                              {client.name}
+                            </option>
+                          ))}
+                        </Field>
+                        <ErrorMessage
+                          name="client"
+                          component="div"
+                          className="error text-red-500 "
+                        />
+                      </label>
+                    </div>
+                    <div className="mt-8 flex w-full justify-between">
+                      <label className="block">
+                        <label className="form-label">SELECT DRIVER</label>
+                        <Field
+                          as="select"
+                          name="requested_by"
+                          value={formik.values.requested_by}
+                          className="form-input bg-grey w-48"
+                        >
+                          <option value="">Select Driver</option>
+                          {drivers.map((driver, index) => (
+                            <option key={index} value={driver.name}>
+                              {driver.name}
+                              {/* Display additional driver details */}
+                            </option>
+                          ))}
+                        </Field>
+                        <ErrorMessage
+                          name="company"
+                          component="div"
+                          className="error text-sm text-red-500 "
+                        />
+                      </label>
+                      <label className="block">
+                        <label className="form-label">VEHICLE</label>
+                        <Field
+                          as="select"
+                          name="vehicle"
+                          value={formik.values.vehicle}
+                          className="form-input bg-grey w-48"
+                        >
+                          <option value="">Select Vehicle</option>
+                          {selectedCompanyVehicles.map((vehicle, index) => (
+                            <option key={index} value={vehicle}>
+                              {vehicle}
+                            </option>
+                          ))}
+                        </Field>
+                        <ErrorMessage
+                          name="vehicle"
+                          component="div"
+                          className="error text-sm text-red-500 "
+                        />
+                      </label>
+                    </div>
+                    <div className="mt-8 flex w-full justify-between">
+                      <label className="block">
+                        <label className="form-label">DEAL VALUE</label>
+                        <Field
+                          type="number"
+                          name="dealValue"
+                          value={formik.values.dealValue}
+                          placeholder="Ksh"
+                          className="form-input bg-grey w-48"
+                        />
+                        <ErrorMessage
+                          name="dealValue"
+                          component="div"
+                          className="error text-sm text-red-500 "
+                        />
+                      </label>
+                      <label className="block">
+                        <label className="form-label">FUEL</label>
+                        <Field
+                          type="number"
+                          name="fuel"
+                          value={formik.values.fuel}
+                          placeholder="Ksh"
+                          className="form-input bg-grey w-48"
+                        />
+                        <ErrorMessage
+                          name="fuel"
+                          component="div"
+                          className="error text-sm text-red-500 "
+                        />
+                      </label>
+                    </div>
+                    <div className="mt-8 flex w-full justify-between">
+                      <label className="block">
+                        <label className="form-label">MILEAGE FEE</label>
+                        <Field
+                          type="number"
+                          name="mileage_fee"
+                          value={formik.values.mileage_fee}
+                          placeholder="Ksh"
+                          className="form-input bg-grey w-48"
+                        />
+                        <ErrorMessage
+                          name="mileage_fee"
+                          component="div"
+                          className="error text-sm text-red-500 "
+                        />
+                      </label>
+
+                      <label className="block">
+                        <label className="form-label">DISTANCE</label>
+                        <Field
+                          type="text"
+                          name="distance"
+                          disabled
+                          value={distance}
+                          className="form-input bg-grey w-48"
+                        />
+                        <ErrorMessage
+                          name="distance"
+                          component="div"
+                          className="error text-sm text-red-500 "
+                        />
+                      </label>
+                    </div>
+                    <p className="mt-5 font-semibold"> CARGO</p>
+                    <div className="flex w-full justify-between">
+                      <label className="block mt-8">
+                        <label className="form-label">CARGO TYPE</label>
+                        <Field
+                          type="text"
+                          name="cargo_type"
+                          value={formik.values.cargo_type}
+                          className="form-input bg-grey w-48"
+                        />
+                        <ErrorMessage
+                          name="cargo_type"
+                          component="div"
+                          className="error text-sm text-red-500 "
+                        />
+                      </label>
+                      <label className="block mt-8">
+                        <label className="form-label">CONTAINER NUMBER</label>
+                        <Field
+                          type="text"
+                          name="cargo_quantity"
+                          value={formik.values.cargo_quantity}
+                          className="form-input bg-grey w-48"
+                        />
+                        <ErrorMessage
+                          name="cargo_quantity"
+                          component="div"
+                          className="error text-sm text-red-500 "
+                        />
+                      </label>
+                    </div>
+                    <label className="block mt-8">
+                      <label className="form-label">MEMO</label>
+                      <Field
+                        type="text"
+                        name="memo"
+                        value={formik.values.memo}
+                        className="form-input bg-grey w-96 h-20"
+                        placeholder="Optional"
+                      />
+                    </label>
+                    <div className="flex w-full justify-end mt-24 ">
+                      <Button
+                        className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
+                        handleClick={handleReset}
+                      >
+                        Reset
+                      </Button>
+                      <button
+                        className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
+                        type="submit"
+                      >
+                        Save
+                      </button>
                     </div>
                   </div>
-
-                  <div className="flex w-full justify-between  mt-8">
-                    <label className="block">
-                      <label className="form-label">CLASS</label>
-                      <Field
-                        as="select"
-                        name="company"
-                        value={formik.values.company}
-                        onChange={async (e: any) => {
-                          const selectedCompanyName = e.target.value;
-                          handleCompanyChange(selectedCompanyName);
-                          console.log(
-                            "selectedCompanyName",
-                            selectedCompanyName
-                          );
-
-                          // Disable the submit button and reset the fetched flag
-                          setCompanyDetailsFetched(false);
-                          // Find the selected company's vehicles and set them
-                          const selectedCompanyDetails = companies.find(
-                            (company) => company.name === selectedCompanyName
-                          );
-                          setSelectedCompanyVehicles(
-                            selectedCompanyDetails
-                              ? selectedCompanyDetails.vehicle
-                              : []
-                          );
-                          // Enable the submit button and set the fetched flag
-                          setCompanyDetailsFetched(true);
-                          console.log(selectedCompanyDetails);
-                          formik.setFieldValue("company", selectedCompanyName);
-                        }}
-                        className="form-input bg-grey w-48"
-                      >
-                        <option value="">Select Class</option>
-                        {companies.map((company, index) => (
-                          <option key={index} value={company.name}>
-                            {company.name}
-                          </option>
-                        ))}
-                      </Field>
-                      <ErrorMessage
-                        name="company"
-                        component="div"
-                        className="error text-sm text-red-500 "
-                      />
-                    </label>
-                    <label className="block">
-                      <label className="form-label">CLIENT</label>
-                      <Field
-                        as="select"
-                        name="client"
-                        value={formik.values.client}
-                        className="form-input bg-grey w-48"
-                      >
-                        <option value="">Select Client</option>
-                        {fetchedClients.map((client, index) => (
-                          <option key={index} value={client.name}>
-                            {client.name}
-                          </option>
-                        ))}
-                      </Field>
-                      <ErrorMessage
-                        name="client"
-                        component="div"
-                        className="error text-red-500 "
-                      />
-                    </label>
-                  </div>
-                  <div className="mt-8 flex w-full justify-between">
-                    <label className="block">
-                      <label className="form-label">SELECT DRIVER</label>
-                      <Field
-                        as="select"
-                        name="requested_by"
-                        value={formik.values.requested_by}
-                        className="form-input bg-grey w-48"
-                      >
-                        <option value="">Select Driver</option>
-                        {drivers.map((driver, index) => (
-                          <option key={index} value={driver.name}>
-                            {driver.name}
-                            {/* Display additional driver details */}
-                          </option>
-                        ))}
-                      </Field>
-                      <ErrorMessage
-                        name="company"
-                        component="div"
-                        className="error text-sm text-red-500 "
-                      />
-                    </label>
-                    <label className="block">
-                      <label className="form-label">VEHICLE</label>
-                      <Field
-                        as="select"
-                        name="vehicle"
-                        value={formik.values.vehicle}
-                        className="form-input bg-grey w-48"
-                      >
-                        <option value="">Select Vehicle</option>
-                        {selectedCompanyVehicles.map((vehicle, index) => (
-                          <option key={index} value={vehicle}>
-                            {vehicle}
-                          </option>
-                        ))}
-                      </Field>
-                      <ErrorMessage
-                        name="vehicle"
-                        component="div"
-                        className="error text-sm text-red-500 "
-                      />
-                    </label>
-                  </div>
-                  <div className="mt-8 flex w-full justify-between">
-                    <label className="block">
-                      <label className="form-label">DEAL VALUE</label>
-                      <Field
-                        type="number"
-                        name="dealValue"
-                        value={formik.values.dealValue}
-                        placeholder="Ksh"
-                        className="form-input bg-grey w-48"
-                      />
-                      <ErrorMessage
-                        name="dealValue"
-                        component="div"
-                        className="error text-sm text-red-500 "
-                      />
-                    </label>
-                    <label className="block">
-                      <label className="form-label">FUEL</label>
-                      <Field
-                        type="number"
-                        name="fuel"
-                        value={formik.values.fuel}
-                        placeholder="Ksh"
-                        className="form-input bg-grey w-48"
-                      />
-                      <ErrorMessage
-                        name="fuel"
-                        component="div"
-                        className="error text-sm text-red-500 "
-                      />
-                    </label>
-                  </div>
-                  <div className="mt-8 flex w-full justify-between">
-                    <label className="block">
-                      <label className="form-label">MILEAGE FEE</label>
-                      <Field
-                        type="number"
-                        name="mileage_fee"
-                        value={formik.values.mileage_fee}
-                        placeholder="Ksh"
-                        className="form-input bg-grey w-48"
-                      />
-                      <ErrorMessage
-                        name="mileage_fee"
-                        component="div"
-                        className="error text-sm text-red-500 "
-                      />
-                    </label>
-
-                    <label className="block">
-                      <label className="form-label">DISTANCE</label>
-                      <Field
-                        type="text"
-                        name="distance"
-                        disabled
-                        value={distance}
-                        className="form-input bg-grey w-48"
-                      />
-                      <ErrorMessage
-                        name="distance"
-                        component="div"
-                        className="error text-sm text-red-500 "
-                      />
-                    </label>
-                  </div>
-                  <p className="mt-5 font-semibold"> CARGO</p>
-                  <div className="flex w-full justify-between">
-                    <label className="block mt-8">
-                      <label className="form-label">CARGO TYPE</label>
-                      <Field
-                        type="text"
-                        name="cargo_type"
-                        value={formik.values.cargo_type}
-                        className="form-input bg-grey w-48"
-                      />
-                      <ErrorMessage
-                        name="cargo_type"
-                        component="div"
-                        className="error text-sm text-red-500 "
-                      />
-                    </label>
-                    <label className="block mt-8">
-                      <label className="form-label">CONTAINER NUMBER</label>
-                      <Field
-                        type="text"
-                        name="cargo_quantity"
-                        value={formik.values.cargo_quantity}
-                        className="form-input bg-grey w-48"
-                      />
-                      <ErrorMessage
-                        name="cargo_quantity"
-                        component="div"
-                        className="error text-sm text-red-500 "
-                      />
-                    </label>
-                  </div>
-                  <label className="block mt-8">
-                    <label className="form-label">MEMO</label>
-                    <Field
-                      type="text"
-                      name="memo"
-                      value={formik.values.memo}
-                      className="form-input bg-grey w-96 h-20"
-                      placeholder="Optional"
-                    />
-                  </label>
-                  <div className="flex w-full justify-end mt-24 ">
-                    <Button
-                      className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
-                      handleClick={handleReset}
-                    >
-                      Reset
-                    </Button>
-                    <button
-                      className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
-                      type="submit"
-                    >
-                      Save
-                    </button>
-                  </div>
-                </div>
-              </Form>
-            )}
-          </Formik>
-        </div>
-      </FormModal>
+                </Form>
+              )}
+            </Formik>
+          </div>
+        </FormModal>
+      )}
 
       {editModalOpen && selectedTrip && (
         <FormModal open={editModalOpen} setOpen={handleEditModalClose}>

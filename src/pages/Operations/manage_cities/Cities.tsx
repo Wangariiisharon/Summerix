@@ -368,142 +368,145 @@ export default function Cities() {
             </div>
           </Tab.Panel>
         </Tab.Group>
-        <FormModal open={showAddClientModal} setOpen={setShowAddClientModal}>
-          <div className="p-8">
-            <div className="flex w-full h-full justify-between items-center mb-12">
-              <div className="text-xl font-semibold ">ADD NEW CLIENT</div>
-              <Button
-                className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
-                handleClick={handleReset}
+
+        {showAddClientModal && (
+          <FormModal open={showAddClientModal} setOpen={setShowAddClientModal}>
+            <div className="p-8">
+              <div className="flex w-full h-full justify-between items-center mb-12">
+                <div className="text-xl font-semibold ">ADD NEW CLIENT</div>
+                <Button
+                  className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
+                  handleClick={handleReset}
+                >
+                  <XMarkIcon className="h-6 w-6 text-red-400" />
+                </Button>
+              </div>
+
+              <Formik
+                initialValues={{
+                  name: "",
+                  address: "",
+                  contact_details: "",
+                  representative_address: "",
+                  client_details: null,
+                }}
+                validationSchema={validationSchema}
+                onSubmit={(values) => handleAddClient(values)}
               >
-                <XMarkIcon className="h-6 w-6 text-red-400" />
-              </Button>
-            </div>
-
-            <Formik
-              initialValues={{
-                name: "",
-                address: "",
-                contact_details: "",
-                representative_address: "",
-                client_details: null,
-              }}
-              validationSchema={validationSchema}
-              onSubmit={(values) => handleAddClient(values)}
-            >
-              {({ values, errors, touched }) => (
-                <Form>
-                  <div className="">
-                    <div className="flex w-full justify-between">
-                      <label className="block">
-                        <label className="form-label">NAME</label>
-                        <Field
-                          type="text"
-                          name="name"
-                          value={values.name}
-                          className="form-input bg-grey w-48"
-                        />
-                        {errors.name && touched.name ? (
-                          <div className="text-red-600 text-sm">
-                            {errors.name}
-                          </div>
-                        ) : null}
-                      </label>
-
-                      <label className="block">
-                        <label className="form-label">ADDRESS</label>
-                        <Field
-                          type="text"
-                          name="address"
-                          value={values.address}
-                          className="form-input bg-grey w-48"
-                        />
-                        {errors.address && touched.address ? (
-                          <div className="text-red-600 text-sm">
-                            {errors.address}
-                          </div>
-                        ) : null}
-                      </label>
-                    </div>
-                    <div className="flex w-full justify-between mt-8">
-                      <label className="block">
-                        <label className="form-label">CONTACT DETAILS</label>
-                        <Field
-                          type="text"
-                          name="contact_details"
-                          value={values.contact_details}
-                          className="form-input bg-grey w-48"
-                        />
-                        {errors.contact_details && touched.contact_details ? (
-                          <div className="text-red-600 text-sm">
-                            {errors.contact_details}
-                          </div>
-                        ) : null}
-                      </label>
-
-                      <label className="block">
-                        <label className="form-label">
-                          REPRESENTATIVE ADDRESS
+                {({ values, errors, touched }) => (
+                  <Form>
+                    <div className="">
+                      <div className="flex w-full justify-between">
+                        <label className="block">
+                          <label className="form-label">NAME</label>
+                          <Field
+                            type="text"
+                            name="name"
+                            value={values.name}
+                            className="form-input bg-grey w-48"
+                          />
+                          {errors.name && touched.name ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.name}
+                            </div>
+                          ) : null}
                         </label>
-                        <Field
-                          type="text"
-                          name="representative_address"
-                          value={values.representative_address}
-                          className="form-input bg-grey w-48"
-                        />
-                        {errors.representative_address &&
-                        touched.representative_address ? (
-                          <div className="text-red-600">
-                            {errors.representative_address}
-                          </div>
-                        ) : null}
-                      </label>
-                    </div>
 
-                    <div className="flex w-full justify-between mt-8">
-                      <label className="block">
-                        <label className="form-label">CLIENT DETAILS</label>
-                        <Field name="client_details">
-                          {({ field, form }: any) => (
-                            <input
-                              type="file"
-                              onChange={(event) => {
-                                const file = event.currentTarget?.files?.[0];
-                                if (file) {
-                                  form.setFieldValue("client_details", file);
-                                }
-                              }}
-                            />
-                          )}
-                        </Field>
-                        {errors.client_details && touched.client_details ? (
-                          <div className="text-red-600 text-sm">
-                            {errors.client_details}
-                          </div>
-                        ) : null}
-                      </label>
-                    </div>
+                        <label className="block">
+                          <label className="form-label">ADDRESS</label>
+                          <Field
+                            type="text"
+                            name="address"
+                            value={values.address}
+                            className="form-input bg-grey w-48"
+                          />
+                          {errors.address && touched.address ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.address}
+                            </div>
+                          ) : null}
+                        </label>
+                      </div>
+                      <div className="flex w-full justify-between mt-8">
+                        <label className="block">
+                          <label className="form-label">CONTACT DETAILS</label>
+                          <Field
+                            type="text"
+                            name="contact_details"
+                            value={values.contact_details}
+                            className="form-input bg-grey w-48"
+                          />
+                          {errors.contact_details && touched.contact_details ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.contact_details}
+                            </div>
+                          ) : null}
+                        </label>
 
-                    <div className="flex w-full justify-end mt-24 ">
-                      <Button
-                        className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
-                        handleClick={handleReset}
-                      >
-                        Reset
-                      </Button>
-                      <button
-                        className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
-                        type="submit"
-                      >
-                        Save
-                      </button>
+                        <label className="block">
+                          <label className="form-label">
+                            REPRESENTATIVE ADDRESS
+                          </label>
+                          <Field
+                            type="text"
+                            name="representative_address"
+                            value={values.representative_address}
+                            className="form-input bg-grey w-48"
+                          />
+                          {errors.representative_address &&
+                          touched.representative_address ? (
+                            <div className="text-red-600">
+                              {errors.representative_address}
+                            </div>
+                          ) : null}
+                        </label>
+                      </div>
+
+                      <div className="flex w-full justify-between mt-8">
+                        <label className="block">
+                          <label className="form-label">CLIENT DETAILS</label>
+                          <Field name="client_details">
+                            {({ field, form }: any) => (
+                              <input
+                                type="file"
+                                onChange={(event) => {
+                                  const file = event.currentTarget?.files?.[0];
+                                  if (file) {
+                                    form.setFieldValue("client_details", file);
+                                  }
+                                }}
+                              />
+                            )}
+                          </Field>
+                          {errors.client_details && touched.client_details ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.client_details}
+                            </div>
+                          ) : null}
+                        </label>
+                      </div>
+
+                      <div className="flex w-full justify-end mt-24 ">
+                        <Button
+                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
+                          handleClick={handleReset}
+                        >
+                          Reset
+                        </Button>
+                        <button
+                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
+                          type="submit"
+                        >
+                          Save
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </div>
-        </FormModal>
+                  </Form>
+                )}
+              </Formik>
+            </div>
+          </FormModal>
+        )}
 
         {/* Edit client modal */}
         {editModalOpen && selectedClient && (
@@ -746,7 +749,7 @@ function CitiesTable({
                     //   .toString()
                     //   .padStart(3, "0")}`;
                     // console.log("Client ID", clientId);
-                    
+
                     return (
                       <Fragment key={index}>
                         <tr className="hover:bg-gray-100">
