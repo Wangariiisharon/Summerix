@@ -183,6 +183,7 @@ export default function AdministrationComponent() {
           <div className="mt-custom1 mr-custom2 mb-custom3 rounded-custom shadow-custom border-custom border-white">
             <Image
               src={companySettings.photoURL || Avatar_profile_photo}
+              className="h-auto w-auto"
               alt="logo"
               width={100}
               height={100}
