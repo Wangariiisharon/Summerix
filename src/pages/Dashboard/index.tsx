@@ -216,7 +216,7 @@ export default function DashboardComponent() {
           </div>
           <div className="flex items-center">
             <select
-              className="border border-[#065AD8] bg-[#fff] text-gray-700 px-3 py-1 rounded-md mr-2 text-[#065AD8]"
+              className="border border-[#065AD8] bg-[#fff] text-gray-700 px-3 py-1 rounded-md mr-2"
               onChange={handleYearChange}
               value={selectedYear}
             >
@@ -229,7 +229,7 @@ export default function DashboardComponent() {
             <input
               type="date"
               onChange={handleDateChange}
-              className="border border-[#065AD8] bg-[#fff] text-gray-700 px-3 py-1 rounded-md mr-2 text-[#065AD8]"
+              className="border border-[#065AD8] bg-[#fff] text-gray-700 px-3 py-1 rounded-md mr-2"
             />
           </div>
         </div>

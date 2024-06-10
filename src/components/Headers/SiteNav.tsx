@@ -62,7 +62,7 @@ export default function SiteNav({ children }: Props) {
               readBy: doc.data().readBy || [], // Ensure readBy is always an array
               ...doc.data(), // Get all data from the document
             }));
-            console.log("SiteNav > notifications:", loadedNotifications);
+            // console.log("SiteNav > notifications:", loadedNotifications);
 
             const unreadNotifications = loadedNotifications.filter(
               (notification) =>
@@ -133,6 +133,7 @@ export default function SiteNav({ children }: Props) {
                 <Image
                   src="/logo.png"
                   alt="company logo"
+                  className="h-auto w-auto"
                   width={150}
                   height={100}
                 />
@@ -223,29 +224,6 @@ export default function SiteNav({ children }: Props) {
                       </Transition>
                     </Menu>
                   )}
-
-                  {/* User initials, name, and email
-                  {currentAdmin && (
-                    <>
-                      <div className="flex items-center text-sm">
-                        <div className="flex items-center justify-center w-8 h-8 bg-blue-800 rounded-full text-white">
-                          <span className="font-bold">
-                            {currentAdmin.initials}
-                          </span>
-                        </div>
-                        <div className="flex flex-col ml-2 mr-2 text-white">
-                          <span>{`${currentAdmin.firstname} ${currentAdmin.lastname}`}</span>
-                          <span>{currentAdmin.email}</span>
-                        </div>
-                        <button className="focus:outline-none">
-                          <i
-                            className="fa fa-chevron-down text-white"
-                            aria-hidden="true"
-                          ></i>
-                        </button>
-                      </div>
-                    </>
-                  )} */}
                 </div>
               </div>
             </div>
