@@ -327,10 +327,6 @@ export default function AllTrips({ searchQuery }: any) {
           }
           setDrivers(drivers);
           console.log("FilterdDrivers:", drivers);
-        } else {
-          console.error(
-            "Organisation ID is not available for fetching drivers."
-          );
         }
       } catch (error) {
         console.error("Error fetching Drivers:", error);
@@ -356,11 +352,6 @@ export default function AllTrips({ searchQuery }: any) {
             };
           });
           setVehicles(vehicleDetails);
-        } else {
-          // Handle the case when organisationId is not available
-          console.error(
-            "Organisation ID is not available for fetching Vehicles ."
-          );
         }
       } catch (error) {
         console.error("Error fetching Vehicles:", error);
@@ -387,8 +378,6 @@ export default function AllTrips({ searchQuery }: any) {
           });
 
           return () => unsubscribe();
-        } else {
-          console.error("Organisation ID is not available.");
         }
       } catch (error) {
         console.error("Error fetching Trips:", error);

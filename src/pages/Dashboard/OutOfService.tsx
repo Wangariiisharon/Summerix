@@ -58,8 +58,6 @@ export default function TripsPieGraph() {
           });
 
           setFetchedVehicles(vehiclesData);
-        } else {
-          console.error("Organisation ID is not available.");
         }
       } catch (error) {
         console.error("Error fetching Vehicles:", error);
@@ -84,8 +82,6 @@ export default function TripsPieGraph() {
           });
 
           setAllVehicles(vehiclesData); // Update state with all fetched vehicles
-        } else {
-          console.error("Organisation ID is not available.");
         }
       } catch (error) {
         console.error("Error fetching vehicles:", error);

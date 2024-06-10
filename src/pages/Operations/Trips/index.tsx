@@ -304,10 +304,6 @@ export default function TripsComponent() {
           }
           setDrivers(drivers);
           console.log("FilterdDrivers:", drivers);
-        } else {
-          console.error(
-            "Organisation ID is not available for fetching drivers."
-          );
         }
       } catch (error) {
         console.error("Error fetching Drivers:", error);
@@ -335,10 +331,6 @@ export default function TripsComponent() {
             clientsData.push(clients);
           });
           setfetchedClients(clientsData);
-        } else {
-          console.error(
-            "Organisation ID is not available for fetching Trips ."
-          );
         }
       } catch (error) {
         console.error("Error fetching Clients:", error);
@@ -365,8 +357,6 @@ export default function TripsComponent() {
           });
 
           return () => unsubscribe();
-        } else {
-          console.error("Organisation ID is not available.");
         }
       } catch (error) {
         console.error("Error fetching Trips:", error);

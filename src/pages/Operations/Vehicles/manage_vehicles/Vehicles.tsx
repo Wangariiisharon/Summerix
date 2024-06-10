@@ -492,8 +492,6 @@ export default function Vehicles() {
 
           setUnallocatedVehicles(unallocatedVehiclesList);
           console.log("Unallocated Vehicles:", unallocatedVehiclesList);
-        } else {
-          console.error("Organisation ID is not available.");
         }
       } catch (err) {
         console.error("Error fetching vehicles:", err);
@@ -519,8 +517,6 @@ export default function Vehicles() {
           });
 
           return () => unsubscribe();
-        } else {
-          console.error("Organisation ID is not available.");
         }
       } catch (error) {
         console.error("Error fetching Vehicles:", error);
@@ -542,8 +538,6 @@ export default function Vehicles() {
             ...doc.data(),
           }));
           setFetchedCompanies(classData);
-        } else {
-          console.error("Organisation ID is not available.");
         }
       } catch (error) {
         console.error("Error fetching Classes:", error);
