@@ -48,11 +48,6 @@ export default function TripsPieGraph() {
             tripsData.push(trips);
           });
           setfetchedTrips(tripsData);
-        } else {
-          // Handle the case when organisationId is not available
-          console.error(
-            "Organisation ID is not available for fetching Trips ."
-          );
         }
       } catch (error) {
         console.error("Error fetching Trips:", error);

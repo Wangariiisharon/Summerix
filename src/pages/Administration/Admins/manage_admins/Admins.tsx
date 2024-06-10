@@ -160,8 +160,6 @@ export default function Admins() {
           });
 
           return () => unsubscribe();
-        } else {
-          console.error("Organisation ID is not available.");
         }
       } catch (error) {
         console.error("Error fetching Admins:", error);

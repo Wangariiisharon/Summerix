@@ -17,11 +17,6 @@ function escapeCSV(value: string): string {
 export default async function ExportDriverDataToCSV(
   organisationId: string | null
 ) {
-  if (!organisationId) {
-    console.error("Organisation ID is not available.");
-    throw new Error("Organisation ID is not available");
-  }
-
   try {
     const driversCollection = collection(fbDb, "drivers");
     const q = query(

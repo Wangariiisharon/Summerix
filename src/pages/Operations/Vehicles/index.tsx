@@ -62,9 +62,6 @@ export default function VehiclesComponent() {
             ...doc.data(),
           }));
           setFetchedVehicles(vehiclesData);
-        } else {
-          // Handle the case when organisationId is not available
-          console.error("Organisation ID is not available.");
         }
       } catch (error) {
         console.error("Error fetching Vehicles:", error);

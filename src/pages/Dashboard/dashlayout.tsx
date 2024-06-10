@@ -132,8 +132,6 @@ export default function DashboardComponent() {
             totalVehicles - vehiclesOnTrip.length - vehiclesOutOfService.length;
           // setTrucksAvailable(availableTrucks);
           // setTrucksAvailable(isNaN(availableTrucks) ? 0 : availableTrucks);
-
-          console.error("Organisation ID is not available.");
         }
       } catch (error) {
         console.error("Error fetching data:", error);

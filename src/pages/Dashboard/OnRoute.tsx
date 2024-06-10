@@ -1,4 +1,3 @@
-import { CardIcon } from "@/components/images";
 import {
   DocumentData,
   collection,
@@ -8,65 +7,50 @@ import {
 } from "firebase/firestore";
 import { fbDb } from "@/firebase/configs";
 import { useState, useEffect } from "react";
-import {
-  AuthProvider,
-  useAuthContext,
-} from "@/components/Authentication/AuthProvider";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 
 export default function OnRoute() {
   const [fetchedTrips, setFetchedTrips] = useState<DocumentData[]>([]);
   const { organisationId } = useAuthContext();
 
-  // @ts-ignore
-
   useEffect(() => {
     const fetchTrips = async () => {
-      if (organisationId) {
-        const q = query(
-          collection(fbDb, "trips"),
-          where("organisationId", "==", organisationId)
-        );
-        const querySnapshot = await getDocs(q);
-        const tripsData: DocumentData[] = [];
-
-        const currentDate = new Date(); // Get the current date and time
-
-        querySnapshot.forEach((doc) => {
-          const trip = doc.data();
-
-          // Parse the start_time and end_time from the trip data
-          const startTime = new Date(trip?.start_time?.seconds * 1000);
-          const endTime = new Date(trip?.end_time?.seconds * 1000); // Assuming end_time is also stored as Timestamp
-          // return currentDate >= startTime;
-          console.log(
-            "currentDate: ",
-            currentDate,
-            "startTime: ",
-            startTime,
-            "endTime: ",
-            endTime
+      try {
+        if (organisationId) {
+          const q = query(
+            collection(fbDb, "trips"),
+            where("organisationId", "==", organisationId)
           );
+          const querySnapshot = await getDocs(q);
+          const tripsData: DocumentData[] = [];
 
-          // Check if the current date is between start_time and end_time
-          if (currentDate >= startTime) {
-            tripsData.push({
-              id: doc.id,
-              ...trip,
-            });
-          }
-        });
+          const currentDate = new Date(); // Get the current date and time
 
-        setFetchedTrips(tripsData);
-      } else {
-        console.log("Organisation ID is not avaiSlable for fetching trips.");
+          querySnapshot.forEach((doc) => {
+            const trip = doc.data();
+
+            // Parse the start_time and end_time from the trip data
+            const startTime = new Date(trip?.start_time?.seconds * 1000);
+            const endTime = new Date(trip?.end_time?.seconds * 1000); // Assuming end_time is also stored as Timestamp
+            // return currentDate >= startTime;
+
+            // Check if the current date is between start_time and end_time
+            if (currentDate >= startTime) {
+              tripsData.push({
+                id: doc.id,
+                ...trip,
+              });
+            }
+          });
+
+          setFetchedTrips(tripsData);
+        }
+      } catch (error) {
+        console.error("Error fetching trips:", error);
       }
     };
 
-    try {
-      fetchTrips();
-    } catch (error) {
-      console.error("Error fetching trips:", error);
-    }
+    fetchTrips();
   }, [organisationId]);
 
   return (

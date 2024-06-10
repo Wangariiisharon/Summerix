@@ -131,11 +131,6 @@ export default function Pending() {
             (doc) => doc.data().lisence_plate
           );
           setVehicleNames(names);
-        } else {
-          // Handle the case when organisationId is not available
-          console.error(
-            "Organisation ID is not available for fetching Vehicle names."
-          );
         }
       } catch (error) {
         console.error("Error fetching Vehicle names:", error);
@@ -152,10 +147,6 @@ export default function Pending() {
           const querySnapshot = await getDocs(q);
           const names = querySnapshot.docs.map((doc) => doc.data().name);
           setjobcards(names);
-        } else {
-          console.error(
-            "Organisation ID is not available for fetching JobCard names."
-          );
         }
       } catch (error) {
         console.error("Error fetching JobCard names:", error);
@@ -173,11 +164,6 @@ export default function Pending() {
           const querySnapshot = await getDocs(q);
           const names = querySnapshot.docs.map((doc) => doc.data().name);
           setdrivers(names);
-        } else {
-          // Handle the case when organisationId is not available
-          console.error(
-            "Organisation ID is not available for fetching Driver names."
-          );
         }
       } catch (error) {
         console.error("Error fetching Driver names:", error);
@@ -206,8 +192,6 @@ export default function Pending() {
           });
 
           return () => unsubscribe();
-        } else {
-          console.error("Organisation ID is not available.");
         }
       } catch (error) {
         console.error("Error fetching Maintenance:", error);

@@ -256,8 +256,6 @@ export default function AddAdmin({
           });
 
           return () => unsubscribe();
-        } else {
-          console.error("Organisation ID is not available.");
         }
       } catch (error) {
         console.error("Error fetching Admins:", error);
