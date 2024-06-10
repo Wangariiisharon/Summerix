@@ -124,7 +124,7 @@ export default function SiteNav({ children }: Props) {
             >
               <div className="p-4">
                 <Image
-                  src="/dashlogo.png"
+                  src="/logo.png"
                   alt="company logo"
                   width={150}
                   height={100}
