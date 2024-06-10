@@ -13,7 +13,7 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
-import firebaseApp, { fbDb } from "@/firebase/configs";
+import firebaseApp from "@/firebase/configs";
 import { AdminUser } from "@/lib/types/admin.model";
 import { useRouter } from "next/navigation";
 
