@@ -17,7 +17,7 @@ class MyDocument extends Document {
             rel="stylesheet"
           />
           <Script
-            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE&libraries=places"
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBioopUI9t6yPlf7hmJmCNXf4dfN-mPEjE&loading=async&libraries=places"
             strategy="beforeInteractive"
           />
         </Head>

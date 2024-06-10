@@ -27,10 +27,6 @@
     opacity: 1;
   }
 
-  .hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
   .field-validation-error {
     @apply text-red-500 text-sm; /* Use Tailwind's @apply directive to apply the text-red-500 and text-lg classes */
   }
