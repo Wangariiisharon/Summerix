@@ -13,7 +13,7 @@ import {
   where,
 } from "firebase/firestore";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
-import SiteNav from "@/Blocks/SiteNav";
+import SiteNav from "@/components/Headers/SiteNav";
 
 export default function DashboardComponent() {
   const [fetchedTrips, setFetchedTrips] = useState<DocumentData[]>([]);

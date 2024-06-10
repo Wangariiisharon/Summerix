@@ -19,10 +19,6 @@ export function Header({ heading }: Props) {
   );
 }
 
-function classNames(...classes: any) {
-  return classes.filter(Boolean).join(" ");
-}
-
 interface NavProps {
   name: string;
   active: boolean;

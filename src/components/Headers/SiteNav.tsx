@@ -1,23 +1,29 @@
-import { ReactNode, useRef, useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/router";
-import React from "react";
 import { collection, where, query, onSnapshot } from "firebase/firestore";
-import { fbDb } from "@/firebase/configs";
-import { useAuthContext } from "@/components/Authentication/AuthProvider";
-import { NotificationDropdown } from "./notificationDropdown";
-import Link from "next/link";
-import { FaHome, FaTools, FaChartBar, FaFileAlt } from "react-icons/fa"; // Importing icons from react-icons
+import { ReactNode, useRef, useState, useEffect, useMemo } from "react";
+import { FaHome, FaTools, FaChartBar, FaFileAlt } from "react-icons/fa";
+import { useRouter } from "next/router";
 import Image from "next/image";
+import Link from "next/link";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
+import { auth, fbDb } from "@/firebase/configs";
+import { NotificationDropdown } from "./notifications";
+import {
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+  Transition,
+} from "@headlessui/react";
+import {
+  ArrowLeftStartOnRectangleIcon,
+  ChevronDownIcon,
+} from "@heroicons/react/24/solid";
 
 interface Props {
   children: ReactNode;
 }
 
-export function classNames(...classes: Array<string>) {
-  return classes.filter(Boolean).join(" ");
-}
 export default function SiteNav({ children }: Props) {
-  const router = useRouter();
   const drawerRef = useRef<HTMLDivElement | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
   const { currentAdmin, currentUser, organisationId, isSuperAdmin } =
@@ -25,6 +31,7 @@ export default function SiteNav({ children }: Props) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const router = useRouter();
 
   const toggleNotificationDropdown = () => {
     setShowDropdown(!showDropdown);
@@ -55,7 +62,7 @@ export default function SiteNav({ children }: Props) {
               readBy: doc.data().readBy || [], // Ensure readBy is always an array
               ...doc.data(), // Get all data from the document
             }));
-            console.log("loadedNotifications:", loadedNotifications);
+            console.log("SiteNav > notifications:", loadedNotifications);
 
             const unreadNotifications = loadedNotifications.filter(
               (notification) =>
@@ -163,24 +170,82 @@ export default function SiteNav({ children }: Props) {
 
                   {/* User initials, name, and email */}
                   {currentAdmin && (
-                    <div className="flex items-center text-sm">
-                      <div className="flex items-center justify-center w-8 h-8 bg-blue-800 rounded-full text-white">
-                        <span className="font-bold">
-                          {currentAdmin?.initials}
+                    <Menu as="div" className="relative flex-shrink-0">
+                      <MenuButton className="p-2 inline-flex items-center gap-2 rounded-md font-semibold focus:outline-none">
+                        <span className="p-4 h-10 w-10 flex items-center justify-center bg-blue-800 rounded-full">
+                          <span className="font-bold text-white">
+                            {currentAdmin.initials}
+                          </span>
                         </span>
-                      </div>
-                      <div className="flex flex-col ml-2 mr-2 text-white">
-                        <span>{`${currentAdmin?.firstname} ${currentAdmin?.lastname}`}</span>
-                        <span>{currentAdmin?.email}</span>
-                      </div>
-                      <button className="focus:outline-none">
-                        <i
-                          className="fa fa-chevron-down text-white"
-                          aria-hidden="true"
-                        ></i>
-                      </button>
-                    </div>
+                        <ChevronDownIcon className="size-4 fill-white/60" />
+                      </MenuButton>
+                      <Transition
+                        enter="transition ease-out duration-75"
+                        enterFrom="opacity-0 scale-95"
+                        enterTo="opacity-100 scale-100"
+                        leave="transition ease-in duration-100"
+                        leaveFrom="opacity-100 scale-100"
+                        leaveTo="opacity-0 scale-95"
+                      >
+                        <MenuItems
+                          anchor="bottom end"
+                          className="py-3 px-1 w-fit min-w-52 origin-top-right rounded-b border border-white/5 bg-[#065AD8] text-white focus:outline-none"
+                        >
+                          <MenuItem>
+                            <div className="px-3 flex items-center gap-3 text-sm">
+                              <div className="p-4 h-10 w-10 flex items-center justify-center bg-blue-800 rounded-full">
+                                <span className="font-bold text-white">
+                                  {currentAdmin.initials}
+                                </span>
+                              </div>
+                              <div className="">
+                                <p>{`${currentAdmin.firstname} ${currentAdmin.lastname}`}</p>
+                                <p className="text-xs">{currentAdmin.email}</p>
+                              </div>
+                            </div>
+                          </MenuItem>
+                          <div className="my-3 h-px bg-white/5" />
+                          <MenuItem>
+                            <button onClick={async () => {
+                              try {
+                                await auth.signOut();
+                              } catch (error) {
+                                console.error('On logout error:', error);
+                              }
+                            }} className="py-2 px-4 w-full border border-red-500 text-red-500 font-bold rounded">
+                              <div className="flex items-center justify-center gap-2">
+                                <ArrowLeftStartOnRectangleIcon className="h-5 w-5" />
+                                <span>Log Out</span>
+                              </div>
+                            </button>
+                          </MenuItem>
+                        </MenuItems>
+                      </Transition>
+                    </Menu>
                   )}
+
+                  {/* User initials, name, and email
+                  {currentAdmin && (
+                    <>
+                      <div className="flex items-center text-sm">
+                        <div className="flex items-center justify-center w-8 h-8 bg-blue-800 rounded-full text-white">
+                          <span className="font-bold">
+                            {currentAdmin.initials}
+                          </span>
+                        </div>
+                        <div className="flex flex-col ml-2 mr-2 text-white">
+                          <span>{`${currentAdmin.firstname} ${currentAdmin.lastname}`}</span>
+                          <span>{currentAdmin.email}</span>
+                        </div>
+                        <button className="focus:outline-none">
+                          <i
+                            className="fa fa-chevron-down text-white"
+                            aria-hidden="true"
+                          ></i>
+                        </button>
+                      </div>
+                    </>
+                  )} */}
                 </div>
               </div>
             </div>
