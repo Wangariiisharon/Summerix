@@ -1,6 +1,6 @@
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { classNames } from "@/Blocks/SiteNav";
+import { classNames } from "@/lib/utils.service";
 import { ReactNode } from "react";
 
 interface Props {

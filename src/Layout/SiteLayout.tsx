@@ -1,7 +1,6 @@
 import Head from "next/head";
-import styles from "@/styles/Home.module.css";
 import { ReactNode } from "react";
-import SiteNav from "@/Blocks/SiteNav";
+import SiteNav from "@/components/Headers/SiteNav";
 
 interface Props {
   children: ReactNode;
