@@ -43,9 +43,18 @@ interface AdminData {
   phonenumber: string;
   super_admin: boolean;
   status: boolean;
-  // Add other fields if necessary
+  role: string;
 }
 
+interface CheckedState {
+  [key: string]: {
+    fullPermission: boolean;
+    permissions: boolean[];
+  };
+}
+
+type PermissionObject = { name: string; checked: boolean };
+type Permissions = { [key: string]: PermissionObject[] };
 export default function ViewDepatment() {
   const [departments, setdepartments] = useState<
     DepatmentDetailsProps["department"] | null
@@ -53,6 +62,8 @@ export default function ViewDepatment() {
   const [fetchedDepartments, setFetchedDepartments] = useState<DocumentData[]>(
     []
   );
+  const [permissions, setPermissions] = useState<Permissions>({});
+
   const [fetchedPermisions, setFetchedPermisions] = useState<DocumentData[]>(
     []
   );
@@ -73,6 +84,8 @@ export default function ViewDepatment() {
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<AdminData[]>([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [allChecked, setAllChecked] = useState(false);
+
   const [editFormInitialValues, setEditFormInitialValues] = useState({
     firstname: "",
     lastname: "",
@@ -88,11 +101,10 @@ export default function ViewDepatment() {
     userId: "",
     department: "",
   });
+  const sections = ["Dashboard", "Vehicles", "Drivers", "Trips"];
   const router = useRouter();
-  const { id } = router.query;
 
-  function handleAddPermissions() {}
-  function handleAddMembers() {}
+  const { id } = router.query;
 
   const handleEditClick = (admin: DocumentData) => {
     setEditFormInitialValues({
@@ -132,6 +144,8 @@ export default function ViewDepatment() {
     organisationId: any;
     userId: any;
   }) => {
+    console.log("Edited Values:", values);
+
     try {
       if (!values.firstname) {
         console.error(`Please fill the field FirstName`);
@@ -219,7 +233,7 @@ export default function ViewDepatment() {
 
         // Check if permission already exists in combinedPermissions
         if (combinedPermissions.includes(permissionData.name)) {
-          console.error("Permission already exists in combined permissions");
+          console.log("Permission already exists in combined permissions");
           toast.error("Permission already exists in Selected");
           return;
         }
@@ -233,13 +247,14 @@ export default function ViewDepatment() {
           await updateDoc(adminRef, {
             additionalPermissions: adminData.additionalPermissions,
           });
+          console.log("Permission added successfully");
           toast.success("Permission added successfully");
         } else {
-          console.error("Permission already exists");
+          console.log("Permission already exists");
           toast.error("Permission already exists");
         }
       } else {
-        console.error("Admin or permission document not found");
+        console.log("Admin or permission document not found");
         toast.error("Admin or permission document not found");
       }
     } catch (error) {
@@ -250,8 +265,8 @@ export default function ViewDepatment() {
 
   // // Function to remove a permission from the department
   const removePermission = async (adminId: string, permissionId: string) => {
-    console.log("removePermission:", { adminId, permissionId });
-
+    console.log("permissionId", permissionId);
+    console.log("adminId", adminId);
     try {
       const adminRef = doc(fbDb, "admins", adminId);
       const adminDocSnap = await getDoc(adminRef);
@@ -265,7 +280,7 @@ export default function ViewDepatment() {
 
         // Check if the permission is a department permission
         if (departmentPermissions.includes(permissionId)) {
-          console.error("Cannot remove department permissions");
+          console.log("Cannot remove department permissions");
           toast.error("Cannot remove department permissions");
           return; // Stop execution if it is a department permission
         }
@@ -274,13 +289,14 @@ export default function ViewDepatment() {
         if (index !== -1) {
           additionalPermissions.splice(index, 1);
           await updateDoc(adminRef, { additionalPermissions });
+          console.log("Permission removed successfully");
           toast.success("Permission removed successfully");
         } else {
-          console.error("Permission not found");
+          console.log("Permission not found");
           toast.error("Permission not found");
         }
       } else {
-        console.error("Admin not found");
+        console.log("Admin not found");
         toast.error("Admin not found");
       }
     } catch (error) {
@@ -292,62 +308,24 @@ export default function ViewDepatment() {
   useEffect(() => {
     const unsubscribe = () => {}; // Initialize unsubscribe function  fetchAdditionalPermissions
 
-    const fetchAdditionalPermissions = async () => {
-      if (!id) {
-        console.error("No ID specified for fetching admin data.");
-        setUserData([]);
-        setAdditionalPermissions([]);
-        setCombinedPermissions([]);
-        return;
-      }
-
-      const adminRef = doc(fbDb, "admins", id as string); // Directly access a single document by ID
-      const adminDocSnap = await getDoc(adminRef);
-
-      if (!adminDocSnap.exists()) {
-        console.error("Admin not found.");
-        setUserData([]);
-        setAdditionalPermissions([]);
-        setCombinedPermissions([]);
-        return;
-      }
-
-      const adminData = adminDocSnap.data() as AdminData;
-      setUserData([adminData]); // Set data as an array with a single admin's data
-
-      const allPermissions = new Set<string>();
-      adminData.additionalPermissions?.forEach((permission) => {
-        allPermissions.add(permission);
-      });
-
-      setAdditionalPermissions([...allPermissions]);
-
-      if (adminData.department) {
-        const departmentPermissions = await fetchDepartmentPermissions(
-          adminData.department
-        );
-        departmentPermissions.forEach((permission: string) => {
-          allPermissions.add(permission);
-        });
-        setDepartmentPermissions(departmentPermissions);
-      }
-
-      setCombinedPermissions([...allPermissions]);
-    };
-
     const fetchPermissions = async () => {
-      const querySnapshot = await getDocs(collection(fbDb, "permisions"));
-      const permissionsData: DocumentData[] = [];
-
-      querySnapshot.forEach((doc) => {
-        const permission = {
-          id: doc.id,
-          ...doc.data(),
-        };
-        permissionsData.push(permission);
+      const permissionsCollection = collection(fbDb, "permisions");
+      const permissionsSnapshot = await getDocs(permissionsCollection);
+      const permissionsData: Permissions = {};
+      permissionsSnapshot.forEach((doc) => {
+        const data = doc.data();
+        Object.keys(data).forEach((key) => {
+          permissionsData[key] = data[key].map((permission: string) => ({
+            name: permission,
+            checked: false,
+          }));
+        });
       });
-      setFetchedPermisions(permissionsData);
+      setPermissions(permissionsData);
+      console.log("permissionsData", permissionsData);
     };
+
+    fetchPermissions();
 
     const fetchAdmins = async () => {
       if (!id) {
@@ -360,15 +338,14 @@ export default function ViewDepatment() {
       const adminSnapshot = await getDoc(adminRef);
 
       if (!adminSnapshot.exists()) {
-        console.error("Admin not found.");
+        console.log("Admin not found.");
         setUserData([]);
         return;
       }
 
       const adminData = adminSnapshot.data() as AdminData;
-      setUserData([adminData]); // Set data as an array with a single admin's data
-
-      // After the admin is fetched, you may want to fetch permissions related to this admin
+      setUserData([adminData]);
+      console.log("THIS IS THE USER DATA", adminData);
     };
 
     const fetchDepartments = async () => {
@@ -387,320 +364,297 @@ export default function ViewDepatment() {
         });
 
         setAllDepartments(departmentData);
+        console.log("Departments:", departmentData);
       } catch (error) {
         console.error("Error fetching departments:", error);
       }
     };
-
     fetchPermissions();
     fetchDepartments();
     fetchAdmins();
-    fetchAdditionalPermissions();
 
     // Clean up function to unsubscribe from snapshot listener
     return () => {
       unsubscribe();
     };
-  }, [id]);
+  }, [id, fetchedPermisions]);
 
-  const fetchDepartmentPermissions = async (departmentName: any) => {
-    try {
-      // Build the query to find the department by name
-      const deptQuery = query(
-        collection(fbDb, "departments"),
-        where("name", "==", departmentName)
+  const handleFullPermissionChange = () => {
+    const newAllChecked = !allChecked;
+    setAllChecked(newAllChecked);
+
+    const updatedPermissions = { ...permissions };
+    Object.keys(updatedPermissions).forEach((section) => {
+      updatedPermissions[section] = updatedPermissions[section].map(
+        (permission) => ({
+          ...permission,
+          checked: newAllChecked,
+        })
       );
-      const querySnapshot = await getDocs(deptQuery);
+    });
+    setPermissions(updatedPermissions);
+  };
 
-      if (querySnapshot.empty) {
-        console.warn(
-          "No matching department found for the name:",
-          departmentName
-        );
-        return null;
-      }
+  const handlePermissionChange = (section: string, permissionName: string) => {
+    const updatedPermissions = { ...permissions };
+    const permissionIndex = updatedPermissions[section].findIndex(
+      (p) => p.name === permissionName
+    );
+    updatedPermissions[section][permissionIndex].checked =
+      !updatedPermissions[section][permissionIndex].checked;
 
-      // Assuming there is only one department with this name
-      const departmentDoc = querySnapshot.docs[0];
-      const departmentData = departmentDoc.data();
+    setPermissions(updatedPermissions);
 
-      // Extracting permissions if available
-      const permissions = departmentData.permissions || [];
-      return permissions;
+    const allChecked = Object.keys(updatedPermissions).every((section) =>
+      updatedPermissions[section].every((p) => p.checked)
+    );
+    setAllChecked(allChecked);
+  };
+
+  // Assuming fbDb is correctly initialized Firestore instance
+
+  const handleSaveChanges = async () => {
+    const { id } = router.query;
+
+    if (!id || Array.isArray(id)) {
+      toast.error("Admin ID is missing or invalid");
+      return;
+    }
+
+    const selectedPermissions: string[] = [];
+    Object.keys(permissions).forEach((section) => {
+      permissions[section].forEach((permission: any) => {
+        if (permission.checked) {
+          selectedPermissions.push(permission.name);
+        }
+      });
+    });
+
+    const settingsRef = doc(fbDb, "admins", id as string);
+
+    try {
+      await setDoc(
+        settingsRef,
+        {
+          additionalPermissions: selectedPermissions,
+        },
+        { merge: true }
+      );
+
+      console.log("Permissions successfully updated!");
+      toast.success("Permissions successfully updated!");
     } catch (error) {
-      console.error("Error fetching department permissions:", error);
-      return null;
+      console.error("Error updating Permissions: ", error);
+      toast.error("Error updating Permissions");
     }
   };
 
   return (
-    <>
-      <SiteLayout>
-        <div className="bg-[#FAFAFB] h-full text-[#030229]">
-          <p className="text-lg font-nunito flex justify-center font-bold mt-2 ml-7">
-            {userData.length > 0
-              ? `${userData[0].firstname} ${userData[0].lastname}`
-              : ""}
-          </p>
-          <div className="flex flex-col">
-            <div className="rounded-md flex justify-between shadow-md bg-[#FFFFFF] ml-5 mt-5 ">
-              <div className="bg-[#FFFFFF]  flex-row py-5">
-                <div className=" flex items-center justify-center flex-row px-8">
-                  <div className="flex flex-col ml-20">
-                    <h1 className="font-bold">
-                      {" "}
-                      {userData.length > 0
-                        ? `${userData[0]?.firstname} ${userData[0]?.lastname}`
-                        : ""}
-                    </h1>
-                    <p className="text-sm text-[#030229]">
-                      {userData[0]?.email}
-                    </p>
-                    <p className="text-sm text-[#030229]">
-                      {userData[0]?.phonenumber}
-                    </p>
-                    <p className="text-sm text-[#030229]">Nairobi,Kenya</p>
-                  </div>
-                  <div className="flex flex-col ml-20">
-                    <div className="flex flex-row">
-                      <div className="flex flex-col text-sm text-[#030229]">
-                        <p>Start time</p>
-                        <p>Mar 14/2:23pm</p>
-                      </div>
-                      <div className="flex flex-col ml-20 text-sm text-[#030229]">
-                        <p>End time</p>
-                        <p>Mar 14/2:23pm</p>
-                      </div>
-                      <div className="flex Justify-end ml-24">
-                        <p
-                          className="text-indigo-600 hover:text-indigo-900 text-sm"
-                          onClick={() => handleEditClick(admin)}
-                        >
-                          Edit
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-row mt-4 text-sm text-[#030229]">
-                      <div className="flex flex-col">
-                        <p>Distance Coverd</p>
-                        <p>501.4ml</p>
-                      </div>
-                      <div className="flex flex-col ml-20 text-sm text-[#030229]">
-                        <p>Distance Coverd</p>
-                        <p>501.4ml</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="mt-10 flex flex-row ml-5 w-full">
-              <div className="w-1/2 pr-4">
-                <PermissionsTable
-                  permissions={combinedPermissions}
-                  heading="Selected Permissions"
-                  func={removePermission}
-                  adminId={id as string}
-                />
-              </div>
-              <div className="w-1/2 pl-4">
-                <AllPermissionsTable
-                  permissions={fetchedPermisions}
-                  heading="All Permissions"
-                  func={addPermission}
-                  adminId={id as string}
-                />
-              </div>
+    <SiteLayout>
+      <>
+        <div className="flex flex-col justify-center items-start gap-2.5 mt-17.5 mb-13 py-2.5 pl-9 bg-white">
+          <div className="flex-grow-0 flex justify-center items-center gap-2.5 py-2.5 px-4">
+            <div className="flex-grow-0 font-custom text-custom-size flex justify-center font-semibold text-left text-custom-color">
+              Administration
             </div>
           </div>
-          
-          {editModalOpen && (
-            <FormModal open={editModalOpen} setOpen={setEditModalOpen}>
-              <div className="p-8">
-                <div className="flex w-full h-full justify-between items-center mb-12">
-                  <div className="text-xl font-semibold ">
-                    Edit User Details
-                  </div>
-                  <Button
-                    className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
-                    handleClick={handleEditModalClose}
-                  >
-                    <XMarkIcon className="h-6 w-6 text-red-400" />
-                  </Button>
-                </div>
-                <Formik
-                  initialValues={editFormInitialValues}
-                  onSubmit={handleEditSubmit}
-                >
-                  {({ values, setFieldValue }) => (
-                    <Form>
-                      <div className="">
-                        <div className="flex w-full justify-between">
-                          <label className="block">
-                            <label className="form-label">FIRSTNAME</label>
-                            <Field
-                              type="text"
-                              name="firstname"
-                              value={values.firstname}
-                              className="form-input bg-grey w-48"
-                            />
-                          </label>
-                          <label className="block">
-                            <label className="form-label">LASTNAME</label>
-                            <Field
-                              type="text"
-                              name="lastname"
-                              value={values.lastname}
-                              className="form-input bg-grey w-48"
-                            />
-                          </label>
-                        </div>
-                        <div className="flex w-full justify-between mt-8">
-                          <label className="block">
-                            <label className="form-label">EMAIL</label>
-                            <Field
-                              type="email"
-                              name="email"
-                              value={values.email}
-                              className="form-input bg-grey w-48"
-                            />
-                          </label>
-                          <label className="block">
-                            <label className="form-label">PHONE NUMBER</label>
-                            <Field
-                              type="text"
-                              name="phonenumber"
-                              value={values.phonenumber}
-                              className="form-input bg-grey w-48"
-                            />
-                          </label>
-                        </div>
-                        <div className="flex w-full justify-between mt-8">
-                          <label className="block">
-                            <label className="form-label">DEPARTMENT</label>
-                            <Field
-                              as="select"
-                              name="department"
-                              value={values.department ? values.department : ""}
-                              onChange={(
-                                event: React.ChangeEvent<HTMLSelectElement>
-                              ) => {
-                                const selectedDepartmentName =
-                                  event.target.value;
-                                setFieldValue(
-                                  "department",
-                                  selectedDepartmentName
-                                );
-                              }}
-                              className="form-input bg-grey w-48"
-                            >
-                              <option value="">Select Department</option>
-                              {allDepartments.map((department: any) => (
-                                <option
-                                  key={department.id}
-                                  value={department.name}
-                                >
-                                  {department.name}
-                                </option>
-                              ))}
-                            </Field>
-                          </label>
-
-                          <label className="block">
-                            <label className="form-label">ADMIN</label>
-                            <Field
-                              type="checkbox"
-                              name="super_admin"
-                              checked={values.super_admin}
-                              className="form-checkbox bg-gray-200"
-                            />
-                          </label>
-                        </div>
-                        <div className="flex w-full justify-end mt-24 ">
-                          <Button
-                            className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
-                            handleClick={handleEditModalClose}
-                          >
-                            Reset
-                          </Button>
-                          {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
-                          <button
-                            className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
-                            type="submit"
-                          >
-                            Save
-                          </button>
-                        </div>
-                      </div>
-                    </Form>
-                  )}
-                </Formik>
-              </div>
-            </FormModal>
-          )}
         </div>
-      </SiteLayout>
-    </>
-  );
-}
-interface PermissionsTableProps {
-  permissions: string[];
-  heading: string;
-  func: any;
-  adminId: string;
-}
+        <div className="ml-[50px] flex flex-col mr-[77px]">
+          <div className="mt-[27px]  font-custom text-custom-size font-semibold">
+            <p>User Details</p>
+          </div>
+          <div className="mt-[23px] bg-[#f7f8fa]  border border-[#dee8f8]">
+            <div className="flex flex-row mt-[25px] ml-[32px] mb-[25px]">
+              <div className="flex flex-col">
+                <div className="flex flex-row">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="size-6 text-[#065AD8]"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                    />
+                  </svg>
 
-function PermissionsTable({
-  permissions,
-  heading,
-  func,
-  adminId,
-}: PermissionsTableProps) {
-  const handleRemovePermission = (permissionId: string) => {
-    console.log("Handle Remove Permission permissionId: " + permissionId);
-    console.log("Handle Remove Permission adminId : " + adminId);
+                  <p className="text-[#6b6b73] text-sm ml-[10px]">Full name</p>
+                </div>
+                <p className="mt-[5px] text-[#] text-sm font-semibold ml-[34px]">
+                  {userData[0]?.firstname}
+                </p>
+              </div>
+              <div className="flex flex-col  ml-[100px]">
+                <div className="flex flex-row">
+                  {/* <i className="fa fa-user-circle-o text-[#065AD8]"></i>  */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    className="size-6 text-[#065AD8]"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z"
+                    />
+                  </svg>
 
-    if (adminId) {
-      func(adminId, permissionId); // Pass adminId as well
-    } else {
-      console.error("AdminId is undefined");
-    }
-  };
+                  <p className="text-[#6b6b73] text-sm ml-[10px]">Email</p>
+                </div>
+                <p className="mt-[5px] text-[#] text-sm font-semibold ml-[34px]">
+                  {userData[0]?.email}
+                </p>
+              </div>
+              <div className="flex flex-col ml-[100px]">
+                <div className="flex flex-row">
+                  {/* <i className="fa fa-user-circle-o text-[#065AD8]"></i>  */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    className="size-6 text-[#065AD8]"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M9 9.563C9 9.252 9.252 9 9.563 9h4.874c.311 0 .563.252.563.563v4.874c0 .311-.252.563-.563.563H9.564A.562.562 0 0 1 9 14.437V9.564Z"
+                    />
+                  </svg>
 
-  return (
-    <Example
-      heading={heading}
-      list={permissions}
-      action={handleRemovePermission}
-    />
-  );
-}
+                  <p className="text-[#6b6b73] text-sm ml-[10px]">Role</p>
+                </div>
+                <p className="mt-[5px] text-[#] text-sm font-semibold ml-[34px]">
+                  {userData[0]?.role}
+                </p>
+              </div>
+              <div className="flex flex-col ml-[100px]	">
+                <div className="flex flex-row">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    className="size-6 text-[#065AD8]"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z"
+                    />
+                  </svg>
 
-interface AllPermissionsTableProps {
-  permissions: DocumentData[];
-  heading: string;
-  func: any;
-  adminId: string; // Change the type to string
-}
-function AllPermissionsTable({
-  permissions,
-  heading,
-  func,
-  adminId,
-}: AllPermissionsTableProps) {
-  const handleAddPermission = (permissionId: string) => {
-    if (adminId) {
-      func(adminId, permissionId);
-    } else {
-      console.error("AdminId is undefined");
-    }
-  };
-
-  return (
-    <AllPermissions
-      heading={heading}
-      list={permissions}
-      action={handleAddPermission}
-    />
+                  <p className="text-[#6b6b73] text-sm ml-[10px]">Department</p>
+                </div>
+                <p className="mt-[5px] text-[#] text-sm font-semibold ml-[34px]">
+                  {userData[0]?.department}
+                </p>
+              </div>
+              <button className="text-white border border-teal-400 bg-teal-400 hover:bg-teal-400 font-semibold  px-2 ml-[100px] mr-[10px] rounded flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  className="h-4 w-4 mr-2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                  />
+                </svg>
+                Edit
+              </button>{" "}
+            </div>
+          </div>
+          <div className="border-y border-gray-200 mt-[43px]"></div>
+          <div className="p-6 bg-white shadow-md rounded-lg mt-[43px]">
+            <div className="flex flex-row items-center mb-4 w-full bg-white">
+              <p>Permissions</p>
+              <label className="flex items-center space-x-2 ml-[10px]">
+                <input
+                  type="checkbox"
+                  checked={allChecked}
+                  onChange={handleFullPermissionChange}
+                  className="mr-[10px] rounded"
+                />
+                <span className="font-custom text-sm text-[#6b6b73]">
+                  Full Permission
+                </span>
+              </label>
+            </div>
+            <div className="">
+              <div className="flex justify-start mt-[25px] ml-[31px] mb-[25px]">
+                {/* Iterate over sections */}
+                {Object.keys(permissions).map((section) => (
+                  <div key={section} className="ml-[18px]">
+                    {/* Section title */}
+                    <div className="flex flex-row w-full bg-white">
+                      <div className="flex flex-col mb-2">
+                        <p className="font-medium text-[#030229]">{section}</p>
+                        <label className="flex mt-[15px] space-x-2">
+                          <input
+                            type="checkbox"
+                            className="form-checkbox rounded text-sm"
+                          />
+                          <span className="font-custom text-sm text-[#6b6b73]">
+                            Select all
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                    {/* Permissions checkboxes */}
+                    <div className="flex flex-col">
+                      {permissions[section].map((permission) => (
+                        <div
+                          key={permission.name}
+                          className="flex flex-row mb-2 items-center"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={permission.checked}
+                            onChange={() =>
+                              handlePermissionChange(section, permission.name)
+                            }
+                            className="mr-[10px] rounded"
+                          />
+                          <p className="text-[#6b6b73] text-sm">
+                            {permission.name}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-end mt-[20px] mb-[20px]">
+              <button
+                onClick={handleSaveChanges}
+                className="bg-[#065AD8] text-white py-[10px] px-[20px] rounded-[5px]"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    </SiteLayout>
   );
 }

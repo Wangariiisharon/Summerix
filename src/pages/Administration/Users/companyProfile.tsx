@@ -1,10 +1,17 @@
 import { FaHome } from "react-icons/fa";
 import { FaPlusCircle } from "react-icons/fa";
 import { toast } from "react-hot-toast";
-import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import {
+  AuthProvider,
+  useAuthContext,
+} from "@/components/Authentication/AuthProvider";
+import { fbDb } from "@/firebase/configs";
+import {
+  DocumentData,
+  addDoc,
   collection,
   doc,
+  getDocs,
   getFirestore,
   onSnapshot,
   query,
@@ -12,9 +19,18 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import React, { Fragment, SetStateAction, useEffect, useState } from "react";
+import { FormModal } from "@/components/Modals/FormModal";
+import { Button } from "@/components/Buttons";
 import { Formik, Field, Form } from "formik/dist/index";
+import {
+  CheckCircleIcon,
+  XCircleIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 import Modal from "./modal"; // Adjust the path if necessary
+import moment from "moment-timezone";
+import country from "country-list-js";
 
 interface JobCardData {
   id: string;
@@ -23,9 +39,9 @@ interface JobCardData {
   country: string;
   timezone: string;
   currency: string[];
+  primaryCurrency: string;
   photoURL: string;
 }
-
 export default function CompanyProfile() {
   const { organisationId } = useAuthContext();
   const [fetchedJobcards, setFetchedJobcards] = useState<JobCardData[]>([]);
@@ -37,11 +53,27 @@ export default function CompanyProfile() {
     timezone: "",
     currency: [],
     photoURL: "",
+    primaryCurrency: "KES",
   });
   // photoURL
   const [rates, setRates] = useState({});
+  const [countries, setCountries] = useState<string[]>([]);
+  const [timezones, setTimezones] = useState<
+    { name: string; offset: string }[]
+  >([]);
+
+  const [editingCurrencyIndex, setEditingCurrencyIndex] = useState<
+    number | null
+  >(null);
+  const [editingCurrencyModalOpen, setEditingCurrencyModalOpen] =
+    useState(false);
+
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [primaryCurrencyModalopen, setPrimaryCurrencyModalopen] =
+    useState(false);
+
+  const [currencies, setCurrencies] = useState([]);
 
   const handleAdd = () => {
     setOpen(true);
@@ -67,6 +99,7 @@ export default function CompanyProfile() {
               publicProfile: doc.data().publicProfile,
               phoneNumber: doc.data().phoneNumber,
               country: doc.data().country,
+              primaryCurrency: doc.data().primaryCurrency,
               timezone: doc.data().timezone,
               currency: doc.data().currency || [], // Ensure default value
               photoURL: doc.data().photoURL || "", // Ensure default value
@@ -78,12 +111,13 @@ export default function CompanyProfile() {
           });
 
           return () => unsubscribe();
+        } else {
+          console.error("Organisation ID is not available.");
         }
       } catch (error) {
         console.error("Error fetching Company settings:", error);
       }
     };
-
     const fetchRates = async () => {
       try {
         const response = await fetch("../../api/currencies");
@@ -91,6 +125,7 @@ export default function CompanyProfile() {
         try {
           const data = JSON.parse(text); // parse the text as JSON
           setRates(data.rates);
+          console.log("Rates", data.rates);
           setLoading(false);
         } catch (error) {
           console.error("Error parsing JSON:", error);
@@ -100,6 +135,30 @@ export default function CompanyProfile() {
         console.error("Error fetching currency rates:", error);
       }
     };
+    const fetchTimezones = () => {
+      const tzNames = moment.tz.names();
+      const formattedTimezones = tzNames.map((tz: any) => {
+        const offset = moment.tz(tz).utcOffset() / 60;
+        const offsetString = offset >= 0 ? `GMT+${offset}` : `GMT${offset}`;
+        return {
+          name: tz,
+          offset: offsetString,
+        };
+      });
+      setTimezones(formattedTimezones);
+    };
+    const fetchCountries = () => {
+      try {
+        const country_names = country.names();
+        setCountries(country_names);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching countries:", error);
+        setLoading(false);
+      }
+    };
+    fetchCountries();
+    fetchTimezones();
     fetchRates();
     fetchJobcards();
   }, [organisationId]);
@@ -121,6 +180,8 @@ export default function CompanyProfile() {
         },
         { merge: true }
       );
+
+      console.log("Settings successfully updated!");
       toast.success("Settings successfully updated!");
     } catch (error) {
       console.error("Error updating settings: ", error);
@@ -129,6 +190,12 @@ export default function CompanyProfile() {
 
   const handleSubmit = async (values: { currency: string }) => {
     if (values.currency) {
+      // Check if the currency is already in the array
+      if (companySettings.currency.includes(values.currency)) {
+        toast.error("Currency already exists!");
+        return;
+      }
+
       const newCurrencyArray = [...companySettings.currency, values.currency];
       setCompanySettings((prevSettings) => ({
         ...prevSettings,
@@ -145,6 +212,7 @@ export default function CompanyProfile() {
         );
 
         await updateDoc(settingsRef, { currency: newCurrencyArray });
+        console.log("Currency successfully updated!");
         toast.success("Currency successfully updated!");
       } catch (error) {
         console.error("Error updating currency: ", error);
@@ -152,6 +220,82 @@ export default function CompanyProfile() {
       }
 
       setOpen(false);
+    }
+  };
+
+  const handlePrimaryCurrencySubmit = async (values: {
+    primaryCurrency: string;
+  }) => {
+    console.log("Submitted Values:", values);
+
+    if (values.primaryCurrency) {
+      const newPrimaryCurrency = values.primaryCurrency;
+      setCompanySettings((prevSettings) => ({
+        ...prevSettings,
+        primaryCurrency: newPrimaryCurrency,
+      }));
+
+      // Save the updated currency array to Firestore
+      try {
+        const db = getFirestore();
+        const settingsRef = doc(
+          db,
+          "companyProfile",
+          companySettings.id || doc(collection(db, "companyProfile")).id
+        );
+
+        await updateDoc(settingsRef, { primaryCurrency: newPrimaryCurrency });
+        console.log("Primary Currency successfully updated!");
+        toast.success("Primary Currency successfully updated!");
+      } catch (error) {
+        console.error("Error updating primary currency: ", error);
+        toast.error("Error updating primary currency");
+      }
+
+      setPrimaryCurrencyModalopen(false);
+    }
+  };
+
+  const handleEditCurrencySubmit = async (values: { currency: string }) => {
+    if (editingCurrencyIndex !== null && values.currency) {
+      // Check if the new currency already exists in the array, excluding the current index
+      if (
+        companySettings.currency.some(
+          (currency, index) =>
+            currency === values.currency && index !== editingCurrencyIndex
+        )
+      ) {
+        toast.error("Currency already exists!");
+        return;
+      }
+
+      const newCurrencyArray = [...companySettings.currency];
+      newCurrencyArray[editingCurrencyIndex] = values.currency;
+
+      setCompanySettings((prevSettings) => ({
+        ...prevSettings,
+        currency: newCurrencyArray,
+      }));
+
+      // Save the updated currency array to Firestore
+      try {
+        const db = getFirestore();
+        const settingsRef = doc(
+          db,
+          "companyProfile",
+          companySettings.id || doc(collection(db, "companyProfile")).id
+        );
+
+        await updateDoc(settingsRef, { currency: newCurrencyArray });
+        console.log("Currency successfully updated!");
+        toast.success("Currency successfully updated!");
+      } catch (error) {
+        console.error("Error updating currency: ", error);
+        toast.error("Error updating currency");
+      }
+
+      setEditingCurrencyModalOpen(false);
+      setEditingCurrencyIndex(null);
     }
   };
 
@@ -180,7 +324,7 @@ export default function CompanyProfile() {
                 publicProfile: e.target.value,
               })
             }
-            className="flex-grow pl-[10px] pr-[150px] pt-[14px] pb-[14px] rounded-[8px] border-none focus:ring-0 focus:outline-none"
+            className="flex-grow pl-[10px] pr-[140px] pt-[14px] pb-[14px] rounded-[8px] border-none focus:ring-0 focus:outline-none"
           />
         </div>
       </div>
@@ -208,7 +352,7 @@ export default function CompanyProfile() {
                   phoneNumber: e.target.value,
                 })
               }
-              className="flex-grow pl-[10px] pr-[150px] pt-[14px] pb-[14px] rounded-[8px] border-none focus:ring-0 focus:outline-none"
+              className="flex-grow pl-[10px] pr-[140px] pt-[14px] pb-[14px] rounded-[8px] border-none focus:ring-0 focus:outline-none"
             />
           </div>
         </div>
@@ -221,13 +365,12 @@ export default function CompanyProfile() {
               Select your country
             </div>
           </div>
+
           <div className="flex items-center border border-[#dee8f8] rounded-[8px] bg-white mt-4 mb-4">
             <div className="flex items-center pl-[27px] text-gray-400">
               <FaHome size={18} />
             </div>
-            <input
-              type="text"
-              placeholder="Truck Mate"
+            <select
               value={companySettings.country}
               onChange={(e) =>
                 setCompanySettings({
@@ -235,8 +378,14 @@ export default function CompanyProfile() {
                   country: e.target.value,
                 })
               }
-              className="flex-grow pl-[10px] pr-[150px] pt-[14px] pb-[14px] rounded-[8px] border-none focus:ring-0 focus:outline-none"
-            />
+              className="flex-grow pl-[10px] pr-[1px] pt-[14px] pb-[14px] rounded-[8px] border-none focus:ring-0 focus:outline-none"
+            >
+              {countries.map((country, index) => (
+                <option key={index} value={country}>
+                  {country}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
         <div className="flex flex-row">
@@ -252,9 +401,7 @@ export default function CompanyProfile() {
             <div className="flex items-center pl-[27px] text-gray-400">
               <FaHome size={18} />
             </div>
-            <input
-              type="text"
-              placeholder="Truck Mate"
+            <select
               value={companySettings.timezone}
               onChange={(e) =>
                 setCompanySettings({
@@ -262,8 +409,14 @@ export default function CompanyProfile() {
                   timezone: e.target.value,
                 })
               }
-              className="flex-grow pl-[10px] pr-[150px] pt-[14px] pb-[14px] rounded-[8px] border-none focus:ring-0 focus:outline-none"
-            />
+              className="flex-grow pl-[10px] pr-[1px] pt-[14px] pb-[14px] rounded-[8px] border-none focus:ring-0 focus:outline-none"
+            >
+              {timezones.map((tz) => (
+                <option key={tz.name} value={tz.name}>
+                  {tz.name} - {tz.offset}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>
@@ -277,7 +430,7 @@ export default function CompanyProfile() {
           </div>
         </div>
         <div className="flex flex-col">
-          <div className="mt-4 mb-4 pl-[20px] pt-[14px] pb-[14px] rounded-[8px] border border-[#dee8f8] bg-white">
+          <div className="mt-4  pl-[20px] pt-[14px] pb-[14px] rounded-[8px] border border-[#dee8f8] bg-white">
             <div className="flex flex-col">
               <div className="flex items-center space-x-2">
                 <span className="font-semibold text-black">currency1</span>
@@ -286,7 +439,7 @@ export default function CompanyProfile() {
                 <div className="flex items-center space-x-2">
                   <FaHome size={18} className="text-gray-400" />
                   <span className="border rounded-full text-xs font-medium text-blue-600">
-                    KES
+                    {companySettings.primaryCurrency || "KES"}
                   </span>
                   <span className="bg-green-100 text-green-700 ml-[8px] rounded-full text-xs font-medium">
                     Primary
@@ -294,9 +447,54 @@ export default function CompanyProfile() {
                 </div>
                 <div className="flex items-center space-x-2 ml-[170px] mr-[10px]">
                   <button className="text-gray-500">Remove</button>
-                  <button className="text-blue-500 ml-[8px]">Edit</button>
+                  <button
+                    className="text-blue-500 ml-[8px]"
+                    onClick={() => setPrimaryCurrencyModalopen(true)}
+                  >
+                    Edit
+                  </button>
                 </div>
               </div>
+            </div>
+          </div>
+          <div>
+            <div>
+              {companySettings.currency.map((currency, index) => (
+                <div key={index}>
+                  <div className="mt-4 mb-4 pl-[20px] pt-[14px] pb-[14px] rounded-[8px] border border-[#dee8f8] bg-white">
+                    <div className="flex flex-col">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-semibold text-black">
+                          Currency{index + 2}
+                        </span>
+                      </div>
+                      <div className="flex flex-row">
+                        <div className="flex items-center space-x-2">
+                          <FaHome size={18} className="text-gray-400" />
+                          <span className="border rounded-full text-xs font-medium text-blue-600">
+                            {currency}
+                          </span>
+                          <span className="bg-green-100 text-green-700 ml-[8px] rounded-full text-xs font-medium">
+                            secondary
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2 ml-[170px] mr-[10px]">
+                          <button className="text-gray-500">Remove</button>
+                          <button
+                            className="text-blue-500 ml-[8px]"
+                            onClick={() => {
+                              setEditingCurrencyIndex(index);
+                              setEditingCurrencyModalOpen(true);
+                            }}
+                          >
+                            Edit
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
           <button
@@ -356,6 +554,116 @@ export default function CompanyProfile() {
                   <button
                     type="button"
                     onClick={() => setOpen(false)}
+                    className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-teal-400 text-white px-4 py-2 rounded hover:bg-teal-600"
+                  >
+                    Submit
+                  </button>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        </Modal>
+      </div>
+      <div className="p-6">
+        <Modal
+          open={primaryCurrencyModalopen}
+          setOpen={setPrimaryCurrencyModalopen}
+        >
+          <Formik
+            initialValues={{
+              primaryCurrency: "",
+            }}
+            onSubmit={handlePrimaryCurrencySubmit}
+          >
+            {({ values }) => (
+              <Form>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Currency
+                  </label>
+                  <Field
+                    as="select"
+                    name="primaryCurrency"
+                    className="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-opacity-50 focus:ring-blue-300"
+                  >
+                    <option
+                      value=""
+                      label="Choose currency"
+                      className="text-gray-700 text-sm"
+                    />
+                    {Object.entries(rates).map(([currency]) => (
+                      <option key={currency} value={currency}>
+                        {currency.toUpperCase()}
+                      </option>
+                    ))}
+                  </Field>
+                </div>
+                <div className="flex justify-end space-x-4">
+                  <button
+                    type="button"
+                    onClick={() => setPrimaryCurrencyModalopen(false)}
+                    className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-teal-400 text-white px-4 py-2 rounded hover:bg-teal-600"
+                  >
+                    Submit
+                  </button>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        </Modal>
+      </div>
+
+      <div className="p-6">
+        <Modal
+          open={editingCurrencyModalOpen}
+          setOpen={setEditingCurrencyModalOpen}
+        >
+          <Formik
+            initialValues={{
+              currency:
+                companySettings.currency[editingCurrencyIndex || 0] || "",
+            }}
+            onSubmit={handleEditCurrencySubmit}
+          >
+            {({ values }) => (
+              <Form>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Currency
+                  </label>
+                  <Field
+                    as="select"
+                    name="currency"
+                    className="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-opacity-50 focus:ring-blue-300"
+                  >
+                    <option
+                      value=""
+                      label="Choose currency"
+                      className="text-gray-700 text-sm"
+                    />
+                    {Object.entries(rates).map(([currency]) => (
+                      <option key={currency} value={currency}>
+                        {currency.toUpperCase()}
+                      </option>
+                    ))}
+                  </Field>
+                </div>
+                <div className="flex justify-end space-x-4">
+                  <button
+                    type="button"
+                    onClick={() => setEditingCurrencyModalOpen(false)}
                     className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
                   >
                     Cancel

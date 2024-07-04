@@ -29,8 +29,9 @@ import { Formik, Field, Form } from "formik/dist/index";
 import { formatDistanceToNow } from "date-fns";
 import toast from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
-import { FaEdit, FaTrash, FaArchive } from "react-icons/fa";
+import { FaEdit, FaTrash } from "react-icons/fa";
 import json2csv from "json2csv";
+import { useRouter } from "next/router";
 interface Department {
   status: boolean;
   members: number;
@@ -479,7 +480,12 @@ export function DepartmentsTable({
     setSelectAll(!selectAll);
   };
   const deleteSelectedUsers = () => {};
-
+  const handleDepartmentClick = (department: DocumentData) => {
+    router.push(
+      `Administration/Admins/manage_department/viewDepatment?id=${department.id}`
+    );
+    // C:\Users\sharo\truckit\src\pages\Administration\Admins\manage_department\viewDepatment.tsx
+  };
   const downloadSelectedFiles = () => {
     const fields = [
       { label: "name", value: "name" },
@@ -525,7 +531,7 @@ export function DepartmentsTable({
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const visibleDepartments = departments.slice(startIndex, endIndex);
-
+  const router = useRouter();
   return (
     <div className="container mx-auto p-4 bg-white">
       <div className="overflow-x-auto bg-gray-100 shadow-md rounded-lg">
@@ -564,7 +570,11 @@ export function DepartmentsTable({
                   updatedDate = new Date(department.updated); // Parse ISO string date
                 }
                 return (
-                  <tr key={department.departmentId} className="border-b">
+                  <tr
+                    key={department.departmentId}
+                    className="border-b"
+                    onClick={() => handleDepartmentClick(department)}
+                  >
                     <td className="py-3 px-6">
                       <div className="flex items-center">
                         <input
