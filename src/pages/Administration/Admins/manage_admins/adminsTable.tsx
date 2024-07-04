@@ -5,9 +5,9 @@ import json2csv from "json2csv";
 import toast from "react-hot-toast";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import SearchBar from "@/components/Forms/input";
+import { useRouter } from "next/router";
 
 interface Admin {
-  // id: string;
   adminId: string;
   userId: string;
   firstname: string;
@@ -37,7 +37,7 @@ export default function AdminsTable({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectAll, setSelectAll] = useState(false);
   const [selectedAdmins, setSelectedAdmins] = useState<Admin[]>([]);
-
+  const router = useRouter();
   const handleCheckboxChange = (admin: Admin) => {
     const isAdminSelected = selectedAdmins.includes(admin);
     if (isAdminSelected) {
@@ -56,6 +56,11 @@ export default function AdminsTable({
       setSelectedAdmins(filteredAdmins);
     }
     setSelectAll(!selectAll);
+  };
+
+  const handleAdminClick = (admin: DocumentData) => {
+    router.push(`Administration/Admins/manage_admins/viewAdmin?id=${admin.Id}`);
+    // C:\Users\sharo\truckit\src\pages\Administration\Admins\manage_admins\viewAdmin.tsx
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -168,7 +173,11 @@ export default function AdminsTable({
             </thead>
             <tbody className="text-gray-700">
               {fetchedAdmins.map((admin) => (
-                <tr key={admin.userId} className="border-b">
+                <tr
+                  key={admin.userId}
+                  className="border-b"
+                  onClick={() => handleAdminClick(admin)}
+                >
                   <td className="py-3 px-6">
                     <div className="flex items-center">
                       <input
