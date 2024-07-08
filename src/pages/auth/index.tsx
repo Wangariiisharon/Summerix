@@ -1,7 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import AuthLayout from "../../components/Authentication/AuthLayout";
 import Seo from "../../components/Seo";
-import { getAuth } from "firebase/auth";
+import {
+  getAuth,
+  isSignInWithEmailLink,
+  onAuthStateChanged,
+  signInWithEmailLink,
+} from "firebase/auth";
 import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
@@ -12,9 +17,50 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { toast } from "react-hot-toast";
 import firebaseApp from "@/firebase/configs";
+import { useEffect } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [userClaims, setUserClaims] = useState<any>(null);
+
+  useEffect(() => {
+    const handleSignInWithEmailLink = async () => {
+      const auth = getAuth(firebaseApp);
+
+      // Check if the URL is a valid sign-in link
+      if (isSignInWithEmailLink(auth, window.location.href)) {
+        let email = window.localStorage.getItem("emailForSignIn");
+
+        if (!email) {
+          email = window.prompt("Please provide your email for confirmation");
+        }
+
+        if (email) {
+          try {
+            await signInWithEmailLink(auth, email, window.location.href);
+
+            window.localStorage.removeItem("emailForSignIn");
+            console.log("Successfully signed in");
+
+            router.push("/Dashboard");
+          } catch (error) {
+            console.error("Sign-in with email link failed:", error);
+            toast.error("Sign-in failed. Please try again.");
+          }
+        }
+      }
+    };
+
+    handleSignInWithEmailLink();
+  }, [router]);
+
+  const fetchUserClaims = async (user: any) => {
+    const idTokenResult = await user.getIdTokenResult(true); // Force refresh token
+    const claims = idTokenResult.claims;
+    setUserClaims(claims);
+    console.log("userClaims", claims); // Check if custom claims are included
+    return claims;
+  };
 
   const doGoogleSignIn = async () => {
     const fbAuth = getAuth(firebaseApp);
@@ -24,6 +70,8 @@ export default function LoginPage() {
       const results = await signInWithPopup(fbAuth, provider);
       console.log("doGoogleSignIn > results:", results);
       if (results.user) {
+        const claims = await fetchUserClaims(results.user);
+        console.log("userClaims", claims);
         router.push("/Dashboard");
       }
     } catch (error) {
@@ -33,7 +81,7 @@ export default function LoginPage() {
   };
 
   const doLogin = async (formValues: { email: string; password: string }) => {
-    console.log("doLogin > formValues", formValues);
+    console.log("doLogin > formValues:", formValues);
 
     try {
       const { email, password } = formValues;
@@ -48,6 +96,8 @@ export default function LoginPage() {
       const user = userCredential.user;
 
       if (user) {
+        const claims = await fetchUserClaims(user);
+        console.log("userClaims", claims);
         router.push("/Dashboard");
       } else {
         toast.error("Invalid credentials");
@@ -57,6 +107,8 @@ export default function LoginPage() {
       toast.error("Login failed. Please try again.");
     }
   };
+
+  const auth = getAuth();
 
   return (
     <main className="">

@@ -203,6 +203,7 @@ export default function Admins() {
     fetchDepartments();
     fetchedAdmins();
   }, [organisationId]);
+  console.log(fetchedAdmins);
 
   const updateFetchedAdmins = (updatedAdmins: SetStateAction<Admin[]>) => {
     setFetchedAdmins(updatedAdmins || []);
@@ -305,7 +306,6 @@ export default function Admins() {
       console.error("Error updating Admin:", error);
     }
   };
-
   const handleSubmit = async (values: {
     firstname: any;
     lastname: any;
@@ -327,6 +327,8 @@ export default function Admins() {
       );
       const authUid = userCredential.user.uid;
 
+      console.log("User created with UID:", authUid);
+
       const existingAdminQuery = query(
         collection(fbDb, "admins"),
         where("email", "==", values.email),
@@ -343,19 +345,25 @@ export default function Admins() {
       }
 
       const inviterUid = auth.currentUser ? auth.currentUser.uid : null;
+      console.log("Inviter UID:", inviterUid);
+
       const inviterQuery = query(
         collection(fbDb, "admins"),
         where("userId", "==", inviterUid)
       );
       const inviterSnapshot = await getDocs(inviterQuery);
 
+      let inviterData = null;
       if (!inviterSnapshot.empty) {
-        const inviterData = inviterSnapshot.docs[0].data();
+        inviterData = inviterSnapshot.docs[0].data();
+        console.log("Inviter Data:", inviterData);
       } else {
         console.error("Inviter not found");
       }
 
       const generatedAdminId = await generateAdminId(organisationId);
+      console.log("Generated Admin ID:", generatedAdminId);
+
       const adminData = {
         adminId: generatedAdminId,
         firstname: values.firstname,
@@ -371,7 +379,11 @@ export default function Admins() {
         archive: false,
       };
 
+      console.log("Admin Data to be added:", adminData);
+
       const docRef = await addDoc(collection(fbDb, "admins"), adminData);
+      console.log("Document Reference ID:", docRef.id);
+
       toast.success("Admin Successfully Added.");
       setFetchedAdmins((prevAdmins) => [
         { id: docRef.id, ...adminData },

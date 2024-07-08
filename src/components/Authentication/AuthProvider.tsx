@@ -41,6 +41,23 @@ interface AuthContextType {
   userData: AdminData | null;
   hasPermission: (permissionKey: string) => boolean;
 }
+type UserClaims = {
+  userId?: string;
+  email?: string;
+  firstname?: string;
+  lastname?: string;
+  role?: string;
+  status?: string;
+  super_admin?: boolean;
+  organisationId?: string;
+  inviterUid?: string;
+  adminId?: string;
+  fcmToken?: string;
+  phonenumber?: string;
+  additionalPermissions?: string[];
+  department?: string;
+  [key: string]: any; // Allow additional properties
+};
 
 const defaultContextValue: AuthContextType = {
   isAuthenticated: false,
@@ -61,6 +78,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [currentAdmin, setCurrentAdmin] = useState<AdminUser | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<AdminData | null>(null);
+  const [userClaims, setUserClaims] = useState<UserClaims | null>(null);
+
   const router = useRouter();
 
   const hasPermission = (permissionKey: string) =>
@@ -96,6 +115,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             data.lastname?.charAt(0)?.toUpperCase();
           setCurrentAdmin(data);
         }
+
+        const tokenResult = await user.getIdTokenResult(true);
+        setCurrentUser(user);
+        setUserClaims(tokenResult.claims);
+        console.log("userClaims", userClaims);
       } else {
         // redirect to signin page
         router.push("/signin");

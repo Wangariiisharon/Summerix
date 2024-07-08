@@ -76,3 +76,41 @@ const getCountries = async () => {
     return [];
   }
 };
+exports.setCustomClaims = functions.firestore
+  .document("admins/{userId}") // Ensure the collection name matches
+  .onWrite(async (change, context) => {
+    const userId = context.params.userId;
+    const user = change.after.exists ? change.after.data() : null;
+
+    if (user) {
+      let customClaims = {
+        userId: userId,
+        email: user.email,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        role: user.role,
+        status: user.status,
+        super_admin: user.super_admin,
+        organisationId: user.organisationId,
+        inviterUid: user.inviterUid,
+        adminId: user.adminId,
+        fcmToken: user.fcmToken,
+        phonenumber: user.phonenumber,
+        additionalPermissions: user.additionalPermissions,
+        department: user.department,
+      };
+
+      if (user.role === "admin") {
+        customClaims.admin = true;
+      } else {
+        customClaims.admin = false;
+      }
+
+      try {
+        await admin.auth().setCustomUserClaims(userId, customClaims);
+        console.log(`Custom claims set for user ${userId}`);
+      } catch (error) {
+        console.error(`Error setting custom claims for user ${userId}:`, error);
+      }
+    }
+  });
