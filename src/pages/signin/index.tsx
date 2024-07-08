@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import AuthLayout from "../../components/Authentication/AuthLayout";
 import Seo from "../../components/Seo";
 import firebaseApp from "../../firebase/configs";
@@ -6,6 +6,7 @@ import {
   getAuth,
   isSignInWithEmailLink,
   signInWithEmailLink,
+  onAuthStateChanged,
 } from "firebase/auth";
 import {
   signInWithEmailAndPassword,
@@ -19,35 +20,28 @@ import { toast } from "react-hot-toast";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [userClaims, setUserClaims] = useState<any>(null);
 
   useEffect(() => {
     const handleSignInWithEmailLink = async () => {
       const auth = getAuth(firebaseApp);
 
-      // Check if the URL is a valid sign-in link
       if (isSignInWithEmailLink(auth, window.location.href)) {
         let email = window.localStorage.getItem("emailForSignIn");
 
-        // Handle the case where email is null
         if (!email) {
-          // Prompt the user to enter their email if it's not stored in local storage
           email = window.prompt("Please provide your email for confirmation");
         }
 
-        // Check again if email is still null before proceeding
         if (email) {
-          // Complete the sign-in process
           try {
             await signInWithEmailLink(auth, email, window.location.href);
 
-            // Clear the email from storage (optional)
             window.localStorage.removeItem("emailForSignIn");
             console.log("Successfully signed in");
 
-            // Redirect or perform other necessary actions after successful sign-in
             router.push("/Dashboard");
           } catch (error) {
-            // Handle the sign-in error
             console.error("Sign-in with email link failed:", error);
             toast.error("Sign-in failed. Please try again.");
           }
@@ -59,6 +53,14 @@ export default function LoginPage() {
     handleSignInWithEmailLink();
   }, [router]);
 
+  const fetchUserClaims = async (user: any) => {
+    const idTokenResult = await user.getIdTokenResult(true); // Force refresh token
+    const claims = idTokenResult.claims;
+    setUserClaims(claims);
+    console.log("userClaims", claims); // Check if custom claims are included
+    return claims;
+  };
+
   const doGoogleSignIn = async () => {
     const fbAuth = getAuth(firebaseApp);
     const provider = new GoogleAuthProvider();
@@ -67,6 +69,8 @@ export default function LoginPage() {
       const results = await signInWithPopup(fbAuth, provider);
       console.log("doGoogleSignIn > results:", results);
       if (results.user) {
+        const claims = await fetchUserClaims(results.user);
+        // console.log("userClaims", claims);
         router.push("/Dashboard");
       }
     } catch (error) {
@@ -91,6 +95,8 @@ export default function LoginPage() {
       const user = userCredential.user;
 
       if (user) {
+        const claims = await fetchUserClaims(user);
+        console.log("userClaims", claims);
         router.push("/Dashboard");
       } else {
         toast.error("Invalid credentials");
@@ -100,6 +106,8 @@ export default function LoginPage() {
       toast.error("Login failed. Please try again.");
     }
   };
+
+  const auth = getAuth();
 
   return (
     <main className="">

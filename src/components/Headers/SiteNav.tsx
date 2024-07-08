@@ -265,7 +265,7 @@ export default function SiteNav({ children }: Props) {
           </div>
 
           <div
-            className={`bg-[#FAFAFB] py-10 h-screen w-full transition-all ease-in-out duration-300 pt-14 ${
+            className={`bg-[#FAFAFB] py-10 h-screen  transition-all ease-in-out duration-300 pt-14 ${
               isDrawerOpen ? "ml-64" : "ml-16"
             }`}
             style={{ overflowY: "auto" }}
