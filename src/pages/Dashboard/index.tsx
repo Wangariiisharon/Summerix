@@ -207,16 +207,16 @@ export default function DashboardComponent() {
 
   return (
     <SiteNav>
-      <div className="w-full h-[1595px] bg-[#f7f8fa]">
-        <div className="h-[70px] pl-[35px] bg-white flex justify-between w-full">
-          <div className="flex items-center py-2">
-            <h1 className="text-base font-semibold text-gray-800 mr-4 ml-4">
+      <div className=" bg-[#f7f8fa]">
+        <div className="py-[10px] flex items-center justify-center bg-white flex justify-between w-full">
+          <div className="">
+            <h1 className="text-base font-semibold text-gray-800 mr-4 ml-[35px]">
               Analytics
             </h1>
           </div>
-          <div className="flex items-center">
+          <div className=" mr-[35px]">
             <select
-              className="border border-[#065AD8] bg-[#fff] text-gray-700 px-3 py-1 rounded-md mr-2"
+              className="border border-[#065AD8] bg-[#fff] text-gray-700 px-3 mr-[10px]  rounded-md"
               onChange={handleYearChange}
               value={selectedYear}
             >
@@ -229,30 +229,31 @@ export default function DashboardComponent() {
             <input
               type="date"
               onChange={handleDateChange}
-              className="border border-[#065AD8] bg-[#fff] text-gray-700 px-3 py-1 rounded-md mr-2"
+              className="border border-[#065AD8] bg-[#fff] text-gray-700 px-3 rounded-md mr-2"
             />
           </div>
         </div>
-
-        <div className="mt-4 flex justify-between py-4 px-4">
-          {cards.map((card, index) => (
-            <Fragment key={index}>
-              <MetricCard
-                value={card.amount}
-                label={card.name}
-                icon={card.icon}
-                lineColor={card.border}
-              />
-            </Fragment>
-          ))}
-        </div>
-        <div className="flex justify-between">
-          <VehicleOverview />
-          <OutOfServiceVehicles />
-          <TripsPieGraph />
-        </div>
-        <div className="flex justify-between mt-8">
-          <OnRoute />
+        <div className=" mr-[12px]">
+          <div className="mt-4 ml-4 flex flex-row space-x-[27px]">
+            {cards.map((card, index) => (
+              <Fragment key={index}>
+                <MetricCard
+                  value={card.amount}
+                  label={card.name}
+                  icon={card.icon}
+                  lineColor={card.border}
+                />
+              </Fragment>
+            ))}
+          </div>
+          <div className="ml-4 flex flexx-row space-x-[23px] mt-[25px]">
+            <VehicleOverview />
+            <OutOfServiceVehicles />
+            <TripsPieGraph />
+          </div>
+          <div className="flex justify-between mt-8">
+            <OnRoute />
+          </div>
         </div>
       </div>
     </SiteNav>

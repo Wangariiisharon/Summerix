@@ -1,5 +1,10 @@
 import { Doughnut } from "react-chartjs-2";
-import { Chart as ChartJS, ScriptableContext } from "chart.js";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  ScriptableContext,
+} from "chart.js";
 import { AnyObject } from "chart.js/dist/types/basic";
 import { useEffect, useState } from "react";
 import {
@@ -11,8 +16,10 @@ import {
 } from "firebase/firestore";
 import { fbDb } from "@/firebase/configs";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
+import { centerTextPlugin } from "./centerTextPlugin";
 
-// ChartJS.register(ArcElement, Tooltip);
+ChartJS.unregister(centerTextPlugin);
+ChartJS.register(ArcElement, Tooltip);
 
 interface dataset {
   datasets: {
@@ -38,9 +45,9 @@ export default function VehicleOverview() {
   const { organisationId } = useAuthContext();
 
   useEffect(() => {
+    ChartJS.unregister(centerTextPlugin);
     const fetchedVehicles = async () => {
       try {
-        // Ensure organisationId is available before making the query
         if (organisationId) {
           const q = query(
             collection(fbDb, "vehicles"),
@@ -76,7 +83,7 @@ export default function VehicleOverview() {
     datasets: [
       {
         backgroundColor: ["#165DFF", "#F7F8FA"],
-        data: [availableCount, allVehicles],
+        data: [availableCount, allVehicles - availableCount],
         borderJoinStyle: "round",
         borderWidth: 0,
         borderRadius: 100,
@@ -84,7 +91,7 @@ export default function VehicleOverview() {
       },
       {
         backgroundColor: ["#FFC107", "#F7F8FA"],
-        data: [outOfServiceCount, fetchedVehicles.length - outOfServiceCount],
+        data: [outOfServiceCount, allVehicles - outOfServiceCount],
         borderJoinStyle: "round",
         borderWidth: 0,
         borderRadius: 100,
@@ -92,7 +99,7 @@ export default function VehicleOverview() {
       },
       {
         backgroundColor: ["#C9E2FF", "#F7F8FA"],
-        data: [onRouteCount, fetchedVehicles.length - onRouteCount],
+        data: [onRouteCount, allVehicles - onRouteCount],
         borderJoinStyle: "round",
         borderWidth: 0,
         borderRadius: 100,
@@ -103,95 +110,105 @@ export default function VehicleOverview() {
 
   const options = {
     responsive: true,
-    maintainAspectRatio: false, // Allows the chart to fill the height of the parent container
+    maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false, // We will create a custom legend
+        display: false,
       },
       tooltip: {
-        enabled: false, // Disable tooltips
+        enabled: false,
+      },
+      centerText: {
+        display: false,
       },
     },
   };
 
   return (
-    <>
-      <div className="bg-white rounded-lg shadow w-90 h-64 ml-4">
-        {/* <div className="w-[600px] h-[300px] flex-none p-[21px_0_29px] rounded-md bg-white"> */}
-        <div className=" ">
-          <section aria-labelledby="applicant-information-title ">
-            {/* <div className=" shadow sm:rounded-lg lg:min-h-[60]"> */}
-            <div className="px-4 py-4 sm:px-6 flex w-full items-center justify-between">
-              <h2
-                id="applicant-information-title"
-                className="text-sm font-bold leading-6"
-              >
-                Vehicle Overview
-              </h2>
-            </div>
-            <div className=" border-gray-200 flex flex-row">
-              <div className="">
-                <Doughnut data={data} options={options} className="" />
-              </div>
-              <div className="">
-                <div className="font-bold text-sm">Total</div>
-                <div className="font-bold text-sm">{allVehicles}</div>
-                <div className="mr-4">
-                  <div className="flex items-center  w-full mt-4">
-                    {/* <div className="h-4 w-4 rounded-md bg-d-blue mr-4"></div> */}
-                    <span className="fa-stack fa-lg smaller-icon">
-                      <i
-                        className="fa fa-circle fa-stack-2x text-[#F2F2F2]"
-                        aria-hidden="true"
-                      ></i>
-                      <i
-                        className="fa fa-truck fa-stack-1x fa-inverse text-[#065ad8]"
-                        aria-hidden="true"
-                      ></i>
-                    </span>
-                    <div className="text-sm">Available</div>
-                    <div className="pl-10 mr-2 text-sm">{availableCount}</div>
-                  </div>
-                  <div className="flex items-center  w-full mt-4">
-                    {/* <div className="h-4 w-4 rounded-md bg-yellow mr-4"></div> */}
-                    <span className="fa-stack fa-lg smaller-icon">
-                      <i
-                        className="fa fa-circle fa-stack-2x text-[#FFF6DB]"
-                        aria-hidden="true"
-                      ></i>
-                      <i
-                        className="fa fa-truck fa-stack-1x fa-inverse text-[#9F7801]"
-                        aria-hidden="true"
-                      ></i>
-                    </span>
-                    <div className="text-sm">
-                      Under <br />
-                      Maintenance
-                    </div>
-                    <div className="pl-4 mr-2 text-sm">{outOfServiceCount}</div>
-                  </div>
-                  <div className="flex items-center w-full mt-4">
-                    {/* <div className="h-4 w-4 rounded-md bg-ll-blue mr-4 text-sm"></div> */}
-                    <span className="fa-stack fa-lg smaller-icon">
-                      <i
-                        className="fa fa-circle fa-stack-2x text-[#ecf4ff]"
-                        aria-hidden="true"
-                      ></i>
-                      <i
-                        className="fa fa-truck fa-stack-1x fa-inverse text-[#065ad8]"
-                        aria-hidden="true"
-                      ></i>
-                    </span>
-                    <div className="text-sm">On Route</div>
-                    <div className="pl-10 mr-2">{onRouteCount}</div>
-                  </div>
+    <div className="bg-white rounded-lg shadow">
+      <div className="ml-[35px] mt-[21px]">
+        <h2 className="text-sm font-bold leading-6">Vehicle Overview</h2>
+      </div>
+      <div className="border-b border-gray-200 mt-2"></div>
+      <div className="flex flex-row mt-4 mb-[29px]">
+        <div className="w-2/4 ">
+          <Doughnut data={data} options={options} />
+        </div>
+        <div className=" flex flex-col ml-[30px] mr-[30px]">
+          <div className="font-bold text-lg">Total</div>
+          <div className="font-bold text-4xl">{allVehicles}</div>
+          <div className="mt-4">
+            <div className="flex items-center mb-2">
+              <div className="flex justify-between w-full">
+                <div className="bg-[#cddcff] rounded-md">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    className="size-6 text-[#628FD8]"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
+                    />
+                  </svg>
                 </div>
+                <div className="text-sm">Available</div>
+                <div className="text-sm">{availableCount}</div>
               </div>
             </div>
-            {/* </div> */}
-          </section>
+            <div className="flex items-center mb-2">
+              <div className="flex justify-between w-full">
+                <div className="bg-[#fff6db] rounded-md">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    className="size-6 text-[#C5AA57]"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
+                    />
+                  </svg>
+                </div>
+
+                <div className="text-sm">Under Maintenance</div>
+                <div className="text-sm">{outOfServiceCount}</div>
+              </div>
+            </div>
+            <div className="flex items-center">
+              <div className="flex justify-between w-full">
+                <div className="bg-[#cddcff] rounded-md">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    className="size-6 text-[#628FD8]"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
+                    />
+                  </svg>
+                </div>
+
+                <div className="text-sm">On Route</div>
+                <div className="text-sm">{onRouteCount}</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

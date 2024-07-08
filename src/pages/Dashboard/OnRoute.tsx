@@ -2,6 +2,9 @@ import {
   DocumentData,
   collection,
   getDocs,
+  getFirestore,
+  onSnapshot,
+  orderBy,
   query,
   where,
 } from "firebase/firestore";
@@ -10,47 +13,39 @@ import { useState, useEffect } from "react";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 
 export default function OnRoute() {
-  const [fetchedTrips, setFetchedTrips] = useState<DocumentData[]>([]);
+  const [fetchedTrips, setfetchedTrips] = useState<DocumentData[]>([]);
+
   const { organisationId } = useAuthContext();
 
   useEffect(() => {
-    const fetchTrips = async () => {
+    const fetchedTrips = async () => {
+      const db = getFirestore();
+
       try {
         if (organisationId) {
           const q = query(
-            collection(fbDb, "trips"),
-            where("organisationId", "==", organisationId)
+            collection(db, "trips"),
+            where("organisationId", "==", organisationId),
+            where("trip_status", "==", "On Route"),
+            orderBy("start_time", "asc") // Adjust 'asc' to 'desc' if you need descending order
           );
-          const querySnapshot = await getDocs(q);
-          const tripsData: DocumentData[] = [];
 
-          const currentDate = new Date(); // Get the current date and time
-
-          querySnapshot.forEach((doc) => {
-            const trip = doc.data();
-
-            // Parse the start_time and end_time from the trip data
-            const startTime = new Date(trip?.start_time?.seconds * 1000);
-            const endTime = new Date(trip?.end_time?.seconds * 1000); // Assuming end_time is also stored as Timestamp
-            // return currentDate >= startTime;
-
-            // Check if the current date is between start_time and end_time
-            if (currentDate >= startTime) {
-              tripsData.push({
-                id: doc.id,
-                ...trip,
-              });
-            }
+          const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const tripsData = querySnapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+            setfetchedTrips(tripsData);
           });
 
-          setFetchedTrips(tripsData);
+          return () => unsubscribe();
         }
       } catch (error) {
-        console.error("Error fetching trips:", error);
+        console.error("Error fetching Trips:", error);
       }
     };
 
-    fetchTrips();
+    fetchedTrips();
   }, [organisationId]);
 
   return (
@@ -65,6 +60,7 @@ export default function OnRoute() {
         <table className="min-w-full text-sm text-left text-gray-500">
           <thead className="text-sm text-gray-700 h-[24px] bg-gray-50 sticky top-0">
             <tr>
+              <th className="py-3 px-6"></th>
               <th className="py-3 px-6">Starting Route</th>
               <th className="py-3 px-6">Ending Route</th>
               <th className="py-3 px-6">License Plate</th>
@@ -75,6 +71,22 @@ export default function OnRoute() {
           <tbody>
             {fetchedTrips.map((trip, index) => (
               <tr key={index} className="border-t border-gray-200">
+                <td className="py-4 px-6">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    className="size-6 text-[#628FD8]"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
+                    />
+                  </svg>
+                </td>
                 <td className="py-4 px-6">{trip.pick_up_location}</td>
                 <td className="py-4 px-6">{trip.drop_off_location}</td>
                 <td className="py-4 px-6">{trip.vehicle}</td>

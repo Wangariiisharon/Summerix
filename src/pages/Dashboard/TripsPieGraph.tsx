@@ -20,7 +20,9 @@ import {
   AuthProvider,
   useAuthContext,
 } from "@/components/Authentication/AuthProvider";
+import { centerTextPlugin } from "./centerTextPlugin";
 
+ChartJS.register(centerTextPlugin);
 ChartJS.register(ArcElement, Tooltip);
 
 export default function TripsPieGraph() {
@@ -97,24 +99,6 @@ export default function TripsPieGraph() {
     }[];
   }
 
-  //   const data: dataset = {
-  //     // labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-  //     datasets: [
-  //       {
-  //         backgroundColor: ["#20C997", "#F7F8FA"],
-  //         data: [passedTripsCount, allTrips],
-  //         borderJoinStyle: "round",
-  //         borderWidth: 20,
-  //         borderRadius: 100,
-  //         borderAlign: "inner",
-  //         spacing: 15,
-  //         radius: 50,
-  //       },
-  //     ],
-  //   };
-  //   const options = {
-  //     cutout: 130,
-  //   };
   const data = {
     datasets: [
       {
@@ -142,44 +126,28 @@ export default function TripsPieGraph() {
       animateRotate: true,
     },
   };
-  // return (
-  //   <>
-  //     <div className="relative flex flex-col items-center justify-center bg-white rounded-lg shadow w-70 h-64 mr-4">
-  //       <h2 className="text-sm font-bold  mt-12 flex items-center justify-between w-full border-b border-[#E9ECEF]">
-  //         Completd Trips{" "}
-  //         <button className="text-blue-500 text-xs flex flex-row border border-blue-500 py-1 mt-1 rounded-mb">
-  //           View All
-  //           <ChevronDownIcon className="ml-1 w-4 h-4" />
-  //         </button>
-  //       </h2>
-  //       <Doughnut data={data} options={options} className="mb-6" />
-  //       <div className="absolute bottom-10">
-  //         {/* <p className="text-3xl font-bold text-center mb-4">{allTrips}</p> */}
-  //         {/* <p className="text-sm text-center">Total Vehicles</p> */}
-  //       </div>
-  //       <div className="absolute bottom-0 mb-4 text-xs">
-  //         Vehicles out of service {allTrips}
-  //       </div>
-  //     </div>
-  //     {/* </div> */}
-  //   </>
-  // );
+
   return (
     <>
-      <div className="flex flex-col items-center justify-center bg-white rounded-lg shadow w-70 h-64">
-        <h2 className="text-xs font-bold w-full flex justify-between items-center border-b border-[#E9ECEF] p-2">
-          Completd Trips
-          <button className="w-[90px] h-[34px] flex justify-center items-center text-xs gap-2.5 rounded border border-[#c0d7fa]">
+      <div className="bg-white rounded-lg shadow">
+        <div className="ml-[10px] mr-[px] mt-[21px] flex flex-row">
+          <h2 className="text-sm font-bold leading-6">
+            {" "}
+            Trips completed this month{" "}
+          </h2>
+
+          <button className="ml-[30px] flex items-center justify-center px-1 py-1 border border-blue-500 text-blue-500 rounded hover:bg-blue-500 hover:text-white transition-colors">
             View All
-            <ChevronDownIcon className="w-4 h-4" />
           </button>
-        </h2>
-        <div className="w-full flex items-center justify-center h-full">
+        </div>
+        <div className="border-b border-gray-200 mt-2"></div>
+        <div className=" flex items-center justify-center">
           <Doughnut data={data} options={options} />
         </div>
-        <div className="w-full flex flex-col items-center justify-center pb-4">
-          {/* <p className="text-3xl font-bold absolute">{all}</p> */}
-          <p className="text-sm">Vehicles out of service {allTrips}</p>
+        <div className="flex flex-row ml-[20px] mt-[30.7px]">
+          <p className="text-sm ml-[16px]">
+            Number of trips completed this month
+          </p>
         </div>
       </div>
     </>

@@ -20,8 +20,10 @@ import {
   AuthProvider,
   useAuthContext,
 } from "@/components/Authentication/AuthProvider";
+import { centerTextPlugin } from "./centerTextPlugin";
 
 ChartJS.register(ArcElement, Tooltip);
+ChartJS.register(centerTextPlugin);
 
 interface VehicleData {
   id: string;
@@ -106,7 +108,6 @@ export default function TripsPieGraph() {
       tooltip: {
         enabled: false,
       },
-      centerText: {}, // Activate your custom plugin
     },
     animation: {
       animateRotate: true,
@@ -116,7 +117,7 @@ export default function TripsPieGraph() {
   const data = {
     datasets: [
       {
-        data: [outOfService, all - outOfService],
+        data: [outOfService, all],
         backgroundColor: ["#20C997", "#E9ECEF"],
         borderWidth: 0,
         cutout: "80%",
@@ -126,71 +127,49 @@ export default function TripsPieGraph() {
   };
 
   ChartJS.register(ArcElement, Tooltip);
-
-  const centerTextPlugin = {
-    id: "centerText",
-    afterDraw: (chart: any) => {
-      const {
-        ctx,
-        chartArea: { top, bottom, left, right },
-        data,
-      } = chart;
-      ctx.save();
-      ctx.font = "bold 40px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      const totalVehicles = data.datasets[0].data.reduce(
-        (a: any, b: any) => a + b,
-        0
-      );
-      const text = `${totalVehicles}`;
-      const textX = (left + right) / 2;
-      const textY = (top + bottom) / 2;
-      ctx.fillText(text, textX, textY - 10); // Adjust text position as needed
-      ctx.font = "16px Arial text-lg";
-      // ctx.fillText("Total Vehicles", textX, textY + 20);
-      ctx.restore();
-    },
-  };
-
   ChartJS.register(centerTextPlugin);
-  // return (
-  //   <>
-  //     <div className="flex flex-col items-center justify-center bg-white rounded-lg shadow w-70 h-64">
-  //       <h2 className="text-xs font-bold w-full flex justify-between items-center border-b border-[#E9ECEF] p-4">
-  //         Out of service vehicles
-  //         <button className="w-[90px] h-[34px] flex justify-center items-center text-xs gap-2.5 rounded border border-[#c0d7fa]">
-  //           View All
-  //           <ChevronDownIcon className="w-4 h-4" />
-  //         </button>
-  //       </h2>
-  //       <div className="flex flex-grow items-center justify-center w-full">
-  //         <Doughnut data={data} options={options} />
-  //       </div>
-  //       <div className="w-full flex flex-col items-center justify-center pb-4">
-  //         <p className="text-3xl font-bold absolute">{all}</p>
-  //         <p className="text-sm">Total Vehicles</p>
-  //       </div>
-  //       <div className="text-xs">Vehicles out of service {outOfService}</div>
-  //     </div>
-  //   </>
-  // );
+
   return (
     <>
-      <div className="flex flex-col items-center justify-center bg-white rounded-lg shadow w-70 h-64">
-        <h2 className="text-xs font-bold w-full flex justify-between items-center border-b border-[#E9ECEF] p-2">
-          Out of service vehicles
-          <button className="w-[90px] h-[34px] flex justify-center items-center text-xs gap-2.5 rounded border border-[#c0d7fa]">
+      <div className="bg-white rounded-lg shadow">
+        <div className="ml-[10px] mr-[px] mt-[21px] flex flex-row">
+          <h2 className="text-sm font-bold leading-6">
+            {" "}
+            Out of service vehicles
+          </h2>
+          {/* <button className="ml-[20px] mr-2 border border-[#065ad8] rounded-md bg-white">
+            <span className="text-[#065ad8] flex flex-row py-2 px-2  text-sm">
+              Viev All
+              <ChevronDownIcon className="w-4 h-4 ml-1" />
+            </span>
+          </button> */}
+          <button className="ml-[30px] flex items-center justify-center px-1 py-1 border border-blue-500 text-blue-500 rounded hover:bg-blue-500 hover:text-white transition-colors">
             View All
-            <ChevronDownIcon className="w-4 h-4" />
           </button>
-        </h2>
-        <div className="w-full flex items-center justify-center h-full">
+        </div>
+        <div className="border-b border-gray-200 mt-2"></div>
+        <div className=" flex items-center justify-center">
           <Doughnut data={data} options={options} />
         </div>
-        <div className="w-full flex flex-col items-center justify-center pb-4">
-          {/* <p className="text-3xl font-bold absolute">{all}</p> */}
-          <p className="text-sm">Total Vehicles</p>
+        <div className="flex flex-row ml-[20px] mt-[30.7px]">
+          <div className="bg-[#cddcff] rounded-md">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              className="size-6 text-[#628FD8]"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
+              />
+            </svg>
+          </div>
+          <p className="text-sm ml-[16px]"> Vehicles out of service</p>
+          <p className="text-sm  ml-[35px] font-semibold">{outOfService}</p>
         </div>
       </div>
     </>
