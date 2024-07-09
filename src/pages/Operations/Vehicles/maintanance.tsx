@@ -152,7 +152,7 @@ export default function Maintenance() {
           const q = query(
             collection(db, "maintenance"),
             where("organisationId", "==", organisationId),
-            where("status", "==", "Pending"),
+            where("status", "==", "Approved"),
             orderBy("date", "desc") // Adjust 'asc' to 'desc' if you need descending order
           );
 
@@ -170,6 +170,23 @@ export default function Maintenance() {
         console.error("Error fetching Maintenance:", error);
       }
     };
+    // const addTimestampsToExistingDocs = async () => {
+    //   const tripsCollection = collection(fbDb, "maintenance");
+    //   const tripDocs = await getDocs(tripsCollection);
+
+    //   tripDocs.forEach(async (tripDoc) => {
+    //     const tripData = tripDoc.data();
+    //     if (!tripData.timestamp) {
+    //       await updateDoc(doc(fbDb, "maintenance", tripDoc.id), {
+    //         timestamp: Timestamp.now(),
+    //       });
+    //     }
+    //   });
+
+    //   console.log("Timestamps added to existing documents Maintenance");
+    // };
+
+    // addTimestampsToExistingDocs();
 
     fetchVehicleNames();
     fetchDriver();
@@ -279,6 +296,7 @@ export default function Maintenance() {
         requested_by: values.requested_by,
         vehicle: values.vehicle,
         date: timestamp,
+        timestamp: Timestamp.now(),
         cost: values.cost,
         job_cards: values.job_cards,
         remarks: values.remarks,
@@ -743,7 +761,7 @@ function MaintananceTable({
     }
   );
   const visibleClasses = filteredMaintenance.slice(startIndex, endIndex);
-  
+
   const handlePageClick = (page: number) => {
     setCurrentPage(page);
   };

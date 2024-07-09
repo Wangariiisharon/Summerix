@@ -15,6 +15,7 @@ import {
   getFirestore,
   onSnapshot,
   orderBy,
+  updateDoc,
 } from "firebase/firestore";
 import { Field, Formik, Form } from "formik";
 import { Tab } from "@headlessui/react";
@@ -504,7 +505,7 @@ export default function AllTrips({ searchQuery }: any) {
           </Tab.Panels>
         </Tab.Group>
       </div>
-      
+
       {editModalOpen && selectedTrip && (
         <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
           <div>

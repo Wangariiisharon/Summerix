@@ -1,3 +1,4 @@
+// In the OnRoute component
 import {
   DocumentData,
   collection,
@@ -7,19 +8,51 @@ import {
   orderBy,
   query,
   where,
+  Timestamp,
 } from "firebase/firestore";
 import { fbDb } from "@/firebase/configs";
 import { useState, useEffect } from "react";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 
-export default function OnRoute() {
-  const [fetchedTrips, setfetchedTrips] = useState<DocumentData[]>([]);
-
+export default function OnRoute({ selectedDate, selectedYear }: any) {
+  const [fetchedTrips, setFetchedTrips] = useState<DocumentData[]>([]);
   const { organisationId } = useAuthContext();
 
   useEffect(() => {
-    const fetchedTrips = async () => {
+    const fetchTrips = async () => {
       const db = getFirestore();
+
+      const startOfMonth = selectedDate
+        ? new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
+        : new Date(selectedYear, new Date().getMonth(), 1);
+
+      const endOfMonth = selectedDate
+        ? new Date(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth() + 1,
+            0,
+            23,
+            59,
+            59
+          )
+        : new Date(selectedYear, new Date().getMonth() + 1, 0, 23, 59, 59);
+
+      const startOfYear = new Date(
+        selectedDate ? selectedDate.getFullYear() : selectedYear,
+        0,
+        1
+      );
+      const endOfYear = new Date(
+        selectedDate ? selectedDate.getFullYear() : selectedYear,
+        11,
+        31,
+        23,
+        59,
+        59
+      );
+
+      const startDate = selectedDate ? startOfMonth : startOfYear;
+      const endDate = selectedDate ? endOfMonth : endOfYear;
 
       try {
         if (organisationId) {
@@ -27,6 +60,8 @@ export default function OnRoute() {
             collection(db, "trips"),
             where("organisationId", "==", organisationId),
             where("trip_status", "==", "On Route"),
+            where("timestamp", ">=", Timestamp.fromDate(startDate)),
+            where("timestamp", "<=", Timestamp.fromDate(endDate)),
             orderBy("start_time", "asc") // Adjust 'asc' to 'desc' if you need descending order
           );
 
@@ -35,7 +70,7 @@ export default function OnRoute() {
               id: doc.id,
               ...doc.data(),
             }));
-            setfetchedTrips(tripsData);
+            setFetchedTrips(tripsData);
           });
 
           return () => unsubscribe();
@@ -45,8 +80,8 @@ export default function OnRoute() {
       }
     };
 
-    fetchedTrips();
-  }, [organisationId]);
+    fetchTrips();
+  }, [organisationId, selectedDate, selectedYear]);
 
   return (
     <div className=" h-[376px] w-full ml-[20px] mr-[20px] py-[20px] bg-white">

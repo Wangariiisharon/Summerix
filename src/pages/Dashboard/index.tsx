@@ -1,7 +1,4 @@
-import VehicleOverview from "@/pages/Dashboard/VehicleOverview";
-import TripsPieGraph from "@/pages/Dashboard/TripsPieGraph";
-import OnRoute from "@/pages/Dashboard/OnRoute";
-import { Fragment, useState, useEffect } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import { fbDb } from "@/firebase/configs";
 import {
   DocumentData,
@@ -9,15 +6,21 @@ import {
   collection,
   query,
   where,
+  getFirestore,
+  onSnapshot,
+  Timestamp,
 } from "firebase/firestore";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import SiteNav from "@/components/Headers/SiteNav";
 import MetricCard from "./metrics";
 import OutOfServiceVehicles from "./OutOfService";
+import VehicleOverview from "@/pages/Dashboard/VehicleOverview";
+import TripsPieGraph from "@/pages/Dashboard/TripsPieGraph";
+import OnRoute from "@/pages/Dashboard/OnRoute";
 
 export default function DashboardComponent() {
   const [fetchedTrips, setFetchedTrips] = useState<DocumentData[]>([]);
-  const [fetchedMaintenace, setFetchedMaintenace] = useState<DocumentData[]>(
+  const [fetchedMaintenance, setFetchedMaintenance] = useState<DocumentData[]>(
     []
   );
   const [companyCost, setCompanyCost] = useState<number>(0);
@@ -29,7 +32,15 @@ export default function DashboardComponent() {
     new Date().getFullYear()
   );
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [totalFuel, setTotalFuel] = useState(0);
+  const [totalPurchasePrice, setTotalPurchasePrice] = useState(0);
+  const [mileageFee, setMileageFee] = useState(0);
+  const [totalMaintenanceCost, setTotalMaintenanceCost] = useState(0);
   const { organisationId } = useAuthContext();
+
+  const [isTripsFetched, setIsTripsFetched] = useState(false);
+  const [isMaintenanceFetched, setIsMaintenanceFetched] = useState(false);
+  const [isVehiclesFetched, setIsVehiclesFetched] = useState(false);
 
   // Generate a list of years for the dropdown
   const getYears = () => {
@@ -42,136 +53,200 @@ export default function DashboardComponent() {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
+    const currentYear = new Date().getFullYear();
+    const startOfMonth = selectedDate
+      ? new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
+      : new Date(selectedYear, new Date().getMonth(), 1);
+
+    const endOfMonth = selectedDate
+      ? new Date(
+          selectedDate.getFullYear(),
+          selectedDate.getMonth() + 1,
+          0,
+          23,
+          59,
+          59
+        )
+      : new Date(selectedYear, new Date().getMonth() + 1, 0, 23, 59, 59);
+
+    const startOfYear = new Date(
+      selectedDate ? selectedDate.getFullYear() : selectedYear,
+      0,
+      1
+    );
+    const endOfYear = new Date(
+      selectedDate ? selectedDate.getFullYear() : selectedYear,
+      11,
+      31,
+      23,
+      59,
+      59
+    );
+
+    const startDate = selectedDate ? startOfMonth : startOfYear;
+    const endDate = selectedDate ? endOfMonth : endOfYear;
+
+    const fetchedTrips = async () => {
+      const db = getFirestore();
+
       try {
         if (organisationId) {
-          let startOfMonth, endOfMonth;
-
-          if (selectedDate) {
-            const selectedYear = selectedDate.getFullYear();
-            const selectedMonth = selectedDate.getMonth();
-            startOfMonth = new Date(selectedYear, selectedMonth, 1);
-            endOfMonth = new Date(selectedYear, selectedMonth + 1, 0);
-          } else {
-            startOfMonth = new Date(selectedYear, 0, 1); // January 1st of the selected year
-            endOfMonth = new Date(selectedYear, 11, 31); // December 31st of the selected year
-          }
-
-          // Fetch trips data
-          const tripsQuerySnapshot = await getDocs(
-            query(
-              collection(fbDb, "trips"),
-              where("organisationId", "==", organisationId),
-              where("start_time", ">=", startOfMonth),
-              where("start_time", "<=", endOfMonth)
-            )
+          const q = query(
+            collection(fbDb, "trips"),
+            where("organisationId", "==", organisationId),
+            where("timestamp", ">=", Timestamp.fromDate(startDate)),
+            where("timestamp", "<=", Timestamp.fromDate(endDate))
           );
-          const tripsData: DocumentData[] = tripsQuerySnapshot.docs.map(
-            (doc) => ({
+
+          const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const tripsData = querySnapshot.docs.map((doc) => ({
               id: doc.id,
-              ...doc.data(),
-            })
-          );
-          setFetchedTrips(tripsData);
-
-          // Fetch maintenance data
-          const maintenanceQuerySnapshot = await getDocs(
-            query(
-              collection(fbDb, "maintenance"),
-              where("organisationId", "==", organisationId),
-              where("date", ">=", startOfMonth),
-              where("date", "<=", endOfMonth)
-            )
-          );
-          const maintenanceData: DocumentData[] =
-            maintenanceQuerySnapshot.docs.map((doc) => ({
-              id: doc.id,
+              fuel: doc.data().fuel,
+              mileage_fee: doc.data().mileage_fee,
+              dealValue: doc.data().dealValue,
               ...doc.data(),
             }));
-          setFetchedMaintenace(maintenanceData);
+            setFetchedTrips(tripsData);
+            const fuelSum = tripsData.reduce(
+              (sum, trip) => sum + (trip.fuel || 0),
+              0
+            );
+            setTotalFuel(fuelSum);
 
-          // Fetch vehicles data
-          const vehiclesQuerySnapshot = await getDocs(
-            query(
-              collection(fbDb, "vehicles"),
-              where("organisationId", "==", organisationId),
-              where("registration_date", ">=", startOfMonth),
-              where("registration_date", "<=", endOfMonth)
-            )
-          );
-          const vehiclesData: DocumentData[] = vehiclesQuerySnapshot.docs.map(
-            (doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            })
-          );
-          setFetchedVehicles(vehiclesData);
+            const dealValueSum = tripsData.reduce(
+              (sum, trip) => sum + (trip.dealValue || 0),
+              0
+            );
+            setOverallEarnings(dealValueSum);
 
-          const totalFuelCost = tripsData.reduce((acc, trip) => {
-            const fuelCost = parseFloat(trip.fuel);
-            return acc + (isNaN(fuelCost) ? 0 : fuelCost);
-          }, 0);
+            const mileageSum = tripsData.reduce(
+              (sum, trip) => sum + (trip.mileage_fee || 0),
+              0
+            );
+            setMileageFee(mileageSum);
 
-          const totalMileageFee = tripsData.reduce((acc, trip) => {
-            const mileageFee = parseFloat(trip.mileage_fee);
-            return acc + (isNaN(mileageFee) ? 0 : mileageFee);
-          }, 0);
+            setIsTripsFetched(true);
+          });
 
-          const totalPurchasePrice = vehiclesData.reduce((acc, vehicle) => {
-            const leaseAmount = parseFloat(vehicle.lease_amount);
-            return acc + (isNaN(leaseAmount) ? 0 : leaseAmount);
-          }, 0);
-
-          const totalMaintenanceCost = maintenanceData.reduce(
-            (acc, maintenance) => {
-              const cost = parseFloat(maintenance.cost);
-              return acc + (isNaN(cost) ? 0 : cost);
-            },
-            0
-          );
-
-          const totalCost =
-            totalFuelCost +
-            totalMileageFee +
-            totalPurchasePrice +
-            totalMaintenanceCost;
-          setCompanyCost(totalCost);
-
-          const totalEarnings = tripsData.reduce((acc, trip) => {
-            const earnings = parseFloat(trip.dealValue);
-            return acc + (isNaN(earnings) ? 0 : earnings);
-          }, 0);
-          setOverallEarnings(totalEarnings);
-
-          const validTotalCost = isNaN(totalEarnings) ? 0 : totalEarnings;
-          const validTotalEarnings = isNaN(totalCost) ? 0 : totalCost;
-
-          // Average Profit per Truck = (Total Income - Total Expenses) /number of Trucks
-          const expensesPerTruck =
-            (validTotalEarnings - validTotalCost) / vehiclesData.length;
-          setEarningsPerTruck(expensesPerTruck);
-
-          // Average Expense per Truck = Total Expense/number of Trucks
-          const avg = validTotalCost / vehiclesData.length;
-          setAvgTruckExpense(avg);
+          return () => unsubscribe();
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching Trips:", error);
       }
     };
 
-    fetchData();
-  }, [organisationId, selectedYear, selectedDate]);
+    const fetchedMaintenance = async () => {
+      const db = getFirestore();
+
+      try {
+        if (organisationId) {
+          const q = query(
+            collection(db, "maintenance"),
+            where("organisationId", "==", organisationId),
+            where("status", "==", "Approved"),
+            where("timestamp", ">=", Timestamp.fromDate(startDate)),
+            where("timestamp", "<=", Timestamp.fromDate(endDate))
+          );
+
+          const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const maintenanceData = querySnapshot.docs.map((doc) => ({
+              id: doc.id,
+              cost: doc.data().cost,
+              ...doc.data(),
+            }));
+            setFetchedMaintenance(maintenanceData);
+            const costSum = maintenanceData.reduce(
+              (sum, vehicle) => sum + (vehicle.cost || 0),
+              0
+            );
+            setTotalMaintenanceCost(costSum);
+            setIsMaintenanceFetched(true);
+          });
+
+          return () => unsubscribe();
+        }
+      } catch (error) {
+        console.error("Error fetching Maintenance:", error);
+      }
+    };
+
+    const fetchVehicles = async () => {
+      try {
+        if (organisationId) {
+          const q = query(
+            collection(fbDb, "vehicles"),
+            where("organisationId", "==", organisationId),
+            where("timestamp", ">=", Timestamp.fromDate(startDate)),
+            where("timestamp", "<=", Timestamp.fromDate(endDate))
+          );
+          const querySnapshot = await getDocs(q);
+
+          const vehiclesData = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            lease_amount: doc.data().lease_amount,
+            ...doc.data(),
+          }));
+          setFetchedVehicles(vehiclesData);
+          const leaseSum = vehiclesData.reduce(
+            (sum, vehicle) => sum + (vehicle.lease_amount || 0),
+            0
+          );
+          setMileageFee(leaseSum);
+          setIsVehiclesFetched(true);
+        }
+      } catch (error) {
+        console.error("Error fetching Vehicles:", error);
+      }
+    };
+
+    fetchedTrips();
+    fetchedMaintenance();
+    fetchVehicles();
+  }, [organisationId, selectedDate, selectedYear]);
+
+  useEffect(() => {
+    if (isTripsFetched && isMaintenanceFetched && isVehiclesFetched) {
+      const totalCost = Math.floor(
+        (totalFuel || 0) + (mileageFee || 0) + (totalMaintenanceCost || 0)
+      );
+      setCompanyCost(totalCost);
+      console.log("CompanyCost", totalCost);
+
+      const numberOfTrucks = fetchedVehicles.length || 1;
+
+      // Average Profit per Truck = (Total Income - Total Expenses) / number of Trucks
+      const avgTruckProfit = Math.floor(
+        (overallEarnings - totalCost) / numberOfTrucks
+      );
+      setEarningsPerTruck(avgTruckProfit);
+      console.log("EarningsPerTruck", avgTruckProfit);
+
+      // Average Expense per Truck = Total Expense / number of Trucks
+      const averageTruckExpense = Math.floor(totalCost / numberOfTrucks);
+      setAvgTruckExpense(averageTruckExpense);
+      console.log("AverageTruckExpense", averageTruckExpense);
+    }
+  }, [
+    isTripsFetched,
+    isMaintenanceFetched,
+    isVehiclesFetched,
+    totalFuel,
+    mileageFee,
+    totalMaintenanceCost,
+    overallEarnings,
+    fetchedVehicles,
+  ]);
 
   const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const year = parseInt(event.target.value, 10);
     setSelectedYear(year);
-    setSelectedDate(null); // Reset the date when the year changes
+    setSelectedDate(null); // Clear selected date when changing the year
   };
 
   const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const date = new Date(event.target.value);
     setSelectedDate(date);
+    setSelectedYear(date.getFullYear()); // Update selected year to match the selected date
   };
 
   const cards = [
@@ -182,26 +257,29 @@ export default function DashboardComponent() {
       name: "Total Income",
       border: "#065AD8",
     },
+    // Total Expenses =  Fuel + Mileage + Maintenance Costs
     {
       amount: companyCost.toString(),
       href: "#",
       icon: "/icons/cashIcon.png",
-      name: "Total Expenses",
-      border: "#FFD648",
+      name: "Total Expense",
+      border: "#ffd648",
     },
+    // Total Profit Per Truck = (Total Income - Total Expenses) / number of Trucks
     {
       amount: earningsPerTruck.toString(),
       href: "#",
       icon: "/icons/cashIcon.png",
       name: "Average Profit per Truck",
-      border: "#14E9E2",
+      border: "#14e9e2",
     },
+    // Total Expenses Per Truck = Total Expense / number of Trucks
     {
       amount: avgTruckExpense.toString(),
       href: "#",
       icon: "/icons/cashIcon.png",
       name: "Average Expenses per Truck",
-      border: "#36C76C",
+      border: "##36c76c",
     },
   ];
 
@@ -252,7 +330,7 @@ export default function DashboardComponent() {
             <TripsPieGraph />
           </div>
           <div className="flex justify-between mt-8">
-            <OnRoute />
+            <OnRoute selectedDate={selectedDate} selectedYear={selectedYear} />
           </div>
         </div>
       </div>
