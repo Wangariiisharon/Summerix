@@ -32,96 +32,63 @@ ChartJS.register(ArcElement, Tooltip);
 export default function TripsPieGraph({ selectedDate, selectedYear }: any) {
   const [fetchedTrips, setfetchedTrips] = useState<DocumentData[]>([]);
   const { organisationId } = useAuthContext();
-
-  // @ts-ignore
-  // useEffect(() => {
-  //   const fetchedTrips = async () => {
-  //     try {
-  //       // Ensure organisationId is available before making the query
-  //       if (organisationId) {
-  //         const q = query(
-  //           collection(fbDb, "trips"),
-  //           where("organisationId", "==", organisationId)
-  //         );
-
-  //         const tripsData: DocumentData[] = [];
-  //         const querySnapshot = await getDocs(q);
-  //         querySnapshot.forEach((doc) => {
-  //           const trips = {
-  //             id: doc.id,
-  //             ...doc.data(),
-  //           };
-  //           tripsData.push(trips);
-  //         });
-  //         setfetchedTrips(tripsData);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching Trips:", error);
-  //     }
-  //   };
-
-  //   fetchedTrips();
-  // }, [organisationId]);
   useEffect(() => {
     const fetchTrips = async () => {
       const db = getFirestore();
 
-      // const startOfMonth = selectedDate
-      //   ? new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
-      //   : new Date(selectedYear, new Date().getMonth(), 1);
+      const startOfMonth = selectedDate
+        ? new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
+        : new Date(selectedYear, new Date().getMonth(), 1);
 
-      // const endOfMonth = selectedDate
-      //   ? new Date(
-      //       selectedDate.getFullYear(),
-      //       selectedDate.getMonth() + 1,
-      //       0,
-      //       23,
-      //       59,
-      //       59
-      //     )
-      //   : new Date(selectedYear, new Date().getMonth() + 1, 0, 23, 59, 59);
+      const endOfMonth = selectedDate
+        ? new Date(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth() + 1,
+            0,
+            23,
+            59,
+            59
+          )
+        : new Date(selectedYear, new Date().getMonth() + 1, 0, 23, 59, 59);
 
-      // const startOfYear = new Date(
-      //   selectedDate ? selectedDate.getFullYear() : selectedYear,
-      //   0,
-      //   1
-      // );
-      // const endOfYear = new Date(
-      //   selectedDate ? selectedDate.getFullYear() : selectedYear,
-      //   11,
-      //   31,
-      //   23,
-      //   59,
-      //   59
-      // );
+      const startOfYear = new Date(
+        selectedDate ? selectedDate.getFullYear() : selectedYear,
+        0,
+        1
+      );
+      const endOfYear = new Date(
+        selectedDate ? selectedDate.getFullYear() : selectedYear,
+        11,
+        31,
+        23,
+        59,
+        59
+      );
 
-      // const startDate = selectedDate ? startOfMonth : startOfYear;
-      // const endDate = selectedDate ? endOfMonth : endOfYear;
+      const startDate = selectedDate ? startOfMonth : startOfYear;
+      const endDate = selectedDate ? endOfMonth : endOfYear;
 
       try {
         if (organisationId) {
           const q = query(
             collection(db, "trips"),
-            where("organisationId", "==", organisationId)
-            // where("timestamp", ">=", Timestamp.fromDate(startDate)),
-            // where("timestamp", "<=", Timestamp.fromDate(endDate))
+            where("organisationId", "==", organisationId),
+            where("timestamp", ">=", Timestamp.fromDate(startDate)),
+            where("timestamp", "<=", Timestamp.fromDate(endDate))
           );
+          const querySnapshot = await getDocs(q);
 
-          const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const tripsData = querySnapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            }));
-            setfetchedTrips(tripsData);
-          });
-
-          return () => unsubscribe();
+          const tripsData = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setfetchedTrips(tripsData);
         }
       } catch (error) {
         console.error("Error fetching Trips:", error);
       }
     };
-
+    fetchTrips();
     fetchTrips();
   }, [organisationId, selectedDate, selectedYear]);
 

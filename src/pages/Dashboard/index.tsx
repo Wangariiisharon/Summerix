@@ -325,9 +325,18 @@ export default function DashboardComponent() {
             ))}
           </div>
           <div className="ml-4 flex flexx-row space-x-[23px] mt-[25px]">
-            <VehicleOverview />
-            <OutOfServiceVehicles />
-            <TripsPieGraph />
+            <VehicleOverview
+              selectedDate={selectedDate}
+              selectedYear={selectedYear}
+            />
+            <OutOfServiceVehicles
+              selectedDate={selectedDate}
+              selectedYear={selectedYear}
+            />
+            <TripsPieGraph
+              selectedDate={selectedDate}
+              selectedYear={selectedYear}
+            />
           </div>
           <div className="flex justify-between mt-8">
             <OnRoute selectedDate={selectedDate} selectedYear={selectedYear} />
