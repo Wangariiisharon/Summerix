@@ -9,8 +9,10 @@ import { AnyObject } from "chart.js/dist/types/basic";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import {
   DocumentData,
+  Timestamp,
   collection,
   getDocs,
+  getFirestore,
   query,
   where,
 } from "firebase/firestore";
@@ -20,7 +22,7 @@ import {
   AuthProvider,
   useAuthContext,
 } from "@/components/Authentication/AuthProvider";
-import { centerTextPlugin } from "./centerTextPlugin";
+import { centerTextPlugin } from "../../centerTextPlugin";
 
 ChartJS.register(ArcElement, Tooltip);
 ChartJS.register(centerTextPlugin);
@@ -29,7 +31,7 @@ interface VehicleData {
   id: string;
   availability_status: string;
 }
-export default function TripsPieGraph() {
+export default function TripsPieGraph({ selectedDate, selectedYear }: any) {
   const [fetchedVehicles, setFetchedVehicles] = useState<VehicleData[]>([]);
   const [allVehicles, setAllVehicles] = useState<VehicleData[]>([]);
 
@@ -37,11 +39,46 @@ export default function TripsPieGraph() {
 
   useEffect(() => {
     const fetchVehicles = async () => {
+      // const db = getFirestore();
+
+      // const startOfMonth = selectedDate
+      //   ? new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
+      //   : new Date(selectedYear, new Date().getMonth(), 1);
+
+      // const endOfMonth = selectedDate
+      //   ? new Date(
+      //       selectedDate.getFullYear(),
+      //       selectedDate.getMonth() + 1,
+      //       0,
+      //       23,
+      //       59,
+      //       59
+      //     )
+      //   : new Date(selectedYear, new Date().getMonth() + 1, 0, 23, 59, 59);
+
+      // const startOfYear = new Date(
+      //   selectedDate ? selectedDate.getFullYear() : selectedYear,
+      //   0,
+      //   1
+      // );
+      // const endOfYear = new Date(
+      //   selectedDate ? selectedDate.getFullYear() : selectedYear,
+      //   11,
+      //   31,
+      //   23,
+      //   59,
+      //   59
+      // );
+
+      // const startDate = selectedDate ? startOfMonth : startOfYear;
+      // const endDate = selectedDate ? endOfMonth : endOfYear;
       try {
         if (organisationId) {
           const q = query(
             collection(fbDb, "vehicles"),
             where("organisationId", "==", organisationId)
+            // where("timestamp", ">=", Timestamp.fromDate(startDate)),
+            // where("timestamp", "<=", Timestamp.fromDate(endDate))
           );
           const querySnapshot = await getDocs(q);
           const vehiclesData: VehicleData[] = [];
@@ -66,11 +103,46 @@ export default function TripsPieGraph() {
       }
     };
     const fetchAllVehicles = async () => {
+      // const db = getFirestore();
+
+      // const startOfMonth = selectedDate
+      //   ? new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
+      //   : new Date(selectedYear, new Date().getMonth(), 1);
+
+      // const endOfMonth = selectedDate
+      //   ? new Date(
+      //       selectedDate.getFullYear(),
+      //       selectedDate.getMonth() + 1,
+      //       0,
+      //       23,
+      //       59,
+      //       59
+      //     )
+      //   : new Date(selectedYear, new Date().getMonth() + 1, 0, 23, 59, 59);
+
+      // const startOfYear = new Date(
+      //   selectedDate ? selectedDate.getFullYear() : selectedYear,
+      //   0,
+      //   1
+      // );
+      // const endOfYear = new Date(
+      //   selectedDate ? selectedDate.getFullYear() : selectedYear,
+      //   11,
+      //   31,
+      //   23,
+      //   59,
+      //   59
+      // );
+
+      // const startDate = selectedDate ? startOfMonth : startOfYear;
+      // const endDate = selectedDate ? endOfMonth : endOfYear;
       try {
         if (organisationId) {
           const q = query(
             collection(fbDb, "vehicles"),
             where("organisationId", "==", organisationId)
+            // where("timestamp", ">=", Timestamp.fromDate(startDate)),
+            // where("timestamp", "<=", Timestamp.fromDate(endDate))
           );
           const querySnapshot = await getDocs(q);
           const vehiclesData: VehicleData[] = []; // Define the array with the correct type

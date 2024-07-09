@@ -9,8 +9,12 @@ import { AnyObject } from "chart.js/dist/types/basic";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import {
   DocumentData,
+  Timestamp,
   collection,
   getDocs,
+  getFirestore,
+  onSnapshot,
+  orderBy,
   query,
   where,
 } from "firebase/firestore";
@@ -20,44 +24,106 @@ import {
   AuthProvider,
   useAuthContext,
 } from "@/components/Authentication/AuthProvider";
-import { centerTextPlugin } from "./centerTextPlugin";
+import { centerTextPlugin } from "../../centerTextPlugin";
 
 ChartJS.register(centerTextPlugin);
 ChartJS.register(ArcElement, Tooltip);
 
-export default function TripsPieGraph() {
+export default function TripsPieGraph({ selectedDate, selectedYear }: any) {
   const [fetchedTrips, setfetchedTrips] = useState<DocumentData[]>([]);
   const { organisationId } = useAuthContext();
 
   // @ts-ignore
+  // useEffect(() => {
+  //   const fetchedTrips = async () => {
+  //     try {
+  //       // Ensure organisationId is available before making the query
+  //       if (organisationId) {
+  //         const q = query(
+  //           collection(fbDb, "trips"),
+  //           where("organisationId", "==", organisationId)
+  //         );
+
+  //         const tripsData: DocumentData[] = [];
+  //         const querySnapshot = await getDocs(q);
+  //         querySnapshot.forEach((doc) => {
+  //           const trips = {
+  //             id: doc.id,
+  //             ...doc.data(),
+  //           };
+  //           tripsData.push(trips);
+  //         });
+  //         setfetchedTrips(tripsData);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching Trips:", error);
+  //     }
+  //   };
+
+  //   fetchedTrips();
+  // }, [organisationId]);
   useEffect(() => {
-    const fetchedTrips = async () => {
+    const fetchTrips = async () => {
+      const db = getFirestore();
+
+      // const startOfMonth = selectedDate
+      //   ? new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
+      //   : new Date(selectedYear, new Date().getMonth(), 1);
+
+      // const endOfMonth = selectedDate
+      //   ? new Date(
+      //       selectedDate.getFullYear(),
+      //       selectedDate.getMonth() + 1,
+      //       0,
+      //       23,
+      //       59,
+      //       59
+      //     )
+      //   : new Date(selectedYear, new Date().getMonth() + 1, 0, 23, 59, 59);
+
+      // const startOfYear = new Date(
+      //   selectedDate ? selectedDate.getFullYear() : selectedYear,
+      //   0,
+      //   1
+      // );
+      // const endOfYear = new Date(
+      //   selectedDate ? selectedDate.getFullYear() : selectedYear,
+      //   11,
+      //   31,
+      //   23,
+      //   59,
+      //   59
+      // );
+
+      // const startDate = selectedDate ? startOfMonth : startOfYear;
+      // const endDate = selectedDate ? endOfMonth : endOfYear;
+
       try {
-        // Ensure organisationId is available before making the query
         if (organisationId) {
           const q = query(
-            collection(fbDb, "trips"),
+            collection(db, "trips"),
             where("organisationId", "==", organisationId)
+            // where("timestamp", ">=", Timestamp.fromDate(startDate)),
+            // where("timestamp", "<=", Timestamp.fromDate(endDate))
           );
 
-          const tripsData: DocumentData[] = [];
-          const querySnapshot = await getDocs(q);
-          querySnapshot.forEach((doc) => {
-            const trips = {
+          const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const tripsData = querySnapshot.docs.map((doc) => ({
               id: doc.id,
               ...doc.data(),
-            };
-            tripsData.push(trips);
+            }));
+            setfetchedTrips(tripsData);
           });
-          setfetchedTrips(tripsData);
+
+          return () => unsubscribe();
         }
       } catch (error) {
         console.error("Error fetching Trips:", error);
       }
     };
 
-    fetchedTrips();
-  }, [organisationId]);
+    fetchTrips();
+  }, [organisationId, selectedDate, selectedYear]);
 
   const currentDate = Date.now();
   const completedTripsCount = fetchedTrips.filter(

@@ -16,6 +16,7 @@ import {
   where,
   getFirestore,
   onSnapshot,
+  updateDoc,
 } from "firebase/firestore";
 import { Field, Formik, Form } from "formik";
 import { Tab } from "@headlessui/react";
@@ -150,9 +151,7 @@ export default function TripsComponent() {
       fetchedTrips.filter((trip) => {
         const vehicleMatch = `${trip.vehicle}`.toLowerCase().includes(query);
         const tripIdMatch = `${trip.trip_id}`.toLowerCase().includes(query);
-        // const startTimeMatch = formatDate(
-        //   new Date(trip.start_time.seconds * 1000)
-        // ).includes(query);
+
         const startTimeMatch = `${trip.start_time}`
           .toLowerCase()
           .includes(query);
@@ -477,6 +476,23 @@ export default function TripsComponent() {
         console.error("Error fetching companies:", error);
       }
     };
+    // const addTimestampsToExistingDocs = async () => {
+    //   const tripsCollection = collection(fbDb, "trips");
+    //   const tripDocs = await getDocs(tripsCollection);
+
+    //   tripDocs.forEach(async (tripDoc) => {
+    //     const tripData = tripDoc.data();
+    //     if (!tripData.timestamp) {
+    //       await updateDoc(doc(fbDb, "trips", tripDoc.id), {
+    //         timestamp: Timestamp.now(),
+    //       });
+    //     }
+    //   });
+
+    //   console.log("Timestamps added to existing documents Trips");
+    // };
+
+    // addTimestampsToExistingDocs();
 
     fetchDrivers();
     fetchedTrips();
@@ -824,6 +840,7 @@ export default function TripsComponent() {
         fuel: values.fuel,
         mileage_fee: values.mileage_fee,
         distance: distanceValue,
+        timestamp: Timestamp.now(),
       };
 
       const docRef = await addDoc(collection(fbDb, "trips"), maintenanceData);

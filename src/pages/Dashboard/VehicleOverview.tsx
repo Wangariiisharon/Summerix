@@ -9,14 +9,16 @@ import { AnyObject } from "chart.js/dist/types/basic";
 import { useEffect, useState } from "react";
 import {
   DocumentData,
+  Timestamp,
   collection,
   getDocs,
+  getFirestore,
   query,
   where,
 } from "firebase/firestore";
 import { fbDb } from "@/firebase/configs";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
-import { centerTextPlugin } from "./centerTextPlugin";
+import { centerTextPlugin } from "../../centerTextPlugin";
 
 ChartJS.unregister(centerTextPlugin);
 ChartJS.register(ArcElement, Tooltip);
@@ -40,18 +42,53 @@ interface dataset {
   }[];
 }
 
-export default function VehicleOverview() {
+export default function VehicleOverview({ selectedDate, selectedYear }: any) {
   const [fetchedVehicles, setFetchedVehicles] = useState<DocumentData[]>([]);
   const { organisationId } = useAuthContext();
 
   useEffect(() => {
-    ChartJS.unregister(centerTextPlugin);
-    const fetchedVehicles = async () => {
+    const fetchVehicles = async () => {
+      const db = getFirestore();
+
+      // const startOfMonth = selectedDate
+      //   ? new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
+      //   : new Date(selectedYear, new Date().getMonth(), 1);
+
+      // const endOfMonth = selectedDate
+      //   ? new Date(
+      //       selectedDate.getFullYear(),
+      //       selectedDate.getMonth() + 1,
+      //       0,
+      //       23,
+      //       59,
+      //       59
+      //     )
+      //   : new Date(selectedYear, new Date().getMonth() + 1, 0, 23, 59, 59);
+
+      // const startOfYear = new Date(
+      //   selectedDate ? selectedDate.getFullYear() : selectedYear,
+      //   0,
+      //   1
+      // );
+      // const endOfYear = new Date(
+      //   selectedDate ? selectedDate.getFullYear() : selectedYear,
+      //   11,
+      //   31,
+      //   23,
+      //   59,
+      //   59
+      // );
+
+      // const startDate = selectedDate ? startOfMonth : startOfYear;
+      // const endDate = selectedDate ? endOfMonth : endOfYear;
+
       try {
         if (organisationId) {
           const q = query(
-            collection(fbDb, "vehicles"),
+            collection(db, "vehicles"),
             where("organisationId", "==", organisationId)
+            // where("timestamp", ">=", Timestamp.fromDate(startDate)),
+            // where("timestamp", "<=", Timestamp.fromDate(endDate))
           );
           const querySnapshot = await getDocs(q);
 
@@ -65,8 +102,8 @@ export default function VehicleOverview() {
         console.error("Error fetching Vehicles:", error);
       }
     };
-    fetchedVehicles();
-  }, [organisationId]);
+    fetchVehicles();
+  }, [organisationId, selectedDate, selectedYear]);
 
   const allVehicles = fetchedVehicles.length;
   const onRouteCount = fetchedVehicles.filter(
@@ -134,7 +171,7 @@ export default function VehicleOverview() {
         <div className="w-2/4 ">
           <Doughnut data={data} options={options} />
         </div>
-        <div className=" flex flex-col ml-[30px] mr-[30px]">
+        <div className="flex flex-col ml-[30px] mr-[30px]">
           <div className="font-bold text-lg">Total</div>
           <div className="font-bold text-4xl">{allVehicles}</div>
           <div className="mt-4">
@@ -178,14 +215,13 @@ export default function VehicleOverview() {
                     />
                   </svg>
                 </div>
-
-                <div className="text-sm">Under Maintenance</div>
+                <div className="text-sm">Out Of Service</div>
                 <div className="text-sm">{outOfServiceCount}</div>
               </div>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center mb-2">
               <div className="flex justify-between w-full">
-                <div className="bg-[#cddcff] rounded-md">
+                <div className="bg-[#C9E2FF] rounded-md">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -201,7 +237,6 @@ export default function VehicleOverview() {
                     />
                   </svg>
                 </div>
-
                 <div className="text-sm">On Route</div>
                 <div className="text-sm">{onRouteCount}</div>
               </div>

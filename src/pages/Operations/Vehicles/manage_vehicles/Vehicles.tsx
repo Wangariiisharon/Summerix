@@ -17,6 +17,7 @@ import {
   query,
   where,
   onSnapshot,
+  Timestamp,
 } from "firebase/firestore";
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import { useRouter } from "next/router";
@@ -289,6 +290,7 @@ export default function Vehicles() {
       availability_status: "Available",
       vehiclesId: generatedVehicleId,
       organisationId: organisationId,
+      timestamp: Timestamp.now(),
     };
 
     const docRef = await addDoc(vehiclesCollection, VehicleData);
@@ -543,6 +545,23 @@ export default function Vehicles() {
         console.error("Error fetching Classes:", error);
       }
     };
+    // const addTimestampsToExistingDocs = async () => {
+    //   const tripsCollection = collection(fbDb, "vehicles");
+    //   const tripDocs = await getDocs(tripsCollection);
+
+    //   tripDocs.forEach(async (tripDoc) => {
+    //     const tripData = tripDoc.data();
+    //     if (!tripData.timestamp) {
+    //       await updateDoc(doc(fbDb, "vehicles", tripDoc.id), {
+    //         timestamp: Timestamp.now(),
+    //       });
+    //     }
+    //   });
+
+    //   console.log("Timestamps added to existing documents Vehicles");
+    // };
+
+    // addTimestampsToExistingDocs();
 
     fetchedVehicles();
     fetchedCompanies();
