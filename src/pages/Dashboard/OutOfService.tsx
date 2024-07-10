@@ -205,15 +205,6 @@ export default function OutOfServiceVehicles({
             {" "}
             Out of service vehicles
           </h2>
-          {/* <button className="ml-[20px] mr-2 border border-[#065ad8] rounded-md bg-white">
-            <span className="text-[#065ad8] flex flex-row py-2 px-2  text-sm">
-              Viev All
-              <ChevronDownIcon className="w-4 h-4 ml-1" />
-            </span>
-          </button> */}
-          <button className="ml-[30px] flex items-center justify-center px-1 py-1 border border-blue-500 text-blue-500 rounded hover:bg-blue-500 hover:text-white transition-colors">
-            View All
-          </button>
         </div>
         <div className="border-b border-gray-200 mt-2"></div>
         <div className=" flex items-center justify-center">

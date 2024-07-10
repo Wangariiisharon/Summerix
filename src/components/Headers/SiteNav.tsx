@@ -210,6 +210,12 @@ export default function SiteNav({ children }: Props) {
                             {currentAdmin.initials}
                           </span>
                         </span>
+                        <span className="flex flex-col text-white">
+                          <span>
+                            {`${currentAdmin.firstname} ${currentAdmin.lastname}`}
+                          </span>
+                          <span>{currentAdmin.email}</span>
+                        </span>
                         <ChevronDownIcon className="size-4 fill-white/60" />
                       </MenuButton>
                       <Transition
