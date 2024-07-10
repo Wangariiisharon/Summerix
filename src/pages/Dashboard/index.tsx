@@ -42,7 +42,6 @@ export default function DashboardComponent() {
   const [isMaintenanceFetched, setIsMaintenanceFetched] = useState(false);
   const [isVehiclesFetched, setIsVehiclesFetched] = useState(false);
 
-  // Generate a list of years for the dropdown
   const getYears = () => {
     const currentYear = new Date().getFullYear();
     const years = [];

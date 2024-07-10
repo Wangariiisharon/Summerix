@@ -164,7 +164,7 @@ export default function VehicleOverview({ selectedDate, selectedYear }: any) {
   return (
     <div className="bg-white rounded-lg shadow">
       <div className="ml-[35px] mt-[21px]">
-        <h2 className="text-sm font-bold leading-6">Vehicle Overview</h2>
+        <h2 className="text-sm font-bold leading-6">Trips Overview</h2>
       </div>
       <div className="border-b border-gray-200 mt-2"></div>
       <div className="flex flex-row mt-4 mb-[29px]">

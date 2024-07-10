@@ -86,10 +86,10 @@ export default function OnRoute({ selectedDate, selectedYear }: any) {
   return (
     <div className=" h-[376px] w-full ml-[20px] mr-[20px] py-[20px] bg-white">
       <div className="flex justify-between items-center mb-6  h-[30px] px-[20px]">
-        <h2 className="text-sm font-semibold">Vehicle Overview</h2>
-        <button className="text-sm border border-blue-500 hover:bg-blue-200 text-blue-500 h-[30px] font-semibold px-4 mt-3 rounded">
+        <h2 className="text-sm font-semibold">Trips Overview</h2>
+        {/* <button className="text-sm border border-blue-500 hover:bg-blue-200 text-blue-500 h-[30px] font-semibold px-4 mt-3 rounded">
           View All
-        </button>
+        </button> */}
       </div>
       <div className="w-full overflow-auto table-container">
         <table className="min-w-full text-sm text-left text-gray-500">
