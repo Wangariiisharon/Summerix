@@ -17,12 +17,48 @@ import { Field, Form, Formik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { toast } from "react-hot-toast";
+import admin from "@/firebase/admin";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [userClaims, setUserClaims] = useState<any>(null);
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const auth = getAuth();
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const token = await user.getIdToken();
+        const uid = user.uid;
+
+        console.log("User ID Token:", token);
+
+        try {
+          const res = await fetch(`/api/user?uid=${uid}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          console.log("API Response:", res);
+
+          if (!res.ok) {
+            throw new Error("Failed to fetch user data");
+          }
+
+          const data = await res.json();
+          setUserData(data);
+          console.log("UserData signiin:", data);
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        console.log("This user has no userClaims");
+      }
+    });
+
     const handleSignInWithEmailLink = async () => {
       const auth = getAuth(firebaseApp);
 
@@ -49,17 +85,8 @@ export default function LoginPage() {
       }
     };
 
-    // Call the function to handle sign-in with email link
     handleSignInWithEmailLink();
   }, [router]);
-
-  const fetchUserClaims = async (user: any) => {
-    const idTokenResult = await user.getIdTokenResult(true); // Force refresh token
-    const claims = idTokenResult.claims;
-    setUserClaims(claims);
-    console.log("userClaims", claims); // Check if custom claims are included
-    return claims;
-  };
 
   const doGoogleSignIn = async () => {
     const fbAuth = getAuth(firebaseApp);
@@ -69,7 +96,7 @@ export default function LoginPage() {
       const results = await signInWithPopup(fbAuth, provider);
       console.log("doGoogleSignIn > results:", results);
       if (results.user) {
-        const claims = await fetchUserClaims(results.user);
+        // const claims = await fetchUserClaims(results.user);
         // console.log("userClaims", claims);
         router.push("/Dashboard");
       }
@@ -95,8 +122,8 @@ export default function LoginPage() {
       const user = userCredential.user;
 
       if (user) {
-        const claims = await fetchUserClaims(user);
-        console.log("userClaims", claims);
+        // const claims = await fetchUserClaims(user);
+        // console.log("userClaims", claims);
         router.push("/Dashboard");
       } else {
         toast.error("Invalid credentials");

@@ -26,8 +26,13 @@ interface Props {
 export default function SiteNav({ children }: Props) {
   const drawerRef = useRef<HTMLDivElement | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
-  const { currentAdmin, currentUser, organisationId, isSuperAdmin } =
-    useAuthContext();
+  const {
+    currentAdmin,
+    currentUser,
+    organisationId,
+    isSuperAdmin,
+    userClaims,
+  } = useAuthContext();
   const [showDropdown, setShowDropdown] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -89,7 +94,7 @@ export default function SiteNav({ children }: Props) {
         name: "Administration",
         href: "/Administration",
         icon: FaTools,
-        visible: isSuperAdmin,
+        visible: userClaims?.admin === true, // Check for admin claim
       },
       {
         name: "Operations",
@@ -104,7 +109,7 @@ export default function SiteNav({ children }: Props) {
         visible: true,
       },
     ],
-    [isSuperAdmin]
+    [userClaims, isSuperAdmin]
   );
 
   const toggleSidebar = () => {
@@ -127,36 +132,39 @@ export default function SiteNav({ children }: Props) {
         >
           <nav className="mt-16">
             <ul className="flex flex-col">
-              {navigation.map((item, index) => (
-                <Link key={index} href={item.href} passHref>
-                  <li
-                    className={`flex items-center mt-[6px] pl-6 pr-4 border-r-4 ${
-                      router.pathname === item.href
-                        ? "border-blue-500 bg-blue-100"
-                        : "border-transparent"
-                    } hover:bg-blue-100 cursor-pointer ${
-                      isDrawerOpen ? "" : "collapsed-sidebar"
-                    }`}
-                  >
-                    <item.icon
-                      className={`text-lg ${
-                        router.pathname === item.href
-                          ? "text-blue-500"
-                          : "text-gray-500"
-                      } sidebar-icon`}
-                    />
-                    <span
-                      className={`flex-grow text-lg ${
-                        router.pathname === item.href
-                          ? "text-blue-500 text-left text-[18px] ml-[12px] py-[12.5px] mr-[79px]"
-                          : "text-gray-700 text-left text-[18px] ml-[12px] py-[12.5px] mr-[79px]"
-                      } sidebar-text`}
-                    >
-                      {item.name}
-                    </span>
-                  </li>
-                </Link>
-              ))}
+              {navigation.map(
+                (item, index) =>
+                  item.visible && (
+                    <Link key={index} href={item.href} passHref>
+                      <li
+                        className={`flex items-center mt-[6px] pl-6 pr-4 border-r-4 ${
+                          router.pathname === item.href
+                            ? "border-blue-500 bg-blue-100"
+                            : "border-transparent"
+                        } hover:bg-blue-100 cursor-pointer ${
+                          isDrawerOpen ? "" : "collapsed-sidebar"
+                        }`}
+                      >
+                        <item.icon
+                          className={`text-lg ${
+                            router.pathname === item.href
+                              ? "text-blue-500"
+                              : "text-gray-500"
+                          } sidebar-icon`}
+                        />
+                        <span
+                          className={`flex-grow text-lg ${
+                            router.pathname === item.href
+                              ? "text-blue-500 text-left text-[18px] ml-[12px] py-[12.5px] mr-[79px]"
+                              : "text-gray-700 text-left text-[18px] ml-[12px] py-[12.5px] mr-[79px]"
+                          } sidebar-text`}
+                        >
+                          {item.name}
+                        </span>
+                      </li>
+                    </Link>
+                  )
+              )}
             </ul>
           </nav>
         </div>

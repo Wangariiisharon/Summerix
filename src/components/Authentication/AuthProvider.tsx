@@ -39,25 +39,14 @@ interface AuthContextType {
   userId: string | null;
   organisationId: string | null;
   userData: AdminData | null;
+  userClaims: ParsedToken | null; // Updated this line
   hasPermission: (permissionKey: string) => boolean;
 }
-type UserClaims = {
-  userId?: string;
-  email?: string;
-  firstname?: string;
-  lastname?: string;
+interface ParsedToken {
   role?: string;
-  status?: string;
   super_admin?: boolean;
-  organisationId?: string;
-  inviterUid?: string;
-  adminId?: string;
-  fcmToken?: string;
-  phonenumber?: string;
-  additionalPermissions?: string[];
-  department?: string;
-  [key: string]: any; // Allow additional properties
-};
+  [key: string]: any;
+}
 
 const defaultContextValue: AuthContextType = {
   isAuthenticated: false,
@@ -67,6 +56,7 @@ const defaultContextValue: AuthContextType = {
   userId: null,
   organisationId: null,
   userData: null,
+  userClaims: null, // Add this line
   hasPermission: () => false,
 };
 
@@ -78,7 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [currentAdmin, setCurrentAdmin] = useState<AdminUser | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<AdminData | null>(null);
-  const [userClaims, setUserClaims] = useState<UserClaims | null>(null);
+  const [userClaims, setUserClaims] = useState<ParsedToken | null>(null);
 
   const router = useRouter();
 
@@ -92,39 +82,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const auth = getAuth(firebaseApp);
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      // console.log("onAuthStateChanged > user:", user);
-
       if (user) {
         setCurrentUser(user);
 
-        const firestore = getFirestore(firebaseApp);
-        const adminsQuery = query(
-          collection(firestore, "admins"),
-          where("userId", "==", user.uid)
-        );
-        const querySnapshot = await getDocs(adminsQuery);
-        if (!querySnapshot.empty) {
-          setUserData(querySnapshot.docs[0].data() as AdminData);
+        try {
+          // Force refresh the token to get updated claims
+          await user.getIdToken(true);
+          const token = await user.getIdToken();
+          const uid = user.uid;
 
-          const data = querySnapshot.docs[0].data() as AdminUser;
-          data.docId = querySnapshot.docs[0].id;
+          console.log("User ID Token:", token);
 
-          // derive initials from firstname and lastname
-          data.initials =
+          const res = await fetch(`/api/user?uid=${uid}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          console.log("API Response:", res);
+
+          if (!res.ok) {
+            throw new Error("Failed to fetch user data");
+          }
+
+          const data = await res.json();
+          setUserData(data);
+
+          // Assuming custom claims are part of the user data fetched from the API
+          const userClaims = data.customClaims || {};
+          setUserClaims(userClaims);
+
+          // Derive initials from firstname and lastname
+          const adminUser = data as AdminUser;
+          adminUser.initials =
             data.firstname?.charAt(0)?.toUpperCase() +
             data.lastname?.charAt(0)?.toUpperCase();
-          setCurrentAdmin(data);
-        }
+          setCurrentAdmin(adminUser);
 
-        const tokenResult = await user.getIdTokenResult(true);
-        setCurrentUser(user);
-        setUserClaims(tokenResult.claims);
-        console.log("userClaims", userClaims);
+          console.log("UserData from API:", data);
+          console.log("userClaims Auth context:", userClaims);
+        } catch (error) {
+          console.error(error);
+          setCurrentUser(null);
+          setUserData(null);
+          setUserClaims(null); // Reset userClaims
+        }
       } else {
-        // redirect to signin page
-        router.push("/signin");
+        console.log("redirect to signin page");
         setCurrentUser(null);
         setUserData(null);
+        setUserClaims(null); // Reset userClaims
       }
     });
 
@@ -140,6 +147,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         userId: currentUser?.uid || null,
         organisationId: userData?.organisationId || null,
         userData,
+        userClaims, // Add this line
         hasPermission,
         isSuperAdmin,
       }}
