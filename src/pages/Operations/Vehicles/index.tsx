@@ -21,18 +21,15 @@ function classNames(...classes: string[]) {
 export default function VehiclesComponent() {
   const [fetchedVehicles, setFetchedVehicles] = useState<DocumentData[]>([]);
   const [vehicleTrips, setVehicleTrips] = useState<Record<string, number>>({}); // To store the trip counts for each vehicle
-  const { organisationId } = useAuthContext();
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(0);
-
-  // useEffect(() => {
-  //   // Retrieve the saved tab index from local storage when the component mounts
-  //   const savedIndex = localStorage.getItem("selectedTabIndex");
-  //   if (savedIndex !== null) {
-  //     setSelectedIndex(parseInt(savedIndex, 10));
-  //   }
-  // }, []);
-
+  const {
+    currentAdmin,
+    currentUser,
+    organisationId,
+    isSuperAdmin,
+    userClaims,
+  } = useAuthContext();
   const headers = [
     { name: "Vehicle Profile", href: "#", current: selectedTabIndex === 0 },
     { name: "All Status", href: "#", current: selectedTabIndex === 1 },
@@ -49,7 +46,6 @@ export default function VehiclesComponent() {
     }
     const fetchVehicles = async () => {
       try {
-        // Ensure organisationId is available before making the query
         if (organisationId) {
           const q = query(
             collection(fbDb, "vehicles"),
@@ -110,8 +106,6 @@ export default function VehiclesComponent() {
   return (
     <div>
       <div className="bg-[#FAFAFB]">
-        {/* <p className="text-lg font-nunito font-bold mt-2 ml-5">Vehicles</p> */}
-
         <div className="mt-6">
           <Tab.Group>
             <Tab.List className="w-full bg-[#FAFAFB] font-nunito flex justify-start mt-3 mb-3 ml-1">

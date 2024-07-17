@@ -180,10 +180,10 @@ export default function AdministrationComponent() {
           </div>
         </div>
         <div className="flex flex-row mt-[30px] pl-9">
-          <div className="mt-custom1 mr-custom2 mb-custom3 rounded-custom shadow-custom border-custom border-white">
+          <div className="mt-custom1 mr-custom2 mb-custom3 rounded-md shadow-custom border-custom border-white">
             <Image
               src={companySettings.photoURL || Avatar_profile_photo}
-              className="h-auto w-auto"
+              className="h-auto w-auto rounded-md"
               alt="logo"
               width={100}
               height={100}

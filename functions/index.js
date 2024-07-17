@@ -2,8 +2,12 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const axios = require("axios");
 const cors = require("cors")({ origin: true });
+const serviceAccount = require("./../src/serviceAccount.json"); // Ensure this path is correct
 
-admin.initializeApp();
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
 const db = admin.firestore();
 
 const getSettingsCurrencies = async () => {
@@ -76,41 +80,48 @@ const getCountries = async () => {
     return [];
   }
 };
-exports.setCustomClaims = functions.firestore
-  .document("admins/{userId}") // Ensure the collection name matches
-  .onWrite(async (change, context) => {
-    const userId = context.params.userId;
-    const user = change.after.exists ? change.after.data() : null;
 
-    if (user) {
-      let customClaims = {
-        userId: userId,
-        email: user.email,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        role: user.role,
-        status: user.status,
-        super_admin: user.super_admin,
-        organisationId: user.organisationId,
-        inviterUid: user.inviterUid,
-        adminId: user.adminId,
-        fcmToken: user.fcmToken,
-        phonenumber: user.phonenumber,
-        additionalPermissions: user.additionalPermissions,
-        department: user.department,
-      };
+const setCustomUserClaims = async (uid, claims) => {
+  try {
+    await admin.auth().setCustomUserClaims(uid, claims);
+    console.log(`Custom claims set for user ${uid}`);
+  } catch (error) {
+    console.error("Error setting custom claims:", error);
+  }
+};
 
-      if (user.role === "admin") {
-        customClaims.admin = true;
-      } else {
-        customClaims.admin = false;
+exports.setUserClaims = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    const { uid } = req.body;
+
+    if (!uid) {
+      return res.status(400).send("Missing uid in request body");
+    }
+
+    try {
+      // Fetch user data from Firestore
+      const userSnapshot = await admin
+        .firestore()
+        .collection("admins")
+        .where("userId", "==", uid)
+        .get();
+
+      if (userSnapshot.empty) {
+        return res.status(404).send("User not found");
       }
 
-      try {
-        await admin.auth().setCustomUserClaims(userId, customClaims);
-        console.log(`Custom claims set for user ${userId}`);
-      } catch (error) {
-        console.error(`Error setting custom claims for user ${userId}:`, error);
+      const userData = userSnapshot.docs[0].data();
+
+      // Check if the role is admin
+      const claims = {};
+      if (userData.role === "admin") {
+        claims.admin = true;
       }
+
+      await setCustomUserClaims(uid, claims);
+      res.status(200).send(`Custom claims set for user ${uid}`);
+    } catch (error) {
+      res.status(500).send(`Error setting custom claims: ${error.message}`);
     }
   });
+});

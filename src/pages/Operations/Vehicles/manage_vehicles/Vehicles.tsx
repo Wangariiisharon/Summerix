@@ -66,7 +66,13 @@ export default function Vehicles() {
     vehiclesId: "", // Assign the result of the function
     organisationId: "",
   });
-  const { organisationId } = useAuthContext();
+  const {
+    currentAdmin,
+    currentUser,
+    organisationId,
+    isSuperAdmin,
+    userClaims,
+  } = useAuthContext();
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const validationSchema = Yup.object({
@@ -568,6 +574,9 @@ export default function Vehicles() {
     fetchUnallocatedVehicles();
   }, [organisationId]);
 
+  const hasAddVehiclesPermission =
+    userClaims?.additionalPermissions?.includes("Add vehicles");
+
   const updateFetchedVehicles = (
     updatedDrivers: SetStateAction<DocumentData[]>
   ) => {
@@ -764,10 +773,12 @@ export default function Vehicles() {
           <div className="flex w-full justify-end mt-4">
             <div className="flex justify-end text-base mr-2">
               <div className="ml-2 flex flex-row">
-                <AddButton
-                  name="Add Vehicle"
-                  handleAddClick={handleAddVehicles}
-                />
+                {hasAddVehiclesPermission && (
+                  <AddButton
+                    name="Add Vehicle"
+                    handleAddClick={handleAddVehicles}
+                  />
+                )}
                 <div className="ml-2">
                   <Button
                     className="rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2 "

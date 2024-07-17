@@ -17,6 +17,7 @@ import OutOfServiceVehicles from "./OutOfService";
 import VehicleOverview from "@/pages/Dashboard/VehicleOverview";
 import TripsPieGraph from "@/pages/Dashboard/TripsPieGraph";
 import OnRoute from "@/pages/Dashboard/OnRoute";
+import { ChevronDownIcon } from "@heroicons/react/24/solid";
 
 export default function DashboardComponent() {
   const [fetchedTrips, setFetchedTrips] = useState<DocumentData[]>([]);
@@ -302,6 +303,7 @@ export default function DashboardComponent() {
                   {year}
                 </option>
               ))}
+              {/* <ChevronDownIcon className="size-4 fill-white/60 ml-20" /> */}
             </select>
             <input
               type="date"
