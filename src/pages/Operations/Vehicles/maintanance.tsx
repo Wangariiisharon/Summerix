@@ -26,7 +26,7 @@ import { toast } from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import Pending from "./pending";
 import * as Yup from "yup";
-import { MaintananceTable } from "./maintenanceTable";
+import MaintananceTable from "./maintenanceTable";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");

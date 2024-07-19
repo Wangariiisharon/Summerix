@@ -21,7 +21,7 @@ import { Formik, Field, Form } from "formik/dist/index";
 import toast from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import * as Yup from "yup";
-import { CitiesTable } from "./classTable";
+import CitiesTable from "./classTable";
 const validationSchema = Yup.object({
   name: Yup.string().required("Name is required"),
 });

@@ -29,7 +29,7 @@ import { doc } from "firebase/firestore";
 import ExportDriverDataToCSV from "../../../components/Exports/driversExport";
 import { toast } from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
-import { DriversTable } from "./driversTable";
+import DriversTable from "./driversTable";
 
 const validationSchema = Yup.object({
   name: Yup.string().required("Name is required"),

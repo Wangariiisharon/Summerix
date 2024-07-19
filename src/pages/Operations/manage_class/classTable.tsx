@@ -13,7 +13,7 @@ interface ClientsTableProps {
   hasArchiveClassPermission: any;
 }
 
-export function CitiesTable({
+export default function CitiesTable({
   clients,
   handleEditClick,
   updateFetchedClients,
