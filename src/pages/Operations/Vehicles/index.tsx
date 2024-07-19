@@ -103,6 +103,23 @@ export default function VehiclesComponent() {
     fetchTripsAndCount();
   }, [organisationId]);
 
+  const hasAllocatePermission =
+    userClaims?.additionalPermissions?.includes("Allocate Vehicles") ||
+    userClaims?.admin;
+
+  const hasAddPermission =
+    userClaims?.additionalPermissions?.includes("Add Vehicles") ||
+    userClaims?.admin;
+  const hasScheduleMaintenancePermission =
+    userClaims?.additionalPermissions?.includes("Schedule Maintenance") ||
+    userClaims?.admin;
+  const hasEditVehiclesPermission =
+    userClaims?.additionalPermissions?.includes("Edit Vehicles") ||
+    userClaims?.admin;
+  const hasArchivePermission =
+    userClaims?.additionalPermissions?.includes("Archive Vehicles") ||
+    userClaims?.admin;
+
   return (
     <div>
       <div className="bg-[#FAFAFB]">
@@ -128,15 +145,11 @@ export default function VehiclesComponent() {
             <Tab.Panels>
               <Tab.Panel>
                 <div className="">
-                  <Vehicles />
-                </div>
-              </Tab.Panel>
-              <Tab.Panel>
-                <div className="">
-                  <DummyTable
-                    selectedTab={selectedTabIndex}
-                    vehicles={fetchedVehicles}
-                    vehicleTrips={vehicleTrips}
+                  <Vehicles
+                    hasAllocatePermission={hasAllocatePermission}
+                    hasAddPermission={hasAddPermission}
+                    hasEditVehiclesPermission={hasEditVehiclesPermission}
+                    hasArchivePermission={hasArchivePermission}
                   />
                 </div>
               </Tab.Panel>
@@ -169,7 +182,20 @@ export default function VehiclesComponent() {
               </Tab.Panel>
               <Tab.Panel>
                 <div className="">
-                  <Maintenance />
+                  <DummyTable
+                    selectedTab={selectedTabIndex}
+                    vehicles={fetchedVehicles}
+                    vehicleTrips={vehicleTrips}
+                  />
+                </div>
+              </Tab.Panel>
+              <Tab.Panel>
+                <div className="">
+                  <Maintenance
+                    hasScheduleMaintenancePermission={
+                      hasScheduleMaintenancePermission
+                    }
+                  />
                 </div>
               </Tab.Panel>
             </Tab.Panels>

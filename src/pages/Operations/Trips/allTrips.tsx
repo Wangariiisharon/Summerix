@@ -74,6 +74,13 @@ export default function AllTrips({ searchQuery }: any) {
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>("all");
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const {
+    currentAdmin,
+    currentUser,
+    organisationId,
+    isSuperAdmin,
+    userClaims,
+  } = useAuthContext();
 
   const allTripsTabs = [
     { name: "OVERVIEW", href: "#", current: selectedTabIndex === 0 },
@@ -81,7 +88,6 @@ export default function AllTrips({ searchQuery }: any) {
   ];
 
   const router = useRouter();
-  const { organisationId } = useAuthContext();
 
   function convertToDate(firestoreTimestamp: any) {
     if (firestoreTimestamp instanceof Timestamp) {
@@ -433,6 +439,20 @@ export default function AllTrips({ searchQuery }: any) {
     return true;
   };
 
+  const hasExportPermission =
+    userClaims?.additionalPermissions?.includes("Export Trips") ||
+    userClaims?.admin;
+
+  const hasAddPermission =
+    userClaims?.additionalPermissions?.includes("Add Trips") ||
+    userClaims?.admin;
+  const hasViewTripermission =
+    userClaims?.additionalPermissions?.includes("View trips detail") ||
+    userClaims?.admin;
+  const hasEditTripermission =
+    userClaims?.additionalPermissions?.includes("Edit trip") ||
+    userClaims?.admin;
+
   return (
     <div>
       <div className="flex flex-col"></div>
@@ -484,6 +504,8 @@ export default function AllTrips({ searchQuery }: any) {
                   trips={fetchedTrips}
                   filteredTrips={filteredTrips.filter(filterTripsByTimeRange)}
                   handleEditClick={handleEditClick}
+                  hasEditTripermission={hasEditTripermission}
+                  hasViewTripermission={hasViewTripermission}
                 />
               </div>
             </Tab.Panel>
@@ -499,6 +521,8 @@ export default function AllTrips({ searchQuery }: any) {
                   trips={fetchedTrips}
                   filteredTrips={filteredTrips}
                   handleEditClick={handleEditClick}
+                  hasEditTripermission={hasEditTripermission}
+                  hasViewTripermission={hasViewTripermission}
                 />
               </div>
             </Tab.Panel>
@@ -719,6 +743,8 @@ interface TripsTableProps {
   trips: DocumentData[];
   filteredTrips: DocumentData[];
   handleEditClick: any;
+  hasViewTripermission: any;
+  hasEditTripermission: any;
 }
 interface TripsPerVehicle {
   [key: string]: {
@@ -732,6 +758,8 @@ export function TripsTable({
   trips,
   filteredTrips,
   handleEditClick,
+  hasViewTripermission,
+  hasEditTripermission,
 }: TripsTableProps) {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(0);
@@ -850,12 +878,14 @@ export function TripsTable({
                   >
                     Trip Identification
                   </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Status
-                  </th>
+                  {hasEditTripermission && (
+                    <th
+                      scope="col"
+                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                    >
+                      Status
+                    </th>
+                  )}
                   <th
                     scope="col"
                     className="relative whitespace-nowrap py-3.5 pl-3 pr-4 sm:pr-0"
@@ -870,7 +900,12 @@ export function TripsTable({
                     <div className="w-full mb-2 font-nunito font-regular"></div>
                     <tr
                       className="bg-[#FAFAFB] hover:bg-gray-100"
-                      onClick={() => handleTripClick(trip)}
+                      // onClick={() => handleTripClick(trip)}
+                      onClick={
+                        hasViewTripermission
+                          ? () => handleTripClick(trip)
+                          : undefined
+                      }
                       style={{ cursor: "pointer" }}
                     >
                       <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium  text-blue-700 sm:pl-0">
@@ -889,22 +924,24 @@ export function TripsTable({
                         {trip.tripId}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        <button
-                          className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditClick(trip);
-                          }}
-                        >
-                          {[
-                            "Booked",
-                            "On Route",
-                            "Mechanical",
-                            "Done",
-                          ].includes(trip.trip_status)
-                            ? trip.trip_status
-                            : "Status"}
-                        </button>
+                        {hasEditTripermission && (
+                          <button
+                            className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditClick(trip);
+                            }}
+                          >
+                            {[
+                              "Booked",
+                              "On Route",
+                              "Mechanical",
+                              "Done",
+                            ].includes(trip.trip_status)
+                              ? trip.trip_status
+                              : "Status"}
+                          </button>
+                        )}
                       </td>
                     </tr>
                   </Fragment>

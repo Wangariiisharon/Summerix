@@ -25,15 +25,26 @@ import { toast } from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import * as Yup from "yup";
+import { VehiclesTable } from "./vehiclesTable";
 
 interface Vehicle {
   id: string;
   lisence_plate: string;
 }
+interface VehicleProps {
+  hasAllocatePermission: any;
+  hasAddPermission: any;
+  hasEditVehiclesPermission: any;
+  hasArchivePermission: any;
+}
 
 const Headers = ["VEHICLE ID", "VEHICLE TYPE", "LICENSE PLATE"];
-
-export default function Vehicles() {
+export default function Vehicles({
+  hasAllocatePermission,
+  hasAddPermission,
+  hasEditVehiclesPermission,
+  hasArchivePermission,
+}: VehicleProps) {
   const [open, setOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<DocumentData | null>(
@@ -551,23 +562,6 @@ export default function Vehicles() {
         console.error("Error fetching Classes:", error);
       }
     };
-    // const addTimestampsToExistingDocs = async () => {
-    //   const tripsCollection = collection(fbDb, "vehicles");
-    //   const tripDocs = await getDocs(tripsCollection);
-
-    //   tripDocs.forEach(async (tripDoc) => {
-    //     const tripData = tripDoc.data();
-    //     if (!tripData.timestamp) {
-    //       await updateDoc(doc(fbDb, "vehicles", tripDoc.id), {
-    //         timestamp: Timestamp.now(),
-    //       });
-    //     }
-    //   });
-
-    //   console.log("Timestamps added to existing documents Vehicles");
-    // };
-
-    // addTimestampsToExistingDocs();
 
     fetchedVehicles();
     fetchedCompanies();
@@ -575,7 +569,8 @@ export default function Vehicles() {
   }, [organisationId]);
 
   const hasAddVehiclesPermission =
-    userClaims?.additionalPermissions?.includes("Add vehicles");
+    userClaims?.additionalPermissions?.includes("Add vehicles") ||
+    userClaims?.admin;
 
   const updateFetchedVehicles = (
     updatedDrivers: SetStateAction<DocumentData[]>
@@ -773,20 +768,22 @@ export default function Vehicles() {
           <div className="flex w-full justify-end mt-4">
             <div className="flex justify-end text-base mr-2">
               <div className="ml-2 flex flex-row">
-                {hasAddVehiclesPermission && (
+                {hasAddPermission && (
                   <AddButton
                     name="Add Vehicle"
                     handleAddClick={handleAddVehicles}
                   />
                 )}
                 <div className="ml-2">
-                  <Button
-                    className="rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2 "
-                    handleClick={handleAllocateVehicles}
-                  >
-                    <PlusIcon className="h-6 w-6 mr-2" />
-                    Allocate Vehicle
-                  </Button>
+                  {hasAllocatePermission && (
+                    <Button
+                      className="rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2 "
+                      handleClick={handleAllocateVehicles}
+                    >
+                      <PlusIcon className="h-6 w-6 mr-2" />
+                      Allocate Vehicle
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -800,6 +797,8 @@ export default function Vehicles() {
                   vehicles={fetchedVehicles}
                   updateFetchedVehicles={updateFetchedVehicles}
                   handleEditClick={handleEditClick}
+                  hasEditVehiclesPermission={hasEditVehiclesPermission}
+                  hasArchivePermission={hasArchivePermission}
                 />
               </div>
             </Tab.Panel>
@@ -810,6 +809,8 @@ export default function Vehicles() {
                   vehicles={fetchedVehicles}
                   updateFetchedVehicles={updateFetchedVehicles}
                   handleEditClick={handleEditClick}
+                  hasEditVehiclesPermission={hasEditVehiclesPermission}
+                  hasArchivePermission={hasArchivePermission}
                 />
               </div>
             </Tab.Panel>
@@ -820,6 +821,8 @@ export default function Vehicles() {
                   vehicles={fetchedVehicles}
                   updateFetchedVehicles={updateFetchedVehicles}
                   handleEditClick={handleEditClick}
+                  hasEditVehiclesPermission={hasEditVehiclesPermission}
+                  hasArchivePermission={hasArchivePermission}
                 />
               </div>
             </Tab.Panel>
@@ -1555,162 +1558,5 @@ export default function Vehicles() {
         </FormModal>
       </div>
     </>
-  );
-}
-
-interface VehiclesTableProps {
-  selectedTab: number;
-  vehicles: DocumentData[];
-  updateFetchedVehicles: (updatedDrivers: DocumentData[]) => void;
-  handleEditClick: any;
-}
-
-export function VehiclesTable({
-  vehicles,
-  updateFetchedVehicles,
-  handleEditClick,
-}: VehiclesTableProps) {
-  const [currentPage, setCurrentPage] = useState(0);
-  const rowsPerPage = 3;
-
-  const activeVehicles = vehicles.filter((vehicle) => vehicle.status);
-
-  // Sort vehicles to put archived vehicles at the bottom
-  const sortedVehicles = [...vehicles].sort((a, b) => {
-    if (a.archive && !b.archive) {
-      return 1; // a should come after b (archived vehicles come after non-archived)
-    } else if (!a.archive && b.archive) {
-      return -1; // a should come before b
-    } else {
-      return 0; // no change in order
-    }
-  });
-
-  const startIndex = currentPage * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const visibleVehicles = sortedVehicles.slice(startIndex, endIndex);
-  // .filter((admin) => !admin.archive);
-  // const visibleVehicles = sortedVehicles.slice(startIndex, endIndex);
-
-  const handleReassign = () => {
-    // Implement your reassign logic here
-  };
-  const router = useRouter();
-
-  const updateVehicleStatusInDatabase = async (
-    vehicleId: string,
-    newStatus: boolean
-  ) => {
-    try {
-      const vehicleRef = doc(fbDb, "vehicles", vehicleId);
-      await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
-      console.log("Vehicle status updated in the database:", vehicleId);
-
-      const updatedVehicles = vehicles.map((vehicle) =>
-        vehicle.id === vehicleId ? { ...vehicle, archive: newStatus } : vehicle
-      );
-      updateFetchedVehicles(updatedVehicles);
-    } catch (error) {
-      console.error("Error updating Vehicle status in database:", error);
-    }
-  };
-  //     // const Headers = ["VEHICLE ID", "VEHICLE TYPE", "LICENSE PLATE"]
-  const handleVehicleClick = (vehicle: any) => {
-    router.push(`Operations/Vehicles/vehiclesDetails?id=${vehicle.id}`);
-  };
-
-  return (
-    <div className="px-4 ml-2 sm:px-6 lg:px-8">
-      {/* <p className="text-base mb-2 font-bold">Vehicles</p>   */}
-      <div className="flow-root">
-        <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-            <table className="min-w-full divide-y divide-gray-300">
-              <thead>
-                <tr>
-                  <th
-                    scope="col"
-                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                  >
-                    VEHICLE ID
-                  </th>
-                  <th
-                    scope="col"
-                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                  >
-                    VEHICLE TYPE
-                  </th>
-                  <th
-                    scope="col"
-                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                  >
-                    LICENSE PLATE
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-[#FAFAFB]">
-                {visibleVehicles.map((vehicle, index) => {
-                  return (
-                    <Fragment key={index}>
-                      <tr className="hover:bg-gray-100">
-                        <td
-                          className="whitespace-nowrap font-nunito font-regular pr-3  pl-4 pr-3  text-d-blue text-base sm:pl-0"
-                          onClick={() => handleVehicleClick(vehicle)}
-                        >
-                          {vehicle.vehiclesId}
-                        </td>
-                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
-                          {vehicle.vehicle_type}
-                        </td>
-                        <td className="whitespace-nowrap px-2 py-2 relative">
-                          {vehicle.lisence_plate}
-                        </td>
-                        <td className="whitespace-nowrap px-2 py-2 relative flex flex-row">
-                          <div onClick={() => handleEditClick(vehicle)}>
-                            <EditBtn />
-                          </div>
-                          <div>
-                            <button
-                              className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2 ml-4"
-                              onClick={() =>
-                                updateVehicleStatusInDatabase(
-                                  vehicle.id,
-                                  !vehicle.archive
-                                )
-                              }
-                            >
-                              {vehicle.archive ? "Unarchive" : "Archive"}
-                            </button>
-                          </div>
-                          <div className="h-10"></div>
-                        </td>
-                      </tr>
-                    </Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
-
-            <div className="flex flex-row justify-center my-4 ui-selected:border-b-4 outline-none text-sm font-nunito font-bold uppercase">
-              <button
-                className="ml-5"
-                onClick={() => setCurrentPage(currentPage - 1)}
-                disabled={currentPage === 0}
-              >
-                Prev
-              </button>
-              <span className="ml-5">{currentPage + 1}</span>
-              <button
-                className="ml-5"
-                onClick={() => setCurrentPage(currentPage + 1)}
-                disabled={endIndex >= sortedVehicles.length}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }

@@ -47,8 +47,13 @@ export default function Jobcard() {
     organisationId: "",
     archive: false,
   });
-  const { organisationId } = useAuthContext();
-
+  const {
+    currentAdmin,
+    currentUser,
+    organisationId,
+    isSuperAdmin,
+    userClaims,
+  } = useAuthContext();
   const handleReset = () => {
     setOpen(false);
   };
@@ -227,7 +232,6 @@ export default function Jobcard() {
   const visibleJobCards = fetchedJobcards.slice(startIndex, endIndex);
 
   return (
-    // <div>planned</div>
     <div className="mt-2 h-full">
       <div className=" flex justify-end">
         <Button
@@ -366,7 +370,6 @@ export default function Jobcard() {
                       >
                         Reset
                       </Button>
-                      {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
                       <button
                         className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center py-4 px-4"
                         type="submit"
