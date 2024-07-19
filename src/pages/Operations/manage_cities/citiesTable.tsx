@@ -6,21 +6,21 @@ import { fbDb } from "@/firebase/configs";
 import { DocumentData, doc, setDoc } from "firebase/firestore";
 
 interface ClientsTableProps {
-  clients: DocumentData[];
   filteredClients: DocumentData[];
+  clients: DocumentData[];
   updateFetchedClients: (updatedClients: DocumentData[]) => void;
   handleEditClick: any;
   hasEditClientPermission: any;
   hasArchiveClientPermission: any;
 }
 
-export default function CitiesTable({
-  clients,
+const CitiesTable = ({
+  clients = [], // Set default value to an empty array
   updateFetchedClients,
   handleEditClick,
   hasEditClientPermission,
   hasArchiveClientPermission,
-}: ClientsTableProps) {
+}: ClientsTableProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const rowsPerPage = 6;
@@ -48,9 +48,8 @@ export default function CitiesTable({
     }
   });
 
-  // const visibleClients = sortedClients.slice(startIndex, endIndex);
   const visibleClients = sortedClients.slice(startIndex, endIndex);
-  // .filter((client) => !client.archive);
+
   const updateVehicleStatusInDatabase = async (
     clientId: string,
     newStatus: boolean
@@ -69,12 +68,10 @@ export default function CitiesTable({
     }
   };
 
-  // const Headers = ["VEHICLE ID", "VEHICLE TYPE", "LICENSE PLATE"]
-
   return (
     <>
       <p className="text-base ml-10 font-bold">Clients</p>
-      <div className="flex  text-base mt-2 ml-8 w-72 searchBarContainer">
+      <div className="flex text-base mt-2 ml-8 w-72 searchBarContainer">
         <SearchBar
           placeholder="Search For Clients"
           value={searchQuery}
@@ -105,47 +102,40 @@ export default function CitiesTable({
                   </tr>
                 </thead>
                 <tbody className="bg-[#FAFAFB]">
-                  {visibleClients.map((clients, index) => {
-                    // const clientId = `C${(index + 1)
-                    //   .toString()
-                    //   .padStart(3, "0")}`;
-                    // console.log("Client ID", clientId);
-
-                    return (
-                      <Fragment key={index}>
-                        <tr className="hover:bg-gray-100">
-                          <td className="whitespace-nowrap font-nunito font-regular pt-1 pl-4 pr-3 text-d-blue text-base sm:pl-0">
-                            {clients.clientId}
-                          </td>
-                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
-                            {clients.name}
-                          </td>
-                          {hasEditClientPermission &&
-                            hasArchiveClientPermission && (
-                              <td className="whitespace-nowrap px-2 py-2 relative flex flex-row">
-                                <div onClick={() => handleEditClick(clients)}>
-                                  <EditBtn />
-                                </div>
-                                <div>
-                                  <button
-                                    className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2 ml-4"
-                                    onClick={() =>
-                                      updateVehicleStatusInDatabase(
-                                        clients.id,
-                                        !clients.archive
-                                      )
-                                    }
-                                  >
-                                    {clients.archive ? "Unarchive" : "Archive"}
-                                  </button>
-                                </div>
-                                <div className="h-10"></div>
-                              </td>
-                            )}
-                        </tr>
-                      </Fragment>
-                    );
-                  })}
+                  {visibleClients.map((clients, index) => (
+                    <Fragment key={index}>
+                      <tr className="hover:bg-gray-100">
+                        <td className="whitespace-nowrap font-nunito font-regular pt-1 pl-4 pr-3 text-d-blue text-base sm:pl-0">
+                          {clients.clientId}
+                        </td>
+                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
+                          {clients.name}
+                        </td>
+                        {hasEditClientPermission &&
+                          hasArchiveClientPermission && (
+                            <td className="whitespace-nowrap px-2 py-2 relative flex flex-row">
+                              <div onClick={() => handleEditClick(clients)}>
+                                <EditBtn />
+                              </div>
+                              <div>
+                                <button
+                                  className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2 ml-4"
+                                  onClick={() =>
+                                    updateVehicleStatusInDatabase(
+                                      clients.id,
+                                      !clients.archive
+                                    )
+                                  }
+                                >
+                                  {clients.archive ? "Unarchive" : "Archive"}
+                                </button>
+                              </div>
+                              <div className="h-10"></div>
+                            </td>
+                          )}
+                      </tr>
+                    </Fragment>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -153,10 +143,7 @@ export default function CitiesTable({
         </div>
       </div>
 
-      <div
-        className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
-            text-sm font-nunito font-bold uppercase bg-[#FAFAFB]"
-      >
+      <div className="flex flex-row justify-center my-4 ui-selected:border-b-4 outline-none text-sm font-nunito font-bold uppercase bg-[#FAFAFB]">
         <button
           className="ml-5"
           onClick={() => setCurrentPage(currentPage - 1)}
@@ -175,4 +162,6 @@ export default function CitiesTable({
       </div>
     </>
   );
-}
+};
+
+export default CitiesTable;

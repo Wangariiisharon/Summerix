@@ -2,60 +2,53 @@ import Vehicles from "./Vehicles";
 import { Tab } from "@headlessui/react";
 import { Fragment, SetStateAction, useEffect, useState } from "react";
 import { AddButton, Button, EditBtn } from "@/components/Buttons";
-import { Formik, Field, Form } from "formik/dist/index";
-import { FormModal } from "@/components/Modals/FormModal";
-import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { doc, setDoc, DocumentData } from "firebase/firestore";
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import { useRouter } from "next/router";
-import { toast } from "react-hot-toast";
-import { useAuthContext } from "@/components/Authentication/AuthProvider";
-import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
-import * as Yup from "yup";
+
 interface VehiclesTableProps {
   selectedTab: number;
-  vehicles: DocumentData[];
+  vehicles?: DocumentData[];
   updateFetchedVehicles: (updatedDrivers: DocumentData[]) => void;
   handleEditClick: any;
   hasEditVehiclesPermission: any;
   hasArchivePermission: any;
 }
 
+VehiclesTable.defaultProps = {
+  vehicles: [],
+};
+
 export default function VehiclesTable({
-  vehicles,
+  vehicles = [],
   updateFetchedVehicles,
   handleEditClick,
-
   hasEditVehiclesPermission,
   hasArchivePermission,
 }: VehiclesTableProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const rowsPerPage = 3;
 
+  if (!vehicles || vehicles.length === 0) {
+    return <div>No vehicles data available.</div>;
+  }
+
   const activeVehicles = vehicles.filter((vehicle) => vehicle.status);
 
-  // Sort vehicles to put archived vehicles at the bottom
   const sortedVehicles = [...vehicles].sort((a, b) => {
     if (a.archive && !b.archive) {
-      return 1; // a should come after b (archived vehicles come after non-archived)
+      return 1;
     } else if (!a.archive && b.archive) {
-      return -1; // a should come before b
+      return -1;
     } else {
-      return 0; // no change in order
+      return 0;
     }
   });
 
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const visibleVehicles = sortedVehicles.slice(startIndex, endIndex);
-  // .filter((admin) => !admin.archive);
-  // const visibleVehicles = sortedVehicles.slice(startIndex, endIndex);
-
-  const handleReassign = () => {
-    // Implement your reassign logic here
-  };
   const router = useRouter();
-
   const updateVehicleStatusInDatabase = async (
     vehicleId: string,
     newStatus: boolean
@@ -73,14 +66,13 @@ export default function VehiclesTable({
       console.error("Error updating Vehicle status in database:", error);
     }
   };
-  //     // const Headers = ["VEHICLE ID", "VEHICLE TYPE", "LICENSE PLATE"]
+
   const handleVehicleClick = (vehicle: any) => {
     router.push(`Operations/Vehicles/vehiclesDetails?id=${vehicle.id}`);
   };
 
   return (
     <div className="px-4 ml-2 sm:px-6 lg:px-8">
-      {/* <p className="text-base mb-2 font-bold">Vehicles</p>   */}
       <div className="flow-root">
         <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
@@ -146,7 +138,6 @@ export default function VehiclesTable({
                               </button>
                             </div>
                           )}
-
                           <div className="h-10"></div>
                         </td>
                       </tr>

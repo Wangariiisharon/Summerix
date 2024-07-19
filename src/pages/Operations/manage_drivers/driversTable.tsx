@@ -1,16 +1,12 @@
 import { Tab } from "@headlessui/react";
-import { Fragment, SetStateAction, useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { AddButton, Button, EditBtn } from "@/components/Buttons";
 import Table from "@/components/Table/Table";
 import { HeaderCell, BodyCell } from "@/components/Table/Cells";
 import { TableBody } from "@/components/Table/Row";
 import SearchBar from "@/components/Forms/input";
-
 import { setDoc, DocumentData } from "firebase/firestore";
-import * as Yup from "yup";
 import { fbDb } from "@/firebase/configs";
-import "firebase/firestore";
-import "firebase/storage";
 import { useRouter } from "next/router";
 import { doc } from "firebase/firestore";
 
@@ -23,7 +19,7 @@ interface DriversTableProps {
 }
 
 export default function DriversTable({
-  drivers,
+  drivers = [], // Default to an empty array
   updateFetchedDrivers,
   handleEditClick,
   hasEditDriverPermission,
@@ -32,12 +28,15 @@ export default function DriversTable({
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const rowsPerPage = 6;
-
   const router = useRouter();
 
   const handleSearchChange = (e: any) => {
     setSearchQuery(e.target.value);
   };
+
+  if (!drivers) {
+    return <p>Loading...</p>;
+  }
 
   // Filter and sort drivers
   const filteredDrivers = drivers.filter((driver) => {
