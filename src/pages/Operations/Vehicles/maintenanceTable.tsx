@@ -26,6 +26,7 @@ import { toast } from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import Pending from "./pending";
 import * as Yup from "yup";
+
 interface MaintenanceTableProps {
   selectedTab: number;
   maintananceList: DocumentData;
@@ -36,7 +37,7 @@ interface MaintenanceTableProps {
 
 export default function MaintananceTable({
   selectedTab,
-  maintananceList,
+  maintananceList = [],
 }: MaintenanceTableProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const rowsPerPage = 6;
@@ -45,6 +46,10 @@ export default function MaintananceTable({
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const currentDate = new Date();
+
+  if (!maintananceList || maintananceList.length === 0) {
+    return <div>No maintenance data available.</div>;
+  }
 
   const filteredApprovedMaintenance = maintananceList.filter(
     (maintenance: { status: string }) => maintenance.status === "Approved"
@@ -55,10 +60,8 @@ export default function MaintananceTable({
       const maintenanceDate = new Date(maintenance?.date?.seconds * 1000);
 
       if (selectedTab === 0) {
-        // Show items with dates that are yet to reach (future dates)
         return maintenanceDate > currentDate;
       } else if (selectedTab === 1) {
-        // Show items with dates that have already passed (past dates)
         return maintenanceDate < currentDate;
       }
 
@@ -192,7 +195,6 @@ export default function MaintananceTable({
             {"<<"}
           </button>
           {pageNumbers().map((num, index) => {
-            // Only render buttons for numbers, and static text for ellipsis
             if (typeof num === "number") {
               return (
                 <button key={index} onClick={() => handlePageClick(num)}>

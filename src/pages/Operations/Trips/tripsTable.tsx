@@ -30,6 +30,7 @@ import { startOfMonth, endOfMonth, format } from "date-fns";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import PlacesAutocomplete from "react-places-autocomplete";
 import * as Yup from "yup";
+
 interface TripsTableProps {
   selectedTab: number;
   trips: DocumentData[];
@@ -49,7 +50,7 @@ interface TripsPerVehicle {
 export default function TripsTable({
   selectedTab,
   trips,
-  filteredTrips,
+  filteredTrips = [],
   handleEditClick,
   hasViewTripermission,
   hasEditTripermission,
@@ -93,6 +94,7 @@ export default function TripsTable({
   const handlePageClick = (page: number) => {
     setCurrentPage(page);
   };
+
   const pageNumbers = () => {
     let pages = [];
     if (totalPages <= 5) {
@@ -151,7 +153,6 @@ export default function TripsTable({
                       Status
                     </th>
                   )}
-
                   <th
                     scope="col"
                     className="relative whitespace-nowrap py-3.5 pl-3 pr-4 sm:pr-0"
@@ -166,15 +167,16 @@ export default function TripsTable({
                     <div className="w-full mb-2 font-nunito font-regular"></div>
                     <tr
                       className="bg-[#FAFAFB] hover:bg-gray-100"
-                      //   onClick={() => handleTripClick(trip)}
                       onClick={
                         hasViewTripermission
                           ? () => handleTripClick(trip)
                           : undefined
                       }
-                      style={{ cursor: "pointer" }}
+                      style={{
+                        cursor: hasViewTripermission ? "pointer" : "default",
+                      }}
                     >
-                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium  text-blue-700 sm:pl-0">
+                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-blue-700 sm:pl-0">
                         {trip.trip_id}
                       </td>
                       <td className="whitespace-nowrap px-2 py-2 relative">
@@ -189,8 +191,8 @@ export default function TripsTable({
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                         {trip.tripId}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {hasEditTripermission && (
+                      {hasEditTripermission && (
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                           <button
                             className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2"
                             onClick={(e) => {
@@ -207,8 +209,8 @@ export default function TripsTable({
                               ? trip.trip_status
                               : "Status"}
                           </button>
-                        )}
-                      </td>
+                        </td>
+                      )}
                     </tr>
                   </Fragment>
                 ))}
@@ -221,18 +223,15 @@ export default function TripsTable({
         <button onClick={() => handlePageClick(0)} disabled={currentPage === 0}>
           {"<<"}
         </button>
-        {pageNumbers().map((num, index) => {
-          // Only render buttons for numbers, and static text for ellipsis
-          if (typeof num === "number") {
-            return (
-              <button key={index} onClick={() => handlePageClick(num)}>
-                {num + 1}
-              </button>
-            );
-          } else {
-            return <span key={index}>...</span>;
-          }
-        })}
+        {pageNumbers().map((num, index) =>
+          typeof num === "number" ? (
+            <button key={index} onClick={() => handlePageClick(num)}>
+              {num + 1}
+            </button>
+          ) : (
+            <span key={index}>...</span>
+          )
+        )}
         <button
           onClick={() => handlePageClick(totalPages - 1)}
           disabled={currentPage === totalPages - 1}
