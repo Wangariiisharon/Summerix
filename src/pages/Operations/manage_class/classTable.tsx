@@ -5,7 +5,7 @@ import { fbDb } from "@/firebase/configs";
 import { DocumentData, doc, setDoc } from "firebase/firestore";
 
 interface ClientsTableProps {
-  clients: DocumentData[];
+  clients?: DocumentData[];
   filteredClients: DocumentData[];
   handleEditClick: any;
   updateFetchedClients: (updatedClasses: DocumentData[]) => void;
@@ -14,14 +14,13 @@ interface ClientsTableProps {
 }
 
 export default function CitiesTable({
-  clients,
+  clients = [],
   handleEditClick,
   updateFetchedClients,
   hasEditClassPermission,
   hasArchiveClassPermission,
 }: ClientsTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [open, setOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const rowsPerPage = 6;
   const startIndex = currentPage * rowsPerPage;
@@ -32,6 +31,7 @@ export default function CitiesTable({
     console.log("Search Query:", query);
     setSearchQuery(query);
   };
+
   const filteredClients = clients.filter((client) => {
     const fullName = `${client.name}`.toLowerCase();
     const nameMatch = fullName.includes(searchQuery.toLowerCase());
@@ -47,7 +47,9 @@ export default function CitiesTable({
       return 0; // no change in order
     }
   });
+
   const visibleClasses = sortedClasses.slice(startIndex, endIndex);
+
   const updateVehicleStatusInDatabase = async (
     classId: string,
     newStatus: boolean
@@ -105,7 +107,6 @@ export default function CitiesTable({
                       <Fragment key={index}>
                         <tr className="hover:bg-gray-100">
                           <td className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 pr-3 text-d-blue text-base sm:pl-0">
-                            {" "}
                             {clients.classId}
                           </td>
                           <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">

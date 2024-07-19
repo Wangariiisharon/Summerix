@@ -28,6 +28,7 @@ export default function VehiclesTable({
 }: VehiclesTableProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const rowsPerPage = 3;
+  const router = useRouter();
 
   if (!vehicles || vehicles.length === 0) {
     return <div>No vehicles data available.</div>;
@@ -48,7 +49,6 @@ export default function VehiclesTable({
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const visibleVehicles = sortedVehicles.slice(startIndex, endIndex);
-  const router = useRouter();
   const updateVehicleStatusInDatabase = async (
     vehicleId: string,
     newStatus: boolean
