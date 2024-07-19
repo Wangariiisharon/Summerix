@@ -34,7 +34,7 @@ interface MaintenanceTableProps {
   checkboxState: any;
 }
 
-export function MaintananceTable({
+export default function MaintananceTable({
   selectedTab,
   maintananceList,
 }: MaintenanceTableProps) {

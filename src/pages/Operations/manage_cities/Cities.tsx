@@ -23,7 +23,7 @@ import * as Yup from "yup";
 
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
-import { CitiesTable } from "./citiesTable";
+import CitiesTable from "./citiesTable";
 
 const Headers = ["CLIENT ID", "NAME"];
 

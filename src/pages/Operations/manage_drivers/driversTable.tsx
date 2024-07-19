@@ -22,7 +22,7 @@ interface DriversTableProps {
   hasArchiveDriverPermission: any;
 }
 
-export function DriversTable({
+export default function DriversTable({
   drivers,
   updateFetchedDrivers,
   handleEditClick,

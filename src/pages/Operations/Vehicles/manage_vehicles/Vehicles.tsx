@@ -25,7 +25,7 @@ import { toast } from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import * as Yup from "yup";
-import { VehiclesTable } from "./vehiclesTable";
+import VehiclesTable from "./vehiclesTable";
 
 interface Vehicle {
   id: string;

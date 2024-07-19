@@ -46,7 +46,7 @@ interface TripsPerVehicle {
   };
 }
 
-export function TripsTable({
+export default function TripsTable({
   selectedTab,
   trips,
   filteredTrips,

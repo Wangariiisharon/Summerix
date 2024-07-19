@@ -21,7 +21,7 @@ interface VehiclesTableProps {
   hasArchivePermission: any;
 }
 
-export function VehiclesTable({
+export default function VehiclesTable({
   vehicles,
   updateFetchedVehicles,
   handleEditClick,

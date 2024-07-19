@@ -29,7 +29,7 @@ import { startOfMonth, endOfMonth, format } from "date-fns";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import PlacesAutocomplete from "react-places-autocomplete";
 import * as Yup from "yup";
-import { TripsTable } from "./tripsTable";
+import TripsTable from "./tripsTable";
 
 interface TripCounts {
   [key: string]: number;

@@ -14,7 +14,7 @@ interface ClientsTableProps {
   hasArchiveClientPermission: any;
 }
 
-export function CitiesTable({
+export default function CitiesTable({
   clients,
   updateFetchedClients,
   handleEditClick,
