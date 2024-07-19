@@ -4,7 +4,7 @@ import { Fragment, useEffect, useState } from "react";
 
 import Cities from "./manage_cities/Cities";
 import Vehicles from "./Vehicles";
-import Trips from "./Trips";
+import Trips from "./Trips/trips";
 import Drivers from "./manage_drivers/Drivers";
 import Class from "./manage_class/class";
 import SiteLayout from "@/Layout/SiteLayout";

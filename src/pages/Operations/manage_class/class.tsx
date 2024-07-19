@@ -21,7 +21,7 @@ import { Formik, Field, Form } from "formik/dist/index";
 import toast from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import * as Yup from "yup";
-
+import { CitiesTable } from "./classTable";
 const validationSchema = Yup.object({
   name: Yup.string().required("Name is required"),
 });
@@ -41,8 +41,13 @@ export default function Class() {
     organisationId: "",
     archive: false,
   });
-  const { organisationId } = useAuthContext();
-
+  const {
+    currentAdmin,
+    currentUser,
+    organisationId,
+    isSuperAdmin,
+    userClaims,
+  } = useAuthContext();
   const handleAdd = () => {};
 
   const handleReset = () => {
@@ -243,6 +248,16 @@ export default function Class() {
     setfetchedClasses(updatedClasses);
   };
 
+  const hasAddPermission =
+    userClaims?.additionalPermissions?.includes("Add Class") ||
+    userClaims?.admin;
+  const hasEditClassPermission =
+    userClaims?.additionalPermissions?.includes("Edit Class") ||
+    userClaims?.admin;
+  const hasArchiveClassPermission =
+    userClaims?.additionalPermissions?.includes("Archive Class") ||
+    userClaims?.admin;
+
   return (
     <>
       <div className="mt-2 h-full">
@@ -250,15 +265,17 @@ export default function Class() {
           <div className="flex w-full justify-end">
             <div className="bg-white">
               <div className="flex Justify-end">
-                <Button
-                  className="rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2"
-                  handleClick={handleAddClient}
-                >
-                  <>
-                    <PlusIcon className="h-6 w-6 mr-2" />
-                    Add Class
-                  </>
-                </Button>
+                {hasAddPermission && (
+                  <Button
+                    className="rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2"
+                    handleClick={handleAddClient}
+                  >
+                    <>
+                      <PlusIcon className="h-6 w-6 mr-2" />
+                      Add Class
+                    </>
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -270,6 +287,8 @@ export default function Class() {
                 filteredClients={filteredClients}
                 handleEditClick={handleEditClick}
                 updateFetchedClients={updateFetchedClients}
+                hasEditClassPermission={hasEditClassPermission}
+                hasArchiveClassPermission={hasArchiveClassPermission}
               />
             </div>
           </Tab.Panel>
@@ -394,165 +413,6 @@ export default function Class() {
             </div>
           </FormModal>
         )}
-      </div>
-    </>
-  );
-}
-
-interface ClientsTableProps {
-  clients: DocumentData[];
-  filteredClients: DocumentData[];
-  handleEditClick: any;
-  updateFetchedClients: (updatedClasses: DocumentData[]) => void;
-}
-
-function CitiesTable({
-  clients,
-  handleEditClick,
-  updateFetchedClients,
-}: ClientsTableProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [open, setOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(0);
-  const rowsPerPage = 6;
-  const startIndex = currentPage * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-
-  const handleSearchChange = (e: any) => {
-    const query = e.target.value;
-    console.log("Search Query:", query);
-    setSearchQuery(query);
-  };
-  const filteredClients = clients.filter((client) => {
-    const fullName = `${client.name}`.toLowerCase();
-    const nameMatch = fullName.includes(searchQuery.toLowerCase());
-    return nameMatch;
-  });
-
-  const sortedClasses = [...filteredClients].sort((a, b) => {
-    if (a.archive && !b.archive) {
-      return 1; // a should come after b (archived vehicles come after non-archived)
-    } else if (!a.archive && b.archive) {
-      return -1; // a should come before b
-    } else {
-      return 0; // no change in order
-    }
-  });
-  // const visibleClasses = sortedClasses.slice(startIndex, endIndex);
-  const visibleClasses = sortedClasses.slice(startIndex, endIndex);
-  // .filter((admin) => !admin.archive);
-  const updateVehicleStatusInDatabase = async (
-    classId: string,
-    newStatus: boolean
-  ) => {
-    try {
-      const vehicleRef = doc(fbDb, "classes", classId);
-      await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
-      console.log("Class status updated in the database:", classId);
-
-      const updatedVehicles = clients.map((client) =>
-        client.id === classId ? { ...client, archive: newStatus } : client
-      );
-      updateFetchedClients(updatedVehicles);
-    } catch (error) {
-      console.error("Error updating Vehicle status in database:", error);
-    }
-  };
-
-  return (
-    <>
-      {/* const Headers = ["CLASS ID", "NAME"] */}
-      <p className="text-base ml-10 font-bold">Class</p>
-      <div className="flex  text-base mt-2 ml-8 w-72 searchBarContainer">
-        <SearchBar
-          placeholder="Search For Class"
-          value={searchQuery}
-          onChange={handleSearchChange}
-          className="ml-5"
-        />
-      </div>
-
-      <div className="ml-2 px-4 sm:px-6 lg:px-8">
-        <div className="flow-root">
-          <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <table className="min-w-full divide-y divide-gray-300">
-                <thead>
-                  <tr>
-                    <th
-                      scope="col"
-                      className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                    >
-                      CLASS ID
-                    </th>
-                    <th
-                      scope="col"
-                      className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                    >
-                      NAME
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-[#FAFAFB]">
-                  {visibleClasses.map((clients, index) => {
-                    return (
-                      <Fragment key={index}>
-                        <tr className="hover:bg-gray-100">
-                          <td className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 pr-3 text-d-blue text-base sm:pl-0">
-                            {" "}
-                            {clients.classId}
-                          </td>
-                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
-                            {clients.name}
-                          </td>
-                          <td className="whitespace-nowrap px-2 py-2 relative flex flex-row">
-                            <div onClick={() => handleEditClick(clients)}>
-                              <EditBtn />
-                            </div>
-                            <div>
-                              <button
-                                className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2 ml-4"
-                                onClick={() =>
-                                  updateVehicleStatusInDatabase(
-                                    clients.id,
-                                    !clients.archive
-                                  )
-                                }
-                              >
-                                {clients.archive ? "Unarchive" : "Archive"}
-                              </button>
-                            </div>
-                            <div className="h-10"></div>
-                          </td>
-                        </tr>
-                      </Fragment>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div
-        className="flex flex-row justify-center my-4 ui-selected:border-b-4  outline-none
-          text-sm font-nunito font-bold uppercase bg-[#FAFAFB]"
-      >
-        <button
-          className="ml-5"
-          onClick={() => setCurrentPage(currentPage - 1)}
-          disabled={currentPage === 0}
-        >
-          Prev
-        </button>
-        <span className="ml-5">{currentPage + 1}</span>
-        <button
-          className="ml-5"
-          onClick={() => setCurrentPage(currentPage + 1)}
-          disabled={endIndex >= filteredClients.length}
-        >
-          Next
-        </button>
       </div>
     </>
   );

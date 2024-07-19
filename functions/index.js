@@ -2,7 +2,7 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const axios = require("axios");
 const cors = require("cors")({ origin: true });
-const serviceAccount = require("./../src/serviceAccount.json"); // Ensure this path is correct
+const serviceAccount = require("./../src/serviceAccount.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -26,7 +26,7 @@ const getOpenExchangeCurrency = async () => {
         method: "GET",
         url: "https://openexchangerates.org/api/latest.json",
         params: {
-          app_id: "1cfa9b9f86664a7db05a07b977b41ccd", // Replace with your OpenExchangeRates app ID
+          app_id: "1cfa9b9f86664a7db05a07b977b41ccd",
           base: "USD",
           symbols: currencies.join(","),
         },
@@ -62,24 +62,6 @@ exports.getOpenExchangeCurrency = functions.pubsub
   .onRun(async (context) => {
     await getOpenExchangeCurrency();
   });
-
-exports.getCountries = functions.https.onRequest((req, res) => {
-  cors(req, res, () => {
-    getCountries().then((countries) => {
-      res.status(200).json(countries);
-    });
-  });
-});
-
-const getCountries = async () => {
-  try {
-    const response = await axios.get("https://restcountries.com/v3.1/all");
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching countries:", error);
-    return [];
-  }
-};
 
 const setCustomUserClaims = async (uid, claims) => {
   try {

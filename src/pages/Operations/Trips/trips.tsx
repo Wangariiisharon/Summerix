@@ -29,17 +29,15 @@ import { startOfMonth, endOfMonth, format } from "date-fns";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import PlacesAutocomplete from "react-places-autocomplete";
 import * as Yup from "yup";
+import { TripsTable } from "./tripsTable";
 
 interface TripCounts {
   [key: string]: number;
 }
-// Define interfaces for your data types
 
-// Defines a map where the key is a string and the value is a Vehicle
 interface VehicleData {
   archive: boolean;
   availability_status: string;
-  // Include other properties as needed
 }
 interface Company {
   id: string;
@@ -78,7 +76,6 @@ const validationSchema = Yup.object({
   pick_up_location: Yup.string().required("Pick up location is required"),
   drop_off_location: Yup.string().required("Drop off location is required"),
   start_time: Yup.date().required("Start time is required"),
-  // end_time: Yup.date().required("End time is required"),
   cargo_type: Yup.string().required("Cargo type is required"),
   cargo_quantity: Yup.string().required("Cargo quantity is required"),
   company: Yup.string().required("Company is required"),
@@ -98,7 +95,6 @@ export default function TripsComponent() {
   const [drivers, setDrivers] = useState<
     { id: string; name: string; phonenumber: string }[]
   >([]);
-  // const [vehicles, setVehicles] = useState<{ id: string; name: string; availability_status: string; lisence_plate: string }[]>([]);
   const [companies, setCompanies] = useState<
     { id: string; name: string; vehicle: string[] }[]
   >([]);
@@ -106,6 +102,13 @@ export default function TripsComponent() {
     string[]
   >([]);
   const [companyDetailsFetched, setCompanyDetailsFetched] = useState(false);
+  const {
+    currentAdmin,
+    currentUser,
+    organisationId,
+    isSuperAdmin,
+    userClaims,
+  } = useAuthContext();
   const [selectedCompany, setSelectedCompany] = useState("");
   const [selectedTab, setSelectedTab] = useState<number>(0);
   const [fetchedTrips, setfetchedTrips] = useState<DocumentData[]>([]);
@@ -127,8 +130,8 @@ export default function TripsComponent() {
     vehicle: "",
     pick_up_location: "",
     drop_off_location: "",
-    start_time: "", // Initialize as an empty string, cast to Date
-    end_time: "", // Make sure it's initialized as a string
+    start_time: "",
+    end_time: "",
     cargo_type: "",
     cargo_quantity: "",
     memo: "",
@@ -141,7 +144,6 @@ export default function TripsComponent() {
     distance: "",
   });
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const { organisationId } = useAuthContext();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value.trim().toLowerCase();
@@ -167,7 +169,7 @@ export default function TripsComponent() {
 
   function formatDate(date: Date): string {
     const day = date.getDate().toString().padStart(2, "0");
-    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // JavaScript months are zero-indexed
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const year = date.getFullYear();
     return `${day}/${month}/${year}`; // Formats date as "dd/MM/YYYY"
   }
@@ -476,23 +478,6 @@ export default function TripsComponent() {
         console.error("Error fetching companies:", error);
       }
     };
-    // const addTimestampsToExistingDocs = async () => {
-    //   const tripsCollection = collection(fbDb, "trips");
-    //   const tripDocs = await getDocs(tripsCollection);
-
-    //   tripDocs.forEach(async (tripDoc) => {
-    //     const tripData = tripDoc.data();
-    //     if (!tripData.timestamp) {
-    //       await updateDoc(doc(fbDb, "trips", tripDoc.id), {
-    //         timestamp: Timestamp.now(),
-    //       });
-    //     }
-    //   });
-
-    //   console.log("Timestamps added to existing documents Trips");
-    // };
-
-    // addTimestampsToExistingDocs();
 
     fetchDrivers();
     fetchedTrips();
@@ -926,6 +911,20 @@ export default function TripsComponent() {
   const waitingTripsCount = countTrips(2);
   const completeTripsCount = countTrips(3);
 
+  const hasExportPermission =
+    userClaims?.additionalPermissions?.includes("Export Trips") ||
+    userClaims?.admin;
+
+  const hasAddPermission =
+    userClaims?.additionalPermissions?.includes("Add Trips") ||
+    userClaims?.admin;
+  const hasViewTripermission =
+    userClaims?.additionalPermissions?.includes("View trips detail") ||
+    userClaims?.admin;
+  const hasEditTripermission =
+    userClaims?.additionalPermissions?.includes("Edit trip") ||
+    userClaims?.admin;
+
   return (
     <div>
       <p className="text-lg font-nunito font-bold mt-2 ml-10 mb-2">Trips</p>
@@ -976,25 +975,30 @@ export default function TripsComponent() {
             />
           </div>
           <div className="flex  right-4">
-            <Button
-              className="bg-d-green text-white text-sm flex w-[140px] h-[38px] items-center justify-center uppercase rounded"
-              handleClick={handleAddTrip}
-            >
-              <>
-                <PlusIcon className="h-6 w-6 mr-2" />
-                Add Trip
-              </>
-            </Button>
-            <button
-              className="ml-4 bg-d-green text-white text-sm flex w-[140px] h-[38px] items-center justify-center uppercase rounded"
-              onClick={handleExportButtonClick}
-              disabled={isExporting}
-            >
-              <>
-                <ArrowDownTrayIcon className="h-6 w-6 mr-2" />
-                Export
-              </>
-            </button>
+            {hasAddPermission && (
+              <Button
+                className="bg-d-green text-white text-sm flex w-[140px] h-[38px] items-center justify-center uppercase rounded"
+                handleClick={handleAddTrip}
+              >
+                <>
+                  <PlusIcon className="h-6 w-6 mr-2" />
+                  Add Trip
+                </>
+              </Button>
+            )}
+
+            {hasExportPermission && (
+              <button
+                className="ml-4 bg-d-green text-white text-sm flex w-[140px] h-[38px] items-center justify-center uppercase rounded"
+                onClick={handleExportButtonClick}
+                disabled={isExporting}
+              >
+                <>
+                  <ArrowDownTrayIcon className="h-6 w-6 mr-2" />
+                  Export
+                </>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -1007,6 +1011,8 @@ export default function TripsComponent() {
                   <AllTrips
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
+                    hasViewTripermission={hasViewTripermission}
+                    hasEditTripermission={hasEditTripermission}
                   />
                 </div>
               ) : (
@@ -1016,6 +1022,8 @@ export default function TripsComponent() {
                     trips={fetchedTrips}
                     filteredTrips={filteredTrips}
                     handleEditClick={handleEditClick}
+                    hasViewTripermission={hasViewTripermission}
+                    hasEditTripermission={hasEditTripermission}
                   />
                 </div>
               )}
@@ -1027,6 +1035,8 @@ export default function TripsComponent() {
                   trips={fetchedTrips}
                   filteredTrips={filteredTrips}
                   handleEditClick={handleEditClick}
+                  hasViewTripermission={hasViewTripermission}
+                  hasEditTripermission={hasEditTripermission}
                 />
               </div>
             </Tab.Panel>
@@ -1037,6 +1047,8 @@ export default function TripsComponent() {
                   trips={fetchedTrips}
                   filteredTrips={filteredTrips}
                   handleEditClick={handleEditClick}
+                  hasViewTripermission={hasViewTripermission}
+                  hasEditTripermission={hasEditTripermission}
                 />
               </div>
             </Tab.Panel>
@@ -1047,6 +1059,8 @@ export default function TripsComponent() {
                   trips={fetchedTrips}
                   filteredTrips={filteredTrips}
                   handleEditClick={handleEditClick}
+                  hasViewTripermission={hasViewTripermission}
+                  hasEditTripermission={hasEditTripermission}
                 />
               </div>
             </Tab.Panel>
@@ -1672,206 +1686,6 @@ export default function TripsComponent() {
           </div>
         </FormModal>
       )}
-    </div>
-  );
-}
-
-interface TripsTableProps {
-  selectedTab: number;
-  trips: DocumentData[];
-  filteredTrips: DocumentData[];
-  handleEditClick: any;
-}
-
-interface TripsPerVehicle {
-  [key: string]: {
-    count: number;
-    lastMonth: string;
-  };
-}
-
-export function TripsTable({
-  selectedTab,
-  trips,
-  filteredTrips,
-  handleEditClick,
-}: TripsTableProps) {
-  const [currentPage, setCurrentPage] = useState(0);
-  const rowsPerPage = 6;
-  const totalTrips = filteredTrips.length;
-  const totalPages = Math.ceil(totalTrips / rowsPerPage);
-  const startIndex = currentPage * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const router = useRouter();
-
-  const handleTripClick = (trip: any) => {
-    router.push(`Operations/Trips/viewTrip?id=${trip.id}`);
-  };
-
-  const tripsPerVehicle: TripsPerVehicle = {};
-  const currentDate = new Date();
-
-  const filteredAllocation = filteredTrips.filter((trip) => {
-    const startTime = new Date(trip?.start_time?.seconds * 1000);
-    const endTime = new Date(trip?.end_time?.seconds * 1000);
-
-    switch (selectedTab) {
-      case 0: // First tab: Show all trips
-        return true;
-      case 1: // Second tab: Trips whose status is 'On Route'
-        return trip.trip_status === "On Route";
-      case 2: // Second last tab: Trips with specific statuses
-        return ["Mechanical", "Booked"].includes(trip.trip_status);
-      case 3: // Last tab: Show completed trips ('Done')
-        return trip.trip_status === "Done";
-      default:
-        return false;
-    }
-  });
-
-  console.log("Selected Tab", selectedTab);
-  const visibleTrips = filteredAllocation.slice(startIndex, endIndex);
-
-  const handlePageClick = (page: number) => {
-    setCurrentPage(page);
-  };
-  const pageNumbers = () => {
-    let pages = [];
-    if (totalPages <= 5) {
-      for (let i = 0; i < totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      pages = [0, 1, 2, 3, "...", totalPages - 1];
-    }
-    return pages;
-  };
-
-  return (
-    <div className="px-4 sm:px-6 lg:px-8">
-      <div className="mt-8 flow-root">
-        <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-            <table className="min-w-full divide-y divide-gray-300">
-              <thead>
-                <tr>
-                  <th
-                    scope="col"
-                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                  >
-                    Trip ID
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Name
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Pick Up
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Drop off
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Trip Identification
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Status
-                  </th>
-                  <th
-                    scope="col"
-                    className="relative whitespace-nowrap py-3.5 pl-3 pr-4 sm:pr-0"
-                  >
-                    <span className="sr-only"></span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-[#FAFAFB]">
-                {visibleTrips.map((trip, index) => (
-                  <Fragment key={index}>
-                    <div className="w-full mb-2 font-nunito font-regular"></div>
-                    <tr
-                      className="bg-[#FAFAFB] hover:bg-gray-100"
-                      onClick={() => handleTripClick(trip)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium  text-blue-700 sm:pl-0">
-                        {trip.trip_id}
-                      </td>
-                      <td className="whitespace-nowrap px-2 py-2 relative">
-                        {trip.vehicle}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {trip.pick_up_location}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {trip.drop_off_location}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {trip.tripId}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        <button
-                          className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditClick(trip);
-                          }}
-                        >
-                          {[
-                            "Booked",
-                            "On Route",
-                            "Mechanical",
-                            "Done",
-                          ].includes(trip.trip_status)
-                            ? trip.trip_status
-                            : "Status"}
-                        </button>
-                      </td>
-                    </tr>
-                  </Fragment>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div className="flex justify-between items-center pt-4">
-        <button onClick={() => handlePageClick(0)} disabled={currentPage === 0}>
-          {"<<"}
-        </button>
-        {pageNumbers().map((num, index) => {
-          // Only render buttons for numbers, and static text for ellipsis
-          if (typeof num === "number") {
-            return (
-              <button key={index} onClick={() => handlePageClick(num)}>
-                {num + 1}
-              </button>
-            );
-          } else {
-            return <span key={index}>...</span>;
-          }
-        })}
-        <button
-          onClick={() => handlePageClick(totalPages - 1)}
-          disabled={currentPage === totalPages - 1}
-        >
-          {">>"}
-        </button>
-      </div>
     </div>
   );
 }
