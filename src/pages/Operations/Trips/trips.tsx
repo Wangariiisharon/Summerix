@@ -912,7 +912,7 @@ export default function TripsComponent() {
   const completeTripsCount = countTrips(3);
 
   const hasExportPermission =
-    userClaims?.additionalPermissions?.includes("Export Trips") ||
+    userClaims?.additionalPermissions?.includes("Export Trip") ||
     userClaims?.admin;
 
   const hasAddPermission =

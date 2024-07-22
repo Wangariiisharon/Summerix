@@ -1,12 +1,9 @@
 import {
   DocumentData,
-  DocumentReference,
   collection,
   doc,
   getDoc,
   getDocs,
-  getFirestore,
-  onSnapshot,
   query,
   setDoc,
   updateDoc,
@@ -16,13 +13,12 @@ import React, { useEffect, useState } from "react";
 import { fbDb } from "@/firebase/configs";
 import { useRouter } from "next/router";
 import SiteLayout from "@/Layout/SiteLayout";
-import { XMarkIcon } from "@heroicons/react/24/outline";
-import { Button } from "@/components/Buttons";
-import { Example } from "@/components/Cards/template";
-import { AllPermissions } from "@/components/Cards/template";
+
 import toast from "react-hot-toast";
 import { Formik, Field, Form } from "formik/dist/index";
-import { FormModal } from "@/components/Modals/FormModal";
+import { FormModal, NewFormModal } from "@/components/Modals/FormModal";
+import * as Yup from "yup";
+import country from "country-list-js";
 
 interface DepatmentDetailsProps {
   departmentId: string;
@@ -35,22 +31,39 @@ interface DepatmentDetailsProps {
   };
 }
 interface AdminData {
-  additionalPermissions: string[];
-  department: any;
-  email: string;
   firstname: string;
   lastname: string;
+  email: string;
   phonenumber: string;
   super_admin: boolean;
   status: boolean;
+  additionalPermissions: string[];
+  adminId: string;
+  fcmToken: string;
+  invitationSent: boolean;
+  organisationId: string;
+  userId: string;
+  department: string;
+  country: string;
   role: string;
 }
 
-interface CheckedState {
-  [key: string]: {
-    fullPermission: boolean;
-    permissions: boolean[];
-  };
+interface EditFormInitialValues {
+  firstname: string;
+  lastname: string;
+  email: string;
+  phonenumber: string;
+  super_admin: boolean;
+  status: boolean;
+  additionalPermissions: string[];
+  adminId: string;
+  fcmToken: string;
+  invitationSent: boolean;
+  organisationId: string;
+  userId: string;
+  department: string;
+  country: string;
+  role: string;
 }
 
 type PermissionObject = { name: string; checked: boolean };
@@ -76,7 +89,7 @@ export default function ViewDepatment() {
   const [additionalPermissions, setAdditionalPermissions] = useState<string[]>(
     []
   );
-
+  const [open, setOpen] = useState(false);
   const [admin, setAdmin] = useState<DocumentData[]>([]);
   const [fetchedAdmins, setFetchedAdmins] = useState<DocumentData[]>([]);
   const [combinedPermissions, setCombinedPermissions] = useState<string[]>([]);
@@ -85,28 +98,60 @@ export default function ViewDepatment() {
   const [userData, setUserData] = useState<AdminData[]>([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [allChecked, setAllChecked] = useState(false);
+  const [countries, setCountries] = useState<string[]>([]);
 
-  const [editFormInitialValues, setEditFormInitialValues] = useState({
-    firstname: "",
-    lastname: "",
-    email: "",
-    phonenumber: "",
-    super_admin: false,
-    status: true,
-    additionalPermissions: [],
-    adminId: "",
-    fcmToken: "",
-    invitationSent: false,
-    organisationId: "",
-    userId: "",
-    department: "",
-  });
+  const [editFormInitialValues, setEditFormInitialValues] = useState<AdminData>(
+    {
+      firstname: "",
+      lastname: "",
+      email: "",
+      phonenumber: "",
+      super_admin: false,
+      status: true,
+      additionalPermissions: [],
+      adminId: "",
+      fcmToken: "",
+      invitationSent: false,
+      organisationId: "",
+      userId: "",
+      department: "",
+      country: "",
+      role: "",
+    }
+  );
   const sections = ["Dashboard", "Vehicles", "Drivers", "Trips"];
   const router = useRouter();
 
   const { id } = router.query;
 
-  const handleEditClick = (admin: DocumentData) => {
+  const EditvalidationSchema = Yup.object({
+    firstname: Yup.string().required("First name is required"),
+    lastname: Yup.string().required("Last name is required"),
+    email: Yup.string().required("Email details are required"),
+    phonenumber: Yup.string().required("Phone number address is required"),
+    department: Yup.string().required("Department is required"),
+  });
+  // const handleEditClick = (admin: DocumentData) => {
+  //   setEditFormInitialValues({
+  //     firstname: admin.firstname,
+  //     lastname: admin.lastname,
+  //     email: admin.email,
+  //     phonenumber: admin.phonenumber,
+  //     super_admin: admin.super_admin,
+  //     status: admin.status,
+  //     additionalPermissions: admin.additionalPermissions,
+  //     department: admin.department,
+  //     adminId: admin.adminId,
+  //     fcmToken: admin.fcmToken,
+  //     invitationSent: admin.invitationSent,
+  //     organisationId: admin.organisationId,
+  //     userId: admin.userId,
+  //     country: admin.country,
+  //     role: admin.role,
+  //   });
+  //   setEditModalOpen(true);
+  // };
+  const handleEditClick = (admin: AdminData) => {
     setEditFormInitialValues({
       firstname: admin.firstname,
       lastname: admin.lastname,
@@ -116,11 +161,13 @@ export default function ViewDepatment() {
       status: admin.status,
       additionalPermissions: admin.additionalPermissions,
       department: admin.department,
-      adminId: admin.adminId,
-      fcmToken: admin.fcmToken,
-      invitationSent: admin.invitationSent,
-      organisationId: admin.organisationId,
+      adminId: admin.userId, // Ensure adminId is set correctly
+      fcmToken: "",
+      invitationSent: false,
+      organisationId: "",
       userId: admin.userId,
+      country: "",
+      role: admin.role,
     });
     setEditModalOpen(true);
   };
@@ -143,38 +190,14 @@ export default function ViewDepatment() {
     invitationSent: any;
     organisationId: any;
     userId: any;
+    country: any;
+    role: any;
   }) => {
     console.log("Edited Values:", values);
 
     try {
-      if (!values.firstname) {
-        console.error(`Please fill the field FirstName`);
-        toast.error(`Please fill the field FirstName`);
-        return;
-      }
-      if (!values.lastname) {
-        console.error(`Please fill the field LastName`);
-        toast.error(`Please fill the field LastName`);
-        return;
-      }
-      if (!values.email) {
-        console.error(`Please fill the field Email`);
-        toast.error(`Please fill the field Email`);
-        return;
-      }
-      if (!values.phonenumber) {
-        console.error(`Please fill the field  Phone number`);
-        toast.error(`Please fill the field Phone number`);
-        return;
-      }
-      if (!values.department) {
-        console.error(`Please fill the field Department`);
-        toast.error(`Please fill the field Department`);
-        return;
-      }
-
       // Update the vehicle data in the database using the selectedVehicle.id
-      const AdminRef = doc(fbDb, "admins"); // Ensure id is defined and contains the correct document path
+      const AdminRef = doc(fbDb, "admins", values.userId); // Ensure id is defined and contains the correct document path
       await setDoc(AdminRef, {
         firstname: values.firstname,
         lastname: values.lastname,
@@ -189,6 +212,8 @@ export default function ViewDepatment() {
         invitationSent: values.invitationSent,
         organisationId: values.organisationId,
         userId: values.userId,
+        country: values.country,
+        role: values.role,
       });
 
       // Update the local fetchedVehicles state
@@ -209,6 +234,8 @@ export default function ViewDepatment() {
               invitationSent: values.invitationSent,
               organisationId: values.organisationId,
               userId: values.userId,
+              country: values.country,
+              role: values.role,
             }
           : admin
       );
@@ -305,6 +332,10 @@ export default function ViewDepatment() {
     }
   };
 
+  const handleReset = () => {
+    setOpen(false);
+  };
+
   useEffect(() => {
     const unsubscribe = () => {}; // Initialize unsubscribe function  fetchAdditionalPermissions
 
@@ -334,17 +365,20 @@ export default function ViewDepatment() {
         return;
       }
 
-      const adminRef = doc(fbDb, "admins", id as string); // Use doc to directly access a single document
-      const adminSnapshot = await getDoc(adminRef);
+      const adminsCollection = collection(fbDb, "admins");
+      const q = query(adminsCollection, where("userId", "==", id));
+      const querySnapshot = await getDocs(q);
 
-      if (!adminSnapshot.exists()) {
+      if (querySnapshot.empty) {
         console.log("Admin not found.");
         setUserData([]);
         return;
       }
 
-      const adminData = adminSnapshot.data() as AdminData;
-      setUserData([adminData]);
+      const adminData = querySnapshot.docs.map(
+        (doc) => doc.data() as AdminData
+      );
+      setUserData(adminData);
       console.log("THIS IS THE USER DATA", adminData);
     };
 
@@ -369,9 +403,20 @@ export default function ViewDepatment() {
         console.error("Error fetching departments:", error);
       }
     };
+    const fetchCountries = () => {
+      try {
+        const country_names = country.names();
+        setCountries(country_names);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching countries:", error);
+        setLoading(false);
+      }
+    };
     fetchPermissions();
     fetchDepartments();
     fetchAdmins();
+    fetchCountries();
 
     // Clean up function to unsubscribe from snapshot listener
     return () => {
@@ -564,7 +609,10 @@ export default function ViewDepatment() {
                   {userData[0]?.department}
                 </p>
               </div>
-              <button className="text-white border border-teal-400 bg-teal-400 hover:bg-teal-400 font-semibold  px-2 ml-[100px] mr-[10px] rounded flex items-center">
+              <button
+                className="text-white border border-teal-400 bg-teal-400 hover:bg-teal-400 font-semibold  px-2 ml-[100px] mr-[10px] rounded flex items-center"
+                onClick={() => handleEditClick(userData[0])}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -580,80 +628,512 @@ export default function ViewDepatment() {
                   />
                 </svg>
                 Edit
-              </button>{" "}
-            </div>
-          </div>
-          <div className="border-y border-gray-200 mt-[43px]"></div>
-          <div className="p-6 bg-white shadow-md rounded-lg mt-[43px]">
-            <div className="flex flex-row items-center mb-4 w-full bg-white">
-              <p>Permissions</p>
-              <label className="flex items-center space-x-2 ml-[10px]">
-                <input
-                  type="checkbox"
-                  checked={allChecked}
-                  onChange={handleFullPermissionChange}
-                  className="mr-[10px] rounded"
-                />
-                <span className="font-custom text-sm text-[#6b6b73]">
-                  Full Permission
-                </span>
-              </label>
-            </div>
-            <div className="">
-              <div className="flex justify-start mt-[25px] ml-[31px] mb-[25px]">
-                {/* Iterate over sections */}
-                {Object.keys(permissions).map((section) => (
-                  <div key={section} className="ml-[18px]">
-                    {/* Section title */}
-                    <div className="flex flex-row w-full bg-white">
-                      <div className="flex flex-col mb-2">
-                        <p className="font-medium text-[#030229]">{section}</p>
-                        <label className="flex mt-[15px] space-x-2">
-                          <input
-                            type="checkbox"
-                            className="form-checkbox rounded text-sm"
-                          />
-                          <span className="font-custom text-sm text-[#6b6b73]">
-                            Select all
-                          </span>
-                        </label>
-                      </div>
-                    </div>
-                    {/* Permissions checkboxes */}
-                    <div className="flex flex-col">
-                      {permissions[section].map((permission) => (
-                        <div
-                          key={permission.name}
-                          className="flex flex-row mb-2 items-center"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={permission.checked}
-                            onChange={() =>
-                              handlePermissionChange(section, permission.name)
-                            }
-                            className="mr-[10px] rounded"
-                          />
-                          <p className="text-[#6b6b73] text-sm">
-                            {permission.name}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="flex justify-end mt-[20px] mb-[20px]">
-              <button
-                onClick={handleSaveChanges}
-                className="bg-[#065AD8] text-white py-[10px] px-[20px] rounded-[5px]"
-              >
-                Save Changes
               </button>
             </div>
           </div>
+          <div className="border-y border-gray-200 mt-[43px]"></div>
+
+          {/* Permissions section */}
+          <div className="p-6 bg-white shadow-md rounded-lg mt-[43px]">
+            <div className="mt-[45px]  font-custom text-custom-size font-semibold flex flex-row">
+              <p>Permissions</p>
+              <label className="flex items-center ml-2">
+                <input
+                  type="checkbox"
+                  className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
+                  checked={allChecked}
+                  onChange={handleFullPermissionChange}
+                />
+                <span className="ml-2 text-gray-700">Full Permission</span>
+              </label>
+            </div>
+
+            <div className="mt-[23px] bg-[#f7f8fa]  border border-[#dee8f8]">
+              <div className="flex justify-start mt-[25px] ml-[32px] mb-[25px] ">
+                <div className="ml-[18px] ">
+                  <div className="flex flex-col p-[20px]">
+                    <div className="grid grid-cols-4 gap-4">
+                      <div>
+                        <div className="flex flex-col w-full mb-4 ">
+                          <h2 className="text-lg font-semibold mt-4 text-sm">
+                            Dashboard
+                          </h2>
+                          <label className="flex items-center mt-2">
+                            <input
+                              type="checkbox"
+                              className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
+                              checked={allChecked}
+                              onChange={handleFullPermissionChange}
+                            />
+                            <span className="ml-2 text-gray-700">
+                              Select All
+                            </span>
+                          </label>
+                        </div>
+
+                        {permissions["Dashboard"]?.map((permission) => (
+                          <label
+                            key={permission.name}
+                            className="flex items-center mt-2 text-sm"
+                          >
+                            <input
+                              type="checkbox"
+                              className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
+                              checked={permission.checked}
+                              onChange={() =>
+                                handlePermissionChange(
+                                  "Dashboard",
+                                  permission.name
+                                )
+                              }
+                            />
+                            <span className="ml-2 text-gray-700">
+                              {permission.name}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+
+                      <div>
+                        <div className="flex flex-col w-ful mb-4">
+                          <h2 className="text-sm font-semibold mt-4">
+                            Vehicles
+                          </h2>
+                          <label className="flex items-center">
+                            <input
+                              type="checkbox"
+                              className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
+                              checked={allChecked}
+                              onChange={handleFullPermissionChange}
+                            />
+                            <span className="ml-2 text-sm text-gray-700 mt-2">
+                              Select All
+                            </span>
+                          </label>
+                        </div>
+                        {permissions["Vehicles"]?.map((permission) => (
+                          <label
+                            key={permission.name}
+                            className="flex items-center mt-2 text-sm"
+                          >
+                            <input
+                              type="checkbox"
+                              className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
+                              checked={permission.checked}
+                              onChange={() =>
+                                handlePermissionChange(
+                                  "Vehicles",
+                                  permission.name
+                                )
+                              }
+                            />
+                            <span className="ml-2 text-sm text-gray-700">
+                              {permission.name}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+
+                      <div>
+                        <div className="flex flex-col mb-4">
+                          <h2 className="text-lg font-semibold mt-4 text-sm">
+                            Drivers
+                          </h2>
+                          <label className="flex items-center text-sm">
+                            <input
+                              type="checkbox"
+                              className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
+                              checked={allChecked}
+                              onChange={handleFullPermissionChange}
+                            />
+                            <span className="ml-2 text-gray-700 text-sm mt-2">
+                              Select All
+                            </span>
+                          </label>
+                        </div>
+
+                        {permissions["Drivers"]?.map((permission) => (
+                          <label
+                            key={permission.name}
+                            className="flex items-center mt-2 text-sm"
+                          >
+                            <input
+                              type="checkbox"
+                              className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
+                              checked={permission.checked}
+                              onChange={() =>
+                                handlePermissionChange(
+                                  "Drivers",
+                                  permission.name
+                                )
+                              }
+                            />
+                            <span className="ml-2 text-gray-700 text-sm">
+                              {permission.name}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+
+                      <div>
+                        <div className="flex flex-col mb-4">
+                          <h2 className="text-lg font-semibold mt-4 text-sm">
+                            Trips
+                          </h2>
+                          <label className="flex items-center text-sm">
+                            <input
+                              type="checkbox"
+                              className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
+                              checked={allChecked}
+                              onChange={handleFullPermissionChange}
+                            />
+                            <span className="ml-2 text-gray-700 text-sm mt-2">
+                              Select All
+                            </span>
+                          </label>
+                        </div>
+
+                        {permissions["Trips"]?.map((permission) => (
+                          <label
+                            key={permission.name}
+                            className="flex items-center mt-2 text-sm"
+                          >
+                            <input
+                              type="checkbox"
+                              className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
+                              checked={permission.checked}
+                              onChange={() =>
+                                handlePermissionChange("Trips", permission.name)
+                              }
+                            />
+                            <span className="ml-2 text-gray-700 text-sm">
+                              {permission.name}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+
+                      <div className="mt-6">
+                        <div className="flex flex-col mb-4">
+                          <h2 className="text-lg font-semibold mt-4 text-sm">
+                            Client
+                          </h2>
+                          <label className="flex items-center text-sm">
+                            <input
+                              type="checkbox"
+                              className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
+                              checked={allChecked}
+                              onChange={handleFullPermissionChange}
+                            />
+                            <span className="ml-2 text-gray-700 text-sm mt-2">
+                              Select All
+                            </span>
+                          </label>
+                        </div>
+                        {permissions["Client"]?.map((permission) => (
+                          <label
+                            key={permission.name}
+                            className="flex items-center mt-2 text-sm  rounded"
+                          >
+                            <input
+                              type="checkbox"
+                              className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
+                              checked={permission.checked}
+                              onChange={() =>
+                                handlePermissionChange(
+                                  "Client",
+                                  permission.name
+                                )
+                              }
+                            />
+                            <span className="ml-2 text-gray-700 text-sm">
+                              {permission.name}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+
+                      <div className="mt-6">
+                        <div className="flex flex-col mb-4">
+                          <h2 className="text-lg font-semibold mt-4 text-sm">
+                            Class
+                          </h2>
+                          <label className="flex items-center text-sm ">
+                            <input
+                              type="checkbox"
+                              className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
+                              checked={allChecked}
+                              onChange={handleFullPermissionChange}
+                            />
+                            <span className="ml-2 text-gray-700 text-sm mt-2">
+                              Select All
+                            </span>
+                          </label>
+                        </div>
+                        {permissions["Class"]?.map((permission) => (
+                          <label
+                            key={permission.name}
+                            className="flex items-center mt-2 text-sm"
+                          >
+                            <input
+                              type="checkbox"
+                              className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
+                              checked={permission.checked}
+                              onChange={() =>
+                                handlePermissionChange("Class", permission.name)
+                              }
+                            />
+                            <span className="ml-2 text-gray-700 text-sm">
+                              {permission.name}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+
+                      <div className="mt-6">
+                        <div className="flex flex-col mb-4">
+                          <h2 className="text-sm font-semibold mt-4">
+                            Suppliers
+                          </h2>
+                          <label className="flex items-center text-sm">
+                            <input
+                              type="checkbox"
+                              className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
+                              checked={allChecked}
+                              onChange={handleFullPermissionChange}
+                            />
+                            <span className="ml-2 text-gray-700 text-sm mt-2">
+                              Select All
+                            </span>
+                          </label>
+                        </div>
+                        {permissions["Suppliers"]?.map((permission) => (
+                          <label
+                            key={permission.name}
+                            className="flex items-center mt-2 text-sm"
+                          >
+                            <input
+                              type="checkbox"
+                              className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
+                              checked={permission.checked}
+                              onChange={() =>
+                                handlePermissionChange(
+                                  "Suppliers",
+                                  permission.name
+                                )
+                              }
+                            />
+                            <span className="ml-2 text-gray-700 text-sm">
+                              {permission.name}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+
+                      <div className="mt-6">
+                        <div className="flex flex-col mb-4">
+                          <h2 className="text-lg font-semibold mt-4 text-sm">
+                            Report
+                          </h2>
+                          <label className="flex items-center">
+                            <input
+                              type="checkbox"
+                              className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
+                              checked={allChecked}
+                              onChange={handleFullPermissionChange}
+                            />
+                            <span className="ml-2 text-gray-700 text-sm mt-2">
+                              Select All
+                            </span>
+                          </label>
+                        </div>
+                        {permissions["Report"]?.map((permission) => (
+                          <label
+                            key={permission.name}
+                            className="flex items-center mt-2 text-sm"
+                          >
+                            <input
+                              type="checkbox"
+                              className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
+                              checked={permission.checked}
+                              onChange={() =>
+                                handlePermissionChange(
+                                  "Report",
+                                  permission.name
+                                )
+                              }
+                            />
+                            <span className="ml-2 text-gray-700 text-sm">
+                              {permission.name}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleSaveChanges}
+                      className="mt-[30px] bg-[#065AD8] text-white rounded-md py-[8px] text-sm"
+                    >
+                      Save Changes
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        {editModalOpen && (
+          <NewFormModal
+            isOpen={editModalOpen}
+            setOpen={handleEditModalClose}
+            heading="Edit Member"
+          >
+            <div className="p-5">
+              <Formik
+                validationSchema={EditvalidationSchema}
+                initialValues={editFormInitialValues}
+                onSubmit={handleEditSubmit}
+              >
+                {({ values, setFieldValue, errors, touched, isSubmitting }) => (
+                  <Form>
+                    <div className="space-y-6">
+                      <div className="flex justify-between space-x-4">
+                        <label className="block w-1/2">
+                          <span className="form-label">First Name</span>
+                          <Field
+                            type="text"
+                            name="firstname"
+                            value={values.firstname}
+                            className="form-input mt-1 block w-full bg-gray-100"
+                          />
+                          {errors.firstname && touched.firstname ? (
+                            <div className="text-red-600 text-sm mt-1">
+                              {errors.firstname}
+                            </div>
+                          ) : null}
+                        </label>
+                        <label className="block w-1/2">
+                          <span className="form-label">Last Name</span>
+                          <Field
+                            type="text"
+                            name="lastname"
+                            value={values.lastname}
+                            className="form-input mt-1 block w-full bg-gray-100"
+                          />
+                          {errors.lastname && touched.lastname ? (
+                            <div className="text-red-600 text-sm mt-1">
+                              {errors.lastname}
+                            </div>
+                          ) : null}
+                        </label>
+                      </div>
+                      <label className="block">
+                        <span className="form-label">Email</span>
+                        <Field
+                          type="email"
+                          name="email"
+                          value={values.email}
+                          className="form-input mt-1 block w-full bg-gray-100"
+                        />
+                        {errors.email && touched.email ? (
+                          <div className="text-red-600 text-sm mt-1">
+                            {errors.email}
+                          </div>
+                        ) : null}
+                      </label>
+                      <label className="block">
+                        <span className="form-label">Role</span>
+                        <Field
+                          as="select"
+                          name="role"
+                          value={values.role || ""}
+                          className="form-input mt-1 block w-full bg-gray-100"
+                          onChange={(event: any) =>
+                            setFieldValue("role", event.target.value)
+                          }
+                        >
+                          <option value="">Select Role</option>
+                          <option value="Admin">Admin</option>
+                          <option value="User">User</option>
+                        </Field>
+                        {errors.role && touched.role ? (
+                          <div className="text-red-600 text-sm mt-1">
+                            {errors.role}
+                          </div>
+                        ) : null}
+                      </label>
+                      <label className="block">
+                        <span className="form-label">Country</span>
+                        <Field
+                          as="select"
+                          name="country"
+                          value={values.country || ""}
+                          className="form-input mt-1 block w-full bg-gray-100"
+                          onChange={(event: any) =>
+                            setFieldValue("country", event.target.value)
+                          }
+                        >
+                          <option value="">Select Country</option>
+                          {countries.map((country, index) => (
+                            <option key={index} value={country}>
+                              {country}
+                            </option>
+                          ))}
+                        </Field>
+                        {errors.country && touched.country ? (
+                          <div className="text-red-600 text-sm mt-1">
+                            {errors.country}
+                          </div>
+                        ) : null}
+                      </label>
+                      <label className="block">
+                        <span className="form-label">Assign To Department</span>
+                        <Field
+                          as="select"
+                          name="department"
+                          value={values.department || ""}
+                          className="form-input mt-1 block w-full bg-gray-100"
+                          onChange={(event: any) =>
+                            setFieldValue("department", event.target.value)
+                          }
+                        >
+                          <option value="">Select Department</option>
+                          {allDepartments.map((department) => (
+                            <option key={department.id} value={department.name}>
+                              {department.name}
+                            </option>
+                          ))}
+                        </Field>
+                        {errors.department && touched.department ? (
+                          <div className="text-red-600 text-sm mt-1">
+                            {errors.department}
+                          </div>
+                        ) : null}
+                      </label>
+                    </div>
+                    <div className="flex justify-end mt-4">
+                      <button
+                        type="button"
+                        className="inline-flex justify-center rounded-md border border-transparent bg-gray-300 px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-400 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                        onClick={() => setEditModalOpen(false)}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-[#4FD1C5] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
+                        disabled={isSubmitting} // Disable button while submitting
+                      >
+                        + Edit member
+                      </button>
+                    </div>
+                  </Form>
+                )}
+              </Formik>
+            </div>
+          </NewFormModal>
+        )}
       </>
     </SiteLayout>
   );
