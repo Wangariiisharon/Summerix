@@ -59,8 +59,9 @@ export default function AdminsTable({
   };
 
   const handleAdminClick = (admin: DocumentData) => {
-    router.push(`Administration/Admins/manage_admins/viewAdmin?id=${admin.Id}`);
-    // C:\Users\sharo\truckit\src\pages\Administration\Admins\manage_admins\viewAdmin.tsx
+    router.push(
+      `Administration/Admins/manage_admins/viewAdmin?id=${admin.userId}`
+    );
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {

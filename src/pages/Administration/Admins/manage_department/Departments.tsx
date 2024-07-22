@@ -325,17 +325,7 @@ export default function Departments() {
             setOpen={setIsModalOpen}
             heading="Add Department"
           >
-            {" "}
             <div className="p-5">
-              <div className="flex w-full h-full justify-between items-center mb-12">
-                <div className="text-xl font-semibold ">New Department</div>
-                <Button
-                  className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
-                  handleClick={handleReset}
-                >
-                  <XMarkIcon className="h-6 w-6 text-red-400" />
-                </Button>
-              </div>
               <Formik
                 initialValues={{
                   name: "",
@@ -344,7 +334,7 @@ export default function Departments() {
                   handleSubmit(values);
                 }}
               >
-                {({ values, setFieldValue }) => (
+                {({ values, setFieldValue, isSubmitting }) => (
                   <Form>
                     <div className="">
                       <div className="flex w-full justify-between">
@@ -354,22 +344,25 @@ export default function Departments() {
                             type="text"
                             name="name"
                             value={values.name}
-                            className="form-input bg-grey w-48"
+                            className="form-input mt-1 block w-96 bg-gray-100"
                           />
                         </label>
                       </div>
-                      <div className="flex w-full justify-end mt-24 ">
-                        <Button
-                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
-                          handleClick={handleReset}
-                        >
-                          Reset
-                        </Button>
+
+                      <div className="flex justify-end mt-6">
                         <button
-                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
-                          type="submit"
+                          type="button"
+                          className="inline-flex justify-center rounded-md border border-transparent bg-gray-300 px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-400 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                          onClick={() => setIsModalOpen(false)}
                         >
-                          Save
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-[#4FD1C5] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
+                          disabled={isSubmitting} // Disable button while submitting
+                        >
+                          + Add Department
                         </button>
                       </div>
                     </div>

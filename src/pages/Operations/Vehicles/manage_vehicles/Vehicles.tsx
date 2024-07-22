@@ -345,12 +345,6 @@ export default function Vehicles({
         return;
       }
 
-      // Check if the vehicle is already allocated to a company
-      // const vehicleAllocationsCollectionRef = collection(
-      //   fbDb,
-      //   "vehicleAllocations"
-      // );
-
       const vehicleAllocationsCollectionRef = query(
         collection(fbDb, "vehicleAllocations"),
         where("organisationId", "==", organisationId)
@@ -613,80 +607,6 @@ export default function Vehicles({
     console.log("Edited Values:", values);
 
     try {
-      if (!values.cargo_capacity) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the  Cargo Capacity  field");
-        return;
-      }
-      if (!values.lisence_plate) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the  License Plate  field");
-        return;
-      }
-      if (!values.lisence_plate) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the  License Plate  field");
-        return;
-      }
-      if (!values.vehicle_type) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the  Vehicle Type field");
-        return;
-      }
-      if (!values.make) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the  License Plate  field");
-        return;
-      }
-      if (!values.model) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Model field");
-        return;
-      }
-      if (!values.year) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Year field");
-        return;
-      }
-      if (!values.ownership_status) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Ownership Status field");
-        return;
-      }
-      if (values.ownership_status === "Owned") {
-        if (!values.lease_amount) {
-          console.error("Required form fields are missing");
-          toast.error("please fill the  Lease Amount  field");
-          return;
-        }
-      }
-
-      if (!values.truck_incurance) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Truck Insurance field");
-        return;
-      }
-      if (!values.cargo_insurance) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Cargo Insurance field");
-        return;
-      }
-      if (!values.port_entry_permits) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Port Entry Permits field");
-        return;
-      }
-      if (!values.inspection_certificates) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Inspection Certificates field");
-        return;
-      }
-      if (!values.transit_permits) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Transit Permits field");
-        return;
-      }
-
       // Update the vehicle data in the database using the selectedVehicle.id
       const vehicleRef = doc(fbDb, "vehicles", selectedVehicle.id);
       await setDoc(vehicleRef, {
