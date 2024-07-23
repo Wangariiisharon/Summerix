@@ -35,7 +35,6 @@ interface DepartmentData {
   name: string;
 }
 interface Admin {
-  // id: string;
   adminId: string;
   userId: string;
   firstname: string;
@@ -46,8 +45,34 @@ interface Admin {
   status: boolean;
   archive: boolean;
   country: string;
-  // super_admin: any;
+  id?: string; // Make id optional
+  phonenumber: string;
+  additionalPermissions: string[];
+  invitationSent: any;
+  organisationId: any;
+  super_admin: boolean;
+  inviterUid: string | null;
 }
+
+type EditFormValues = {
+  firstname: string;
+  lastname: string;
+  email: string;
+  phonenumber: string;
+  super_admin: boolean;
+  status: boolean;
+  additionalPermissions: string[];
+  department: string;
+  adminId: string;
+  invitationSent: boolean;
+  inviterUid: string | null;
+  organisationId: string;
+  userId: string;
+  archive: boolean;
+  id: string;
+  role: string;
+  country: string;
+};
 
 const validationSchema = Yup.object({
   firstname: Yup.string().required("First name is required"),
@@ -75,21 +100,27 @@ export default function Admins() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [countries, setCountries] = useState<string[]>([]);
-  const [editFormInitialValues, setEditFormInitialValues] = useState({
-    firstname: "",
-    lastname: "",
-    email: "",
-    phonenumber: "",
-    super_admin: false,
-    status: true,
-    additionalPermissions: [],
-    department: "",
-    adminId: "",
-    invitationSent: false,
-    organisationId: "",
-    userId: "",
-    archive: false,
-  });
+  const [editFormInitialValues, setEditFormInitialValues] =
+    useState<EditFormValues>({
+      firstname: "",
+      lastname: "",
+      email: "",
+      phonenumber: "",
+      super_admin: false,
+      status: true,
+      additionalPermissions: [],
+      department: "",
+      adminId: "",
+      invitationSent: false,
+      organisationId: "",
+      userId: "",
+      archive: false,
+      id: "",
+      inviterUid: "",
+      role: "",
+      country: "",
+    });
+
   const [departments, setDepartments] = useState<DocumentData[]>([]);
   let { currentUser, organisationId, isSuperAdmin } = useAuthContext();
 
@@ -138,6 +169,7 @@ export default function Admins() {
             const adminsData = await Promise.all(
               querySnapshot.docs.map(async (doc) => {
                 const adminData = doc.data() as Admin;
+
                 let departmentName = "Unknown Department";
 
                 if (adminData.department instanceof DocumentReference) {
@@ -151,6 +183,7 @@ export default function Admins() {
                 }
 
                 return {
+                  id: doc.id, // Set the id here
                   ...adminData,
                   department: departmentName,
                 };
@@ -165,6 +198,7 @@ export default function Admins() {
         console.error("Error fetching Admins:", error);
       }
     };
+
     const fetchCountries = () => {
       try {
         const country_names = country.names();
@@ -205,11 +239,10 @@ export default function Admins() {
   }, [organisationId]);
   console.log(fetchedAdmins);
 
-  const updateFetchedAdmins = (updatedAdmins: SetStateAction<Admin[]>) => {
-    setFetchedAdmins(updatedAdmins || []);
+  const updateFetchedAdmins = (updatedAdmins: Admin[]) => {
+    setFetchedAdmins(updatedAdmins);
   };
-
-  const handleEditClick = (admin: DocumentData) => {
+  const handleEditClick = (admin: Admin) => {
     setSelectedAdmin(admin);
     setEditFormInitialValues({
       firstname: admin.firstname,
@@ -218,13 +251,17 @@ export default function Admins() {
       phonenumber: admin.phonenumber,
       super_admin: admin.super_admin,
       status: admin.status,
-      additionalPermissions: admin.additionalPermissions || [], // Ensure default value
+      additionalPermissions: admin.additionalPermissions || [],
       department: admin.department,
       adminId: admin.adminId,
       invitationSent: admin.invitationSent,
       organisationId: admin.organisationId,
       userId: admin.userId,
       archive: admin.archive,
+      inviterUid: admin.inviterUid,
+      id: admin.id || "",
+      role: admin.role,
+      country: admin.country,
     });
     setEditModalOpen(true);
   };
@@ -238,29 +275,22 @@ export default function Admins() {
     setIsModalOpen(true);
   };
 
-  const handleEditSubmit = async (values: {
-    firstname: any;
-    lastname: any;
-    email: any;
-    phonenumber: any;
-    super_admin: any;
-    status: any;
-    additionalPermissions: any;
-    adminId: any;
-    invitationSent: any;
-    organisationId: any;
-    userId: any;
-    department: any;
-    archive: any;
-  }) => {
+  const handleEditSubmit = async (values: Admin) => {
     if (!selectedAdmin) {
       console.error("No selected Admin to update");
       return;
     }
 
     try {
-      // Update the vehicle data in the database using the selectedVehicle.id
-      const AdminRef = doc(fbDb, "admins", selectedAdmin.id);
+      if (!values.id) {
+        // Check against values.id
+        console.error("Selected Admin does not have an id");
+        return;
+      }
+
+      // const AdminRef = doc(fbDb, "admins", selectedAdmin.id);
+      const AdminRef = doc(fbDb, "admins", values.id); // Use values.id
+
       await setDoc(AdminRef, {
         firstname: values.firstname,
         lastname: values.lastname,
@@ -277,9 +307,8 @@ export default function Admins() {
         archive: values.archive,
       });
 
-      // Update the local fetchedVehicles state
-      const updatedVehicles = fetchedAdmins.map((admin) =>
-        admin.userId === selectedAdmin.id
+      const updatedAdmins = fetchedAdmins.map((admin) =>
+        admin.id === values.id // Use id for comparison
           ? {
               ...admin,
               firstname: values.firstname,
@@ -298,7 +327,7 @@ export default function Admins() {
             }
           : admin
       );
-      setFetchedAdmins(updatedVehicles || []);
+      setFetchedAdmins(updatedAdmins || []);
 
       setSelectedAdmin(null);
       setEditModalOpen(false);
@@ -306,6 +335,7 @@ export default function Admins() {
       console.error("Error updating Admin:", error);
     }
   };
+
   const handleSubmit = async (values: {
     firstname: any;
     lastname: any;
@@ -364,11 +394,12 @@ export default function Admins() {
       const generatedAdminId = await generateAdminId(organisationId);
       console.log("Generated Admin ID:", generatedAdminId);
 
-      const adminData = {
+      const adminData: Admin = {
         adminId: generatedAdminId,
         firstname: values.firstname,
         lastname: values.lastname,
         email: values.email,
+        phonenumber: values.phonenumber,
         status: true,
         country: values.country,
         role: values.role,
@@ -377,6 +408,9 @@ export default function Admins() {
         organisationId: organisationId,
         userId: authUid,
         archive: false,
+        additionalPermissions: [],
+        invitationSent: true,
+        super_admin: false,
       };
 
       console.log("Admin Data to be added:", adminData);
@@ -385,10 +419,7 @@ export default function Admins() {
       console.log("Document Reference ID:", docRef.id);
 
       toast.success("Admin Successfully Added.");
-      setFetchedAdmins((prevAdmins) => [
-        { id: docRef.id, ...adminData },
-        ...prevAdmins,
-      ]);
+      setFetchedAdmins((prevAdmins) => [{ ...adminData }, ...prevAdmins]);
 
       if (!values.invitationSent) {
         const actionCodeSettings = {
@@ -754,7 +785,6 @@ export default function Admins() {
                           >
                             Reset
                           </Button>
-                          {/* <Submit name="save" handleSubmit={handleSubmit}/> */}
                           <button
                             className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
                             type="submit"

@@ -18,7 +18,13 @@ interface Admin {
   status: boolean;
   archive: boolean;
   country: string;
-  super_admin?: any;
+  id?: string; // Make id optional
+  phonenumber: string;
+  additionalPermissions: string[];
+  invitationSent: any;
+  organisationId: any;
+  super_admin: boolean;
+  inviterUid: string | null;
 }
 
 interface AdminsTableProps {

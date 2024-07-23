@@ -51,6 +51,7 @@ export default function ViewDepatment() {
   const [departmentPermissions, setDepartmentPermissions] = useState<
     DocumentData[]
   >([]);
+  const [adminCount, setAdminCount] = useState(0);
 
   const [loading, setLoading] = useState(true);
   const [permissions, setPermissions] = useState<Permissions>({});
@@ -63,67 +64,96 @@ export default function ViewDepatment() {
   const { id } = router.query;
   console.log("This is the ID", id);
 
-  function handleAddPermissions() {}
-  function handleAddMembers() {}
+  // useEffect(() => {
+  //   let unsubscribe = () => {}; // Initialize unsubscribe function
 
-  async function addPermission(departmentId: string, permissionName: string) {
-    try {
-      const departmentRef = doc(fbDb, "departments", departmentId);
-      const departmentDocSnap = await getDoc(departmentRef);
+  //   if (id) {
+  //     const departmentId = id as string;
+  //     const departmentDocRef = doc(fbDb, "departments", departmentId);
 
-      if (departmentDocSnap.exists()) {
-        let permissions: string[] = departmentDocSnap.data()?.permissions || [];
+  //     // Subscribe to changes using onSnapshot
+  //     unsubscribe = onSnapshot(departmentDocRef, (docSnapshot) => {
+  //       if (docSnapshot.exists()) {
+  //         const departmentData =
+  //           docSnapshot.data() as DepatmentDetailsProps["department"];
+  //         departmentData.departmentId = docSnapshot.id; //trying to Ensure departmentId is set
 
-        if (!permissions.includes(permissionName)) {
-          permissions.push(permissionName);
-          await updateDoc(departmentRef, { permissions });
-          toast.success("Permission added successfully for department");
-        } else {
-          toast.error("Permission already exists");
-        }
-      } else {
-        toast.error("Department not found");
-      }
-    } catch (error) {
-      console.error("Error adding permission:", error);
-      toast.error("Error adding permission");
+  //         setDepartments(departmentData);
+
+  //         // Fetch other departments with the same organisationId
+  //         if (organisationId) {
+  //           const departmentsQuery = query(
+  //             collection(fbDb, "departments"),
+  //             where("organisationId", "==", organisationId)
+  //           );
+  //           getDocs(departmentsQuery).then((querySnapshot) => {
+  //             const departmentsList: DocumentData[] = [];
+  //             querySnapshot.forEach((doc) => {
+  //               departmentsList.push(doc.data());
+  //             });
+  //             setFetchedDepartments(departmentsList);
+  //           });
+  //         }
+  //       }
+  //     });
+  //   }
+
+  //   // Fetch permissions data once
+  //   const fetchPermissions = async () => {
+  //     const permissionsCollection = collection(fbDb, "permisions");
+  //     const permissionsSnapshot = await getDocs(permissionsCollection);
+  //     const permissionsData: Permissions = {};
+  //     permissionsSnapshot.forEach((doc) => {
+  //       const data = doc.data();
+  //       Object.keys(data).forEach((key) => {
+  //         permissionsData[key] = data[key].map((permission: string) => ({
+  //           name: permission,
+  //           checked: false,
+  //         }));
+  //       });
+  //     });
+  //     setPermissions(permissionsData);
+  //     console.log("permissionsData", permissionsData);
+  //   };
+
+  //   fetchPermissions();
+
+  //   // Clean up function to unsubscribe from snapshot listener
+  //   return () => {
+  //     unsubscribe();
+  //   };
+  // }, [id, organisationId]);
+
+  async function countAdminsInDepartment(
+    departmentName: string
+  ): Promise<number> {
+    if (!departmentName) {
+      throw new Error("Department name is required");
     }
-  }
 
-  async function removePermission(
-    departmentId: string,
-    permissionName: string
-  ) {
     try {
-      const departmentRef = doc(fbDb, "departments", departmentId);
-      const departmentDocSnap = await getDoc(departmentRef);
+      const adminsQuery = query(
+        collection(fbDb, "admins"),
+        where("department", "==", departmentName)
+      );
+      const querySnapshot = await getDocs(adminsQuery);
 
-      if (departmentDocSnap.exists()) {
-        let permissions: string[] = departmentDocSnap.data()?.permissions || [];
-        permissions = permissions.filter(
-          (permission) => permission !== permissionName
-        );
-
-        await updateDoc(departmentRef, { permissions });
-        toast.success("Permission removed successfully");
-      } else {
-        toast.error("Department not found");
-      }
+      return querySnapshot.size; // The number of matching documents
     } catch (error) {
-      console.error("Error removing permission:", error);
-      toast.error("Error removing permission");
+      console.error("Error counting admins in department: ", error);
+      throw new Error("Failed to count admins in the department");
     }
   }
 
   useEffect(() => {
-    let unsubscribe = () => {}; // Initialize unsubscribe function
+    let unsubscribe = () => {};
 
     if (id) {
       const departmentId = id as string;
       const departmentDocRef = doc(fbDb, "departments", departmentId);
 
       // Subscribe to changes using onSnapshot
-      unsubscribe = onSnapshot(departmentDocRef, (docSnapshot) => {
+      unsubscribe = onSnapshot(departmentDocRef, async (docSnapshot) => {
         if (docSnapshot.exists()) {
           const departmentData =
             docSnapshot.data() as DepatmentDetailsProps["department"];
@@ -137,13 +167,22 @@ export default function ViewDepatment() {
               collection(fbDb, "departments"),
               where("organisationId", "==", organisationId)
             );
-            getDocs(departmentsQuery).then((querySnapshot) => {
-              const departmentsList: DocumentData[] = [];
-              querySnapshot.forEach((doc) => {
-                departmentsList.push(doc.data());
-              });
-              setFetchedDepartments(departmentsList);
+            const querySnapshot = await getDocs(departmentsQuery);
+            const departmentsList: DocumentData[] = [];
+            querySnapshot.forEach((doc) => {
+              departmentsList.push(doc.data());
             });
+            setFetchedDepartments(departmentsList);
+          }
+
+          // Count admins in the same department
+          if (departmentData.name) {
+            try {
+              const count = await countAdminsInDepartment(departmentData.name);
+              setAdminCount(count);
+            } catch (error) {
+              console.error("Failed to count admins in the department:", error);
+            }
           }
         }
       });
@@ -191,6 +230,18 @@ export default function ViewDepatment() {
     setPermissions(updatedPermissions);
   };
 
+  const handleSectionSelectAllChange = (section: string) => {
+    const newSectionAllChecked = !permissions[section].every((p) => p.checked);
+    const updatedPermissions = { ...permissions };
+    updatedPermissions[section] = updatedPermissions[section].map(
+      (permission) => ({
+        ...permission,
+        checked: newSectionAllChecked,
+      })
+    );
+    setPermissions(updatedPermissions);
+  };
+
   const handlePermissionChange = (section: string, permissionName: string) => {
     const updatedPermissions = { ...permissions };
     const permissionIndex = updatedPermissions[section].findIndex(
@@ -229,7 +280,7 @@ export default function ViewDepatment() {
         settingsRef,
         {
           permissions: selectedPermissions,
-          departmentId: departments.departmentId, // Ensure departmentId is saved
+          departmentId: departments.departmentId,
         },
         { merge: true }
       );
@@ -311,7 +362,7 @@ export default function ViewDepatment() {
                     <p className="text-[#6b6b73] text-sm ml-[10px]">Memebers</p>
                   </div>
                   <p className="mt-[5px] text-[#] text-sm font-semibold ml-[34px]">
-                    8
+                    {adminCount}
                   </p>
                 </div>
               </div>
@@ -433,9 +484,11 @@ export default function ViewDepatment() {
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
                               checked={allChecked}
-                              onChange={handleFullPermissionChange}
+                              onChange={() =>
+                                handleSectionSelectAllChange("Dashboard")
+                              }
                             />
-                            <span className="ml-2 text-gray-700">
+                            <span className="ml-2 text-gray-700 text-sm">
                               Select All
                             </span>
                           </label>
@@ -474,7 +527,9 @@ export default function ViewDepatment() {
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
                               checked={allChecked}
-                              onChange={handleFullPermissionChange}
+                              onChange={() =>
+                                handleSectionSelectAllChange("Vehicles")
+                              }
                             />
                             <span className="ml-2 text-sm text-gray-700 mt-2">
                               Select All
@@ -514,7 +569,9 @@ export default function ViewDepatment() {
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
                               checked={allChecked}
-                              onChange={handleFullPermissionChange}
+                              onChange={() =>
+                                handleSectionSelectAllChange("Drivers")
+                              }
                             />
                             <span className="ml-2 text-gray-700 text-sm mt-2">
                               Select All
@@ -553,7 +610,9 @@ export default function ViewDepatment() {
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
                               checked={allChecked}
-                              onChange={handleFullPermissionChange}
+                              onChange={() =>
+                                handleSectionSelectAllChange("Trips")
+                              }
                             />
                             <span className="ml-2 text-sm text-gray-700 mt-2">
                               Select All
@@ -590,7 +649,9 @@ export default function ViewDepatment() {
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
                               checked={allChecked}
-                              onChange={handleFullPermissionChange}
+                              onChange={() =>
+                                handleSectionSelectAllChange("Client")
+                              }
                             />
                             <span className="ml-2 text-gray-700 text-sm mt-2">
                               Select All
@@ -630,7 +691,9 @@ export default function ViewDepatment() {
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
                               checked={allChecked}
-                              onChange={handleFullPermissionChange}
+                              onChange={() =>
+                                handleSectionSelectAllChange("Class")
+                              }
                             />
                             <span className="ml-2 text-gray-700 text-sm mt-2">
                               Select All
@@ -667,7 +730,9 @@ export default function ViewDepatment() {
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
                               checked={allChecked}
-                              onChange={handleFullPermissionChange}
+                              onChange={() =>
+                                handleSectionSelectAllChange("Suppliers")
+                              }
                             />
                             <span className="ml-2 text-gray-700 text-sm mt-2">
                               Select All
@@ -707,7 +772,9 @@ export default function ViewDepatment() {
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
                               checked={allChecked}
-                              onChange={handleFullPermissionChange}
+                              onChange={() =>
+                                handleSectionSelectAllChange("Report")
+                              }
                             />
                             <span className="ml-2 text-gray-700 text-sm mt-2">
                               Select All
@@ -737,12 +804,17 @@ export default function ViewDepatment() {
                         ))}
                       </div>
                     </div>
-                    <button
-                      onClick={handleSaveChanges}
-                      className="mt-[30px] bg-[#065AD8] text-white rounded-md py-[8px] text-sm"
-                    >
-                      Save Changes
-                    </button>
+
+                    <div className="flex justify-end">
+                      <button
+                        onClick={handleSaveChanges}
+                        className="flex justify-end mt-[30px] bg-[#4fd1c5] rounded-md text-sm"
+                      >
+                        <span className="text-white py-[12px]  px-[12px]">
+                          Save Changes
+                        </span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
