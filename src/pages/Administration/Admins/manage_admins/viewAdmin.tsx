@@ -970,12 +970,16 @@ export default function ViewDepatment() {
                         ))}
                       </div>
                     </div>
-                    <button
-                      onClick={handleSaveChanges}
-                      className="mt-[30px] bg-[#065AD8] text-white rounded-md py-[8px] text-sm"
-                    >
-                      Save Changes
-                    </button>
+                    <div className="flex justify-end">
+                      <button
+                        onClick={handleSaveChanges}
+                        className="flex justify-end mt-[30px] bg-[#4fd1c5] rounded-md text-sm"
+                      >
+                        <span className="text-white py-[12px]  px-[12px]">
+                          Save Changes
+                        </span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
