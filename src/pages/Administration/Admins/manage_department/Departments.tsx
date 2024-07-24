@@ -41,6 +41,7 @@ interface Department {
   updated: string | { seconds: number; nanoseconds: number }; // Allow updated to be a string or a Firestore timestamp
   organisationId: string;
   archive: boolean;
+  permissions: string[];
 }
 
 const validationSchema = Yup.object({
@@ -62,6 +63,7 @@ export default function Departments() {
     updated: "",
     archive: false,
     organisationId: "",
+    permissions: [] as string[],
   });
   const { organisationId } = useAuthContext();
 
@@ -100,6 +102,7 @@ export default function Departments() {
                 updated: updated, // Use the converted updated field
                 archive: data.archive,
                 organisationId: data.organisationId,
+                permissions: data.permissions,
                 ...data,
               };
             });
@@ -127,6 +130,7 @@ export default function Departments() {
       organisationId: department.organisationId,
       archive: department.archive,
       updated: updated,
+      permissions: department.permissions,
     });
     setEditModalOpen(true);
   };
@@ -142,6 +146,7 @@ export default function Departments() {
     organisationId: any;
     archive: any;
     updated: any;
+    permissions: any;
   }) => {
     if (!selectedDepartment) {
       console.error("No selected vehicle to update");
@@ -162,6 +167,7 @@ export default function Departments() {
         organisationId: values.organisationId,
         archive: values.archive,
         updated: values.updated,
+        permissions: values.permissions,
       });
 
       // Update the local fetchedVehicles state
@@ -174,6 +180,7 @@ export default function Departments() {
               organisationId: values.organisationId,
               archive: values.archive,
               updated: values.updated,
+              permissions: values.permissions,
             }
           : client
       );
@@ -253,6 +260,7 @@ export default function Departments() {
         updated: updated, // Ensure this is a string
         archive: false,
         organisationId: organisationId,
+        permissions: [],
       };
 
       const docRef = await addDoc(

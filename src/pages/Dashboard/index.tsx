@@ -37,8 +37,14 @@ export default function DashboardComponent() {
   const [totalPurchasePrice, setTotalPurchasePrice] = useState(0);
   const [mileageFee, setMileageFee] = useState(0);
   const [totalMaintenanceCost, setTotalMaintenanceCost] = useState(0);
-  const { organisationId } = useAuthContext();
-
+  const {
+    currentAdmin,
+    currentUser,
+    organisationId,
+    isSuperAdmin,
+    userClaims,
+    departmentData,
+  } = useAuthContext();
   const [isTripsFetched, setIsTripsFetched] = useState(false);
   const [isMaintenanceFetched, setIsMaintenanceFetched] = useState(false);
   const [isVehiclesFetched, setIsVehiclesFetched] = useState(false);
@@ -248,6 +254,30 @@ export default function DashboardComponent() {
     setSelectedDate(date);
     setSelectedYear(date.getFullYear()); // Update selected year to match the selected date
   };
+  const hasViewTotalIncomePermission =
+    userClaims?.additionalPermissions?.includes("View Total Income") ||
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("View Total Income");
+  const hasViewTotalExpensesPermission =
+    userClaims?.additionalPermissions?.includes("View Total Expenses") ||
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("View Total Expenses");
+  const hasViewTotalVehicleOverviewPermission =
+    userClaims?.additionalPermissions?.includes(
+      "View Total Vehicle Overview"
+    ) ||
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("View Total Vehicle Overview");
+  const hasTripsCompetedPermission =
+    userClaims?.additionalPermissions?.includes("Trips Completed") ||
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("Trips Completed");
+  const hasViewOutOfServiceVehiclePermission =
+    userClaims?.additionalPermissions?.includes(
+      "View Out of Service Vehicle"
+    ) ||
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("View Out of Service Vehicle");
 
   const cards = [
     {
@@ -256,6 +286,7 @@ export default function DashboardComponent() {
       icon: "/icons/cashIcon.png",
       name: "Total Income",
       border: "#065AD8",
+      visible: hasViewTotalIncomePermission,
     },
     // Total Expenses =  Fuel + Mileage + Maintenance Costs
     {
@@ -264,6 +295,7 @@ export default function DashboardComponent() {
       icon: "/icons/cashIcon.png",
       name: "Total Expense",
       border: "#ffd648",
+      visible: hasViewTotalExpensesPermission,
     },
     // Total Profit Per Truck = (Total Income - Total Expenses) / number of Trucks
     {
@@ -272,6 +304,7 @@ export default function DashboardComponent() {
       icon: "/icons/cashIcon.png",
       name: "Average Profit per Truck",
       border: "#14e9e2",
+      visible: true,
     },
     // Total Expenses Per Truck = Total Expense / number of Trucks
     {
@@ -280,6 +313,7 @@ export default function DashboardComponent() {
       icon: "/icons/cashIcon.png",
       name: "Average Expenses per Truck",
       border: "##36c76c",
+      visible: true,
     },
   ];
 
@@ -326,18 +360,24 @@ export default function DashboardComponent() {
             ))}
           </div>
           <div className="ml-4 flex flexx-row space-x-[23px] mt-[25px]">
-            <VehicleOverview
-              selectedDate={selectedDate}
-              selectedYear={selectedYear}
-            />
-            <OutOfServiceVehicles
-              selectedDate={selectedDate}
-              selectedYear={selectedYear}
-            />
-            <TripsPieGraph
-              selectedDate={selectedDate}
-              selectedYear={selectedYear}
-            />
+            {hasViewTotalVehicleOverviewPermission && (
+              <VehicleOverview
+                selectedDate={selectedDate}
+                selectedYear={selectedYear}
+              />
+            )}
+            {hasViewOutOfServiceVehiclePermission && (
+              <OutOfServiceVehicles
+                selectedDate={selectedDate}
+                selectedYear={selectedYear}
+              />
+            )}
+            {hasTripsCompetedPermission && (
+              <TripsPieGraph
+                selectedDate={selectedDate}
+                selectedYear={selectedYear}
+              />
+            )}
           </div>
           <div className="flex justify-between mt-8">
             <OnRoute selectedDate={selectedDate} selectedYear={selectedYear} />

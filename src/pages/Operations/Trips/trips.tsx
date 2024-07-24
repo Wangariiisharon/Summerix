@@ -108,6 +108,7 @@ export default function TripsComponent() {
     organisationId,
     isSuperAdmin,
     userClaims,
+    departmentData,
   } = useAuthContext();
   const [selectedCompany, setSelectedCompany] = useState("");
   const [selectedTab, setSelectedTab] = useState<number>(0);
@@ -913,17 +914,21 @@ export default function TripsComponent() {
 
   const hasExportPermission =
     userClaims?.additionalPermissions?.includes("Export Trip") ||
-    userClaims?.admin;
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("Export Trip");
 
   const hasAddPermission =
-    userClaims?.additionalPermissions?.includes("Add Trips") ||
-    userClaims?.admin;
+    userClaims?.additionalPermissions?.includes("Add Trip") ||
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("Add Trip");
   const hasViewTripermission =
-    userClaims?.additionalPermissions?.includes("View trips detail") ||
-    userClaims?.admin;
+    userClaims?.additionalPermissions?.includes("View Trip Detail") ||
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("View Trip Detail");
   const hasEditTripermission =
-    userClaims?.additionalPermissions?.includes("Edit trip") ||
-    userClaims?.admin;
+    userClaims?.additionalPermissions?.includes("Edit Trip") ||
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("Edit Trip");
 
   return (
     <div>

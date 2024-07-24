@@ -29,6 +29,7 @@ export default function VehiclesComponent() {
     organisationId,
     isSuperAdmin,
     userClaims,
+    departmentData,
   } = useAuthContext();
   const headers = [
     { name: "Vehicle Profile", href: "#", current: selectedTabIndex === 0 },
@@ -105,20 +106,25 @@ export default function VehiclesComponent() {
 
   const hasAllocatePermission =
     userClaims?.additionalPermissions?.includes("Allocate Vehicles") ||
-    userClaims?.admin;
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("Allocate Vehicles");
 
   const hasAddPermission =
     userClaims?.additionalPermissions?.includes("Add Vehicles") ||
-    userClaims?.admin;
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("Add Vehicles");
   const hasScheduleMaintenancePermission =
     userClaims?.additionalPermissions?.includes("Schedule Maintenance") ||
-    userClaims?.admin;
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("Schedule Maintenance");
   const hasEditVehiclesPermission =
     userClaims?.additionalPermissions?.includes("Edit Vehicles") ||
-    userClaims?.admin;
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("Edit Vehicles");
   const hasArchivePermission =
     userClaims?.additionalPermissions?.includes("Archive Vehicles") ||
-    userClaims?.admin;
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("Archive Vehicles");
 
   return (
     <div>

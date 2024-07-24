@@ -47,6 +47,7 @@ export default function Class() {
     organisationId,
     isSuperAdmin,
     userClaims,
+    departmentData,
   } = useAuthContext();
   const handleAdd = () => {};
 
@@ -250,13 +251,16 @@ export default function Class() {
 
   const hasAddPermission =
     userClaims?.additionalPermissions?.includes("Add Class") ||
-    userClaims?.admin;
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("Add Class");
   const hasEditClassPermission =
     userClaims?.additionalPermissions?.includes("Edit Class") ||
-    userClaims?.admin;
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("Edit Class");
   const hasArchiveClassPermission =
     userClaims?.additionalPermissions?.includes("Archive Class") ||
-    userClaims?.admin;
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("Archive Class");
 
   return (
     <>

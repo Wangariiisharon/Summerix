@@ -84,6 +84,7 @@ export default function Drivers() {
     organisationId,
     isSuperAdmin,
     userClaims,
+    departmentData,
   } = useAuthContext();
   const handleAddDriver = () => {
     setOpen(true);
@@ -449,16 +450,20 @@ export default function Drivers() {
 
   const hasAddPermission =
     userClaims?.additionalPermissions?.includes("Add Driver") ||
-    userClaims?.admin;
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("Add Driver");
   const hasEditDriverPermission =
     userClaims?.additionalPermissions?.includes("Edit Driver") ||
-    userClaims?.admin;
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("Edit Driver");
   const hasArchiveDriverPermission =
     userClaims?.additionalPermissions?.includes("Archive Driver") ||
-    userClaims?.admin;
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("Archive Driver");
   const hasExportDriverPermission =
     userClaims?.additionalPermissions?.includes("Export Driver") ||
-    userClaims?.admin;
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("Export Driver");
 
   return (
     <>
