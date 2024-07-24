@@ -83,7 +83,9 @@ export default function Vehicles({
     organisationId,
     isSuperAdmin,
     userClaims,
+    departmentData,
   } = useAuthContext();
+
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const validationSchema = Yup.object({
@@ -170,11 +172,9 @@ export default function Vehicles({
       );
       const adminCount = querySnapshot.size;
 
-      // Customize this logic based on your requirements
       return `V${(adminCount + 1).toString().padStart(3, "0")}`;
     } catch (error) {
       console.error("Error fetching Vehicles count:", error);
-      // Handle error or return a default value
       return "V001";
     }
   }
@@ -194,7 +194,6 @@ export default function Vehicles({
     inspection_certificates: any;
     transit_permits: any;
   }) => {
-    console.log("Values:", values);
     setShowAddVehicleModal(true);
     setOpen(true);
 
@@ -234,7 +233,6 @@ export default function Vehicles({
 
       await uploadBytes(storageRef, values.truck_incurance);
       truckIncuranceUrl = await getDownloadURL(storageRef);
-      console.log("ID Image URL:", truckIncuranceUrl);
     }
     let transitPermitsUrl = "";
     if (values.transit_permits) {
@@ -246,7 +244,6 @@ export default function Vehicles({
 
       await uploadBytes(storageRef, values.transit_permits);
       transitPermitsUrl = await getDownloadURL(storageRef);
-      console.log("ID Image URL:", transitPermitsUrl);
     }
     let inspectionCertificatesUrl = "";
     if (values.inspection_certificates) {
@@ -258,7 +255,6 @@ export default function Vehicles({
 
       await uploadBytes(storageRef, values.inspection_certificates);
       inspectionCertificatesUrl = await getDownloadURL(storageRef);
-      console.log("ID Image URL:", inspectionCertificatesUrl);
     }
     let portEntryPermitsUrl = "";
     if (values.port_entry_permits) {
@@ -270,7 +266,6 @@ export default function Vehicles({
 
       await uploadBytes(storageRef, values.port_entry_permits);
       portEntryPermitsUrl = await getDownloadURL(storageRef);
-      console.log("ID Image URL:", portEntryPermitsUrl);
     }
     let cargoInsuranceUrl = "";
     if (values.cargo_insurance) {
@@ -282,7 +277,6 @@ export default function Vehicles({
 
       await uploadBytes(storageRef, values.cargo_insurance);
       cargoInsuranceUrl = await getDownloadURL(storageRef);
-      console.log("ID Image URL:", cargoInsuranceUrl);
     }
 
     const generatedVehicleId = await generateVehicleId(organisationId);
@@ -311,7 +305,6 @@ export default function Vehicles({
     };
 
     const docRef = await addDoc(vehiclesCollection, VehicleData);
-    console.log("Vehicle added with ID: ", docRef.id);
     toast.success("Vehicle Successfully Added.");
 
     const newVehicle = {
@@ -333,7 +326,6 @@ export default function Vehicles({
     vehicle: string;
     company: string;
   }) => {
-    console.log("Submitted Values:", values);
     try {
       if (!values) {
         console.error("Form values are undefined");
@@ -378,7 +370,6 @@ export default function Vehicles({
             "Vehicle is already allocated to " + allocatedCompany.data().name
           );
         } else {
-          console.error("Vehicle is already allocated to an unknown company");
           toast.error("Vehicle is already allocated to an unknown company");
         }
         return;
@@ -405,7 +396,6 @@ export default function Vehicles({
             companyData.vehicle &&
             companyData.vehicle.includes(values.vehicle)
           ) {
-            console.error("Vehicle already allocated to this company");
             toast.error("Vehicle already allocated to this company.");
             allocated = true;
           }
@@ -427,10 +417,7 @@ export default function Vehicles({
         await updateDoc(companyDocRef, {
           vehicle: existingVehicles,
         });
-
-        console.log("Vehicle added to company:", values.company);
       } else {
-        console.error("Company not found:", values.company);
         toast.error("Company not found: " + values.company);
         return;
       }
@@ -504,7 +491,6 @@ export default function Vehicles({
           );
 
           setUnallocatedVehicles(unallocatedVehiclesList);
-          console.log("Unallocated Vehicles:", unallocatedVehiclesList);
         }
       } catch (err) {
         console.error("Error fetching vehicles:", err);
@@ -565,6 +551,7 @@ export default function Vehicles({
   const hasAddVehiclesPermission =
     userClaims?.additionalPermissions?.includes("Add vehicles") ||
     userClaims?.admin;
+  const hasDepartmentsPermission = userClaims?.department?.includes("");
 
   const updateFetchedVehicles = (
     updatedDrivers: SetStateAction<DocumentData[]>
@@ -603,8 +590,6 @@ export default function Vehicles({
       console.error("No selected vehicle to update");
       return;
     }
-
-    console.log("Edited Values:", values);
 
     try {
       // Update the vehicle data in the database using the selectedVehicle.id

@@ -73,6 +73,7 @@ export default function Cities() {
     organisationId,
     isSuperAdmin,
     userClaims,
+    departmentData,
   } = useAuthContext();
   const handleAdd = () => {};
 
@@ -341,13 +342,16 @@ export default function Cities() {
 
   const hasAddPermission =
     userClaims?.additionalPermissions?.includes("Add Client") ||
-    userClaims?.admin;
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("Add Client");
   const hasEditClientPermission =
     userClaims?.additionalPermissions?.includes("Edit Client") ||
-    userClaims?.admin;
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("Edit Client");
   const hasArchiveClientPermission =
     userClaims?.additionalPermissions?.includes("Archive Client") ||
-    userClaims?.admin;
+    userClaims?.admin ||
+    departmentData?.permissions?.includes("Archive Client");
 
   return (
     <>

@@ -60,7 +60,6 @@
 //     return res.status(500).json({ error: "Internal Server Error" });
 //   }
 // }
-
 import { admin, db } from "../../lib/firebaseAdmin";
 
 export default async function handler(req, res) {
@@ -101,9 +100,26 @@ export default async function handler(req, res) {
       customClaims.additionalPermissions = userData.additionalPermissions;
     }
 
-    // Add department to custom claims
+    // Add department document ID to custom claims
     if (userData.department) {
-      customClaims.department = userData.department;
+      // Fetch department data based on department name
+      const departmentSnapshot = await db
+        .collection("departments")
+        .where("name", "==", userData.department)
+        .get();
+
+      if (!departmentSnapshot.empty) {
+        const departmentDoc = departmentSnapshot.docs[0];
+        const departmentData = departmentDoc.data();
+        const departmentDocId = departmentDoc.id;
+        customClaims.departmentId = departmentDocId;
+
+        // Store department data in Firestore
+        await db
+          .collection("departmentsData")
+          .doc(departmentDocId)
+          .set(departmentData);
+      }
     }
 
     await admin.auth().setCustomUserClaims(uid, customClaims);
@@ -111,25 +127,11 @@ export default async function handler(req, res) {
     const updatedUser = await admin.auth().getUser(uid);
     customClaims = updatedUser.customClaims;
 
-    // Fetch department data based on department name
-    let departmentData = null;
-    if (customClaims.department) {
-      const departmentSnapshot = await db
-        .collection("departments")
-        .where("name", "==", customClaims.department)
-        .get();
-
-      if (!departmentSnapshot.empty) {
-        departmentData = departmentSnapshot.docs[0].data();
-      }
-    }
-
     return res.status(200).json({
       uid: user.uid,
       email: user.email,
       customClaims,
       ...userData,
-      departmentData,
     });
   } catch (error) {
     console.error("Error fetching user data:", error);

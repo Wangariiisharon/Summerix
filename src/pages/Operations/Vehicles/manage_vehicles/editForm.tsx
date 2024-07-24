@@ -23,7 +23,7 @@ export default function EditVehicle() {
   const handleEditModalClose = () => {
     setEditModalOpen(false);
   };
-  
+
   const handleReset = () => {
     setEditModalOpen(false);
   };
