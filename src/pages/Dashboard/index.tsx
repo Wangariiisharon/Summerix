@@ -279,9 +279,20 @@ export default function DashboardComponent() {
     userClaims?.admin ||
     departmentData?.permissions?.includes("View Out of Service Vehicle");
 
+  const formatCurrency = (value: any) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "Ksh",
+      minimumFractionDigits: 0,
+    }).format(value);
+  };
+  const overallEarningsCurrency = formatCurrency(overallEarnings);
+  const companyCostCurrency = formatCurrency(companyCost);
+  const earningsPerTruckCurrency = formatCurrency(earningsPerTruck);
+  const avgTruckExpenseCurrency = formatCurrency(avgTruckExpense);
   const cards = [
     {
-      amount: overallEarnings.toString(),
+      amount: overallEarningsCurrency.toString(),
       href: "#",
       icon: "/icons/cashIcon.png",
       name: "Total Income",
@@ -290,7 +301,7 @@ export default function DashboardComponent() {
     },
     // Total Expenses =  Fuel + Mileage + Maintenance Costs
     {
-      amount: companyCost.toString(),
+      amount: companyCostCurrency.toString(),
       href: "#",
       icon: "/icons/cashIcon.png",
       name: "Total Expense",
@@ -299,7 +310,7 @@ export default function DashboardComponent() {
     },
     // Total Profit Per Truck = (Total Income - Total Expenses) / number of Trucks
     {
-      amount: earningsPerTruck.toString(),
+      amount: earningsPerTruckCurrency.toString(),
       href: "#",
       icon: "/icons/cashIcon.png",
       name: "Average Profit per Truck",
@@ -308,7 +319,7 @@ export default function DashboardComponent() {
     },
     // Total Expenses Per Truck = Total Expense / number of Trucks
     {
-      amount: avgTruckExpense.toString(),
+      amount: avgTruckExpenseCurrency.toString(),
       href: "#",
       icon: "/icons/cashIcon.png",
       name: "Average Expenses per Truck",
@@ -359,7 +370,7 @@ export default function DashboardComponent() {
               </Fragment>
             ))}
           </div>
-          <div className="ml-4 flex flexx-row space-x-[23px] mt-[25px]">
+          <div className="ml-4 flex flex-row space-x-[20px] mt-[25px]">
             {hasViewTotalVehicleOverviewPermission && (
               <VehicleOverview
                 selectedDate={selectedDate}

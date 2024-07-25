@@ -1,11 +1,5 @@
 import { Doughnut } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  ScriptableContext,
-} from "chart.js";
-import { AnyObject } from "chart.js/dist/types/basic";
+import { Chart as ChartJS, ArcElement, Tooltip } from "chart.js";
 import { useEffect, useState } from "react";
 import {
   DocumentData,
@@ -18,12 +12,10 @@ import {
 } from "firebase/firestore";
 import { fbDb } from "@/firebase/configs";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
-import { centerTextPlugin } from "../../centerTextPlugin";
 
-ChartJS.unregister(centerTextPlugin);
 ChartJS.register(ArcElement, Tooltip);
 
-interface dataset {
+interface Dataset {
   datasets: {
     backgroundColor: string[];
     data: number[];
@@ -31,10 +23,7 @@ interface dataset {
       | "round"
       | "bevel"
       | "miter"
-      | ((
-          ctx: ScriptableContext<"doughnut">,
-          options: AnyObject
-        ) => CanvasLineJoin | undefined)
+      | ((ctx: any, options: any) => CanvasLineJoin | undefined)
       | undefined;
     borderWidth: number;
     borderRadius: number;
@@ -116,7 +105,7 @@ export default function VehicleOverview({ selectedDate, selectedYear }: any) {
     (vehicle) => vehicle.availability_status === "Available"
   ).length;
 
-  const data: dataset = {
+  const data: Dataset = {
     datasets: [
       {
         backgroundColor: ["#165DFF", "#F7F8FA"],
@@ -145,6 +134,18 @@ export default function VehicleOverview({ selectedDate, selectedYear }: any) {
     ],
   };
 
+  const noCenterTextPlugin = {
+    id: "noCenterTextPlugin",
+    beforeDraw: function (chart: any) {
+      const ctx = chart.ctx;
+      ctx.save();
+      const centerX = (chart.chartArea.left + chart.chartArea.right) / 2;
+      const centerY = (chart.chartArea.top + chart.chartArea.bottom) / 2;
+      ctx.clearRect(centerX - 20, centerY - 10, 40, 20); // Adjust the clearRect dimensions as needed
+      ctx.restore();
+    },
+  };
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -155,11 +156,13 @@ export default function VehicleOverview({ selectedDate, selectedYear }: any) {
       tooltip: {
         enabled: false,
       },
-      centerText: {
-        display: false,
+      noCenterTextPlugin: {
+        display: true,
       },
     },
   };
+
+  ChartJS.register(noCenterTextPlugin);
 
   return (
     <div className="bg-white rounded-lg shadow">
@@ -168,10 +171,10 @@ export default function VehicleOverview({ selectedDate, selectedYear }: any) {
       </div>
       <div className="border-b border-gray-200 mt-2"></div>
       <div className="flex flex-row mt-4 mb-[29px]">
-        <div className="w-2/4 ">
+        <div className="w-2/4">
           <Doughnut data={data} options={options} />
         </div>
-        <div className="flex flex-col ml-[30px] mr-[30px]">
+        <div className="flex flex-col ml-[40px] mr-[40px]">
           <div className="font-bold text-lg">Total</div>
           <div className="font-bold text-4xl">{allVehicles}</div>
           <div className="mt-4">
@@ -199,14 +202,14 @@ export default function VehicleOverview({ selectedDate, selectedYear }: any) {
             </div>
             <div className="flex items-center mb-2">
               <div className="flex justify-between w-full">
-                <div className="bg-[#fff6db] rounded-md">
+                <div className="bg-[#ffecb3] rounded-md">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke-width="1.5"
                     stroke="currentColor"
-                    className="size-6 text-[#C5AA57]"
+                    className="size-6 text-[#e4a400]"
                   >
                     <path
                       stroke-linecap="round"
@@ -221,7 +224,7 @@ export default function VehicleOverview({ selectedDate, selectedYear }: any) {
             </div>
             <div className="flex items-center mb-2">
               <div className="flex justify-between w-full">
-                <div className="bg-[#C9E2FF] rounded-md">
+                <div className="bg-[#cddcff] rounded-md">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"

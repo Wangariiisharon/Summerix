@@ -360,6 +360,7 @@ export default function Drivers() {
         "identity_card",
         "good_conduct",
         "medical_report",
+        "organisationId",
       ];
       for (const field of requiredFields) {
         if (!values[field]) {

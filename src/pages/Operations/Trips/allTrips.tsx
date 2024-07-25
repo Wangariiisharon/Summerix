@@ -70,6 +70,7 @@ export default function AllTrips({ searchQuery }: any) {
     fuel: 0,
     mileage_fee: 0,
     distance: "",
+    timestamp: "",
   });
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>("all");
@@ -145,6 +146,7 @@ export default function AllTrips({ searchQuery }: any) {
       dealValue: trip.dealValue,
       mileage_fee: trip.mileage_fee,
       distance: trip.distance,
+      timestamp: trip.timestamp,
     });
     setEditModalOpen(true);
   };
@@ -172,6 +174,7 @@ export default function AllTrips({ searchQuery }: any) {
     dealValue: any;
     mileage_fee: any;
     distance: any;
+    timestamp: any;
   }) => {
     if (!selectedTrip) {
       console.error("No selected Trip to update");
@@ -224,6 +227,7 @@ export default function AllTrips({ searchQuery }: any) {
         fuel: values.fuel,
         mileage_fee: values.mileage_fee,
         distance: values.distance,
+        timestamp: values.timestamp,
       });
 
       // Update the local fetchedVehicles state
@@ -248,6 +252,7 @@ export default function AllTrips({ searchQuery }: any) {
               dealValue: values.dealValue,
               mileage_fee: values.mileage_fee,
               distance: values.distance,
+              timestamp: values.timestamp,
             }
           : trip
       );
