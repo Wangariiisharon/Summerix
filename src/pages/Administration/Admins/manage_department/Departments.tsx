@@ -4,6 +4,7 @@ import { AddButton, Button, EditBtn } from "@/components/Buttons";
 import Table, { DummyTable } from "@/components/Table/Table";
 import {
   CheckCircleIcon,
+  PlusIcon,
   XCircleIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
@@ -309,7 +310,13 @@ export default function Departments() {
             </div>
             <div className="flex justify-end text-base mr-2">
               <div className="ml-2">
-                <AddButton name="Add Deparment" handleAddClick={handleAdd} />
+                <Button
+                  className="rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2"
+                  handleClick={handleAdd}
+                >
+                  <PlusIcon className="h-6 w-6 mr-2" />
+                  Add Deparment
+                </Button>
               </div>
             </div>
           </div>

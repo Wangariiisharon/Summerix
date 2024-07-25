@@ -143,6 +143,7 @@ export default function TripsComponent() {
     fuel: 0,
     mileage_fee: 0,
     distance: "",
+    timestamp: "",
   });
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -541,6 +542,7 @@ export default function TripsComponent() {
       dealValue: trip.dealValue,
       mileage_fee: trip.mileage_fee,
       distance: trip.distance,
+      timestamp: trip.timestamp,
     });
     setEditModalOpen(true);
   };
@@ -568,6 +570,7 @@ export default function TripsComponent() {
     dealValue: any;
     mileage_fee: any;
     distance: any;
+    timestamp: any;
   }) => {
     if (!selectedTrip) {
       console.error("No selected Trip to update");
@@ -620,6 +623,7 @@ export default function TripsComponent() {
         fuel: values.fuel,
         mileage_fee: values.mileage_fee,
         distance: values.distance,
+        timestamp: values.timestamp,
       });
 
       // Update the local fetchedVehicles state
@@ -645,6 +649,7 @@ export default function TripsComponent() {
               dealValue: values.dealValue,
               mileage_fee: values.mileage_fee,
               distance: values.distance,
+              timestamp: values.timestamp,
             }
           : trip
       );

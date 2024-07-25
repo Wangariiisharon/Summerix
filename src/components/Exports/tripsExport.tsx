@@ -64,8 +64,8 @@ export async function exportDataToCSV(filterStatus?: string) {
 
   const csvData = data.map((trip) => ({
     Trip_ID: trip.tripId,
-    Drop_Off_Location: `"${trip.drop_off_location}"`,
     Pick_Up_Location: `"${trip.pick_up_location}"`,
+    Drop_Off_Location: `"${trip.drop_off_location}"`,
     Driver: trip.requested_by?.name ? `"${trip.requested_by.name}"` : "",
     Vehicle: trip.vehicle,
     Cargo_Type: trip.cargo_type,
@@ -82,7 +82,7 @@ export async function exportDataToCSV(filterStatus?: string) {
   }));
 
   const header =
-    "Trip_ID,Drop_Off_Location,Pick_Up_Location,Driver,Vehicle,Cargo_Type,Cargo_Quantity,Company,Trip_Status,Client,DealValue,Fuel,Mileage_Fee,Distance,Start_Time,End_Time";
+    "Trip_ID,Pick_Up_Location,Drop_Off_Location,Driver,Vehicle,Cargo_Type,Cargo_Quantity,Company,Trip_Status,Client,DealValue,Fuel,Mileage_Fee,Distance,Start_Time,End_Time";
   const csvString = [
     header,
     ...csvData.map((item) => Object.values(item).join(",")),

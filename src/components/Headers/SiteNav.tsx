@@ -139,7 +139,7 @@ export default function SiteNav({ children }: Props) {
                   item.visible && (
                     <Link key={index} href={item.href} passHref>
                       <li
-                        className={`flex items-center mt-[6px] pl-6 pr-4 border-r-4 ${
+                        className={`flex items-center mt-[6px] pl-6  border-r-4 ${
                           router.pathname === item.href
                             ? "border-blue-500 bg-blue-100"
                             : "border-transparent"

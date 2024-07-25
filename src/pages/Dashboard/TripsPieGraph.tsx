@@ -3,39 +3,39 @@ import {
   Chart as ChartJS,
   ArcElement,
   Tooltip,
-  ScriptableContext,
+  Plugin,
+  ChartTypeRegistry,
 } from "chart.js";
-import { AnyObject } from "chart.js/dist/types/basic";
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import {
   DocumentData,
   Timestamp,
   collection,
   getDocs,
   getFirestore,
-  onSnapshot,
-  orderBy,
   query,
   where,
 } from "firebase/firestore";
-import { fbDb } from "@/firebase/configs";
-import { Fragment, SetStateAction, useEffect, useState } from "react";
-import {
-  AuthProvider,
-  useAuthContext,
-} from "@/components/Authentication/AuthProvider";
-import { centerTextPlugin } from "../../centerTextPlugin";
+import { useEffect, useState } from "react";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 
-ChartJS.register(centerTextPlugin);
+// Define a type for the custom plugin options
+interface CenterTextPluginOptions {
+  display: boolean;
+  text: string;
+}
+
 ChartJS.register(ArcElement, Tooltip);
 
+// Custom plugin to add text in the center of the doughnut chart
+
+// Define the component
 export default function TripsPieGraph({ selectedDate, selectedYear }: any) {
   const [fetchedTrips, setfetchedTrips] = useState<DocumentData[]>([]);
   const { organisationId } = useAuthContext();
+
   useEffect(() => {
     const fetchTrips = async () => {
       const db = getFirestore();
-
       const startOfMonth = selectedDate
         ? new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
         : new Date(selectedYear, new Date().getMonth(), 1);
@@ -51,37 +51,23 @@ export default function TripsPieGraph({ selectedDate, selectedYear }: any) {
           )
         : new Date(selectedYear, new Date().getMonth() + 1, 0, 23, 59, 59);
 
-      const startOfYear = new Date(
-        selectedDate ? selectedDate.getFullYear() : selectedYear,
-        0,
-        1
-      );
-      const endOfYear = new Date(
-        selectedDate ? selectedDate.getFullYear() : selectedYear,
-        11,
-        31,
-        23,
-        59,
-        59
-      );
-
-      const startDate = selectedDate ? startOfMonth : startOfYear;
-      const endDate = selectedDate ? endOfMonth : endOfYear;
+      const startDate = Timestamp.fromDate(startOfMonth);
+      const endDate = Timestamp.fromDate(endOfMonth);
 
       try {
         if (organisationId) {
           const q = query(
             collection(db, "trips"),
             where("organisationId", "==", organisationId),
-            where("timestamp", ">=", Timestamp.fromDate(startDate)),
-            where("timestamp", "<=", Timestamp.fromDate(endDate))
+            where("timestamp", ">=", startDate),
+            where("timestamp", "<=", endDate)
           );
           const querySnapshot = await getDocs(q);
-
           const tripsData = querySnapshot.docs.map((doc) => ({
             id: doc.id,
             ...doc.data(),
           }));
+          console.log("Fetched trips:", tripsData); // Log fetched trips
           setfetchedTrips(tripsData);
         }
       } catch (error) {
@@ -89,62 +75,66 @@ export default function TripsPieGraph({ selectedDate, selectedYear }: any) {
       }
     };
     fetchTrips();
-    fetchTrips();
   }, [organisationId, selectedDate, selectedYear]);
 
   const currentDate = Date.now();
-  const completedTripsCount = fetchedTrips.filter(
-    (trip) => trip.start_time < currentDate && trip.end_time < currentDate
-  ).length;
 
-  const allTrips = completedTripsCount;
-  const completedPercentage = allTrips > 0 ? completedTripsCount / allTrips : 0;
-  const percentage = completedPercentage * 100;
-  const passedTripsCount = fetchedTrips.filter(
-    (trip) => trip.start_time < currentDate || trip.end_time < currentDate
-  ).length;
-
-  interface dataset {
-    datasets: {
-      backgroundColor: string[];
-      data: number[];
-      borderJoinStyle:
-        | "round"
-        | "bevel"
-        | "miter"
-        | ((
-            ctx: ScriptableContext<"doughnut">,
-            options: AnyObject
-          ) => CanvasLineJoin | undefined);
-      borderWidth: number;
-      borderRadius: number;
-      borderAlign:
-        | "inner"
-        | "center"
-        | ((
-            ctx: ScriptableContext<"doughnut">,
-            options: AnyObject
-          ) => "inner" | "center" | undefined)
-        | readonly ("inner" | "center" | undefined)[]
-        | undefined;
-      spacing: number;
-      radius: number;
-    }[];
-  }
-
-  const data = {
-    datasets: [
-      {
-        data: [passedTripsCount, allTrips - passedTripsCount],
-        backgroundColor: ["#20C997", "#F7F8FA"],
-        borderWidth: 0,
-        cutout: "80%",
-        radius: "80%",
-      },
-    ],
+  const convertToMillis = (time: any) => {
+    if (time instanceof Timestamp) {
+      return time.toMillis();
+    } else if (time instanceof Date) {
+      return time.getTime();
+    } else {
+      // Assuming time is a string or another format, convert it to a Date object
+      return new Date(time).getTime();
+    }
   };
 
-  const options = {
+  const completedTrips = fetchedTrips.filter((trip) => {
+    const startTime = convertToMillis(trip.start_time);
+    const endTime = convertToMillis(trip.end_time);
+    const isCompleted = trip.trip_status === "Done";
+
+    console.log(
+      `Trip ID: ${trip.id}, Status: ${trip.trip_status}, Start: ${new Date(
+        startTime
+      )}, End: ${new Date(endTime)}, Completed: ${isCompleted}`
+    );
+    return isCompleted;
+  });
+
+  const completedTripsCount = completedTrips.length;
+  console.log("completedTripsCount:", completedTripsCount); // Log completed trips count
+
+  const allTrips = fetchedTrips.length;
+  console.log("allTrips:", allTrips); // Log all trips count
+
+  const percentageCompleted =
+    allTrips > 0 ? Math.round((completedTripsCount / allTrips) * 100) : 0;
+  console.log("percentageCompleted:", percentageCompleted);
+
+  const centerTextPlugin: Plugin = {
+    id: "centerTextPlugin",
+    beforeDraw: (chart) => {
+      const {
+        ctx,
+        chartArea: { top, right, bottom, left, width, height },
+      } = chart;
+      ctx.save();
+      ctx.font = "bolder 20px sans-serif";
+      ctx.fillStyle = "#333";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(
+        `${completedTripsCount}`,
+        left + width / 2,
+        top + height / 2
+      );
+      ctx.restore();
+    },
+  };
+
+  const completedTripsDataOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -154,26 +144,50 @@ export default function TripsPieGraph({ selectedDate, selectedYear }: any) {
       tooltip: {
         enabled: false,
       },
+      centerTextPlugin: centerTextPlugin,
     },
     animation: {
       animateRotate: true,
     },
   };
 
+  const completedTripsData = {
+    datasets: [
+      {
+        data: [completedTripsCount, allTrips - completedTripsCount],
+        backgroundColor: ["#20C997", "#E9ECEF"],
+        borderWidth: 0,
+        cutout: "80%",
+        radius: "50%", // Full radius
+      },
+    ],
+  };
+
   return (
     <>
       <div className="bg-white rounded-lg shadow">
-        <div className="ml-[10px] mr-[px] mt-[21px] flex flex-row">
+        <div className="ml-[10px] mr-[10px] mt-[21px] flex flex-row">
           <h2 className="text-sm font-bold leading-6">
-            {" "}
-            Trips completed this month{" "}
+            Trips completed this month
           </h2>
         </div>
         <div className="border-b border-gray-200 mt-2"></div>
-        <div className=" flex items-center justify-center">
-          <Doughnut data={data} options={options} />
+        <div className="relative h-48">
+          {" "}
+          {/* Reduced height */}
+          <Doughnut
+            data={completedTripsData}
+            options={completedTripsDataOptions}
+          />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-2xl font-semibold">
+              {completedTripsCount}
+            </span>
+          </div>
         </div>
-        <div className="flex flex-row ml-[20px] mt-[30.7px]">
+        <div className="flex flex-row ml-[20px] mt-2">
+          {" "}
+          {/* Added margin-top */}
           <p className="text-sm ml-[16px]">
             Number of trips completed this month
           </p>

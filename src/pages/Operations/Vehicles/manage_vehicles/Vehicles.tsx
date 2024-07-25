@@ -76,6 +76,7 @@ export default function Vehicles({
     availability_status: "",
     vehiclesId: "", // Assign the result of the function
     organisationId: "",
+    timestamp: "",
   });
   const {
     currentAdmin,
@@ -139,6 +140,7 @@ export default function Vehicles({
       availability_status: vehicle.availability_status,
       vehiclesId: vehicle.vehiclesId, // Assign the result of the function
       organisationId: vehicle.organisationId,
+      timestamp: vehicle.timestamp,
     });
     setEditModalOpen(true);
   };
@@ -585,6 +587,7 @@ export default function Vehicles({
     availability_status: any;
     vehiclesId: any;
     organisationId: any;
+    timestamp: any;
   }) => {
     if (!selectedVehicle) {
       console.error("No selected vehicle to update");
@@ -627,6 +630,7 @@ export default function Vehicles({
         availability_status: values.availability_status,
         vehiclesId: values.vehiclesId,
         organisationId: values.organisationId,
+        timestamp: values.timestamp,
       });
 
       // Update the local fetchedVehicles state
@@ -653,6 +657,7 @@ export default function Vehicles({
               availability_status: values.availability_status,
               vehiclesId: values.vehiclesId,
               organisationId: values.organisationId,
+              timestamp: values.timestamp,
             }
           : vehicle
       );

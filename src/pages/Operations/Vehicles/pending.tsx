@@ -91,6 +91,7 @@ export default function Pending() {
     approvalCount: 0,
     broken_partImage: null,
     approvedBy: [],
+    timestamp: "",
   });
   const [approvalCount, setApprovalCount] = useState(0);
   const [checked, setChecked] = useState(false);
@@ -229,6 +230,7 @@ export default function Pending() {
     approvalCount: number;
     broken_partImage: null;
     approvedBy: any[];
+    timestamp: any;
   }) => {
     if (!selectedMaintenance) {
       console.error("No selected vehicle to update");
@@ -310,6 +312,7 @@ export default function Pending() {
           ? [...values.approvedBy, approvedBy].filter(Boolean) // Filter out undefined values
           : [approvedBy],
         organisationId: organisationId,
+        timestamp: values.timestamp,
         notificationNeedsDisplay: true,
         broken_partImage: values.broken_partImage
           ? await uploadImage(values.broken_partImage, "broken_partImage")
@@ -364,6 +367,7 @@ export default function Pending() {
       approvalCount: maintenance.approvalCount,
       broken_partImage: maintenance.broken_partImage,
       approvedBy: maintenance.approvedBy || [],
+      timestamp: maintenance.timestamp,
     });
     console.log("Edit Form Initial Values:", editFormInitialValues);
   };
