@@ -283,6 +283,7 @@ export default function Departments() {
       ]);
 
       setOpen(false);
+      setIsModalOpen(false);
     } catch (error) {
       console.error("Error adding Department:", error);
     }
@@ -408,7 +409,7 @@ export default function Departments() {
                 validationSchema={validationSchema}
                 onSubmit={handleEditSubmit}
               >
-                {({ values, errors, touched }) => (
+                {({ values, errors, touched, isSubmitting }) => (
                   <Form>
                     <div className="">
                       <div className="flex w-full justify-between">
@@ -418,26 +419,25 @@ export default function Departments() {
                             type="text"
                             name="name"
                             value={values.name}
-                            className="form-input bg-grey w-48"
+                            className="form-input mt-1 block w-96 bg-gray-100"
                           />
-                          {errors.name && touched.name ? (
-                            <div className="text-red-600">{errors.name}</div>
-                          ) : null}
                         </label>
                       </div>
 
-                      <div className="flex w-full justify-end mt-24 ">
-                        <Button
-                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
-                          handleClick={handleReset}
-                        >
-                          Reset
-                        </Button>
+                      <div className="flex justify-end mt-6">
                         <button
-                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
-                          type="submit"
+                          type="button"
+                          className="inline-flex justify-center rounded-md border border-transparent bg-gray-300 px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-400 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                          onClick={() => setEditModalOpen(false)}
                         >
-                          Save
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-[#4FD1C5] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
+                          disabled={isSubmitting} // Disable button while submitting
+                        >
+                          + Save
                         </button>
                       </div>
                     </div>

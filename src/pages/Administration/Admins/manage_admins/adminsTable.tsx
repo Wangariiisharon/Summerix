@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { fbDb } from "@/firebase/configs";
-import { DocumentData, doc, setDoc } from "firebase/firestore";
+import { DocumentData, doc, setDoc, updateDoc } from "firebase/firestore";
 import json2csv from "json2csv";
 import toast from "react-hot-toast";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import SearchBar from "@/components/Forms/input";
 import { useRouter } from "next/router";
+import { AnyPtrRecord } from "dns";
+import { AnyObject } from "yup";
 
 interface Admin {
   adminId: string;
@@ -44,6 +46,7 @@ export default function AdminsTable({
   const [selectAll, setSelectAll] = useState(false);
   const [selectedAdmins, setSelectedAdmins] = useState<Admin[]>([]);
   const router = useRouter();
+
   const handleCheckboxChange = (admin: Admin) => {
     const isAdminSelected = selectedAdmins.includes(admin);
     if (isAdminSelected) {
@@ -65,9 +68,7 @@ export default function AdminsTable({
   };
 
   const handleAdminClick = (admin: DocumentData) => {
-    router.push(
-      `Administration/Admins/manage_admins/viewAdmin?id=${admin.userId}`
-    );
+    router.push(`Administration/Admins/manage_admins/viewAdmin?id=${admin.id}`);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,8 +80,8 @@ export default function AdminsTable({
     (admin: DocumentData): admin is Admin => {
       const fullName = `${admin.firstname} ${admin.lastname}`.toLowerCase();
       const nameMatch = fullName.includes(searchQuery.toLowerCase());
-      const isStatusTrue = admin.status === true || admin.status === "true";
-      return isStatusTrue && nameMatch;
+      // const isStatusTrue = admin.status === true || admin.status === "true";
+      return nameMatch;
     }
   );
 
@@ -120,27 +121,79 @@ export default function AdminsTable({
     document.body.removeChild(link);
   };
 
-  const updateVehicleStatusInDatabase = async (
-    vehicleId: string,
-    newStatus: boolean
-  ) => {
+  // const updateVehicleStatusInDatabase = async (
+  //   vehicleId: string,
+  //   newStatus: boolean
+  // ) => {
+  //   try {
+  //     if (!vehicleId) {
+  //       throw new Error("Vehicle ID is undefined or null");
+  //     }
+
+  //     const vehicleRef = doc(fbDb, "admins", vehicleId);
+  //     await setDoc(
+  //       vehicleRef,
+  //       { archive: newStatus, status: !newStatus },
+  //       { merge: true }
+  //     );
+  //     toast.success("Admin archived successfully");
+
+  //     const updatedVehicles = fetchedAdmins.map((admin) =>
+  //       admin.userId.toString() === vehicleId
+  //         ? { ...admin, archive: newStatus }
+  //         : admin
+  //     );
+  //     updateFetchedAdmins(updatedVehicles);
+  //   } catch (error) {
+  //     console.error("Error updating Vehicle status in database:", error);
+  //   }
+  // };
+  // const updateVehicleStatusInDatabase = async (
+  //   adminsId: string,
+  //   newStatus: boolean
+  // ) => {
+  //   try {
+  //     const vehicleRef = doc(fbDb, "admins", adminsId);
+  //     await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
+
+  //     const updatedVehicles = fetchedAdmins.map((admin) =>
+  //       admin.userId === adminsId ? { ...admin, archive: newStatus } : admin
+  //     );
+  //     updateFetchedAdmins(updatedVehicles);
+  //   } catch (error) {
+  //     console.error("Error updating Department status in database:", error);
+  //   }
+  // };
+
+  const toggleArchiveStatus = async (admin: Admin) => {
     try {
-      if (!vehicleId) {
-        throw new Error("Vehicle ID is undefined or null");
-      }
+      const adminRef = doc(fbDb, "admins", admin.id as string);
 
-      const vehicleRef = doc(fbDb, "admins", vehicleId);
-      await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
-      toast.success("Admin archived successfully");
+      // Toggle the archive and status values
+      const newArchiveStatus = !admin.archive;
+      const newStatus = !newArchiveStatus; // if archive is true, status should be false and vice versa
 
-      const updatedVehicles = fetchedAdmins.map((admin) =>
-        admin.userId.toString() === vehicleId
-          ? { ...admin, archive: newStatus }
-          : admin
+      // Update the document
+      await updateDoc(adminRef, {
+        archive: newArchiveStatus,
+        status: newStatus,
+      });
+
+      console.log(`Admin ${admin.adminId} updated successfully`);
+      toast.success(
+        `Admin ${admin.firstname} ${admin.lastname} updated successfully`
       );
-      updateFetchedAdmins(updatedVehicles);
+
+      // Update the fetchedAdmins state
+      const updatedAdmins = admins.map((a) =>
+        a.adminId === admin.adminId
+          ? { ...a, archive: newArchiveStatus, status: newStatus }
+          : a
+      );
+      updateFetchedAdmins(updatedAdmins);
     } catch (error) {
-      console.error("Error updating Vehicle status in database:", error);
+      console.error("Error updating admin:", error);
+      toast.error("Error updating admin. Please try again.");
     }
   };
 
@@ -181,7 +234,7 @@ export default function AdminsTable({
             <tbody className="text-gray-700">
               {fetchedAdmins.map((admin) => (
                 <tr
-                  key={admin.userId}
+                  key={admin.id}
                   className="border-b"
                   onClick={() => handleAdminClick(admin)}
                 >
@@ -204,12 +257,12 @@ export default function AdminsTable({
                   <td className="py-3 px-6">
                     <span
                       className={`px-3 py-1 rounded-full text-sm ${
-                        admin.super_admin
+                        admin.role
                           ? "bg-[#065ad8] text-white"
                           : "bg-[#065ad8] text-white"
                       }`}
                     >
-                      {admin.super_admin ? "Admin" : "User"}
+                      {admin.role ? "Admin" : "User"}
                     </span>
                   </td>
                   <td className="py-3 px-6">
@@ -250,14 +303,14 @@ export default function AdminsTable({
                       >
                         <FaTrash />
                       </button>
+
                       <button
                         className="bg-[#eae8fd] text-[#786cf1] h-8 w-18 py-1 px-2 ml-4"
-                        onClick={() =>
-                          updateVehicleStatusInDatabase(
-                            admin.userId,
-                            !admin.archive
-                          )
-                        }
+                        onClick={(e) => {
+                          e.stopPropagation();
+
+                          toggleArchiveStatus(admin);
+                        }}
                       >
                         {admin.archive ? "Unarchive" : "Archive"}
                       </button>

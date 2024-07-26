@@ -150,7 +150,10 @@ export default function CompanyProfile() {
     const fetchCountries = () => {
       try {
         const country_names = country.names();
-        setCountries(country_names);
+        const sortedCountryNames = country_names.sort((a, b) =>
+          a.localeCompare(b)
+        );
+        setCountries(sortedCountryNames);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching countries:", error);
@@ -164,19 +167,39 @@ export default function CompanyProfile() {
   }, [organisationId]);
 
   const handleSaveChanges = async () => {
+    if (!organisationId) {
+      console.error("Organisation ID is not available.");
+      toast.error("Organisation ID is not available.");
+      return;
+    }
+
+    if (!companySettings.id) {
+      console.error("Company settings ID is missing.");
+      toast.error("Company settings ID is missing.");
+      return;
+    }
+
+    // Sanitize the companySettings to ensure all fields have valid values
+    const sanitizedSettings = {
+      ...companySettings,
+      publicProfile: companySettings.publicProfile || "",
+      phoneNumber: companySettings.phoneNumber || "",
+      country: companySettings.country || "",
+      timezone: companySettings.timezone || "",
+      currency: companySettings.currency || [],
+      photoURL: companySettings.photoURL || "",
+      primaryCurrency: companySettings.primaryCurrency || "KES", // Ensure primaryCurrency has a default value
+    };
+
     const db = getFirestore();
-    const settingsRef = doc(
-      db,
-      "companyProfile",
-      companySettings.id || doc(collection(db, "companyProfile")).id
-    );
+    const settingsRef = doc(db, "companyProfile", companySettings.id);
 
     try {
       await setDoc(
         settingsRef,
         {
           organisationId,
-          ...companySettings,
+          ...sanitizedSettings,
         },
         { merge: true }
       );
@@ -185,6 +208,7 @@ export default function CompanyProfile() {
       toast.success("Settings successfully updated!");
     } catch (error) {
       console.error("Error updating settings: ", error);
+      toast.error("Error updating settings.");
     }
   };
 
@@ -296,6 +320,34 @@ export default function CompanyProfile() {
 
       setEditingCurrencyModalOpen(false);
       setEditingCurrencyIndex(null);
+    }
+  };
+  const handleRemoveCurrency = async (currencyToRemove: string) => {
+    // Filter out the currency to remove
+    const updatedCurrencyArray = companySettings.currency.filter(
+      (currency) => currency !== currencyToRemove
+    );
+
+    setCompanySettings((prevSettings) => ({
+      ...prevSettings,
+      currency: updatedCurrencyArray,
+    }));
+
+    // Save the updated currency array to Firestore
+    try {
+      const db = getFirestore();
+      const settingsRef = doc(
+        db,
+        "companyProfile",
+        companySettings.id || doc(collection(db, "companyProfile")).id
+      );
+
+      await updateDoc(settingsRef, { currency: updatedCurrencyArray });
+      console.log("Currency successfully removed!");
+      toast.success("Currency successfully removed!");
+    } catch (error) {
+      console.error("Error removing currency: ", error);
+      toast.error("Error removing currency");
     }
   };
 
@@ -479,7 +531,12 @@ export default function CompanyProfile() {
                           </span>
                         </div>
                         <div className="flex items-center space-x-2 ml-[170px] mr-[10px]">
-                          <button className="text-gray-500">Remove</button>
+                          <button
+                            className="text-gray-500"
+                            onClick={() => handleRemoveCurrency(currency)}
+                          >
+                            Remove
+                          </button>
                           <button
                             className="text-blue-500 ml-[8px]"
                             onClick={() => {

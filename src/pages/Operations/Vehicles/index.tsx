@@ -239,7 +239,7 @@ export function DummyTable({
       (selectedTab === 2 && vehicles.availability_status === "On Route") ||
       (selectedTab === 3 && vehicles.availability_status === "Available") ||
       (selectedTab === 4 &&
-        vehicles.availability_status === "Out Of Service ") ||
+        vehicles.availability_status === "Out Of Service") ||
       (selectedTab === 5 && vehicles)
   );
   const visibleVehicles = filteredVehicles.slice(startIndex, endIndex);

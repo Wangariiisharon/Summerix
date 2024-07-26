@@ -265,22 +265,41 @@ export default function AllTrips({ searchQuery }: any) {
     }
   };
 
+  // const filteredTrips = fetchedTrips.filter((trip) => {
+  //   const fullName = `${trip.vehicle}`.toLowerCase();
+  //   const tripIdSearch = `${trip.trip_id}`.toLowerCase();
+
+  //   const nameMatch = fullName.includes(searchQuery.toLowerCase());
+  //   const tripIdMatch = tripIdSearch.includes(searchQuery.toLowerCase());
+
+  //   const startTimeMatch = `${trip.start_time}`.includes(
+  //     searchQuery.toLowerCase()
+  //   );
+  //   // const start = formatDate(new Date(trip.start_time.seconds * 1000));
+  //   // console.log("start", start);
+
+  //   return nameMatch || startTimeMatch || tripIdMatch;
+  // });
+
   const filteredTrips = fetchedTrips.filter((trip) => {
-    const fullName = `${trip.vehicle}`.toLowerCase();
-    const tripIdSearch = `${trip.trip_id}`.toLowerCase();
+    // Convert fields to lowercase for case-insensitive comparison
+    const fullName = trip.vehicle ? `${trip.vehicle}`.toLowerCase() : "";
+    const tripIdSearch = trip.trip_id ? `${trip.trip_id}`.toLowerCase() : "";
 
-    const nameMatch = fullName.includes(searchQuery.toLowerCase());
-    const tripIdMatch = tripIdSearch.includes(searchQuery.toLowerCase());
-    // const startTimeMatch = formatDate(
-    //   new Date(trip.start_time.seconds * 1000)
-    // ).includes(searchQuery);
-    const startTimeMatch = `${trip.start_time}`.includes(
-      searchQuery.toLowerCase()
-    );
-    const start = formatDate(new Date(trip.start_time.seconds * 1000));
-    console.log("start", start);
+    // Handle start_time and end_time safely
+    const startTime = trip.start_time ? `${trip.start_time}`.toLowerCase() : "";
+    const endTime = trip.end_time ? `${trip.end_time}`.toLowerCase() : "";
 
-    return nameMatch || startTimeMatch || tripIdMatch;
+    // Search query in lowercase
+    const queryLowerCase = searchQuery.toLowerCase();
+
+    // Check for matches
+    const nameMatch = fullName.includes(queryLowerCase);
+    const tripIdMatch = tripIdSearch.includes(queryLowerCase);
+    const startTimeMatch = startTime.includes(queryLowerCase);
+    const endTimeMatch = endTime.includes(queryLowerCase);
+
+    return nameMatch || tripIdMatch || startTimeMatch || endTimeMatch;
   });
 
   function formatDate(date: Date): string {

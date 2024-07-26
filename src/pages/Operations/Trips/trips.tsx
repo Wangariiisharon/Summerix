@@ -147,24 +147,59 @@ export default function TripsComponent() {
   });
   const [selectedIndex, setSelectedIndex] = useState(0);
 
+  // const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const query = e.target.value.trim().toLowerCase();
+  //   console.log("Search Query:", query);
+  //   setSearchQuery(query);
+  //   setFilteredTrips(
+  //     fetchedTrips.filter((trip) => {
+  //       const vehicleMatch = `${trip.vehicle}`.toLowerCase().includes(query);
+  //       const tripIdMatch = `${trip.trip_id}`.toLowerCase().includes(query);
+
+  //       const startTimeMatch = `${trip.start_time}`
+  //         .toLowerCase()
+  //         .includes(query);
+  //         const endTime = trip.end_time ? `${trip.end_time}`.toLowerCase() : "";
+
+  //       const start = formatDate(new Date(trip.start_time.seconds * 1000));
+  //       console.log("start", start);
+  //       console.log("startTimeMatch", startTimeMatch);
+  //       console.log(searchQuery, "searchQuery");
+
+  //       return vehicleMatch || startTimeMatch || tripIdMatch;
+  //     })
+  //   );
+  // };
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value.trim().toLowerCase();
     console.log("Search Query:", query);
     setSearchQuery(query);
+
     setFilteredTrips(
       fetchedTrips.filter((trip) => {
         const vehicleMatch = `${trip.vehicle}`.toLowerCase().includes(query);
         const tripIdMatch = `${trip.trip_id}`.toLowerCase().includes(query);
 
-        const startTimeMatch = `${trip.start_time}`
-          .toLowerCase()
-          .includes(query);
-        const start = formatDate(new Date(trip.start_time.seconds * 1000));
+        // Safely handle undefined end_time
+        const startTime = trip.start_time
+          ? `${trip.start_time}`.toLowerCase()
+          : "";
+        const endTime = trip.end_time ? `${trip.end_time}`.toLowerCase() : "";
+
+        // Compare with query
+        const startTimeMatch = startTime.includes(query);
+        const endTimeMatch = endTime.includes(query);
+
+        // Format the start time for display
+        const start = trip.start_time
+          ? formatDate(new Date(trip.start_time.seconds * 1000))
+          : "N/A";
         console.log("start", start);
         console.log("startTimeMatch", startTimeMatch);
-        console.log(searchQuery, "searchQuery");
+        console.log("endTimeMatch", endTimeMatch);
+        console.log("searchQuery", searchQuery);
 
-        return vehicleMatch || startTimeMatch || tripIdMatch;
+        return vehicleMatch || startTimeMatch || tripIdMatch || endTimeMatch;
       })
     );
   };

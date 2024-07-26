@@ -30,25 +30,8 @@ interface DepatmentDetailsProps {
     update: Date;
   };
 }
-interface AdminData {
-  firstname: string;
-  lastname: string;
-  email: string;
-  phonenumber: string;
-  super_admin: boolean;
-  status: boolean;
-  additionalPermissions: string[];
-  adminId: string;
-  fcmToken: string;
-  invitationSent: boolean;
-  organisationId: string;
-  userId: string;
-  department: string;
-  country: string;
-  role: string;
-}
 
-interface EditFormInitialValues {
+interface AdminData {
   firstname: string;
   lastname: string;
   email: string;
@@ -131,26 +114,7 @@ export default function ViewDepatment() {
     phonenumber: Yup.string().required("Phone number address is required"),
     department: Yup.string().required("Department is required"),
   });
-  // const handleEditClick = (admin: DocumentData) => {
-  //   setEditFormInitialValues({
-  //     firstname: admin.firstname,
-  //     lastname: admin.lastname,
-  //     email: admin.email,
-  //     phonenumber: admin.phonenumber,
-  //     super_admin: admin.super_admin,
-  //     status: admin.status,
-  //     additionalPermissions: admin.additionalPermissions,
-  //     department: admin.department,
-  //     adminId: admin.adminId,
-  //     fcmToken: admin.fcmToken,
-  //     invitationSent: admin.invitationSent,
-  //     organisationId: admin.organisationId,
-  //     userId: admin.userId,
-  //     country: admin.country,
-  //     role: admin.role,
-  //   });
-  //   setEditModalOpen(true);
-  // };
+
   const handleEditClick = (admin: AdminData) => {
     setEditFormInitialValues({
       firstname: admin.firstname,
@@ -164,7 +128,7 @@ export default function ViewDepatment() {
       adminId: admin.userId, // Ensure adminId is set correctly
       fcmToken: "",
       invitationSent: false,
-      organisationId: "",
+      organisationId: admin.organisationId, // Ensure
       userId: admin.userId,
       country: "",
       role: admin.role,
@@ -177,48 +141,54 @@ export default function ViewDepatment() {
   };
 
   const handleEditSubmit = async (values: {
-    firstname: any;
-    lastname: any;
-    email: any;
-    phonenumber: any;
-    super_admin: any;
-    status: any;
-    additionalPermissions: any;
-    department: any;
-    adminId: any;
-    fcmToken: any;
-    invitationSent: any;
-    organisationId: any;
-    userId: any;
-    country: any;
-    role: any;
+    firstname: string;
+    lastname: string;
+    email: string;
+    phonenumber: string;
+    super_admin: boolean;
+    status: boolean;
+    additionalPermissions: string[];
+    department: string;
+    adminId: string;
+    fcmToken: string;
+    invitationSent: boolean;
+    organisationId: string;
+    userId: string;
+    country: string;
+    role: string;
   }) => {
     console.log("Edited Values:", values);
+    const { id } = router.query;
 
     try {
-      // Update the vehicle data in the database using the selectedVehicle.id
-      const AdminRef = doc(fbDb, "admins", values.userId); // Ensure id is defined and contains the correct document path
-      await setDoc(AdminRef, {
-        firstname: values.firstname,
-        lastname: values.lastname,
-        email: values.email,
-        phonenumber: values.phonenumber,
-        super_admin: values.super_admin,
-        status: values.status,
-        additionalPermissions: values.additionalPermissions,
-        department: values.department,
-        adminId: values.adminId,
-        fcmToken: values.fcmToken,
-        invitationSent: values.invitationSent,
-        organisationId: values.organisationId,
-        userId: values.userId,
-        country: values.country,
-        role: values.role,
-      });
+      const adminRef = doc(fbDb, "admins", id as string); // Correctly reference the document by document ID
+      console.log(adminRef);
 
-      // Update the local fetchedVehicles state
-      const updatedVehicles = fetchedAdmins.map((admin) =>
-        admin.id === id
+      await setDoc(
+        adminRef,
+        {
+          firstname: values.firstname,
+          lastname: values.lastname,
+          email: values.email,
+          phonenumber: values.phonenumber,
+          super_admin: values.super_admin,
+          status: values.status,
+          additionalPermissions: values.additionalPermissions,
+          department: values.department,
+          adminId: values.adminId,
+          fcmToken: values.fcmToken,
+          invitationSent: values.invitationSent,
+          organisationId: values.organisationId,
+          userId: values.userId,
+          country: values.country,
+          role: values.role,
+        },
+        { merge: true } // Use merge to only update the specified fields
+      );
+
+      // Update the local fetchedAdmins state
+      const updatedAdmins = fetchedAdmins.map((admin) =>
+        admin.userId === values.userId // Compare against values.userId to find the correct admin
           ? {
               ...admin,
               firstname: values.firstname,
@@ -239,13 +209,15 @@ export default function ViewDepatment() {
             }
           : admin
       );
-      setFetchedAdmins(updatedVehicles);
-
+      setFetchedAdmins(updatedAdmins);
       setEditModalOpen(false);
+      console.log("Admin Updated:", updatedAdmins);
+      toast.success("Admin  updated successfully!");
     } catch (error) {
       console.error("Error updating Admin:", error);
     }
   };
+
   async function addPermission(adminId: string, permissionId: string) {
     try {
       const adminRef = doc(fbDb, "admins", adminId);
@@ -359,27 +331,31 @@ export default function ViewDepatment() {
     fetchPermissions();
 
     const fetchAdmins = async () => {
+      const { id } = router.query;
+
       if (!id) {
         console.error("No ID specified for fetching admin data.");
         setUserData([]);
         return;
       }
 
-      const adminsCollection = collection(fbDb, "admins");
-      const q = query(adminsCollection, where("userId", "==", id));
-      const querySnapshot = await getDocs(q);
+      try {
+        const adminDocRef = doc(fbDb, "admins", id as string);
+        const adminDoc = await getDoc(adminDocRef);
 
-      if (querySnapshot.empty) {
-        console.log("Admin not found.");
+        if (!adminDoc.exists()) {
+          console.log("Admin not found.");
+          setUserData([]);
+          return;
+        }
+
+        const adminData = adminDoc.data() as AdminData;
+        setUserData([adminData]);
+        console.log("THIS IS THE USER DATA", adminData);
+      } catch (error) {
+        console.error("Error fetching admin data:", error);
         setUserData([]);
-        return;
       }
-
-      const adminData = querySnapshot.docs.map(
-        (doc) => doc.data() as AdminData
-      );
-      setUserData(adminData);
-      console.log("THIS IS THE USER DATA", adminData);
     };
 
     const fetchDepartments = async () => {
@@ -440,6 +416,18 @@ export default function ViewDepatment() {
     setPermissions(updatedPermissions);
   };
 
+  const handleSectionSelectAllChange = (section: string) => {
+    const newSectionAllChecked = !permissions[section].every((p) => p.checked);
+    const updatedPermissions = { ...permissions };
+    updatedPermissions[section] = updatedPermissions[section].map(
+      (permission) => ({
+        ...permission,
+        checked: newSectionAllChecked,
+      })
+    );
+    setPermissions(updatedPermissions);
+  };
+
   const handlePermissionChange = (section: string, permissionName: string) => {
     const updatedPermissions = { ...permissions };
     const permissionIndex = updatedPermissions[section].findIndex(
@@ -455,8 +443,6 @@ export default function ViewDepatment() {
     );
     setAllChecked(allChecked);
   };
-
-  // Assuming fbDb is correctly initialized Firestore instance
 
   const handleSaveChanges = async () => {
     const { id } = router.query;
@@ -662,8 +648,15 @@ export default function ViewDepatment() {
                             <input
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
-                              checked={allChecked}
-                              onChange={handleFullPermissionChange}
+                              // checked={allChecked}
+                              checked={
+                                permissions["Dashboard"]?.every(
+                                  (p) => p.checked
+                                ) || false
+                              }
+                              onChange={() =>
+                                handleSectionSelectAllChange("Dashboard")
+                              }
                             />
                             <span className="ml-2 text-gray-700">
                               Select All
@@ -703,8 +696,14 @@ export default function ViewDepatment() {
                             <input
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
-                              checked={allChecked}
-                              onChange={handleFullPermissionChange}
+                              checked={
+                                permissions["Vehicles"]?.every(
+                                  (p) => p.checked
+                                ) || false
+                              }
+                              onChange={() =>
+                                handleSectionSelectAllChange("Vehicles")
+                              }
                             />
                             <span className="ml-2 text-sm text-gray-700 mt-2">
                               Select All
@@ -743,8 +742,14 @@ export default function ViewDepatment() {
                             <input
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
-                              checked={allChecked}
-                              onChange={handleFullPermissionChange}
+                              checked={
+                                permissions["Drivers"]?.every(
+                                  (p) => p.checked
+                                ) || false
+                              }
+                              onChange={() =>
+                                handleSectionSelectAllChange("Drivers")
+                              }
                             />
                             <span className="ml-2 text-gray-700 text-sm mt-2">
                               Select All
@@ -784,8 +789,13 @@ export default function ViewDepatment() {
                             <input
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
-                              checked={allChecked}
-                              onChange={handleFullPermissionChange}
+                              checked={
+                                permissions["Trips"]?.every((p) => p.checked) ||
+                                false
+                              }
+                              onChange={() =>
+                                handleSectionSelectAllChange("Trips")
+                              }
                             />
                             <span className="ml-2 text-gray-700 text-sm mt-2">
                               Select All
@@ -822,8 +832,14 @@ export default function ViewDepatment() {
                             <input
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
-                              checked={allChecked}
-                              onChange={handleFullPermissionChange}
+                              checked={
+                                permissions["Client"]?.every(
+                                  (p) => p.checked
+                                ) || false
+                              }
+                              onChange={() =>
+                                handleSectionSelectAllChange("Client")
+                              }
                             />
                             <span className="ml-2 text-gray-700 text-sm mt-2">
                               Select All
@@ -862,8 +878,13 @@ export default function ViewDepatment() {
                             <input
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
-                              checked={allChecked}
-                              onChange={handleFullPermissionChange}
+                              checked={
+                                permissions["Class"]?.every((p) => p.checked) ||
+                                false
+                              }
+                              onChange={() =>
+                                handleSectionSelectAllChange("Class")
+                              }
                             />
                             <span className="ml-2 text-gray-700 text-sm mt-2">
                               Select All
@@ -899,8 +920,14 @@ export default function ViewDepatment() {
                             <input
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
-                              checked={allChecked}
-                              onChange={handleFullPermissionChange}
+                              checked={
+                                permissions["Suppliers"]?.every(
+                                  (p) => p.checked
+                                ) || false
+                              }
+                              onChange={() =>
+                                handleSectionSelectAllChange("Suppliers")
+                              }
                             />
                             <span className="ml-2 text-gray-700 text-sm mt-2">
                               Select All
@@ -939,8 +966,14 @@ export default function ViewDepatment() {
                             <input
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
-                              checked={allChecked}
-                              onChange={handleFullPermissionChange}
+                              checked={
+                                permissions["Report"]?.every(
+                                  (p) => p.checked
+                                ) || false
+                              }
+                              onChange={() =>
+                                handleSectionSelectAllChange("Report")
+                              }
                             />
                             <span className="ml-2 text-gray-700 text-sm mt-2">
                               Select All
@@ -1129,7 +1162,7 @@ export default function ViewDepatment() {
                         className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-[#4FD1C5] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
                         disabled={isSubmitting} // Disable button while submitting
                       >
-                        + Edit member
+                        + Save
                       </button>
                     </div>
                   </Form>

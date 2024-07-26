@@ -1,8 +1,42 @@
+// import {
+//   DocumentData,
+//   collection,
+//   doc,
+//   getDoc,
+//   getDocs,
+//   getFirestore,
+//   onSnapshot,
+//   query,
+//   setDoc,
+//   updateDoc,
+//   where,
+// } from "firebase/firestore";
+// import React, { useEffect, useState } from "react";
+// import { fbDb } from "@/firebase/configs";
+// import { useRouter } from "next/router";
+// import SiteLayout from "@/Layout/SiteLayout";
+// import {
+//   AuthProvider,
+//   useAuthContext,
+// } from "@/components/Authentication/AuthProvider";
+// import toast from "react-hot-toast";
+import { Tab } from "@headlessui/react";
+import { Fragment, SetStateAction, useEffect, useState } from "react";
+import { AddButton, Button, EditBtn } from "@/components/Buttons";
+import Table, { DummyTable } from "@/components/Table/Table";
+import {
+  CheckCircleIcon,
+  PlusIcon,
+  XCircleIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import { BodyCell, HeaderCell } from "../../../../components/Table/Cells";
+import { TableBody } from "../../../../components/Table/Row";
 import {
   DocumentData,
+  addDoc,
   collection,
   doc,
-  getDoc,
   getDocs,
   getFirestore,
   onSnapshot,
@@ -11,37 +45,51 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import * as Yup from "yup";
 import { fbDb } from "@/firebase/configs";
+import { FormModal, NewFormModal } from "@/components/Modals/FormModal";
+import { Formik, Field, Form } from "formik/dist/index";
+import { formatDistanceToNow } from "date-fns";
+import toast from "react-hot-toast";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
+import { FaEdit, FaTrash } from "react-icons/fa";
+import json2csv from "json2csv";
 import { useRouter } from "next/router";
 import SiteLayout from "@/Layout/SiteLayout";
-import {
-  AuthProvider,
-  useAuthContext,
-} from "@/components/Authentication/AuthProvider";
-import toast from "react-hot-toast";
 
-interface DepatmentDetailsProps {
+// interface DepatmentDetailsProps {
+//   id: string;
+//   departmentId: string;
+//   department: {
+//     departmentId?: string;
+//     name: string;
+//     members: number;
+//     permissions: string[];
+//     update: Date;
+//     archive: boolean;
+//     status: boolean;
+//   };
+// }
+interface Department {
+  status: boolean;
+  members: number;
   id: string;
   departmentId: string;
-  department: {
-    departmentId?: string;
-    name: string;
-    members: number;
-    permissions: string[];
-    update: Date;
-    archive: boolean;
-    status: boolean;
-  };
+  name: string;
+  updated: string | { seconds: number; nanoseconds: number }; // Allow updated to be a string or a Firestore timestamp
+  organisationId: string;
+  archive: boolean;
+  permissions: string[];
 }
-
 type PermissionObject = { name: string; checked: boolean };
 type Permissions = { [key: string]: PermissionObject[] };
 
+const validationSchema = Yup.object({
+  name: Yup.string().required("Name is required"),
+});
+
 export default function ViewDepatment() {
-  const [departments, setDepartments] = useState<
-    DepatmentDetailsProps["department"] | null
-  >(null);
+  const [departments, setDepartments] = useState<Department | null>(null);
   const [fetchedDepartments, setFetchedDepartments] = useState<DocumentData[]>(
     []
   );
@@ -53,76 +101,29 @@ export default function ViewDepatment() {
   >([]);
   const [adminCount, setAdminCount] = useState(0);
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+
   const [loading, setLoading] = useState(true);
   const [permissions, setPermissions] = useState<Permissions>({});
   const [allChecked, setAllChecked] = useState(false);
-
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const { organisationId } = useAuthContext();
+  const [editFormInitialValues, setEditFormInitialValues] = useState({
+    departmentId: "",
+    name: "",
+    updated: "",
+    archive: false,
+    organisationId: "",
+    permissions: [] as string[],
+    status: true,
+    members: 0,
+    id: "",
+  });
 
   const router = useRouter();
   const { id } = router.query;
   console.log("This is the ID", id);
-
-  // useEffect(() => {
-  //   let unsubscribe = () => {}; // Initialize unsubscribe function
-
-  //   if (id) {
-  //     const departmentId = id as string;
-  //     const departmentDocRef = doc(fbDb, "departments", departmentId);
-
-  //     // Subscribe to changes using onSnapshot
-  //     unsubscribe = onSnapshot(departmentDocRef, (docSnapshot) => {
-  //       if (docSnapshot.exists()) {
-  //         const departmentData =
-  //           docSnapshot.data() as DepatmentDetailsProps["department"];
-  //         departmentData.departmentId = docSnapshot.id; //trying to Ensure departmentId is set
-
-  //         setDepartments(departmentData);
-
-  //         // Fetch other departments with the same organisationId
-  //         if (organisationId) {
-  //           const departmentsQuery = query(
-  //             collection(fbDb, "departments"),
-  //             where("organisationId", "==", organisationId)
-  //           );
-  //           getDocs(departmentsQuery).then((querySnapshot) => {
-  //             const departmentsList: DocumentData[] = [];
-  //             querySnapshot.forEach((doc) => {
-  //               departmentsList.push(doc.data());
-  //             });
-  //             setFetchedDepartments(departmentsList);
-  //           });
-  //         }
-  //       }
-  //     });
-  //   }
-
-  //   // Fetch permissions data once
-  //   const fetchPermissions = async () => {
-  //     const permissionsCollection = collection(fbDb, "permisions");
-  //     const permissionsSnapshot = await getDocs(permissionsCollection);
-  //     const permissionsData: Permissions = {};
-  //     permissionsSnapshot.forEach((doc) => {
-  //       const data = doc.data();
-  //       Object.keys(data).forEach((key) => {
-  //         permissionsData[key] = data[key].map((permission: string) => ({
-  //           name: permission,
-  //           checked: false,
-  //         }));
-  //       });
-  //     });
-  //     setPermissions(permissionsData);
-  //     console.log("permissionsData", permissionsData);
-  //   };
-
-  //   fetchPermissions();
-
-  //   // Clean up function to unsubscribe from snapshot listener
-  //   return () => {
-  //     unsubscribe();
-  //   };
-  // }, [id, organisationId]);
 
   async function countAdminsInDepartment(
     departmentName: string
@@ -155,8 +156,7 @@ export default function ViewDepatment() {
       // Subscribe to changes using onSnapshot
       unsubscribe = onSnapshot(departmentDocRef, async (docSnapshot) => {
         if (docSnapshot.exists()) {
-          const departmentData =
-            docSnapshot.data() as DepatmentDetailsProps["department"];
+          const departmentData = docSnapshot.data() as Department;
           departmentData.departmentId = docSnapshot.id; // Ensure departmentId is set
 
           setDepartments(departmentData);
@@ -214,6 +214,7 @@ export default function ViewDepatment() {
     };
   }, [id, organisationId]);
 
+  //
   const handleFullPermissionChange = () => {
     const newAllChecked = !allChecked;
     setAllChecked(newAllChecked);
@@ -258,41 +259,151 @@ export default function ViewDepatment() {
     setAllChecked(allChecked);
   };
 
+  // const handleSaveChanges = async () => {
+  //   if (!id) {
+  //     toast.error("Department ID is missing");
+  //     return;
+  //   }
+
+  //   const selectedPermissions: string[] = [];
+  //   Object.keys(permissions).forEach((section) => {
+  //     permissions[section].forEach((permission) => {
+  //       if (permission.checked) {
+  //         selectedPermissions.push(permission.name);
+  //       }
+  //     });
+  //   });
+
+  //   const settingsRef = doc(fbDb, "departments", id as string);
+
+  //   try {
+  //     await setDoc(
+  //       settingsRef,
+  //       {
+  //         permissions: selectedPermissions,
+  //       },
+  //       { merge: true }
+  //     );
+
+  //     console.log("Permissions successfully updated for department!");
+  //     toast.success("Permissions successfully updated!");
+  //   } catch (error) {
+  //     console.error("Error updating Permissions: ", error);
+  //     toast.error("Error updating Permissions");
+  //   }
+  // };
   const handleSaveChanges = async () => {
-    if (!departments?.departmentId) {
+    const { id } = router.query;
+
+    if (!id || Array.isArray(id)) {
       toast.error("Department ID is missing");
       return;
     }
 
     const selectedPermissions: string[] = [];
     Object.keys(permissions).forEach((section) => {
-      permissions[section].forEach((permission) => {
+      permissions[section].forEach((permission: any) => {
         if (permission.checked) {
           selectedPermissions.push(permission.name);
         }
       });
     });
 
-    const settingsRef = doc(fbDb, "departments", departments.departmentId);
+    const settingsRef = doc(fbDb, "departments", id as string);
 
     try {
       await setDoc(
         settingsRef,
         {
           permissions: selectedPermissions,
-          departmentId: departments.departmentId,
         },
         { merge: true }
       );
 
-      console.log(
-        "Permissions successfully updated for department!",
-        departments.departmentId
-      );
+      console.log("Permissions successfully updated!");
       toast.success("Permissions successfully updated!");
     } catch (error) {
       console.error("Error updating Permissions: ", error);
       toast.error("Error updating Permissions");
+    }
+  };
+
+  const handleEditClick = (department: Department) => {
+    const updated =
+      typeof department.updated === "object" && "seconds" in department.updated
+        ? new Date(department.updated.seconds * 1000).toISOString()
+        : department.updated;
+    setEditFormInitialValues({
+      departmentId: department.departmentId,
+      name: department.name,
+      organisationId: department.organisationId,
+      archive: department.archive,
+      updated: updated,
+      permissions: department.permissions,
+      status: true,
+      members: 0,
+      id: "",
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleEditModalClose = () => {
+    setEditModalOpen(false);
+  };
+
+  const handleEditSubmit = async (values: {
+    departmentId: any;
+    name: any;
+    organisationId: any;
+    archive: any;
+    updated: any;
+    permissions: any;
+    status: any;
+    members: any;
+    id: any;
+  }) => {
+    const { id } = router.query;
+    try {
+      if (!values.name) {
+        console.error("Required form fields are missing");
+        toast.error("please fill the Name field");
+        return;
+      }
+      // Update the vehicle data in the database using the selectedVehicle.id
+      const vehicleRef = doc(fbDb, "departments", id as string);
+      await setDoc(vehicleRef, {
+        departmentId: values.departmentId,
+        name: values.name,
+        organisationId: values.organisationId,
+        archive: values.archive,
+        updated: values.updated,
+        permissions: values.permissions,
+        status: values.status,
+        members: values.members,
+      });
+
+      // Update the local fetchedVehicles state
+      const updatedVehicles = fetchedDepartments.map((department) =>
+        department.id === id
+          ? {
+              ...department,
+              departmentId: values.departmentId,
+              name: values.name,
+              organisationId: values.organisationId,
+              archive: values.archive,
+              updated: values.updated,
+              permissions: values.permissions,
+              status: values.status,
+              members: values.members,
+            }
+          : department
+      );
+
+      setFetchedDepartments(updatedVehicles);
+
+      setEditModalOpen(false);
+    } catch (error) {
+      console.error("Error updating Vehicle:", error);
     }
   };
 
@@ -369,7 +480,6 @@ export default function ViewDepatment() {
               <div className="ml-[18px] bg-white ">
                 <div className="flex flex-col p-[20px]">
                   <div className="flex flex-row">
-                    {/* <i className="fa fa-user-circle-o text-[#065AD8]"></i>  */}
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
@@ -431,7 +541,10 @@ export default function ViewDepatment() {
                     Set Permission
                   </button>
 
-                  <button className="bg-white border border-teal-400 text-teal-400 hover:bg-teal-50 font-semibold py-2 px-4 rounded flex items-center">
+                  <button
+                    className="bg-white border border-teal-400 text-teal-400 hover:bg-teal-50 font-semibold py-2 px-4 rounded flex items-center"
+                    onClick={() => departments && handleEditClick(departments)}
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
@@ -483,12 +596,17 @@ export default function ViewDepatment() {
                             <input
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
-                              checked={allChecked}
+                              // checked={allChecked}
+                              checked={
+                                permissions["Dashboard"]?.every(
+                                  (p) => p.checked
+                                ) || false
+                              }
                               onChange={() =>
                                 handleSectionSelectAllChange("Dashboard")
                               }
                             />
-                            <span className="ml-2 text-gray-700 text-sm">
+                            <span className="ml-2 text-gray-700">
                               Select All
                             </span>
                           </label>
@@ -526,7 +644,11 @@ export default function ViewDepatment() {
                             <input
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
-                              checked={allChecked}
+                              checked={
+                                permissions["Vehicles"]?.every(
+                                  (p) => p.checked
+                                ) || false
+                              }
                               onChange={() =>
                                 handleSectionSelectAllChange("Vehicles")
                               }
@@ -568,7 +690,11 @@ export default function ViewDepatment() {
                             <input
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
-                              checked={allChecked}
+                              checked={
+                                permissions["Drivers"]?.every(
+                                  (p) => p.checked
+                                ) || false
+                              }
                               onChange={() =>
                                 handleSectionSelectAllChange("Drivers")
                               }
@@ -604,25 +730,31 @@ export default function ViewDepatment() {
 
                       <div>
                         <div className="flex flex-col mb-4">
-                          <h2 className="text-sm font-semibold mt-4">Trips</h2>
+                          <h2 className="text-lg font-semibold mt-4 text-sm">
+                            Trips
+                          </h2>
                           <label className="flex items-center text-sm">
                             <input
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
-                              checked={allChecked}
+                              checked={
+                                permissions["Trips"]?.every((p) => p.checked) ||
+                                false
+                              }
                               onChange={() =>
                                 handleSectionSelectAllChange("Trips")
                               }
                             />
-                            <span className="ml-2 text-sm text-gray-700 mt-2">
+                            <span className="ml-2 text-gray-700 text-sm mt-2">
                               Select All
                             </span>
                           </label>
                         </div>
+
                         {permissions["Trips"]?.map((permission) => (
                           <label
                             key={permission.name}
-                            className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
+                            className="flex items-center mt-2 text-sm"
                           >
                             <input
                               type="checkbox"
@@ -648,7 +780,11 @@ export default function ViewDepatment() {
                             <input
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
-                              checked={allChecked}
+                              checked={
+                                permissions["Client"]?.every(
+                                  (p) => p.checked
+                                ) || false
+                              }
                               onChange={() =>
                                 handleSectionSelectAllChange("Client")
                               }
@@ -690,7 +826,10 @@ export default function ViewDepatment() {
                             <input
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
-                              checked={allChecked}
+                              checked={
+                                permissions["Class"]?.every((p) => p.checked) ||
+                                false
+                              }
                               onChange={() =>
                                 handleSectionSelectAllChange("Class")
                               }
@@ -729,7 +868,11 @@ export default function ViewDepatment() {
                             <input
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
-                              checked={allChecked}
+                              checked={
+                                permissions["Suppliers"]?.every(
+                                  (p) => p.checked
+                                ) || false
+                              }
                               onChange={() =>
                                 handleSectionSelectAllChange("Suppliers")
                               }
@@ -771,7 +914,11 @@ export default function ViewDepatment() {
                             <input
                               type="checkbox"
                               className="form-checkbox text-sm h-5 w-5 text-[#4fd1c5] rounded-md"
-                              checked={allChecked}
+                              checked={
+                                permissions["Report"]?.every(
+                                  (p) => p.checked
+                                ) || false
+                              }
                               onChange={() =>
                                 handleSectionSelectAllChange("Report")
                               }
@@ -804,7 +951,6 @@ export default function ViewDepatment() {
                         ))}
                       </div>
                     </div>
-
                     <div className="flex justify-end">
                       <button
                         onClick={handleSaveChanges}
@@ -821,6 +967,65 @@ export default function ViewDepatment() {
             </div>
           </div>
         </div>
+
+        {editModalOpen && (
+          <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
+            <div>
+              <div className="flex w-full h-full justify-between items-center mb-12">
+                <div className="text-xl font-semibold ">
+                  Edit Department Details
+                </div>
+                <Button
+                  className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
+                  handleClick={handleEditModalClose}
+                >
+                  <XMarkIcon className="h-6 w-6 text-red-400" />
+                </Button>
+              </div>
+
+              <Formik
+                initialValues={editFormInitialValues}
+                validationSchema={validationSchema}
+                onSubmit={handleEditSubmit}
+              >
+                {({ values, errors, touched, isSubmitting }) => (
+                  <Form>
+                    <div className="">
+                      <div className="flex w-full justify-between">
+                        <label className="block">
+                          <label className="form-label">NAME</label>
+                          <Field
+                            type="text"
+                            name="name"
+                            value={values.name}
+                            className="form-input mt-1 block w-96 bg-gray-100"
+                          />
+                        </label>
+                      </div>
+
+                      <div className="flex justify-end mt-6">
+                        <button
+                          type="button"
+                          className="inline-flex justify-center rounded-md border border-transparent bg-gray-300 px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-400 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                          onClick={() => setEditModalOpen(false)}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-[#4FD1C5] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
+                          disabled={isSubmitting} // Disable button while submitting
+                        >
+                          + Save
+                        </button>
+                      </div>
+                    </div>
+                  </Form>
+                )}
+              </Formik>
+            </div>
+          </FormModal>
+        )}
       </>
     </SiteLayout>
   );
