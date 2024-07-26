@@ -1,7 +1,7 @@
 import { TabGroup, TabPanel, TabPanels } from "@headlessui/react";
 import { Button, AddButtons } from "@/components/Buttons";
 import { SetStateAction, useEffect, useState } from "react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { FormModal, NewFormModal } from "@/components/Modals/FormModal";
 import { Formik, Field, Form } from "formik/dist/index";
 import firebaseApp, { fbDb } from "@/firebase/configs";
@@ -202,7 +202,10 @@ export default function Admins() {
     const fetchCountries = () => {
       try {
         const country_names = country.names();
-        setCountries(country_names);
+        const sortedCountryNames = country_names.sort((a, b) =>
+          a.localeCompare(b)
+        );
+        setCountries(sortedCountryNames);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching countries:", error);
@@ -242,6 +245,7 @@ export default function Admins() {
   const updateFetchedAdmins = (updatedAdmins: Admin[]) => {
     setFetchedAdmins(updatedAdmins);
   };
+
   const handleEditClick = (admin: Admin) => {
     setSelectedAdmin(admin);
     setEditFormInitialValues({
@@ -254,18 +258,22 @@ export default function Admins() {
       additionalPermissions: admin.additionalPermissions || [],
       department: admin.department,
       adminId: admin.adminId,
-      invitationSent: admin.invitationSent,
+      invitationSent: admin.invitationSent || true,
       organisationId: admin.organisationId,
       userId: admin.userId,
       archive: admin.archive,
-      inviterUid: admin.inviterUid,
+      inviterUid: admin.inviterUid || "",
       id: admin.id || "",
       role: admin.role,
       country: admin.country,
     });
     setEditModalOpen(true);
   };
+  const handleAdd = () => {
+    console.log("handleAdd called");
 
+    setIsModalOpen(true);
+  };
   const handleEditModalClose = () => {
     setSelectedAdmin(null);
     setEditModalOpen(false);
@@ -288,42 +296,35 @@ export default function Admins() {
         return;
       }
 
-      // const AdminRef = doc(fbDb, "admins", selectedAdmin.id);
       const AdminRef = doc(fbDb, "admins", values.id); // Use values.id
 
-      await setDoc(AdminRef, {
-        firstname: values.firstname,
-        lastname: values.lastname,
-        email: values.email,
-        phonenumber: values.phonenumber,
-        super_admin: values.super_admin,
-        status: values.status,
+      // Prepare data to be updated, providing default values for undefined fields
+      const adminDataToUpdate = {
+        firstname: values.firstname || "",
+        lastname: values.lastname || "",
+        email: values.email || "",
+        phonenumber: values.phonenumber || "",
+        super_admin: values.super_admin || false,
+        status: values.status || false,
         additionalPermissions: values.additionalPermissions || [],
-        department: values.department,
-        adminId: values.adminId,
-        invitationSent: values.invitationSent,
-        organisationId: values.organisationId,
-        userId: values.userId,
-        archive: values.archive,
-      });
+        department: values.department || "",
+        adminId: values.adminId || "",
+        organisationId: values.organisationId || "",
+        userId: values.userId || "",
+        archive: values.archive || false,
+        inviterUid: values.inviterUid || "",
+        invitationSent: values.invitationSent || false,
+        country: values.country || "",
+        role: values.role || "",
+      };
+
+      await setDoc(AdminRef, adminDataToUpdate, { merge: true });
 
       const updatedAdmins = fetchedAdmins.map((admin) =>
         admin.id === values.id // Use id for comparison
           ? {
               ...admin,
-              firstname: values.firstname,
-              lastname: values.lastname,
-              email: values.email,
-              phonenumber: values.phonenumber,
-              super_admin: values.super_admin,
-              status: values.status,
-              additionalPermissions: values.additionalPermissions || [],
-              department: values.department,
-              adminId: values.adminId,
-              invitationSent: values.invitationSent,
-              organisationId: values.organisationId,
-              userId: values.userId,
-              archive: values.archive,
+              ...adminDataToUpdate, // Update fields with new values
             }
           : admin
       );
@@ -335,6 +336,107 @@ export default function Admins() {
       console.error("Error updating Admin:", error);
     }
   };
+
+  // const handleSubmit = async (values: {
+  //   firstname: any;
+  //   lastname: any;
+  //   email: any;
+  //   phonenumber: any;
+  //   country: any;
+  //   role: any;
+  //   invitationSent: boolean;
+  //   department: string;
+  // }) => {
+  //   console.log("handleSubmit called with values:", values);
+
+  //   try {
+  //     const auth = getAuth(firebaseApp);
+  //     const userCredential = await createUserWithEmailAndPassword(
+  //       auth,
+  //       values.email,
+  //       "Random"
+  //     );
+  //     const authUid = userCredential.user.uid;
+
+  //     console.log("User created with UID:", authUid);
+
+  //     const existingAdminQuery = query(
+  //       collection(fbDb, "admins"),
+  //       where("email", "==", values.email),
+  //       where("organisationId", "==", organisationId)
+  //     );
+
+  //     const existingAdminSnapshot = await getDocs(existingAdminQuery);
+
+  //     if (!existingAdminSnapshot.empty) {
+  //       toast.error(
+  //         `A User with the Email '${values.email}' already exists in the organization`
+  //       );
+  //       return;
+  //     }
+
+  //     const inviterUid = auth.currentUser ? auth.currentUser.uid : null;
+  //     console.log("Inviter UID:", inviterUid);
+
+  //     const inviterQuery = query(
+  //       collection(fbDb, "admins"),
+  //       where("userId", "==", inviterUid)
+  //     );
+  //     const inviterSnapshot = await getDocs(inviterQuery);
+
+  //     let inviterData = null;
+  //     if (!inviterSnapshot.empty) {
+  //       inviterData = inviterSnapshot.docs[0].data();
+  //       console.log("Inviter Data:", inviterData);
+  //     } else {
+  //       console.error("Inviter not found");
+  //     }
+
+  //     const generatedAdminId = await generateAdminId(organisationId);
+  //     console.log("Generated Admin ID:", generatedAdminId);
+
+  //     const adminData: Admin = {
+  //       adminId: generatedAdminId,
+  //       firstname: values.firstname,
+  //       lastname: values.lastname,
+  //       email: values.email,
+  //       phonenumber: values.phonenumber,
+  //       status: true,
+  //       country: values.country,
+  //       role: values.role,
+  //       department: values.department,
+  //       inviterUid: inviterUid,
+  //       organisationId: organisationId,
+  //       userId: authUid,
+  //       archive: false,
+  //       additionalPermissions: [],
+  //       invitationSent: true,
+  //       super_admin: false,
+  //     };
+
+  //     console.log("Admin Data to be added:", adminData);
+
+  //     const docRef = await addDoc(collection(fbDb, "admins"), adminData);
+  //     console.log("Document Reference ID:", docRef.id);
+
+  //     toast.success("Admin Successfully Added.");
+  //     setFetchedAdmins((prevAdmins) => [{ ...adminData }, ...prevAdmins]);
+
+  //     if (!values.invitationSent) {
+  //       const actionCodeSettings = {
+  //         url: `https://truck-it-bf0b2.web.app/auth?adminId=${docRef.id}`,
+  //         handleCodeInApp: true,
+  //       };
+  //       await sendSignInLinkToEmail(auth, values.email, actionCodeSettings);
+  //       await updateDoc(docRef, { invitationSent: true });
+  //     }
+
+  //     setIsModalOpen(false);
+  //   } catch (error) {
+  //     console.error("Error adding admin:", error);
+  //     toast.error("Error adding admin. Please try again.");
+  //   }
+  // };
 
   const handleSubmit = async (values: {
     firstname: any;
@@ -350,22 +452,25 @@ export default function Admins() {
 
     try {
       const auth = getAuth(firebaseApp);
+      console.log("Auth object obtained:", auth);
+
+      // Create user
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         values.email,
         "Random"
       );
       const authUid = userCredential.user.uid;
-
       console.log("User created with UID:", authUid);
 
+      // Check if the user already exists in the organization
       const existingAdminQuery = query(
         collection(fbDb, "admins"),
         where("email", "==", values.email),
         where("organisationId", "==", organisationId)
       );
-
       const existingAdminSnapshot = await getDocs(existingAdminQuery);
+      console.log("Existing admin query snapshot:", existingAdminSnapshot);
 
       if (!existingAdminSnapshot.empty) {
         toast.error(
@@ -374,6 +479,7 @@ export default function Admins() {
         return;
       }
 
+      // Get the inviter UID
       const inviterUid = auth.currentUser ? auth.currentUser.uid : null;
       console.log("Inviter UID:", inviterUid);
 
@@ -382,6 +488,7 @@ export default function Admins() {
         where("userId", "==", inviterUid)
       );
       const inviterSnapshot = await getDocs(inviterQuery);
+      console.log("Inviter query snapshot:", inviterSnapshot);
 
       let inviterData = null;
       if (!inviterSnapshot.empty) {
@@ -415,6 +522,7 @@ export default function Admins() {
 
       console.log("Admin Data to be added:", adminData);
 
+      // Add new admin document
       const docRef = await addDoc(collection(fbDb, "admins"), adminData);
       console.log("Document Reference ID:", docRef.id);
 
@@ -451,11 +559,13 @@ export default function Admins() {
               </div>
               <div className="flex justify-end text-base mr-2">
                 <div className="ml-2">
-                  <AddButtons
-                    name="Add User"
-                    handleAddClick={handleAddAdmin}
-                    handleModalClick={handleAddAdminClick}
-                  />
+                  <Button
+                    className="rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2"
+                    handleClick={handleAdd}
+                  >
+                    <PlusIcon className="h-6 w-6 mr-2" />
+                    Add User
+                  </Button>
                 </div>
               </div>
             </div>
@@ -478,7 +588,7 @@ export default function Admins() {
             <NewFormModal
               isOpen={isModalOpen}
               setOpen={setIsModalOpen}
-              heading="Add Member"
+              heading="Add User"
             >
               <div className="p-5">
                 <Formik
@@ -487,17 +597,180 @@ export default function Admins() {
                     lastname: "",
                     email: "",
                     phonenumber: "",
-                    department: "",
                     country: "",
                     role: "",
-                    invitationSent: false,
+                    invitationSent: true,
+                    department: "",
                   }}
                   validationSchema={validationSchema}
-                  onSubmit={(values, { setSubmitting }) => {
-                    console.log("Form Values on Submit:", values);
+                  onSubmit={(values) => {
+                    console.log("Form Values:", values);
                     handleSubmit(values);
-                    setSubmitting(false); // Ensure to set submitting to false after submission
                   }}
+                >
+                  {({
+                    values,
+                    setFieldValue,
+                    isSubmitting,
+                    errors,
+                    touched,
+                  }) => (
+                    <Form>
+                      <div className="space-y-6">
+                        <div className="space-y-6">
+                          <div className="flex justify-between space-x-4">
+                            <label className="block w-1/2">
+                              <span className="form-label">First Name</span>
+                              <Field
+                                type="text"
+                                name="firstname"
+                                value={values.firstname}
+                                className="form-input mt-1 block w-full bg-gray-100"
+                              />
+                              {errors.firstname && touched.firstname ? (
+                                <div className="text-red-600 text-sm mt-1">
+                                  {errors.firstname}
+                                </div>
+                              ) : null}
+                            </label>
+                            <label className="block w-1/2">
+                              <span className="form-label">Last Name</span>
+                              <Field
+                                type="text"
+                                name="lastname"
+                                value={values.lastname}
+                                className="form-input mt-1 block w-full bg-gray-100"
+                              />
+                              {errors.lastname && touched.lastname ? (
+                                <div className="text-red-600 text-sm mt-1">
+                                  {errors.lastname}
+                                </div>
+                              ) : null}
+                            </label>
+                          </div>
+                          <label className="block">
+                            <span className="form-label">Email</span>
+                            <Field
+                              type="email"
+                              name="email"
+                              value={values.email}
+                              className="form-input mt-1 block w-full bg-gray-100"
+                            />
+                            {errors.email && touched.email ? (
+                              <div className="text-red-600 text-sm mt-1">
+                                {errors.email}
+                              </div>
+                            ) : null}
+                          </label>
+                          <label className="block">
+                            <span className="form-label">Role</span>
+                            <Field
+                              as="select"
+                              name="role"
+                              value={values.role || ""}
+                              className="form-input mt-1 block w-full bg-gray-100"
+                              onChange={(event: any) =>
+                                setFieldValue("role", event.target.value)
+                              }
+                            >
+                              <option value="">Select Role</option>
+                              <option value="Admin">Admin</option>
+                              <option value="User">User</option>
+                            </Field>
+                            {errors.role && touched.role ? (
+                              <div className="text-red-600 text-sm mt-1">
+                                {errors.role}
+                              </div>
+                            ) : null}
+                          </label>
+                          <label className="block">
+                            <span className="form-label">Country</span>
+                            <Field
+                              as="select"
+                              name="country"
+                              value={values.country || ""}
+                              className="form-input mt-1 block w-full bg-gray-100"
+                              onChange={(event: any) =>
+                                setFieldValue("country", event.target.value)
+                              }
+                            >
+                              <option value="">Select Country</option>
+                              {countries.map((country, index) => (
+                                <option key={index} value={country}>
+                                  {country}
+                                </option>
+                              ))}
+                            </Field>
+                            {errors.country && touched.country ? (
+                              <div className="text-red-600 text-sm mt-1">
+                                {errors.country}
+                              </div>
+                            ) : null}
+                          </label>
+                          <label className="block">
+                            <span className="form-label">
+                              Assign To Department
+                            </span>
+                            <Field
+                              as="select"
+                              name="department"
+                              value={values.department || ""}
+                              className="form-input mt-1 block w-full bg-gray-100"
+                              onChange={(event: any) =>
+                                setFieldValue("department", event.target.value)
+                              }
+                            >
+                              <option value="">Select Department</option>
+                              {departments.map((department) => (
+                                <option
+                                  key={department.id}
+                                  value={department.name}
+                                >
+                                  {department.name}
+                                </option>
+                              ))}
+                            </Field>
+                            {errors.department && touched.department ? (
+                              <div className="text-red-600 text-sm mt-1">
+                                {errors.department}
+                              </div>
+                            ) : null}
+                          </label>
+                        </div>
+                        <div className="flex justify-end mt-4">
+                          <button
+                            type="button"
+                            className="inline-flex justify-center rounded-md border border-transparent bg-gray-300 px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-400 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                            onClick={() => setIsModalOpen(false)}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-[#4FD1C5] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
+                          >
+                            + Add member
+                          </button>
+                        </div>
+                      </div>
+                    </Form>
+                  )}
+                </Formik>
+              </div>
+            </NewFormModal>
+          )}
+
+          {editModalOpen && (
+            <NewFormModal
+              isOpen={editModalOpen}
+              setOpen={handleEditModalClose}
+              heading="Edit Member"
+            >
+              <div className="p-5">
+                <Formik
+                  validationSchema={EditvalidationSchema}
+                  initialValues={editFormInitialValues}
+                  onSubmit={handleEditSubmit}
                 >
                   {({
                     values,
@@ -631,7 +904,7 @@ export default function Admins() {
                         <button
                           type="button"
                           className="inline-flex justify-center rounded-md border border-transparent bg-gray-300 px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-400 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                          onClick={() => setIsModalOpen(false)}
+                          onClick={() => setEditModalOpen(false)}
                         >
                           Cancel
                         </button>
@@ -640,7 +913,7 @@ export default function Admins() {
                           className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-[#4FD1C5] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
                           disabled={isSubmitting} // Disable button while submitting
                         >
-                          + Add member
+                          + Save
                         </button>
                       </div>
                     </Form>
@@ -648,156 +921,6 @@ export default function Admins() {
                 </Formik>
               </div>
             </NewFormModal>
-          )}
-
-          {editModalOpen && selectedAdmin && (
-            <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
-              <div>
-                <div className="flex w-full h-full justify-between items-center mb-12">
-                  <div className="text-xl font-semibold ">
-                    Edit User Details
-                  </div>
-                  <Button
-                    className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
-                    handleClick={handleEditModalClose}
-                  >
-                    <XMarkIcon className="h-6 w-6 text-red-400" />
-                  </Button>
-                </div>
-                <Formik
-                  validationSchema={EditvalidationSchema}
-                  initialValues={editFormInitialValues}
-                  onSubmit={handleEditSubmit}
-                >
-                  {({ values, errors, touched, setFieldValue }) => (
-                    <Form>
-                      <div className="">
-                        <div className="flex w-full justify-between">
-                          <label className="block">
-                            <label className="form-label">FIRSTNAME</label>
-                            <Field
-                              type="text"
-                              name="firstname"
-                              value={values.firstname}
-                              className="form-input bg-grey w-48"
-                            />
-                            {errors.firstname && touched.firstname ? (
-                              <div className="text-red-600 text-sm">
-                                {errors.firstname}
-                              </div>
-                            ) : null}
-                          </label>
-                          <label className="block">
-                            <label className="form-label">LASTNAME</label>
-                            <Field
-                              type="text"
-                              name="lastname"
-                              value={values.lastname}
-                              className="form-input bg-grey w-48"
-                            />
-                            {errors.lastname && touched.lastname ? (
-                              <div className="text-red-600 text-sm">
-                                {errors.lastname}
-                              </div>
-                            ) : null}
-                          </label>
-                        </div>
-                        <div className="flex w-full justify-between mt-8">
-                          <label className="block">
-                            <label className="form-label">EMAIL</label>
-                            <Field
-                              type="email"
-                              name="email"
-                              value={values.email}
-                              className="form-input bg-grey w-48"
-                            />
-                            {errors.email && touched.email ? (
-                              <div className="text-red-600 text-sm">
-                                {errors.email}
-                              </div>
-                            ) : null}
-                          </label>
-                          <label className="block">
-                            <label className="form-label">PHONE NUMBER</label>
-                            <Field
-                              type="text"
-                              name="phonenumber"
-                              value={values.phonenumber}
-                              className="form-input bg-grey w-48"
-                            />
-                            {errors.phonenumber && touched.phonenumber ? (
-                              <div className="text-red-600 text-sm">
-                                {errors.phonenumber}
-                              </div>
-                            ) : null}
-                          </label>
-                        </div>
-                        <div className="flex w-full justify-between mt-8">
-                          <label className="block">
-                            <label className="form-label">DEPARTMENT</label>
-                            <Field
-                              as="select"
-                              name="department"
-                              value={values.department ? values.department : ""}
-                              onChange={(
-                                event: React.ChangeEvent<HTMLSelectElement>
-                              ) => {
-                                const selectedDepartmentName =
-                                  event.target.value;
-                                setFieldValue(
-                                  "department",
-                                  selectedDepartmentName
-                                );
-                              }}
-                              className="form-input bg-grey w-48"
-                            >
-                              <option value="">Select Department</option>
-                              {departments.map((department: any) => (
-                                <option
-                                  key={department.id}
-                                  value={department.name}
-                                >
-                                  {department.name}
-                                </option>
-                              ))}
-                            </Field>
-                            {errors.department && touched.department ? (
-                              <div className="text-red-600 text-sm">
-                                {errors.department}
-                              </div>
-                            ) : null}
-                          </label>
-
-                          <label className="block">
-                            <label className="form-label">ADMIN</label>
-                            <Field
-                              type="checkbox"
-                              name="super_admin"
-                              checked={values.super_admin}
-                              className="form-checkbox bg-gray-200"
-                            />
-                          </label>
-                        </div>
-                        <div className="flex w-full justify-end mt-24 ">
-                          <Button
-                            className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
-                            handleClick={handleReset}
-                          >
-                            Reset
-                          </Button>
-                          <button
-                            className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
-                            type="submit"
-                          >
-                            Save
-                          </button>
-                        </div>
-                      </div>
-                    </Form>
-                  )}
-                </Formik>
-              </div>
-            </FormModal>
           )}
         </div>
       </div>
