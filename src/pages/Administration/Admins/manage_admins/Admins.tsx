@@ -3,7 +3,8 @@ import { Button, AddButtons } from "@/components/Buttons";
 import { SetStateAction, useEffect, useState } from "react";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { FormModal, NewFormModal } from "@/components/Modals/FormModal";
-import { Formik, Field, Form } from "formik/dist/index";
+// import { Formik, Field, Form } from "formik/dist/index";
+import { Formik, Form, Field } from "formik";
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import AdminsTable from "./adminsTable";
 import country from "country-list-js";
@@ -337,107 +338,6 @@ export default function Admins() {
     }
   };
 
-  // const handleSubmit = async (values: {
-  //   firstname: any;
-  //   lastname: any;
-  //   email: any;
-  //   phonenumber: any;
-  //   country: any;
-  //   role: any;
-  //   invitationSent: boolean;
-  //   department: string;
-  // }) => {
-  //   console.log("handleSubmit called with values:", values);
-
-  //   try {
-  //     const auth = getAuth(firebaseApp);
-  //     const userCredential = await createUserWithEmailAndPassword(
-  //       auth,
-  //       values.email,
-  //       "Random"
-  //     );
-  //     const authUid = userCredential.user.uid;
-
-  //     console.log("User created with UID:", authUid);
-
-  //     const existingAdminQuery = query(
-  //       collection(fbDb, "admins"),
-  //       where("email", "==", values.email),
-  //       where("organisationId", "==", organisationId)
-  //     );
-
-  //     const existingAdminSnapshot = await getDocs(existingAdminQuery);
-
-  //     if (!existingAdminSnapshot.empty) {
-  //       toast.error(
-  //         `A User with the Email '${values.email}' already exists in the organization`
-  //       );
-  //       return;
-  //     }
-
-  //     const inviterUid = auth.currentUser ? auth.currentUser.uid : null;
-  //     console.log("Inviter UID:", inviterUid);
-
-  //     const inviterQuery = query(
-  //       collection(fbDb, "admins"),
-  //       where("userId", "==", inviterUid)
-  //     );
-  //     const inviterSnapshot = await getDocs(inviterQuery);
-
-  //     let inviterData = null;
-  //     if (!inviterSnapshot.empty) {
-  //       inviterData = inviterSnapshot.docs[0].data();
-  //       console.log("Inviter Data:", inviterData);
-  //     } else {
-  //       console.error("Inviter not found");
-  //     }
-
-  //     const generatedAdminId = await generateAdminId(organisationId);
-  //     console.log("Generated Admin ID:", generatedAdminId);
-
-  //     const adminData: Admin = {
-  //       adminId: generatedAdminId,
-  //       firstname: values.firstname,
-  //       lastname: values.lastname,
-  //       email: values.email,
-  //       phonenumber: values.phonenumber,
-  //       status: true,
-  //       country: values.country,
-  //       role: values.role,
-  //       department: values.department,
-  //       inviterUid: inviterUid,
-  //       organisationId: organisationId,
-  //       userId: authUid,
-  //       archive: false,
-  //       additionalPermissions: [],
-  //       invitationSent: true,
-  //       super_admin: false,
-  //     };
-
-  //     console.log("Admin Data to be added:", adminData);
-
-  //     const docRef = await addDoc(collection(fbDb, "admins"), adminData);
-  //     console.log("Document Reference ID:", docRef.id);
-
-  //     toast.success("Admin Successfully Added.");
-  //     setFetchedAdmins((prevAdmins) => [{ ...adminData }, ...prevAdmins]);
-
-  //     if (!values.invitationSent) {
-  //       const actionCodeSettings = {
-  //         url: `https://truck-it-bf0b2.web.app/auth?adminId=${docRef.id}`,
-  //         handleCodeInApp: true,
-  //       };
-  //       await sendSignInLinkToEmail(auth, values.email, actionCodeSettings);
-  //       await updateDoc(docRef, { invitationSent: true });
-  //     }
-
-  //     setIsModalOpen(false);
-  //   } catch (error) {
-  //     console.error("Error adding admin:", error);
-  //     toast.error("Error adding admin. Please try again.");
-  //   }
-  // };
-
   const handleSubmit = async (values: {
     firstname: any;
     lastname: any;
@@ -449,6 +349,8 @@ export default function Admins() {
     department: string;
   }) => {
     console.log("handleSubmit called with values:", values);
+    console.log("organisationId:", organisationId); // Ensure this is set
+    console.log("currentUser:", currentUser);
 
     try {
       const auth = getAuth(firebaseApp);
@@ -602,10 +504,12 @@ export default function Admins() {
                     invitationSent: true,
                     department: "",
                   }}
-                  validationSchema={validationSchema}
-                  onSubmit={(values) => {
-                    console.log("Form Values:", values);
+                  // validationSchema={validationSchema}
+                  onSubmit={(values, { setSubmitting }) => {
+                    console.log("Formik onSubmit called with values:", values); // Debug log
                     handleSubmit(values);
+                    setSubmitting(false);
+                    setIsModalOpen(false);
                   }}
                 >
                   {({
@@ -669,9 +573,13 @@ export default function Admins() {
                               name="role"
                               value={values.role || ""}
                               className="form-input mt-1 block w-full bg-gray-100"
-                              onChange={(event: any) =>
-                                setFieldValue("role", event.target.value)
-                              }
+                              onChange={(event: any) => {
+                                setFieldValue("role", event.target.value);
+                                console.log(
+                                  "Role selected:",
+                                  event.target.value
+                                );
+                              }}
                             >
                               <option value="">Select Role</option>
                               <option value="Admin">Admin</option>
@@ -690,9 +598,13 @@ export default function Admins() {
                               name="country"
                               value={values.country || ""}
                               className="form-input mt-1 block w-full bg-gray-100"
-                              onChange={(event: any) =>
-                                setFieldValue("country", event.target.value)
-                              }
+                              onChange={(event: any) => {
+                                setFieldValue("country", event.target.value);
+                                console.log(
+                                  "Country selected:",
+                                  event.target.value
+                                );
+                              }}
                             >
                               <option value="">Select Country</option>
                               {countries.map((country, index) => (
@@ -716,9 +628,13 @@ export default function Admins() {
                               name="department"
                               value={values.department || ""}
                               className="form-input mt-1 block w-full bg-gray-100"
-                              onChange={(event: any) =>
-                                setFieldValue("department", event.target.value)
-                              }
+                              onChange={(event: any) => {
+                                setFieldValue("department", event.target.value);
+                                console.log(
+                                  "Department selected:",
+                                  event.target.value
+                                );
+                              }}
                             >
                               <option value="">Select Department</option>
                               {departments.map((department) => (
@@ -747,6 +663,7 @@ export default function Admins() {
                           </button>
                           <button
                             type="submit"
+                            disabled={isSubmitting}
                             className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-[#4FD1C5] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
                           >
                             + Add member
@@ -832,9 +749,10 @@ export default function Admins() {
                             name="role"
                             value={values.role || ""}
                             className="form-input mt-1 block w-full bg-gray-100"
-                            onChange={(event: any) =>
-                              setFieldValue("role", event.target.value)
-                            }
+                            onChange={(event: any) => {
+                              setFieldValue("role", event.target.value);
+                              console.log(event.target.value);
+                            }}
                           >
                             <option value="">Select Role</option>
                             <option value="Admin">Admin</option>
