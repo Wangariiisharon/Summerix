@@ -11,6 +11,7 @@ import {
   addDoc,
   collection,
   doc,
+  getDoc,
   getDocs,
   getFirestore,
   onSnapshot,
@@ -104,9 +105,26 @@ export default function CompanyProfile() {
               currency: doc.data().currency || [], // Ensure default value
               photoURL: doc.data().photoURL || "", // Ensure default value
             })) as JobCardData[];
+
             setFetchedJobcards(jobcardData);
+
             if (jobcardData.length > 0) {
               setCompanySettings(jobcardData[0]);
+            } else {
+              // If no document found, create a default one
+              const newDocRef = doc(collection(db, "companyProfile"));
+              const newDocData = {
+                organisationId,
+                publicProfile: "",
+                phoneNumber: "",
+                country: "",
+                timezone: "",
+                currency: [],
+                photoURL: "",
+                primaryCurrency: "KES",
+              };
+              setDoc(newDocRef, newDocData);
+              setCompanySettings({ id: newDocRef.id, ...newDocData });
             }
           });
 
@@ -118,6 +136,7 @@ export default function CompanyProfile() {
         console.error("Error fetching Company settings:", error);
       }
     };
+
     const fetchRates = async () => {
       try {
         const response = await fetch("../../api/currencies");
@@ -166,6 +185,86 @@ export default function CompanyProfile() {
     fetchJobcards();
   }, [organisationId]);
 
+  // const handleSaveChanges = async () => {
+  //   if (!organisationId) {
+  //     console.error("Organisation ID is not available.");
+  //     toast.error("Organisation ID is not available.");
+  //     return;
+  //   }
+
+  //   if (!companySettings.id) {
+  //     console.error("Company settings ID is missing.");
+  //     toast.error("Company settings ID is missing.");
+  //     return;
+  //   }
+
+  //   const sanitizedSettings = {
+  //     ...companySettings,
+  //     publicProfile: companySettings.publicProfile || "",
+  //     phoneNumber: companySettings.phoneNumber || "",
+  //     country: companySettings.country || "",
+  //     timezone: companySettings.timezone || "",
+  //     currency: companySettings.currency || [],
+  //     photoURL: companySettings.photoURL || "",
+  //     primaryCurrency: companySettings.primaryCurrency || "KES",
+  //   };
+
+  //   const db = getFirestore();
+  //   const settingsRef = doc(db, "companyProfile", companySettings.id);
+
+  //   try {
+  //     await setDoc(
+  //       settingsRef,
+  //       {
+  //         organisationId,
+  //         ...sanitizedSettings,
+  //       },
+  //       { merge: true }
+  //     );
+
+  //     console.log("Settings successfully updated!");
+  //     toast.success("Settings successfully updated!");
+  //   } catch (error) {
+  //     console.error("Error updating settings: ", error);
+  //     toast.error("Error updating settings.");
+  //   }
+  // };
+
+  // const handleSubmit = async (values: { currency: string }) => {
+  //   if (values.currency) {
+  //     // Check if the currency is already in the array
+  //     if (companySettings.currency.includes(values.currency)) {
+  //       toast.error("Currency already exists!");
+  //       return;
+  //     }
+
+  //     const newCurrencyArray = [...companySettings.currency, values.currency];
+  //     setCompanySettings((prevSettings) => ({
+  //       ...prevSettings,
+  //       currency: newCurrencyArray,
+  //     }));
+
+  //     // Save the updated currency array to Firestore
+  //     try {
+  //       const db = getFirestore();
+  //       const settingsRef = doc(
+  //         db,
+  //         "companyProfile",
+  //         companySettings.id || doc(collection(db, "companyProfile")).id
+  //       );
+
+  //       await updateDoc(settingsRef, { currency: newCurrencyArray });
+  //       console.log("Currency successfully updated!");
+  //       toast.success("Currency successfully updated!");
+  //     } catch (error) {
+  //       console.error("Error updating currency: ", error);
+  //       toast.error("Error updating currency");
+  //     }
+
+  //     setOpen(false);
+  //   }
+  // };
+
   const handleSaveChanges = async () => {
     if (!organisationId) {
       console.error("Organisation ID is not available.");
@@ -173,13 +272,12 @@ export default function CompanyProfile() {
       return;
     }
 
-    if (!companySettings.id) {
+    if (!companySettings?.id) {
       console.error("Company settings ID is missing.");
       toast.error("Company settings ID is missing.");
       return;
     }
 
-    // Sanitize the companySettings to ensure all fields have valid values
     const sanitizedSettings = {
       ...companySettings,
       publicProfile: companySettings.publicProfile || "",
@@ -188,7 +286,7 @@ export default function CompanyProfile() {
       timezone: companySettings.timezone || "",
       currency: companySettings.currency || [],
       photoURL: companySettings.photoURL || "",
-      primaryCurrency: companySettings.primaryCurrency || "KES", // Ensure primaryCurrency has a default value
+      primaryCurrency: companySettings.primaryCurrency || "KES",
     };
 
     const db = getFirestore();
@@ -214,28 +312,33 @@ export default function CompanyProfile() {
 
   const handleSubmit = async (values: { currency: string }) => {
     if (values.currency) {
-      // Check if the currency is already in the array
-      if (companySettings.currency.includes(values.currency)) {
+      if (companySettings?.currency.includes(values.currency)) {
         toast.error("Currency already exists!");
         return;
       }
 
-      const newCurrencyArray = [...companySettings.currency, values.currency];
+      const newCurrencyArray = [
+        ...(companySettings?.currency || []),
+        values.currency,
+      ];
       setCompanySettings((prevSettings) => ({
         ...prevSettings,
         currency: newCurrencyArray,
       }));
 
-      // Save the updated currency array to Firestore
       try {
         const db = getFirestore();
         const settingsRef = doc(
           db,
           "companyProfile",
-          companySettings.id || doc(collection(db, "companyProfile")).id
+          companySettings?.id || doc(collection(db, "companyProfile")).id
         );
 
-        await updateDoc(settingsRef, { currency: newCurrencyArray });
+        await setDoc(
+          settingsRef,
+          { currency: newCurrencyArray },
+          { merge: true }
+        );
         console.log("Currency successfully updated!");
         toast.success("Currency successfully updated!");
       } catch (error) {

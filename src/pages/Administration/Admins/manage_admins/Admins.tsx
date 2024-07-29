@@ -31,9 +31,13 @@ import {
 import { toast } from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import * as Yup from "yup";
+import { getFunctions, httpsCallable } from "firebase/functions"; //httpsCallable  from "../../../../../functions";
 
 interface DepartmentData {
   name: string;
+}
+interface CreateUserResponse {
+  uid: string;
 }
 interface Admin {
   adminId: string;
@@ -338,6 +342,114 @@ export default function Admins() {
     }
   };
 
+  // const handleSubmit = async (values: {
+  //   firstname: any;
+  //   lastname: any;
+  //   email: any;
+  //   phonenumber: any;
+  //   country: any;
+  //   role: any;
+  //   invitationSent: boolean;
+  //   department: string;
+  // }) => {
+  //   console.log("handleSubmit called with values:", values);
+  //   console.log("organisationId:", organisationId); // Ensure this is set
+  //   console.log("currentUser:", currentUser);
+
+  //   try {
+  //     const auth = getAuth(firebaseApp);
+  //     console.log("Auth object obtained:", auth);
+
+  //     // Create user
+  //     const userCredential = await createUserWithEmailAndPassword(
+  //       auth,
+  //       values.email,
+  //       "Random"
+  //     );
+  //     const authUid = userCredential.user.uid;
+  //     console.log("User created with UID:", authUid);
+
+  //     // Check if the user already exists in the organization
+  //     const existingAdminQuery = query(
+  //       collection(fbDb, "admins"),
+  //       where("email", "==", values.email),
+  //       where("organisationId", "==", organisationId)
+  //     );
+  //     const existingAdminSnapshot = await getDocs(existingAdminQuery);
+  //     console.log("Existing admin query snapshot:", existingAdminSnapshot);
+
+  //     if (!existingAdminSnapshot.empty) {
+  //       toast.error(
+  //         `A User with the Email '${values.email}' already exists in the organization`
+  //       );
+  //       return;
+  //     }
+
+  //     // Get the inviter UID
+  //     const inviterUid = auth.currentUser ? auth.currentUser.uid : null;
+  //     console.log("Inviter UID:", inviterUid);
+
+  //     const inviterQuery = query(
+  //       collection(fbDb, "admins"),
+  //       where("userId", "==", inviterUid)
+  //     );
+  //     const inviterSnapshot = await getDocs(inviterQuery);
+  //     console.log("Inviter query snapshot:", inviterSnapshot);
+
+  //     let inviterData = null;
+  //     if (!inviterSnapshot.empty) {
+  //       inviterData = inviterSnapshot.docs[0].data();
+  //       console.log("Inviter Data:", inviterData);
+  //     } else {
+  //       console.error("Inviter not found");
+  //     }
+
+  //     const generatedAdminId = await generateAdminId(organisationId);
+  //     console.log("Generated Admin ID:", generatedAdminId);
+
+  //     const adminData: Admin = {
+  //       adminId: generatedAdminId,
+  //       firstname: values.firstname,
+  //       lastname: values.lastname,
+  //       email: values.email,
+  //       phonenumber: values.phonenumber,
+  //       status: true,
+  //       country: values.country,
+  //       role: values.role,
+  //       department: values.department,
+  //       inviterUid: inviterUid,
+  //       organisationId: organisationId,
+  //       userId: authUid,
+  //       archive: false,
+  //       additionalPermissions: [],
+  //       invitationSent: true,
+  //       super_admin: false,
+  //     };
+
+  //     console.log("Admin Data to be added:", adminData);
+
+  //     // Add new admin document
+  //     const docRef = await addDoc(collection(fbDb, "admins"), adminData);
+  //     console.log("Document Reference ID:", docRef.id);
+
+  //     toast.success("Admin Successfully Added.");
+  //     setFetchedAdmins((prevAdmins) => [{ ...adminData }, ...prevAdmins]);
+
+  //     if (!values.invitationSent) {
+  //       const actionCodeSettings = {
+  //         url: `https://truck-it-bf0b2.web.app/auth?adminId=${docRef.id}`,
+  //         handleCodeInApp: true,
+  //       };
+  //       await sendSignInLinkToEmail(auth, values.email, actionCodeSettings);
+  //       await updateDoc(docRef, { invitationSent: true });
+  //     }
+
+  //     setIsModalOpen(false);
+  //   } catch (error) {
+  //     console.error("Error adding admin:", error);
+  //     toast.error("Error adding admin. Please try again.");
+  //   }
+  // };
   const handleSubmit = async (values: {
     firstname: any;
     lastname: any;
@@ -355,15 +467,6 @@ export default function Admins() {
     try {
       const auth = getAuth(firebaseApp);
       console.log("Auth object obtained:", auth);
-
-      // Create user
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        values.email,
-        "Random"
-      );
-      const authUid = userCredential.user.uid;
-      console.log("User created with UID:", authUid);
 
       // Check if the user already exists in the organization
       const existingAdminQuery = query(
@@ -415,7 +518,7 @@ export default function Admins() {
         department: values.department,
         inviterUid: inviterUid,
         organisationId: organisationId,
-        userId: authUid,
+        userId: "", // This will be updated after user signs in
         archive: false,
         additionalPermissions: [],
         invitationSent: true,
@@ -424,22 +527,23 @@ export default function Admins() {
 
       console.log("Admin Data to be added:", adminData);
 
-      // Add new admin document
+      // Add new admin document with temporary data
       const docRef = await addDoc(collection(fbDb, "admins"), adminData);
       console.log("Document Reference ID:", docRef.id);
 
-      toast.success("Admin Successfully Added.");
+      // Send sign-in link to email
+      const actionCodeSettings = {
+        url: `http://localhost:3000/auth?adminId=${docRef.id}`,
+        handleCodeInApp: true,
+      };
+      await sendSignInLinkToEmail(auth, values.email, actionCodeSettings);
+      await updateDoc(docRef, { invitationSent: true });
+
+      toast.success(
+        "Admin Successfully Added. An email invitation has been sent."
+      );
+
       setFetchedAdmins((prevAdmins) => [{ ...adminData }, ...prevAdmins]);
-
-      if (!values.invitationSent) {
-        const actionCodeSettings = {
-          url: `https://truck-it-bf0b2.web.app/auth?adminId=${docRef.id}`,
-          handleCodeInApp: true,
-        };
-        await sendSignInLinkToEmail(auth, values.email, actionCodeSettings);
-        await updateDoc(docRef, { invitationSent: true });
-      }
-
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error adding admin:", error);
