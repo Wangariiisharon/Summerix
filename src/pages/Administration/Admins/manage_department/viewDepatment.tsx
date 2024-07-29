@@ -259,39 +259,6 @@ export default function ViewDepatment() {
     setAllChecked(allChecked);
   };
 
-  // const handleSaveChanges = async () => {
-  //   if (!id) {
-  //     toast.error("Department ID is missing");
-  //     return;
-  //   }
-
-  //   const selectedPermissions: string[] = [];
-  //   Object.keys(permissions).forEach((section) => {
-  //     permissions[section].forEach((permission) => {
-  //       if (permission.checked) {
-  //         selectedPermissions.push(permission.name);
-  //       }
-  //     });
-  //   });
-
-  //   const settingsRef = doc(fbDb, "departments", id as string);
-
-  //   try {
-  //     await setDoc(
-  //       settingsRef,
-  //       {
-  //         permissions: selectedPermissions,
-  //       },
-  //       { merge: true }
-  //     );
-
-  //     console.log("Permissions successfully updated for department!");
-  //     toast.success("Permissions successfully updated!");
-  //   } catch (error) {
-  //     console.error("Error updating Permissions: ", error);
-  //     toast.error("Error updating Permissions");
-  //   }
-  // };
   const handleSaveChanges = async () => {
     const { id } = router.query;
 

@@ -54,6 +54,7 @@ export default function Departments() {
   const [fetchedDepartments, setFetchedDepartments] = useState<Department[]>(
     []
   );
+  const [members, setMembers] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedDepartment, setSelectedDepartment] =
@@ -76,8 +77,48 @@ export default function Departments() {
     setOpen(false);
   };
 
+  //   const fetchedDepartments = async () => {
+  //     const db = getFirestore();
+
+  //     try {
+  //       if (organisationId) {
+  //         const q = query(
+  //           collection(db, "departments"),
+  //           where("organisationId", "==", organisationId)
+  //         );
+
+  //         const unsubscribe = onSnapshot(q, (querySnapshot) => {
+  //           const departmentsData = querySnapshot.docs.map((doc) => {
+  //             const data = doc.data();
+  //             const updated = data.updated?.seconds
+  //               ? new Date(data.updated.seconds * 1000).toISOString()
+  //               : data.updated;
+
+  //             return {
+  //               id: doc.id,
+  //               name: data.name,
+  //               status: data.status,
+  //               members: data.members,
+  //               departmentId: data.departmentId,
+  //               updated: updated, // Use the converted updated field
+  //               archive: data.archive,
+  //               organisationId: data.organisationId,
+  //               permissions: data.permissions,
+  //               ...data,
+  //             };
+  //           });
+  //           setFetchedDepartments(departmentsData);
+  //         });
+
+  //         return () => unsubscribe();
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching Departments:", error);
+  //     }
+  //   };
+  //   fetchedDepartments();
   useEffect(() => {
-    const fetchedDepartments = async () => {
+    const fetchDepartments = async () => {
       const db = getFirestore();
 
       try {
@@ -87,26 +128,37 @@ export default function Departments() {
             where("organisationId", "==", organisationId)
           );
 
-          const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const departmentsData = querySnapshot.docs.map((doc) => {
-              const data = doc.data();
-              const updated = data.updated?.seconds
-                ? new Date(data.updated.seconds * 1000).toISOString()
-                : data.updated;
+          const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+            const departmentsData = await Promise.all(
+              querySnapshot.docs.map(async (doc) => {
+                const data = doc.data();
+                const updated = data.updated?.seconds
+                  ? new Date(data.updated.seconds * 1000).toISOString()
+                  : data.updated;
 
-              return {
-                id: doc.id,
-                name: data.name,
-                status: data.status,
-                members: data.members,
-                departmentId: data.departmentId,
-                updated: updated, // Use the converted updated field
-                archive: data.archive,
-                organisationId: data.organisationId,
-                permissions: data.permissions,
-                ...data,
-              };
-            });
+                // Query the admins collection to count the number of admins in this department
+                const adminsQuery = query(
+                  collection(db, "admins"),
+                  where("department", "==", data.name)
+                );
+                const adminsSnapshot = await getDocs(adminsQuery);
+                const membersCount = adminsSnapshot.size;
+                setMembers(membersCount);
+                return {
+                  id: doc.id,
+                  name: data.name,
+                  status: data.status,
+                  members: membersCount, // Set the members count from the admins collection
+                  departmentId: data.departmentId,
+                  updated: updated,
+                  archive: data.archive,
+                  organisationId: data.organisationId,
+                  permissions: data.permissions,
+                  ...data,
+                };
+              })
+            );
+
             setFetchedDepartments(departmentsData);
           });
 
@@ -116,7 +168,8 @@ export default function Departments() {
         console.error("Error fetching Departments:", error);
       }
     };
-    fetchedDepartments();
+
+    fetchDepartments();
   }, [organisationId]);
 
   const handleEditClick = (department: Department) => {
@@ -561,7 +614,7 @@ export function DepartmentsTable({
                   Name
                 </th>
                 <th className="py-3 px-6 text-left">Status</th>
-                <th className="py-3 px-6 text-left">Members</th>
+                {/* <th className="py-3 px-6 text-left">Members</th> */}
                 <th className="py-3 px-6 text-left">Updated</th>
                 <th className="py-3 px-6 text-left">Actions</th>
               </tr>
@@ -613,7 +666,7 @@ export function DepartmentsTable({
                       </span>
                     </td>
 
-                    <td className="py-3 px-6">6</td>
+                    {/* <td className="py-3 px-6">{members}</td> */}
                     <td className="py-3 px-6">
                       {formatDistanceToNow(updatedDate)} ago
                     </td>

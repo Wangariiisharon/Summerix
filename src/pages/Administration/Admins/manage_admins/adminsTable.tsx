@@ -257,12 +257,12 @@ export default function AdminsTable({
                   <td className="py-3 px-6">
                     <span
                       className={`px-3 py-1 rounded-full text-sm ${
-                        admin.role
+                        admin.role === "admin"
                           ? "bg-[#065ad8] text-white"
                           : "bg-[#065ad8] text-white"
                       }`}
                     >
-                      {admin.role ? "Admin" : "User"}
+                      {admin.role === "admin" ? "Admin" : "User"}
                     </span>
                   </td>
                   <td className="py-3 px-6">

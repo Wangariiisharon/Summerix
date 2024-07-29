@@ -1,7 +1,8 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const axios = require("axios");
-const cors = require("cors")({ origin: true });
+const cors = require("cors")({ origin: true }); // Allow requests from any origin
+
 const serviceAccount = require("./../src/serviceAccount.json");
 
 admin.initializeApp({
@@ -17,6 +18,37 @@ const getSettingsCurrencies = async () => {
   }
   return [];
 };
+
+exports.createNewUser = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    res.set("Access-Control-Allow-Origin", "*"); // Allow all origins
+    res.set("Access-Control-Allow-Methods", "GET, POST"); // Allow specific methods
+    res.set("Access-Control-Allow-Headers", "Content-Type"); // Allow specific headers
+
+    if (req.method === "OPTIONS") {
+      // Handle preflight requests
+      return res.status(204).send("");
+    }
+
+    if (req.method !== "POST") {
+      return res.status(405).send("Method Not Allowed");
+    }
+
+    const { email, password } = req.body;
+
+    try {
+      const userRecord = await admin.auth().createUser({
+        email,
+        password,
+      });
+
+      res.status(201).send({ uid: userRecord.uid });
+    } catch (error) {
+      console.error("Error creating new user:", error);
+      return res.status(500).send("Error creating new user");
+    }
+  });
+});
 
 const getOpenExchangeCurrency = async () => {
   try {
