@@ -423,6 +423,14 @@ export default function AllTrips({ searchQuery }: any) {
   const filterTripsByTimeRange = (trip: DocumentData): boolean => {
     const currentDate = new Date();
 
+    const normalizeDate = (date: any): Date | null => {
+      if (!date) return null;
+      if (date instanceof Date) return date;
+      if (date.seconds && date.nanoseconds) return date.toDate();
+      if (typeof date === "string") return new Date(date);
+      return null;
+    };
+
     if (selectedTimeRange === "thisWeek") {
       // Filter trips that occurred within the current week
       const startOfWeek = new Date(currentDate);
@@ -433,9 +441,9 @@ export default function AllTrips({ searchQuery }: any) {
       endOfWeek.setDate(currentDate.getDate() + (6 - currentDate.getDay())); // End of the week (Saturday)
       endOfWeek.setHours(23, 59, 59, 999);
 
-      const tripDate = trip.start_time?.toDate();
+      const tripDate = normalizeDate(trip.start_time);
 
-      return tripDate && tripDate >= startOfWeek && tripDate <= endOfWeek;
+      tripDate && tripDate >= startOfWeek && tripDate <= endOfWeek;
     }
 
     if (selectedTimeRange === "thisMonth") {
@@ -454,9 +462,9 @@ export default function AllTrips({ searchQuery }: any) {
       );
       endOfMonth.setHours(23, 59, 59, 999);
 
-      const tripDate = trip.start_time?.toDate();
+      const tripDate = normalizeDate(trip.start_time);
 
-      return tripDate && tripDate >= startOfMonth && tripDate <= endOfMonth;
+      tripDate && tripDate >= startOfMonth && tripDate <= endOfMonth;
     }
 
     // 'all' selected, no additional filtering
@@ -503,7 +511,6 @@ export default function AllTrips({ searchQuery }: any) {
             </Tab.List>
 
             <div className="text-sm flex pr-2">
-              {/* Filter by: */}
               <select
                 value={selectedTimeRange}
                 onChange={(e) => setSelectedTimeRange(e.target.value)}
