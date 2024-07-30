@@ -14,6 +14,7 @@ import {
   DocumentData,
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDocs,
   getFirestore,
@@ -540,12 +541,41 @@ export function DepartmentsTable({
     }
     setSelectAll(!selectAll);
   };
-  const deleteSelectedUsers = () => {};
   const handleDepartmentClick = (department: DocumentData) => {
     router.push(
       `Administration/Admins/manage_department/viewDepatment?id=${department.id}`
     );
     // C:\Users\sharo\truckit\src\pages\Administration\Admins\manage_department\viewDepatment.tsx
+  };
+  const deleteUser = async (id: any) => {
+    try {
+      // Delete the user from Firestore
+      await deleteDoc(doc(fbDb, "departments", id));
+
+      // Update the state to reflect the change
+    } catch (error) {
+      console.error("Error deleting user: ", error);
+    }
+  };
+  const deleteSelectedUsers = async () => {
+    try {
+      for (const department of selectedDepartments) {
+        if (department.id) {
+          await deleteDoc(doc(fbDb, "departments", department.id));
+        } else {
+          console.warn(
+            "Admin ID is undefined, skipping deletion for:",
+            department
+          );
+        }
+      }
+
+      setSelectedDepartments([]); // Clear selected admins after deletion
+      toast.success("Selected departments deleted successfully");
+    } catch (error) {
+      console.error("Error deleting selected departments: ", error);
+      toast.error("Error deleting selected departments: ");
+    }
   };
   const downloadSelectedFiles = () => {
     const fields = [
@@ -643,6 +673,7 @@ export function DepartmentsTable({
                           className="mr-3"
                           checked={selectedDepartments.includes(department)}
                           onChange={() => handleCheckboxChange(department)}
+                          onClick={(e) => e.stopPropagation()}
                         />
                         <div>
                           <p className="font-semibold">{department.name}</p>
@@ -683,7 +714,11 @@ export function DepartmentsTable({
                         </button>
                         <button
                           className="text-red-500 hover:text-red-600"
-                          onClick={deleteSelectedUsers}
+                          // onClick={deleteSelectedUsers}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            deleteUser(department.id);
+                          }}
                         >
                           <FaTrash />
                         </button>

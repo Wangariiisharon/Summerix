@@ -425,7 +425,7 @@ export default function Admins() {
 
       // Send sign-in link to email
       const actionCodeSettings = {
-        url: `http://localhost:3000/auth?adminId=${docRef.id}`,
+        url: `https://truckit-git-develop-gorafi.vercel.app/signin?adminId=${docRef.id}`,
         handleCodeInApp: true,
       };
       await sendSignInLinkToEmail(auth, values.email, actionCodeSettings);

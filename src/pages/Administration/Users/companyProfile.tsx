@@ -180,27 +180,7 @@ export default function CompanyProfile() {
         setLoading(false);
       }
     };
-    // const fetchDepartments = async () => {
-    //   try {
-    //     const departmentQuery = query(
-    //       collection(fbDb, "currencies"),
-    //     );
-    //     const departmentSnapshot = await getDocs(departmentQuery);
 
-    //     if (departmentSnapshot.empty) {
-    //       setCurrencies([]);
-    //       return;
-    //     }
-
-    //     const departmentData = departmentSnapshot.docs.map((doc) => ({
-    //       ...doc.data(),
-    //     }));
-
-    //     setCurrencies(departmentData);
-    //   } catch (error) {
-    //     console.error("Error fetching departments:", error);
-    //   }
-    // };
     fetchCountries();
     fetchTimezones();
     fetchRates();
