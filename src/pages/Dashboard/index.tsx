@@ -337,7 +337,7 @@ export default function DashboardComponent() {
               Analytics
             </h1>
           </div>
-          <div className=" mr-[35px]">
+          {/* <div className=" mr-[35px]">
             <select
               className="border border-[#065AD8] bg-[#fff] text-gray-700 px-3 mr-[10px]  rounded-md"
               onChange={handleYearChange}
@@ -348,14 +348,13 @@ export default function DashboardComponent() {
                   {year}
                 </option>
               ))}
-              {/* <ChevronDownIcon className="size-4 fill-white/60 ml-20" /> */}
             </select>
             <input
               type="date"
               onChange={handleDateChange}
               className="border border-[#065AD8] bg-[#fff] text-gray-700 px-3 rounded-md mr-2"
             />
-          </div>
+          </div> */}
         </div>
         <div className=" mr-[12px]">
           <div className="mt-4 ml-4 flex flex-row space-x-[27px]">

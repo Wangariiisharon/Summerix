@@ -1,5 +1,6 @@
 import { fbDb } from "@/firebase/configs";
 import { getDocs, collection, DocumentData } from "firebase/firestore";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 
 function toDate(value: any): Date | null {
   if (value?.toDate) {
@@ -13,20 +14,26 @@ function toDate(value: any): Date | null {
   return null;
 }
 
-export async function exportDataToCSV(filterStatus?: string) {
+export async function exportDataToCSV(
+  organisationId: string,
+  filterStatus?: string
+) {
   const tripsCollection = collection(fbDb, "trips");
   const snapshot = await getDocs(tripsCollection);
   let data: DocumentData[] = [];
 
   snapshot.forEach((doc) => {
     const docData = doc.data();
-    data.push({
-      ...docData,
-      id: doc.id,
-      tripId: docData.tripId,
-      start_time: toDate(docData.start_time),
-      end_time: toDate(docData.end_time),
-    });
+    // Filter by organisationId
+    if (docData.organisationId === organisationId) {
+      data.push({
+        ...docData,
+        id: doc.id,
+        tripId: docData.tripId,
+        start_time: toDate(docData.start_time),
+        end_time: toDate(docData.end_time),
+      });
+    }
   });
 
   if (data.length === 0) {

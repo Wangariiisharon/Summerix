@@ -56,6 +56,7 @@ export default function CompanyProfile() {
     photoURL: "",
     primaryCurrency: "KES",
   });
+  // const [currencies, setCurrencies] = useState([]);
   // photoURL
   const [rates, setRates] = useState({});
   const [countries, setCountries] = useState<string[]>([]);
@@ -179,6 +180,27 @@ export default function CompanyProfile() {
         setLoading(false);
       }
     };
+    // const fetchDepartments = async () => {
+    //   try {
+    //     const departmentQuery = query(
+    //       collection(fbDb, "currencies"),
+    //     );
+    //     const departmentSnapshot = await getDocs(departmentQuery);
+
+    //     if (departmentSnapshot.empty) {
+    //       setCurrencies([]);
+    //       return;
+    //     }
+
+    //     const departmentData = departmentSnapshot.docs.map((doc) => ({
+    //       ...doc.data(),
+    //     }));
+
+    //     setCurrencies(departmentData);
+    //   } catch (error) {
+    //     console.error("Error fetching departments:", error);
+    //   }
+    // };
     fetchCountries();
     fetchTimezones();
     fetchRates();
@@ -467,7 +489,7 @@ export default function CompanyProfile() {
         </div>
         <div className="flex items-center border border-[#dee8f8] rounded-[8px] bg-white mt-4 mb-4">
           <div className="flex items-center pl-[27px] text-gray-400">
-            <FaHome size={18} />
+            {/* <FaHome size={18} /> */}
           </div>
           <input
             type="text"
@@ -495,7 +517,7 @@ export default function CompanyProfile() {
           </div>
           <div className="flex items-center border border-[#dee8f8] rounded-[8px] bg-white mt-4 mb-4">
             <div className="flex items-center pl-[27px] text-gray-400">
-              <FaHome size={18} />
+              {/* <FaHome size={18} /> */}
             </div>
             <input
               type="text"
@@ -523,7 +545,7 @@ export default function CompanyProfile() {
 
           <div className="flex items-center border border-[#dee8f8] rounded-[8px] bg-white mt-4 mb-4">
             <div className="flex items-center pl-[27px] text-gray-400">
-              <FaHome size={18} />
+              {/* <FaHome size={18} /> */}
             </div>
             <select
               value={companySettings.country}
@@ -554,7 +576,7 @@ export default function CompanyProfile() {
           </div>
           <div className="flex items-center border border-[#dee8f8] rounded-[8px] bg-white mt-4 mb-4">
             <div className="flex items-center pl-[27px] text-gray-400">
-              <FaHome size={18} />
+              {/* <FaHome size={18} /> */}
             </div>
             <select
               value={companySettings.timezone}
@@ -592,7 +614,7 @@ export default function CompanyProfile() {
               </div>
               <div className="flex flex-row">
                 <div className="flex items-center space-x-2">
-                  <FaHome size={18} className="text-gray-400" />
+                  {/* <FaHome size={18} className="text-gray-400" /> */}
                   <span className="border rounded-full text-xs font-medium text-blue-600">
                     {companySettings.primaryCurrency || "KES"}
                   </span>
@@ -625,7 +647,7 @@ export default function CompanyProfile() {
                       </div>
                       <div className="flex flex-row">
                         <div className="flex items-center space-x-2">
-                          <FaHome size={18} className="text-gray-400" />
+                          {/* <FaHome size={18} className="text-gray-400" /> */}
                           <span className="border rounded-full text-xs font-medium text-blue-600">
                             {currency}
                           </span>

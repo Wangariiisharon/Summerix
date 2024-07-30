@@ -193,7 +193,7 @@ export default function AdministrationComponent() {
           <div className="flex-grow-0 flex flex-col justify-start items-start gap-2.5 py-2.5 px-2.5 ml-[31px] ">
             <div className="flex-grow-0 flex flex-col justify-start items-start gap-1 p-0">
               <div className="flex-grow-0 font-outfit text-[21px]  text-base font-semibold text-left text-deep-blue">
-                Truck Mate Limited
+                {companySettings.publicProfile || "Truck Mate Limited "}
               </div>
               <div className="flex-grow-0 mt-1 font-nunito  text-[#6b6b73] text-[16px] font-semibold text-left text-cool-gray">
                 Update your company photo and details here.
