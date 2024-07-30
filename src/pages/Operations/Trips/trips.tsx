@@ -51,7 +51,7 @@ const tabs = [
   { key: "waiting", name: "Waiting" },
   { key: "complete", name: "Complete" },
 ];
-const statusMap = ["all", "onRoute", "complete", "waiting"];
+const statusMap = ["all", "onRoute", "waiting", "complete"];
 const SearchBar = ({ placeholder, value, onChange }: any) => {
   return (
     <input
@@ -144,32 +144,11 @@ export default function TripsComponent() {
     mileage_fee: 0,
     distance: "",
     timestamp: "",
+    company: "",
+    client: "",
   });
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  // const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const query = e.target.value.trim().toLowerCase();
-  //   console.log("Search Query:", query);
-  //   setSearchQuery(query);
-  //   setFilteredTrips(
-  //     fetchedTrips.filter((trip) => {
-  //       const vehicleMatch = `${trip.vehicle}`.toLowerCase().includes(query);
-  //       const tripIdMatch = `${trip.trip_id}`.toLowerCase().includes(query);
-
-  //       const startTimeMatch = `${trip.start_time}`
-  //         .toLowerCase()
-  //         .includes(query);
-  //         const endTime = trip.end_time ? `${trip.end_time}`.toLowerCase() : "";
-
-  //       const start = formatDate(new Date(trip.start_time.seconds * 1000));
-  //       console.log("start", start);
-  //       console.log("startTimeMatch", startTimeMatch);
-  //       console.log(searchQuery, "searchQuery");
-
-  //       return vehicleMatch || startTimeMatch || tripIdMatch;
-  //     })
-  //   );
-  // };
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value.trim().toLowerCase();
     console.log("Search Query:", query);
@@ -578,6 +557,8 @@ export default function TripsComponent() {
       mileage_fee: trip.mileage_fee,
       distance: trip.distance,
       timestamp: trip.timestamp,
+      company: trip.company,
+      client: trip.client,
     });
     setEditModalOpen(true);
   };
@@ -606,6 +587,8 @@ export default function TripsComponent() {
     mileage_fee: any;
     distance: any;
     timestamp: any;
+    company: any;
+    client: any;
   }) => {
     if (!selectedTrip) {
       console.error("No selected Trip to update");
@@ -659,6 +642,8 @@ export default function TripsComponent() {
         mileage_fee: values.mileage_fee,
         distance: values.distance,
         timestamp: values.timestamp,
+        company: values.timestamp,
+        client: values.timestamp,
       });
 
       // Update the local fetchedVehicles state
@@ -685,6 +670,8 @@ export default function TripsComponent() {
               mileage_fee: values.mileage_fee,
               distance: values.distance,
               timestamp: values.timestamp,
+              company: values.timestamp,
+              client: values.timestamp,
             }
           : trip
       );
@@ -894,12 +881,18 @@ export default function TripsComponent() {
     const status = statusMap[selectedTab]; // Get the status based on the selected tab
     console.log("status:", status);
 
+    if (!organisationId) {
+      console.error("Organisation ID is null or undefined.");
+      setIsExporting(false);
+      return;
+    }
+
     try {
       let csvData;
       if (status === "all") {
-        csvData = await exportDataToCSV(); // Export all data without filtering
+        csvData = await exportDataToCSV(organisationId); // Export all data without filtering
       } else {
-        csvData = await exportDataToCSV(status); // Export data filtered by status
+        csvData = await exportDataToCSV(organisationId, status); // Export data filtered by status
       }
 
       // Create a blob and initiate the download

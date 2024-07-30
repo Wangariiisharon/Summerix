@@ -91,7 +91,7 @@ export default async function handler(req, res) {
     let customClaims = user.customClaims || {};
 
     // Check if the role field is "admin" and set custom claims if necessary
-    if (userData.role === "admin" && !customClaims.admin) {
+    if (userData.role === "Admin" && !customClaims.admin) {
       customClaims.admin = true;
     }
 

@@ -193,7 +193,7 @@ export default function AdminInformation() {
         email,
         phonenumber,
         status: true,
-        role: "admin",
+        role: "Admin",
         organisationId,
         fcmToken: fcmToken,
       };

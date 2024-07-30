@@ -55,7 +55,7 @@ interface Admin {
   additionalPermissions: string[];
   invitationSent: any;
   organisationId: any;
-  super_admin: boolean;
+  // super_admin: boolean;
   inviterUid: string | null;
 }
 
@@ -64,7 +64,7 @@ type EditFormValues = {
   lastname: string;
   email: string;
   phonenumber: string;
-  super_admin: boolean;
+  // super_admin: boolean;
   status: boolean;
   additionalPermissions: string[];
   department: string;
@@ -79,24 +79,6 @@ type EditFormValues = {
   country: string;
 };
 
-const validationSchema = Yup.object({
-  firstname: Yup.string().required("First name is required"),
-  lastname: Yup.string().required("Last name is required"),
-  email: Yup.string().required("Email is required"),
-  phonenumber: Yup.string().required("Phone number is required"),
-  department: Yup.string().required("Department is required"),
-  country: Yup.string().required("Country is required"),
-  role: Yup.string().required("Role is required"),
-});
-
-const EditvalidationSchema = Yup.object({
-  firstname: Yup.string().required("First name is required"),
-  lastname: Yup.string().required("Last name is required"),
-  email: Yup.string().required("Email details are required"),
-  phonenumber: Yup.string().required("Phone number address is required"),
-  department: Yup.string().required("Department is required"),
-});
-
 export default function Admins() {
   const [open, setOpen] = useState(false);
   const [fetchedAdmins, setFetchedAdmins] = useState<Admin[]>([]);
@@ -110,8 +92,6 @@ export default function Admins() {
       firstname: "",
       lastname: "",
       email: "",
-      phonenumber: "",
-      super_admin: false,
       status: true,
       additionalPermissions: [],
       department: "",
@@ -124,10 +104,31 @@ export default function Admins() {
       inviterUid: "",
       role: "",
       country: "",
+      phonenumber: "",
     });
 
   const [departments, setDepartments] = useState<DocumentData[]>([]);
   let { currentUser, organisationId, isSuperAdmin } = useAuthContext();
+
+  const validationSchema = Yup.object({
+    firstname: Yup.string().required("First name is required"),
+    lastname: Yup.string().required("Last name is required"),
+    email: Yup.string().required("Email is required"),
+    department: Yup.string().required("Department is required"),
+    country: Yup.string().required("Country is required"),
+    role: Yup.string().required("Role is required"),
+  });
+
+  const EditvalidationSchema = Yup.object({
+    firstname: Yup.string().required("First name is required"),
+    lastname: Yup.string().required("Last name is required"),
+    email: Yup.string()
+      .email("Invalid email format")
+      .required("Email is required"),
+    role: Yup.string().required("Role is required"),
+    country: Yup.string().required("Country is required"),
+    department: Yup.string().required("Department is required"),
+  });
 
   async function generateAdminId(organisationId: string | null) {
     try {
@@ -258,7 +259,6 @@ export default function Admins() {
       lastname: admin.lastname,
       email: admin.email,
       phonenumber: admin.phonenumber,
-      super_admin: admin.super_admin,
       status: admin.status,
       additionalPermissions: admin.additionalPermissions || [],
       department: admin.department,
@@ -289,6 +289,8 @@ export default function Admins() {
   };
 
   const handleEditSubmit = async (values: Admin) => {
+    console.log("Edited Values:", values);
+
     if (!selectedAdmin) {
       console.error("No selected Admin to update");
       return;
@@ -309,7 +311,6 @@ export default function Admins() {
         lastname: values.lastname || "",
         email: values.email || "",
         phonenumber: values.phonenumber || "",
-        super_admin: values.super_admin || false,
         status: values.status || false,
         additionalPermissions: values.additionalPermissions || [],
         department: values.department || "",
@@ -342,114 +343,6 @@ export default function Admins() {
     }
   };
 
-  // const handleSubmit = async (values: {
-  //   firstname: any;
-  //   lastname: any;
-  //   email: any;
-  //   phonenumber: any;
-  //   country: any;
-  //   role: any;
-  //   invitationSent: boolean;
-  //   department: string;
-  // }) => {
-  //   console.log("handleSubmit called with values:", values);
-  //   console.log("organisationId:", organisationId); // Ensure this is set
-  //   console.log("currentUser:", currentUser);
-
-  //   try {
-  //     const auth = getAuth(firebaseApp);
-  //     console.log("Auth object obtained:", auth);
-
-  //     // Create user
-  //     const userCredential = await createUserWithEmailAndPassword(
-  //       auth,
-  //       values.email,
-  //       "Random"
-  //     );
-  //     const authUid = userCredential.user.uid;
-  //     console.log("User created with UID:", authUid);
-
-  //     // Check if the user already exists in the organization
-  //     const existingAdminQuery = query(
-  //       collection(fbDb, "admins"),
-  //       where("email", "==", values.email),
-  //       where("organisationId", "==", organisationId)
-  //     );
-  //     const existingAdminSnapshot = await getDocs(existingAdminQuery);
-  //     console.log("Existing admin query snapshot:", existingAdminSnapshot);
-
-  //     if (!existingAdminSnapshot.empty) {
-  //       toast.error(
-  //         `A User with the Email '${values.email}' already exists in the organization`
-  //       );
-  //       return;
-  //     }
-
-  //     // Get the inviter UID
-  //     const inviterUid = auth.currentUser ? auth.currentUser.uid : null;
-  //     console.log("Inviter UID:", inviterUid);
-
-  //     const inviterQuery = query(
-  //       collection(fbDb, "admins"),
-  //       where("userId", "==", inviterUid)
-  //     );
-  //     const inviterSnapshot = await getDocs(inviterQuery);
-  //     console.log("Inviter query snapshot:", inviterSnapshot);
-
-  //     let inviterData = null;
-  //     if (!inviterSnapshot.empty) {
-  //       inviterData = inviterSnapshot.docs[0].data();
-  //       console.log("Inviter Data:", inviterData);
-  //     } else {
-  //       console.error("Inviter not found");
-  //     }
-
-  //     const generatedAdminId = await generateAdminId(organisationId);
-  //     console.log("Generated Admin ID:", generatedAdminId);
-
-  //     const adminData: Admin = {
-  //       adminId: generatedAdminId,
-  //       firstname: values.firstname,
-  //       lastname: values.lastname,
-  //       email: values.email,
-  //       phonenumber: values.phonenumber,
-  //       status: true,
-  //       country: values.country,
-  //       role: values.role,
-  //       department: values.department,
-  //       inviterUid: inviterUid,
-  //       organisationId: organisationId,
-  //       userId: authUid,
-  //       archive: false,
-  //       additionalPermissions: [],
-  //       invitationSent: true,
-  //       super_admin: false,
-  //     };
-
-  //     console.log("Admin Data to be added:", adminData);
-
-  //     // Add new admin document
-  //     const docRef = await addDoc(collection(fbDb, "admins"), adminData);
-  //     console.log("Document Reference ID:", docRef.id);
-
-  //     toast.success("Admin Successfully Added.");
-  //     setFetchedAdmins((prevAdmins) => [{ ...adminData }, ...prevAdmins]);
-
-  //     if (!values.invitationSent) {
-  //       const actionCodeSettings = {
-  //         url: `https://truck-it-bf0b2.web.app/auth?adminId=${docRef.id}`,
-  //         handleCodeInApp: true,
-  //       };
-  //       await sendSignInLinkToEmail(auth, values.email, actionCodeSettings);
-  //       await updateDoc(docRef, { invitationSent: true });
-  //     }
-
-  //     setIsModalOpen(false);
-  //   } catch (error) {
-  //     console.error("Error adding admin:", error);
-  //     toast.error("Error adding admin. Please try again.");
-  //   }
-  // };
   const handleSubmit = async (values: {
     firstname: any;
     lastname: any;
@@ -522,7 +415,6 @@ export default function Admins() {
         archive: false,
         additionalPermissions: [],
         invitationSent: true,
-        super_admin: false,
       };
 
       console.log("Admin Data to be added:", adminData);
@@ -608,13 +500,15 @@ export default function Admins() {
                     invitationSent: true,
                     department: "",
                   }}
-                  // validationSchema={validationSchema}
                   onSubmit={(values, { setSubmitting }) => {
                     console.log("Formik onSubmit called with values:", values); // Debug log
                     handleSubmit(values);
                     setSubmitting(false);
                     setIsModalOpen(false);
                   }}
+                  validationSchema={validationSchema}
+                  validateOnChange={true}
+                  validateOnBlur={true}
                 >
                   {({
                     values,
@@ -789,9 +683,12 @@ export default function Admins() {
             >
               <div className="p-5">
                 <Formik
-                  validationSchema={EditvalidationSchema}
                   initialValues={editFormInitialValues}
                   onSubmit={handleEditSubmit}
+                  // validationSchema={EditvalidationSchema}
+                  validationSchema={EditvalidationSchema}
+                  validateOnChange={true}
+                  validateOnBlur={true}
                 >
                   {({
                     values,

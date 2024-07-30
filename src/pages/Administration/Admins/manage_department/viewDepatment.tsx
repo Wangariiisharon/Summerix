@@ -983,7 +983,7 @@ export default function ViewDepatment() {
                           className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-[#4FD1C5] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
                           disabled={isSubmitting} // Disable button while submitting
                         >
-                          + Save
+                          Save
                         </button>
                       </div>
                     </div>

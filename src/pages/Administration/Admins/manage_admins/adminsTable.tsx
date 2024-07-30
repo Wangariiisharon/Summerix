@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { fbDb } from "@/firebase/configs";
-import { DocumentData, doc, setDoc, updateDoc } from "firebase/firestore";
+import {
+  DocumentData,
+  deleteDoc,
+  doc,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 import json2csv from "json2csv";
 import toast from "react-hot-toast";
 import { FaEdit, FaTrash } from "react-icons/fa";
@@ -25,7 +31,6 @@ interface Admin {
   additionalPermissions: string[];
   invitationSent: any;
   organisationId: any;
-  super_admin: boolean;
   inviterUid: string | null;
 }
 
@@ -85,8 +90,35 @@ export default function AdminsTable({
     }
   );
 
-  const deleteSelectedUsers = () => {
-    // Your delete handler logic here
+  const deleteUser = async (id: any) => {
+    try {
+      // Delete the user from Firestore
+      await deleteDoc(doc(fbDb, "admins", id));
+
+      // Update the state to reflect the change
+      const updatedAdmins = fetchedAdmins.filter((admin) => admin.id !== id);
+    } catch (error) {
+      console.error("Error deleting user: ", error);
+    }
+  };
+
+  const deleteSelectedUsers = async () => {
+    try {
+      for (const admin of selectedAdmins) {
+        if (admin.id) {
+          // Ensure the id is defined before trying to delete
+          // Delete each selected user from Firestore
+          await deleteDoc(doc(fbDb, "admins", admin.id));
+        } else {
+          console.warn("Admin ID is undefined, skipping deletion for:", admin);
+        }
+      }
+
+      setSelectedAdmins([]); // Clear selected admins after deletion
+      toast.success("Selected users deleted successfully");
+    } catch (error) {
+      console.error("Error deleting selected users: ", error);
+    }
   };
 
   const downloadSelectedFiles = () => {
@@ -120,50 +152,6 @@ export default function AdminsTable({
     link.click();
     document.body.removeChild(link);
   };
-
-  // const updateVehicleStatusInDatabase = async (
-  //   vehicleId: string,
-  //   newStatus: boolean
-  // ) => {
-  //   try {
-  //     if (!vehicleId) {
-  //       throw new Error("Vehicle ID is undefined or null");
-  //     }
-
-  //     const vehicleRef = doc(fbDb, "admins", vehicleId);
-  //     await setDoc(
-  //       vehicleRef,
-  //       { archive: newStatus, status: !newStatus },
-  //       { merge: true }
-  //     );
-  //     toast.success("Admin archived successfully");
-
-  //     const updatedVehicles = fetchedAdmins.map((admin) =>
-  //       admin.userId.toString() === vehicleId
-  //         ? { ...admin, archive: newStatus }
-  //         : admin
-  //     );
-  //     updateFetchedAdmins(updatedVehicles);
-  //   } catch (error) {
-  //     console.error("Error updating Vehicle status in database:", error);
-  //   }
-  // };
-  // const updateVehicleStatusInDatabase = async (
-  //   adminsId: string,
-  //   newStatus: boolean
-  // ) => {
-  //   try {
-  //     const vehicleRef = doc(fbDb, "admins", adminsId);
-  //     await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
-
-  //     const updatedVehicles = fetchedAdmins.map((admin) =>
-  //       admin.userId === adminsId ? { ...admin, archive: newStatus } : admin
-  //     );
-  //     updateFetchedAdmins(updatedVehicles);
-  //   } catch (error) {
-  //     console.error("Error updating Department status in database:", error);
-  //   }
-  // };
 
   const toggleArchiveStatus = async (admin: Admin) => {
     try {
@@ -245,6 +233,7 @@ export default function AdminsTable({
                         className="mr-3"
                         checked={selectedAdmins.includes(admin)}
                         onChange={() => handleCheckboxChange(admin)}
+                        onClick={(e) => e.stopPropagation()}
                       />
                       <div>
                         <p className="font-semibold">
@@ -262,7 +251,7 @@ export default function AdminsTable({
                           : "bg-[#065ad8] text-white"
                       }`}
                     >
-                      {admin.role === "admin" ? "Admin" : "User"}
+                      {admin.role === "Admin" ? "Admin" : "User"}
                     </span>
                   </td>
                   <td className="py-3 px-6">
@@ -299,7 +288,11 @@ export default function AdminsTable({
                       </button>
                       <button
                         className="text-red-500 hover:text-red-600"
-                        onClick={deleteSelectedUsers}
+                        // onClick={deleteUser}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          deleteUser(admin.id);
+                        }}
                       >
                         <FaTrash />
                       </button>

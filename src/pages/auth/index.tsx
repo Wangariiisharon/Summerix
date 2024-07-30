@@ -259,9 +259,9 @@ export default function LoginPage() {
                 <p className="font-inter font-bold text-base mt-4 ml-8">
                   Log in to your Account
                 </p>
-                <p className="font-mulish text-[#8692A6] text-sm mt-2 ml-8">
+                {/* <p className="font-mulish text-[#8692A6] text-sm mt-2 ml-8">
                   Welcome back! Select method to log in
-                </p>
+                </p> */}
                 <div className="m-4 px-4  grid gap-5 shadow-sm">
                   <label className="block">
                     <label className="form-label font-mulish font-semibold text-[#333333]">
@@ -290,7 +290,7 @@ export default function LoginPage() {
                 </div>
                 <div className=" px-4 w-full mt-4  flex flex-row">
                   <input className="ml-6" type="checkbox" />
-                  <p className="ml-4 text-xs font-inter">Remember me?</p>
+                  <p className="ml-4 text-xs font-inter">Remember me</p>
                   <Link
                     className="ml-20 text-xs font-inter text-blue-700"
                     href="/ResetPassword"
