@@ -290,7 +290,7 @@ export default function LoginPage() {
                 </div>
                 <div className=" px-4 w-full mt-4  flex flex-row">
                   <input className="ml-6" type="checkbox" />
-                  <p className="ml-4 text-xs font-inter">Remenber me?</p>
+                  <p className="ml-4 text-xs font-inter">Remember me?</p>
                   <Link
                     className="ml-20 text-xs font-inter text-blue-700"
                     href="/ResetPassword"
