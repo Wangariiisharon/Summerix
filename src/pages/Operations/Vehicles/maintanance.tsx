@@ -69,10 +69,12 @@ export default function Maintenance({
   const MaintainanceTabs = [
     { name: "PLANNED", href: "#", current: selectedTabIndex === 0 },
     { name: "HISTORY", href: "#", current: selectedTabIndex === 1 },
-    isSuperAdmin
-      ? { name: "PENDING", href: "#", current: selectedTabIndex === 2 }
-      : null,
-  ].filter(Boolean);
+    { name: "PENDING", href: "#", current: selectedTabIndex === 2 },
+  ];
+  //   isSuperAdmin
+  //     ? { name: "PENDING", href: "#", current: selectedTabIndex === 2 }
+  //     : null,
+  // ].filter(Boolean);
 
   const validationSchema = Yup.object({
     requested_by: Yup.string().required("Requested By is required"),
