@@ -370,12 +370,6 @@ export default function DashboardComponent() {
             ))}
           </div>
           <div className="ml-4 flex flex-row space-x-[20px] mt-[25px]">
-            {hasViewTotalVehicleOverviewPermission && (
-              <VehicleOverview
-                selectedDate={selectedDate}
-                selectedYear={selectedYear}
-              />
-            )}
             {hasViewOutOfServiceVehiclePermission && (
               <OutOfServiceVehicles
                 selectedDate={selectedDate}
