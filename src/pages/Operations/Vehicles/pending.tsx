@@ -35,6 +35,9 @@ interface AuthContextData {
   organisationId: string;
   userData: UserData;
 }
+interface PendingProps {
+  hasApprpveMaintenancePermission: any;
+}
 
 interface MaintenanceData {
   id: string;
@@ -63,7 +66,9 @@ const validationSchema = Yup.object({
   broken_partImage: Yup.mixed().required("Cargo Insurance is required"),
 });
 
-export default function Pending() {
+export default function Pending({
+  hasApprpveMaintenancePermission,
+}: PendingProps) {
   const [open, setOpen] = useState(false);
   const [selectedMaintenance, setSelectedMaintenance] =
     useState<DocumentData | null>(null);
@@ -89,7 +94,7 @@ export default function Pending() {
     status: "",
     serial_number: "",
     approvalCount: 0,
-    broken_partImage: null,
+    broken_partImage: "" || null,
     approvedBy: [],
     timestamp: "",
   });
@@ -209,12 +214,37 @@ export default function Pending() {
     setSelectedMaintenance(null);
     setEditModalOpen(false);
   };
-
   const uploadImage = async (file: File, folder: string) => {
     const storage = getStorage(firebaseApp);
     const storageRef = ref(storage, `${folder}/${file.name}`);
     await uploadBytes(storageRef, file);
     return await getDownloadURL(storageRef);
+  };
+
+  const handleEditClick = (maintenance: DocumentData) => {
+    setEditModalOpen(true);
+    setChecked(false);
+    setSelectedMaintenance(maintenance);
+    const maintenanceDate =
+      maintenance.date && maintenance.date.toDate()
+        ? maintenance.date.toDate()
+        : convertToDate(maintenance.date);
+    setEditFormInitialValues({
+      requested_by: maintenance.requested_by,
+      vehicle: maintenance.vehicle,
+      cost: maintenance.cost,
+      job_cards: maintenance.job_cards,
+      remarks: maintenance.remarks,
+      date: convertDateToInputString(maintenanceDate),
+      part: maintenance.part,
+      status: maintenance.status,
+      serial_number: maintenance.serial_number,
+      approvalCount: maintenance.approvalCount,
+      broken_partImage: maintenance.broken_partImage,
+      approvedBy: maintenance.approvedBy,
+      timestamp: maintenance.timestamp,
+    });
+    console.log("Edit Form Initial Values:", editFormInitialValues);
   };
 
   const handleEditSubmit = async (values: {
@@ -228,7 +258,7 @@ export default function Pending() {
     status: any;
     serial_number: any;
     approvalCount: number;
-    broken_partImage: null;
+    broken_partImage: any;
     approvedBy: any[];
     timestamp: any;
   }) => {
@@ -241,56 +271,6 @@ export default function Pending() {
 
     try {
       const approvedBy = userData?.email;
-
-      if (!values) {
-        console.error("Form values are undefined");
-        return;
-      }
-      if (!values.requested_by) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Requested by`);
-        return;
-      }
-      if (!values.vehicle) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Vehicle`);
-        return;
-      }
-      if (!values.cost) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Cost`);
-        return;
-      }
-      if (!values.job_cards) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field JobCard`);
-        return;
-      }
-      if (!values.remarks) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Remarks`);
-        return;
-      }
-      if (!values.date) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Date`);
-        return;
-      }
-      if (!values.broken_partImage) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Broken part image`);
-        return;
-      }
-      if (!values.serial_number) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Serial number`);
-        return;
-      }
-      if (!values.part) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Part`);
-        return;
-      }
 
       // Update the vehicle data in the database using the selectedVehicle.id
       const maintenanceRef = doc(fbDb, "maintenance", selectedMaintenance.id);
@@ -309,7 +289,7 @@ export default function Pending() {
         part: values.part,
         status: values.status,
         approvedBy: Array.isArray(values.approvedBy)
-          ? [...values.approvedBy, approvedBy].filter(Boolean) // Filter out undefined values
+          ? [...values.approvedBy, approvedBy].filter(Boolean)
           : [approvedBy],
         organisationId: organisationId,
         timestamp: values.timestamp,
@@ -319,7 +299,7 @@ export default function Pending() {
           : selectedMaintenance.broken_partImage,
       };
 
-      if (updatedData.approvalCount >= 3) {
+      if (updatedData.approvalCount === 1) {
         updatedData.status = "Approved";
       } else {
         updatedData.status = "Pending";
@@ -346,32 +326,6 @@ export default function Pending() {
     }
   }
 
-  const handleEditClick = (maintenance: DocumentData) => {
-    setEditModalOpen(true);
-    setChecked(false);
-    setSelectedMaintenance(maintenance);
-    const maintenanceDate =
-      maintenance.date && maintenance.date.toDate()
-        ? maintenance.date.toDate()
-        : convertToDate(maintenance.date);
-    setEditFormInitialValues({
-      requested_by: maintenance.requested_by,
-      vehicle: maintenance.vehicle,
-      cost: maintenance.cost,
-      job_cards: maintenance.job_cards,
-      remarks: maintenance.remarks,
-      date: convertDateToInputString(maintenanceDate),
-      part: maintenance.part,
-      status: maintenance.status,
-      serial_number: maintenance.serial_number,
-      approvalCount: maintenance.approvalCount,
-      broken_partImage: maintenance.broken_partImage,
-      approvedBy: maintenance.approvedBy || [],
-      timestamp: maintenance.timestamp,
-    });
-    console.log("Edit Form Initial Values:", editFormInitialValues);
-  };
-
   return (
     <>
       <div className="">
@@ -389,6 +343,9 @@ export default function Pending() {
                   maintananceList={fetchedMaintanance}
                   isSuperAdmin={isSuperAdmin}
                   handleEditClick={handleEditClick}
+                  hasApprpveMaintenancePermission={
+                    hasApprpveMaintenancePermission
+                  }
                 />
               </Tab.Panel>
             </Tab.Panels>
@@ -546,8 +503,7 @@ export default function Pending() {
                           </div>
                         ) : null}
                       </label>
-
-                      <label className="block ml-24">
+                      {/* <label className="block ml-24">
                         <label className="form-label">BROKEN PART</label>
                         <Field name="broken_partImage">
                           {({ field, form }: any) => (
@@ -560,6 +516,58 @@ export default function Pending() {
                                 }
                               }}
                             />
+                          )}
+                        </Field>
+                        {errors.broken_partImage && touched.broken_partImage ? (
+                          <div className="text-red-600 text-sm">
+                            {errors.broken_partImage}
+                          </div>
+                        ) : null}
+                      </label> */}
+                      <label className="block ml-24">
+                        <label className="form-label">BROKEN PART</label>
+                        <Field name="broken_partImage">
+                          {() => (
+                            <div>
+                              <input
+                                type="file"
+                                onChange={(event) => {
+                                  const file = event.currentTarget?.files?.[0];
+                                  if (file) {
+                                    setFieldValue("broken_partImage", file);
+                                  }
+                                }}
+                              />
+                              {values.broken_partImage && (
+                                <div>
+                                  {typeof values.broken_partImage ===
+                                  "string" ? (
+                                    <a
+                                      href={values.broken_partImage}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-500 underline"
+                                    >
+                                      View
+                                    </a>
+                                  ) : (
+                                    <div>
+                                      {(values.broken_partImage as File).name} -{" "}
+                                      <a
+                                        href={URL.createObjectURL(
+                                          values.broken_partImage as File
+                                        )}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-500 underline"
+                                      >
+                                        View
+                                      </a>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           )}
                         </Field>
                         {errors.broken_partImage && touched.broken_partImage ? (
@@ -625,16 +633,18 @@ export default function Pending() {
   );
 }
 
-interface VehiclesTableProps {
+interface PendingTableProps {
   selectedTab: number;
   maintananceList: DocumentData;
   isSuperAdmin: boolean;
   handleEditClick: any;
+  hasApprpveMaintenancePermission: any;
 }
 export function MaintananceTable({
   maintananceList,
   handleEditClick,
-}: VehiclesTableProps) {
+  hasApprpveMaintenancePermission,
+}: PendingTableProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const rowsPerPage = 6;
   const totalTrips = maintananceList.length;
@@ -760,12 +770,14 @@ export function MaintananceTable({
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                           <div>
-                            <button
-                              className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2"
-                              onClick={() => handleEditClick(maintenance)}
-                            >
-                              Approve
-                            </button>
+                            {hasApprpveMaintenancePermission && (
+                              <button
+                                className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2"
+                                onClick={() => handleEditClick(maintenance)}
+                              >
+                                Approve
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>

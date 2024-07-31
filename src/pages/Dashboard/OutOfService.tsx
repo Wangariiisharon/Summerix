@@ -199,35 +199,34 @@ export default function OutOfServiceVehicles({
         backgroundColor: ["#20C997", "#E9ECEF"],
         borderWidth: 0,
         cutout: "80%",
-        radius: "50%", // Full radius
+        radius: "100%", // Full radius
       },
     ],
   };
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow">
-        <div className="ml-[10px] mr-[10px] mt-[21px] flex flex-row">
+      <div className="bg-white rounded-lg shadow w-full">
+        <div className="ml-[10px] mr-[10px] mt-[26px] mb-[10px] flex flex-row">
           <h2 className="text-sm font-bold leading-6">
             Out of service vehicles
           </h2>
         </div>
         <div className="border-b border-gray-200 mt-2"></div>
-        <div className="relative h-48">
-          {" "}
+        <div className="relative h-48 p-5">
           {/* Reduced height */}
           <Doughnut
             data={outOfServiceVehiclesData}
             options={outOfServiceVehiclesDataOptions}
           />
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-2xl font-semibold">{outOfService}</span>
+            <span className="text-2xl font-bold">{outOfService}</span>
           </div>
         </div>
-        <div className="flex flex-row ml-[20px] mt-2">
+        <div className="flex flex-row justify-center mt-4 mb-4">
           {" "}
           {/* Added margin-top */}
-          <div className="bg-[#cddcff] rounded-md p-1">
+          <div className="bg-[#cddcff] rounded-md ">
             {" "}
             {/* Added padding */}
             <svg

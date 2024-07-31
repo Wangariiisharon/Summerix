@@ -43,10 +43,12 @@ interface AuthContextData {
 }
 interface MaintenanceProps {
   hasScheduleMaintenancePermission: any;
+  hasApprpveMaintenancePermission: any;
 }
 
 export default function Maintenance({
   hasScheduleMaintenancePermission,
+  hasApprpveMaintenancePermission,
 }: MaintenanceProps) {
   const [open, setOpen] = useState(false);
   const [fetchedMaintanance, setFetchedMaintanance] = useState<DocumentData[]>(
@@ -186,11 +188,13 @@ export default function Maintenance({
   }, [organisationId]);
 
   const sanitizeEmailForFirestore = (email: string) => {
-    // Use Base64 encoding to handle special characters
     const encodedEmail = btoa(email);
-
-    // Use the encoded email with a fixed string in the Firestore collection reference
     return `user_${encodedEmail}`;
+  };
+  const handleAddClick = () => {
+    setShowScheduleMaintenanceModal(true);
+    setShowAddJobcardModal(false);
+    setOpen(true);
   };
 
   const handleScheduleMaintanace = async (values: {
@@ -204,68 +208,9 @@ export default function Maintenance({
     part: any;
     broken_partImage: any;
   }) => {
-    setShowScheduleMaintenanceModal(true);
-    setShowAddJobcardModal(false);
-    setOpen(true);
-
     console.log("Submitted Values:", values);
 
     try {
-      if (!values) {
-        console.error("Form values are undefined");
-        return;
-      }
-
-      if (!values) {
-        console.error("Form values are undefined");
-        return;
-      }
-      if (!values.requested_by) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Requested by`);
-        return;
-      }
-      if (!values.vehicle) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Vehicle`);
-        return;
-      }
-      if (!values.cost) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Cost`);
-        return;
-      }
-      if (!values.job_cards) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Maintance type`);
-        return;
-      }
-      if (!values.remarks) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Remarks`);
-        return;
-      }
-      if (!values.date) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Date`);
-        return;
-      }
-      if (!values.broken_partImage) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Broken part image`);
-        return;
-      }
-      if (!values.serial_number) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field Serial number`);
-        return;
-      }
-      if (!values.part) {
-        console.error("Required form fields are missing");
-        toast.error(`Please fill the field  Part`);
-        return;
-      }
-
       const dateObj = new Date(values.date + "T00:00:00");
       const timestamp = Timestamp.fromDate(dateObj);
 
@@ -307,43 +252,43 @@ export default function Maintenance({
       );
       toast.success("Maintenance Request Successfully Added.");
 
-      const superAdminQuerySnapshot = await getDocs(
-        query(
-          collection(fbDb, "admins"),
-          where("super_admin", "==", true),
-          where("organisationId", "==", organisationId),
-          where("archive", "==", false)
-        )
-      );
+      // const superAdminQuerySnapshot = await getDocs(
+      //   query(
+      //     collection(fbDb, "admins"),
+      //     where("super_admin", "==", true),
+      //     where("organisationId", "==", organisationId),
+      //     where("archive", "==", false)
+      //   )
+      // );
 
-      const superAdminEmail = userData?.email;
-      const notificationData = {
-        title: "New Maintenance Request",
-        message: `New maintenance request added by ${values.requested_by}.`,
-        organisationId: organisationId,
-        timestamp: Timestamp.now(),
-        maintenanceId: docRef.id,
-        readBy: [], // This will be unused in the new approach but kept for compatibility
-        userId: userData?.userId,
-      };
+      // const superAdminEmail = userData?.email;
+      // const notificationData = {
+      //   title: "New Maintenance Request",
+      //   message: `New maintenance request added by ${values.requested_by}.`,
+      //   organisationId: organisationId,
+      //   timestamp: Timestamp.now(),
+      //   maintenanceId: docRef.id,
+      //   readBy: [], // This will be unused in the new approach but kept for compatibility
+      //   userId: userData?.userId,
+      // };
 
-      // Send a notification to each super admin
-      superAdminQuerySnapshot.docs.forEach(async (doc) => {
-        const superAdminId = doc.id; // Correctly represents each super admin's user ID
-        await addDoc(
-          collection(fbDb, `notifications`), // Use adminId here
-          notificationData
-        );
-      });
-      const newMaintenance = {
-        id: docRef.id,
-        ...notificationData,
-      };
-      // Prepend the new driver to the fetchedDrivers state
-      setFetchedMaintanance((prevMaintenance) => [
-        newMaintenance,
-        ...prevMaintenance,
-      ]);
+      // // Send a notification to each super admin
+      // superAdminQuerySnapshot.docs.forEach(async (doc) => {
+      //   const superAdminId = doc.id; // Correctly represents each super admin's user ID
+      //   await addDoc(
+      //     collection(fbDb, `notifications`), // Use adminId here
+      //     notificationData
+      //   );
+      // });
+      // const newMaintenance = {
+      //   id: docRef.id,
+      //   ...notificationData,
+      // };
+      // // Prepend the new driver to the fetchedDrivers state
+      // setFetchedMaintanance((prevMaintenance) => [
+      //   newMaintenance,
+      //   ...prevMaintenance,
+      // ]);
 
       setOpen(false);
     } catch (error) {
@@ -424,7 +369,7 @@ export default function Maintenance({
         {hasScheduleMaintenancePermission && (
           <Button
             className="rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2"
-            handleClick={handleScheduleMaintanace}
+            handleClick={handleAddClick}
           >
             <PlusIcon className="h-6 w-6 mr-2" />
             Schedule Maintenance
@@ -483,7 +428,11 @@ export default function Maintenance({
             </Tab.Panel>
             <Tab.Panel>
               <div className="">
-                <Pending />
+                <Pending
+                  hasApprpveMaintenancePermission={
+                    hasApprpveMaintenancePermission
+                  }
+                />
               </div>
             </Tab.Panel>
           </Tab.Panels>

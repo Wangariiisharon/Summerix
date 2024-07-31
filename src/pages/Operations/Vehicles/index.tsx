@@ -113,14 +113,21 @@ export default function VehiclesComponent() {
     userClaims?.additionalPermissions?.includes("Add Vehicles") ||
     userClaims?.admin ||
     departmentData?.permissions?.includes("Add Vehicles");
+
   const hasScheduleMaintenancePermission =
     userClaims?.additionalPermissions?.includes("Schedule Maintenance") ||
     userClaims?.admin ||
     departmentData?.permissions?.includes("Schedule Maintenance");
+
+  const hasApprpveMaintenancePermission =
+    userClaims?.additionalPermissions?.includes("Schedule Maintenance") ||
+    userClaims?.admin;
+
   const hasEditVehiclesPermission =
     userClaims?.additionalPermissions?.includes("Edit Vehicles") ||
     userClaims?.admin ||
     departmentData?.permissions?.includes("Edit Vehicles");
+
   const hasArchivePermission =
     userClaims?.additionalPermissions?.includes("Archive Vehicles") ||
     userClaims?.admin ||
@@ -200,6 +207,9 @@ export default function VehiclesComponent() {
                   <Maintenance
                     hasScheduleMaintenancePermission={
                       hasScheduleMaintenancePermission
+                    }
+                    hasApprpveMaintenancePermission={
+                      hasApprpveMaintenancePermission
                     }
                   />
                 </div>
