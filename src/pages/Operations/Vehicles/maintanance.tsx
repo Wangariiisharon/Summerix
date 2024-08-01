@@ -197,6 +197,68 @@ export default function Maintenance({
     setOpen(true);
   };
 
+  // const handleScheduleMaintanace = async (values: {
+  //   requested_by: any;
+  //   cost: any;
+  //   remarks: any;
+  //   vehicle: any;
+  //   job_cards: any;
+  //   date: any;
+  //   serial_number: any;
+  //   part: any;
+  //   broken_partImage: any;
+  // }) => {
+  //   console.log("Submitted Values:", values);
+
+  //   try {
+  //     const dateObj = new Date(values.date + "T00:00:00");
+  //     const timestamp = Timestamp.fromDate(dateObj);
+
+  //     let brokenPartImageUrl = "";
+  //     if (values.broken_partImage) {
+  //       const storage = getStorage(firebaseApp);
+  //       const storageRef = ref(
+  //         storage,
+  //         `broken_partImage/${values.broken_partImage.name}`
+  //       );
+
+  //       await uploadBytes(storageRef, values.broken_partImage);
+  //       brokenPartImageUrl = await getDownloadURL(storageRef);
+  //       console.log("Broken Part Image URL:", brokenPartImageUrl);
+  //     }
+
+  //     const maintenanceData = {
+  //       approvalCount: 0,
+  //       requested_by: values.requested_by,
+  //       vehicle: values.vehicle,
+  //       date: timestamp,
+  //       timestamp: Timestamp.now(),
+  //       cost: values.cost,
+  //       job_cards: values.job_cards,
+  //       remarks: values.remarks,
+  //       serial_number: values.serial_number,
+  //       part: values.part,
+  //       status: "Pending",
+  //       broken_partImage: brokenPartImageUrl,
+  //       organisationId: organisationId,
+  //       notificationNeedsDisplay: true,
+  //       isNotificationViewed: false,
+  //       userId: userData?.userId,
+  //     };
+
+  //     const docRef = await addDoc(
+  //       collection(fbDb, "maintenance"),
+  //       maintenanceData
+  //     );
+  //     toast.success("Maintenance Request Successfully Added.");
+
+  //     setOpen(false);
+  //   } catch (error) {
+  //     console.error("Error adding Notification:", error);
+  //   }
+  //   setShowScheduleMaintenanceModal(false);
+  // };
+
   const handleScheduleMaintanace = async (values: {
     requested_by: any;
     cost: any;
@@ -215,6 +277,7 @@ export default function Maintenance({
       const timestamp = Timestamp.fromDate(dateObj);
 
       let brokenPartImageUrl = "";
+      let brokenPartImageName = ""; // Capture the image name
       if (values.broken_partImage) {
         const storage = getStorage(firebaseApp);
         const storageRef = ref(
@@ -224,6 +287,7 @@ export default function Maintenance({
 
         await uploadBytes(storageRef, values.broken_partImage);
         brokenPartImageUrl = await getDownloadURL(storageRef);
+        brokenPartImageName = values.broken_partImage.name; // Store the image name
         console.log("Broken Part Image URL:", brokenPartImageUrl);
       }
 
@@ -240,6 +304,7 @@ export default function Maintenance({
         part: values.part,
         status: "Pending",
         broken_partImage: brokenPartImageUrl,
+        broken_partImageName: brokenPartImageName, // Add image name to data
         organisationId: organisationId,
         notificationNeedsDisplay: true,
         isNotificationViewed: false,
@@ -251,44 +316,6 @@ export default function Maintenance({
         maintenanceData
       );
       toast.success("Maintenance Request Successfully Added.");
-
-      // const superAdminQuerySnapshot = await getDocs(
-      //   query(
-      //     collection(fbDb, "admins"),
-      //     where("super_admin", "==", true),
-      //     where("organisationId", "==", organisationId),
-      //     where("archive", "==", false)
-      //   )
-      // );
-
-      // const superAdminEmail = userData?.email;
-      // const notificationData = {
-      //   title: "New Maintenance Request",
-      //   message: `New maintenance request added by ${values.requested_by}.`,
-      //   organisationId: organisationId,
-      //   timestamp: Timestamp.now(),
-      //   maintenanceId: docRef.id,
-      //   readBy: [], // This will be unused in the new approach but kept for compatibility
-      //   userId: userData?.userId,
-      // };
-
-      // // Send a notification to each super admin
-      // superAdminQuerySnapshot.docs.forEach(async (doc) => {
-      //   const superAdminId = doc.id; // Correctly represents each super admin's user ID
-      //   await addDoc(
-      //     collection(fbDb, `notifications`), // Use adminId here
-      //     notificationData
-      //   );
-      // });
-      // const newMaintenance = {
-      //   id: docRef.id,
-      //   ...notificationData,
-      // };
-      // // Prepend the new driver to the fetchedDrivers state
-      // setFetchedMaintanance((prevMaintenance) => [
-      //   newMaintenance,
-      //   ...prevMaintenance,
-      // ]);
 
       setOpen(false);
     } catch (error) {
@@ -605,7 +632,7 @@ export default function Maintenance({
 
                     <label className="block ml-24">
                       <label className="form-label">BROKEN PART</label>
-                      <Field name="broken_partImage">
+                      {/* <Field name="broken_partImage">
                         {({ field, form }: any) => (
                           <input
                             type="file"
@@ -617,7 +644,31 @@ export default function Maintenance({
                             }}
                           />
                         )}
+                      </Field> */}
+                      <Field name="broken_partImage">
+                        {({ field, form }: any) => (
+                          <>
+                            <input
+                              type="file"
+                              onChange={(event) => {
+                                const file = event.currentTarget?.files?.[0];
+                                if (file) {
+                                  form.setFieldValue("broken_partImage", file);
+                                  form.setFieldValue(
+                                    "broken_partImageName",
+                                    file.name
+                                  ); // Set the image name
+                                }
+                              }}
+                              value={form.values.broken_partImage}
+                            />
+                            {form.values.broken_partImageName && (
+                              <p>{form.values.broken_partImageName}</p>
+                            )}
+                          </>
+                        )}
                       </Field>
+
                       {errors.broken_partImage && touched.broken_partImage ? (
                         <div className="text-red-600 text-sm">
                           {errors.broken_partImage}
