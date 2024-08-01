@@ -83,6 +83,21 @@ export default function Pending({
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [checkboxState, setCheckboxState] = useState<boolean[]>([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  // const [editFormInitialValues, setEditFormInitialValues] = useState({
+  //   requested_by: "",
+  //   vehicle: "",
+  //   cost: "",
+  //   job_cards: "",
+  //   remarks: "",
+  //   date: "",
+  //   part: "",
+  //   status: "",
+  //   serial_number: "",
+  //   approvalCount: 0,
+  //   broken_partImage: "" || null,
+  //   approvedBy: [],
+  //   timestamp: "",
+  // });
   const [editFormInitialValues, setEditFormInitialValues] = useState({
     requested_by: "",
     vehicle: "",
@@ -95,9 +110,11 @@ export default function Pending({
     serial_number: "",
     approvalCount: 0,
     broken_partImage: "" || null,
+    broken_partImageName: "", // Add this field
     approvedBy: [],
     timestamp: "",
   });
+
   const [approvalCount, setApprovalCount] = useState(0);
   const [checked, setChecked] = useState(false);
   const { organisationId, userData } = useAuthContext() as AuthContextData;
@@ -221,6 +238,32 @@ export default function Pending({
     return await getDownloadURL(storageRef);
   };
 
+  // const handleEditClick = (maintenance: DocumentData) => {
+  //   setEditModalOpen(true);
+  //   setChecked(false);
+  //   setSelectedMaintenance(maintenance);
+  //   const maintenanceDate =
+  //     maintenance.date && maintenance.date.toDate()
+  //       ? maintenance.date.toDate()
+  //       : convertToDate(maintenance.date);
+  //   setEditFormInitialValues({
+  //     requested_by: maintenance.requested_by,
+  //     vehicle: maintenance.vehicle,
+  //     cost: maintenance.cost,
+  //     job_cards: maintenance.job_cards,
+  //     remarks: maintenance.remarks,
+  //     date: convertDateToInputString(maintenanceDate),
+  //     part: maintenance.part,
+  //     status: maintenance.status,
+  //     serial_number: maintenance.serial_number,
+  //     approvalCount: maintenance.approvalCount,
+  //     broken_partImage: maintenance.broken_partImage,
+  //     approvedBy: maintenance.approvedBy,
+  //     timestamp: maintenance.timestamp,
+  //   });
+  //   console.log("Edit Form Initial Values:", editFormInitialValues);
+  // };
+
   const handleEditClick = (maintenance: DocumentData) => {
     setEditModalOpen(true);
     setChecked(false);
@@ -241,6 +284,7 @@ export default function Pending({
       serial_number: maintenance.serial_number,
       approvalCount: maintenance.approvalCount,
       broken_partImage: maintenance.broken_partImage,
+      broken_partImageName: maintenance.broken_partImageName || "", // Set the image name
       approvedBy: maintenance.approvedBy,
       timestamp: maintenance.timestamp,
     });
@@ -503,73 +547,39 @@ export default function Pending({
                           </div>
                         ) : null}
                       </label>
-                      {/* <label className="block ml-24">
-                        <label className="form-label">BROKEN PART</label>
-                        <Field name="broken_partImage">
-                          {({ field, form }: any) => (
-                            <input
-                              type="file"
-                              onChange={(event) => {
-                                const file = event.currentTarget?.files?.[0];
-                                if (file) {
-                                  form.setFieldValue("broken_partImage", file);
-                                }
-                              }}
-                            />
-                          )}
-                        </Field>
-                        {errors.broken_partImage && touched.broken_partImage ? (
-                          <div className="text-red-600 text-sm">
-                            {errors.broken_partImage}
-                          </div>
-                        ) : null}
-                      </label> */}
+
                       <label className="block ml-24">
                         <label className="form-label">BROKEN PART</label>
-                        <Field name="broken_partImage">
-                          {() => (
-                            <div>
+                        <div className="">
+                          <Field name="broken_partImage">
+                            {({ field, form }: any) => (
                               <input
                                 type="file"
                                 onChange={(event) => {
                                   const file = event.currentTarget?.files?.[0];
                                   if (file) {
-                                    setFieldValue("broken_partImage", file);
+                                    form.setFieldValue(
+                                      "broken_partImage",
+                                      file
+                                    );
                                   }
                                 }}
                               />
-                              {values.broken_partImage && (
-                                <div>
-                                  {typeof values.broken_partImage ===
-                                  "string" ? (
-                                    <a
-                                      href={values.broken_partImage}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-500 underline"
-                                    >
-                                      View
-                                    </a>
-                                  ) : (
-                                    <div>
-                                      {(values.broken_partImage as File).name} -{" "}
-                                      <a
-                                        href={URL.createObjectURL(
-                                          values.broken_partImage as File
-                                        )}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-500 underline"
-                                      >
-                                        View
-                                      </a>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
+                            )}
+                          </Field>
+                          {values.broken_partImage && (
+                            <div>
+                              <a
+                                href={values.broken_partImage}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-500 underline"
+                              >
+                                {values.broken_partImageName}
+                              </a>
                             </div>
                           )}
-                        </Field>
+                        </div>
                         {errors.broken_partImage && touched.broken_partImage ? (
                           <div className="text-red-600 text-sm">
                             {errors.broken_partImage}
