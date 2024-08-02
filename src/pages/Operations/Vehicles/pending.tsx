@@ -284,7 +284,7 @@ export default function Pending({
       serial_number: maintenance.serial_number,
       approvalCount: maintenance.approvalCount,
       broken_partImage: maintenance.broken_partImage,
-      broken_partImageName: maintenance.broken_partImageName || "", // Set the image name
+      broken_partImageName: maintenance.broken_partImageName || "",
       approvedBy: maintenance.approvedBy,
       timestamp: maintenance.timestamp,
     });
@@ -311,7 +311,7 @@ export default function Pending({
       return;
     }
 
-    console.log("Edited Values:", values);
+    console.log("Edited Values 2:", values);
 
     try {
       const approvedBy = userData?.email;
@@ -348,6 +348,7 @@ export default function Pending({
       } else {
         updatedData.status = "Pending";
       }
+      console.log("Updated Data", updatedData);
 
       await setDoc(maintenanceRef, updatedData, { merge: true });
       toast.success("Maintenance Edited Successfully");
@@ -385,7 +386,6 @@ export default function Pending({
                 <MaintananceTable
                   selectedTab={selectedTabIndex}
                   maintananceList={fetchedMaintanance}
-                  isSuperAdmin={isSuperAdmin}
                   handleEditClick={handleEditClick}
                   hasApprpveMaintenancePermission={
                     hasApprpveMaintenancePermission
@@ -401,7 +401,7 @@ export default function Pending({
         <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
           <div className="p-8">
             <div className="flex w-full h-full justify-between items-center mb-12">
-              <div className="text-xl font-semibold ">Edit Maintanance</div>
+              <div className="text-xl font-semibold ">Edit Maintanance </div>
               <Button
                 className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
                 handleClick={handleEditModalClose}
@@ -646,7 +646,6 @@ export default function Pending({
 interface PendingTableProps {
   selectedTab: number;
   maintananceList: DocumentData;
-  isSuperAdmin: boolean;
   handleEditClick: any;
   hasApprpveMaintenancePermission: any;
 }

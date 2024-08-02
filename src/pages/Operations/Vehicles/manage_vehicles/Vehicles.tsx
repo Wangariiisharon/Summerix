@@ -198,6 +198,7 @@ export default function Vehicles({
   }) => {
     setShowAddVehicleModal(true);
     setOpen(true);
+    console.log("Submitted Values", values);
 
     const registration_date = new Date();
     const vehiclesCollection = collection(fbDb, "vehicles");

@@ -76,7 +76,7 @@ interface Department {
   id: string;
   departmentId: string;
   name: string;
-  updated: string | { seconds: number; nanoseconds: number }; // Allow updated to be a string or a Firestore timestamp
+  updated: string | { seconds: number; nanoseconds: number };
   organisationId: string;
   archive: boolean;
   permissions: string[];
@@ -149,46 +149,6 @@ export default function ViewDepatment() {
   useEffect(() => {
     let unsubscribe = () => {};
 
-    if (id) {
-      const departmentId = id as string;
-      const departmentDocRef = doc(fbDb, "departments", departmentId);
-
-      // Subscribe to changes using onSnapshot
-      unsubscribe = onSnapshot(departmentDocRef, async (docSnapshot) => {
-        if (docSnapshot.exists()) {
-          const departmentData = docSnapshot.data() as Department;
-          departmentData.departmentId = docSnapshot.id; // Ensure departmentId is set
-
-          setDepartments(departmentData);
-
-          // Fetch other departments with the same organisationId
-          if (organisationId) {
-            const departmentsQuery = query(
-              collection(fbDb, "departments"),
-              where("organisationId", "==", organisationId)
-            );
-            const querySnapshot = await getDocs(departmentsQuery);
-            const departmentsList: DocumentData[] = [];
-            querySnapshot.forEach((doc) => {
-              departmentsList.push(doc.data());
-            });
-            setFetchedDepartments(departmentsList);
-          }
-
-          // Count admins in the same department
-          if (departmentData.name) {
-            try {
-              const count = await countAdminsInDepartment(departmentData.name);
-              setAdminCount(count);
-            } catch (error) {
-              console.error("Failed to count admins in the department:", error);
-            }
-          }
-        }
-      });
-    }
-
-    // Fetch permissions data once
     const fetchPermissions = async () => {
       const permissionsCollection = collection(fbDb, "permisions");
       const permissionsSnapshot = await getDocs(permissionsCollection);
@@ -203,10 +163,73 @@ export default function ViewDepatment() {
         });
       });
       setPermissions(permissionsData);
-      console.log("permissionsData", permissionsData);
+      return permissionsData;
     };
 
-    fetchPermissions();
+    const updatePermissions = (
+      permissionsData: Permissions,
+      departmentPermissions: string[]
+    ) => {
+      const updatedPermissions = { ...permissionsData };
+      Object.keys(updatedPermissions).forEach((section) => {
+        updatedPermissions[section] = updatedPermissions[section].map(
+          (permission) => ({
+            ...permission,
+            checked: departmentPermissions.includes(permission.name),
+          })
+        );
+      });
+      setPermissions(updatedPermissions);
+    };
+
+    const fetchDepartmentData = async (permissionsData: Permissions) => {
+      if (id) {
+        const departmentId = id as string;
+        const departmentDocRef = doc(fbDb, "departments", departmentId);
+
+        // Subscribe to changes using onSnapshot
+        unsubscribe = onSnapshot(departmentDocRef, async (docSnapshot) => {
+          if (docSnapshot.exists()) {
+            const departmentData = docSnapshot.data() as Department;
+            departmentData.departmentId = docSnapshot.id; // Ensure departmentId is set
+
+            setDepartments(departmentData);
+            updatePermissions(permissionsData, departmentData.permissions);
+
+            // Fetch other departments with the same organisationId
+            if (organisationId) {
+              const departmentsQuery = query(
+                collection(fbDb, "departments"),
+                where("organisationId", "==", organisationId)
+              );
+              const querySnapshot = await getDocs(departmentsQuery);
+              const departmentsList: DocumentData[] = [];
+              querySnapshot.forEach((doc) => {
+                departmentsList.push(doc.data());
+              });
+              setFetchedDepartments(departmentsList);
+            }
+
+            // Count admins in the same department
+            if (departmentData.name) {
+              try {
+                const count = await countAdminsInDepartment(
+                  departmentData.name
+                );
+                setAdminCount(count);
+              } catch (error) {
+                console.error(
+                  "Failed to count admins in the department:",
+                  error
+                );
+              }
+            }
+          }
+        });
+      }
+    };
+
+    fetchPermissions().then(fetchDepartmentData);
 
     // Clean up function to unsubscribe from snapshot listener
     return () => {
@@ -232,12 +255,13 @@ export default function ViewDepatment() {
   };
 
   const handleSectionSelectAllChange = (section: string) => {
-    const newSectionAllChecked = !permissions[section].every((p) => p.checked);
     const updatedPermissions = { ...permissions };
+    const allChecked =
+      updatedPermissions[section]?.every((p) => p.checked) || false;
     updatedPermissions[section] = updatedPermissions[section].map(
       (permission) => ({
         ...permission,
-        checked: newSectionAllChecked,
+        checked: !allChecked,
       })
     );
     setPermissions(updatedPermissions);
@@ -245,18 +269,13 @@ export default function ViewDepatment() {
 
   const handlePermissionChange = (section: string, permissionName: string) => {
     const updatedPermissions = { ...permissions };
-    const permissionIndex = updatedPermissions[section].findIndex(
-      (p) => p.name === permissionName
+    updatedPermissions[section] = updatedPermissions[section].map(
+      (permission) =>
+        permission.name === permissionName
+          ? { ...permission, checked: !permission.checked }
+          : permission
     );
-    updatedPermissions[section][permissionIndex].checked =
-      !updatedPermissions[section][permissionIndex].checked;
-
     setPermissions(updatedPermissions);
-
-    const allChecked = Object.keys(updatedPermissions).every((section) =>
-      updatedPermissions[section].every((p) => p.checked)
-    );
-    setAllChecked(allChecked);
   };
 
   const handleSaveChanges = async () => {

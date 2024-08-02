@@ -64,7 +64,7 @@ export default function Maintenance({
   const [checkboxState, setCheckboxState] = useState<boolean[]>([]);
   const [checkedIndexes, setCheckedIndexes] = useState<number[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const { organisationId, isSuperAdmin, userData } = useAuthContext();
+  const { organisationId, userData } = useAuthContext();
 
   const approvedBy = userData?.email;
 
@@ -197,6 +197,72 @@ export default function Maintenance({
     setOpen(true);
   };
 
+  const handleScheduleMaintanace = async (values: {
+    requested_by: any;
+    cost: any;
+    remarks: any;
+    vehicle: any;
+    job_cards: any;
+    date: any;
+    serial_number: any;
+    part: any;
+    broken_partImage: any;
+  }) => {
+    console.log("Submitted Values 2:", values);
+
+    try {
+      const dateObj = new Date(values.date + "T00:00:00");
+      const timestamp = Timestamp.fromDate(dateObj);
+
+      let brokenPartImageUrl = "";
+      if (values.broken_partImage) {
+        console.log("Broken Part Image File:", values.broken_partImage);
+
+        const storage = getStorage(firebaseApp);
+        const storageRef = ref(
+          storage,
+          `broken_partImage/${values.broken_partImage.name}`
+        );
+
+        console.log("Storage Reference:", storageRef);
+
+        await uploadBytes(storageRef, values.broken_partImage);
+        brokenPartImageUrl = await getDownloadURL(storageRef);
+        console.log("Broken Part Image URL:", brokenPartImageUrl);
+      }
+
+      const maintenanceData = {
+        approvalCount: 0,
+        requested_by: values.requested_by,
+        vehicle: values.vehicle,
+        date: timestamp,
+        timestamp: Timestamp.now(),
+        cost: values.cost,
+        job_cards: values.job_cards,
+        remarks: values.remarks,
+        serial_number: values.serial_number,
+        part: values.part,
+        status: "Pending",
+        broken_partImage: brokenPartImageUrl,
+        organisationId: organisationId,
+        notificationNeedsDisplay: true,
+        isNotificationViewed: false,
+        userId: userData?.userId,
+      };
+      console.log("Maintenance Data:", maintenanceData);
+
+      const docRef = await addDoc(
+        collection(fbDb, "maintenance"),
+        maintenanceData
+      );
+
+      toast.success("Maintenance Request Successfully Added.");
+      setOpen(false);
+    } catch (error) {
+      console.error("Error adding Notification:", error);
+    }
+    setShowScheduleMaintenanceModal(false);
+  };
   // const handleScheduleMaintanace = async (values: {
   //   requested_by: any;
   //   cost: any;
@@ -219,7 +285,7 @@ export default function Maintenance({
   //       const storage = getStorage(firebaseApp);
   //       const storageRef = ref(
   //         storage,
-  //         `broken_partImage/${values.broken_partImage.name}`
+  //         broken_partImage/${values.broken_partImage}
   //       );
 
   //       await uploadBytes(storageRef, values.broken_partImage);
@@ -259,71 +325,6 @@ export default function Maintenance({
   //   setShowScheduleMaintenanceModal(false);
   // };
 
-  const handleScheduleMaintanace = async (values: {
-    requested_by: any;
-    cost: any;
-    remarks: any;
-    vehicle: any;
-    job_cards: any;
-    date: any;
-    serial_number: any;
-    part: any;
-    broken_partImage: any;
-  }) => {
-    console.log("Submitted Values:", values);
-
-    try {
-      const dateObj = new Date(values.date + "T00:00:00");
-      const timestamp = Timestamp.fromDate(dateObj);
-
-      let brokenPartImageUrl = "";
-      let brokenPartImageName = ""; // Capture the image name
-      if (values.broken_partImage) {
-        const storage = getStorage(firebaseApp);
-        const storageRef = ref(
-          storage,
-          `broken_partImage/${values.broken_partImage.name}`
-        );
-
-        await uploadBytes(storageRef, values.broken_partImage);
-        brokenPartImageUrl = await getDownloadURL(storageRef);
-        brokenPartImageName = values.broken_partImage.name; // Store the image name
-        console.log("Broken Part Image URL:", brokenPartImageUrl);
-      }
-
-      const maintenanceData = {
-        approvalCount: 0,
-        requested_by: values.requested_by,
-        vehicle: values.vehicle,
-        date: timestamp,
-        timestamp: Timestamp.now(),
-        cost: values.cost,
-        job_cards: values.job_cards,
-        remarks: values.remarks,
-        serial_number: values.serial_number,
-        part: values.part,
-        status: "Pending",
-        broken_partImage: brokenPartImageUrl,
-        broken_partImageName: brokenPartImageName, // Add image name to data
-        organisationId: organisationId,
-        notificationNeedsDisplay: true,
-        isNotificationViewed: false,
-        userId: userData?.userId,
-      };
-
-      const docRef = await addDoc(
-        collection(fbDb, "maintenance"),
-        maintenanceData
-      );
-      toast.success("Maintenance Request Successfully Added.");
-
-      setOpen(false);
-    } catch (error) {
-      console.error("Error adding Notification:", error);
-    }
-    setShowScheduleMaintenanceModal(false);
-  };
-
   const handleCheckboxClick = async (index: number) => {
     const documentId = fetchedMaintanance[index].id;
     const maintenanceDocRef = doc(fbDb, "maintenance", documentId);
@@ -353,7 +354,6 @@ export default function Maintenance({
 
           // Check if the approval count reaches 3
           if (currentApprovalCount + 1 === 3) {
-            // Perform the logic to update the status to "Approved"
             await updateStatusToApproved(documentId);
           }
         } else {
@@ -434,9 +434,11 @@ export default function Maintenance({
               <MaintananceTable
                 selectedTab={selectedTabIndex}
                 maintananceList={fetchedMaintanance}
-                isSuperAdmin={isSuperAdmin}
                 handleCheckboxClick={handleCheckboxClick}
                 checkboxState={checkboxState}
+                hasApprpveMaintenancePermission={
+                  hasApprpveMaintenancePermission
+                }
               />
             </Tab.Panel>
             <Tab.Panel
@@ -448,9 +450,11 @@ export default function Maintenance({
               <MaintananceTable
                 selectedTab={selectedTabIndex}
                 maintananceList={fetchedMaintanance}
-                isSuperAdmin={isSuperAdmin}
                 handleCheckboxClick={handleCheckboxClick}
                 checkboxState={checkboxState}
+                hasApprpveMaintenancePermission={
+                  hasApprpveMaintenancePermission
+                }
               />
             </Tab.Panel>
             <Tab.Panel>
@@ -631,8 +635,8 @@ export default function Maintenance({
                     </label>
 
                     <label className="block ml-24">
-                      <label className="form-label">BROKEN PART</label>
-                      {/* <Field name="broken_partImage">
+                      <span className="form-label">BROKEN PART</span>
+                      <Field name="truck_incurance">
                         {({ field, form }: any) => (
                           <input
                             type="file"
@@ -644,31 +648,7 @@ export default function Maintenance({
                             }}
                           />
                         )}
-                      </Field> */}
-                      <Field name="broken_partImage">
-                        {({ field, form }: any) => (
-                          <>
-                            <input
-                              type="file"
-                              onChange={(event) => {
-                                const file = event.currentTarget?.files?.[0];
-                                if (file) {
-                                  form.setFieldValue("broken_partImage", file);
-                                  form.setFieldValue(
-                                    "broken_partImageName",
-                                    file.name
-                                  ); // Set the image name
-                                }
-                              }}
-                              value={form.values.broken_partImage}
-                            />
-                            {form.values.broken_partImageName && (
-                              <p>{form.values.broken_partImageName}</p>
-                            )}
-                          </>
-                        )}
                       </Field>
-
                       {errors.broken_partImage && touched.broken_partImage ? (
                         <div className="text-red-600 text-sm">
                           {errors.broken_partImage}
