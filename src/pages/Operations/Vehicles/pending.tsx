@@ -4,7 +4,7 @@ import { Fragment, useEffect, useState } from "react";
 import { FormModal } from "@/components/Modals/FormModal";
 import { Field, Formik, Form } from "formik";
 import { Tab } from "@headlessui/react";
-import firebaseApp, { fbDb } from "@/firebase/configs";
+import { fbDb } from "@/firebase/configs";
 import {
   getDocs,
   collection,
@@ -19,10 +19,11 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { format } from "date-fns";
-import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { toast } from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import * as Yup from "yup";
+import { doUploadImage } from "@/lib/utils.service";
+import Image from "next/image";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -231,12 +232,6 @@ export default function Pending({
     setSelectedMaintenance(null);
     setEditModalOpen(false);
   };
-  const uploadImage = async (file: File, folder: string) => {
-    const storage = getStorage(firebaseApp);
-    const storageRef = ref(storage, `${folder}/${file.name}`);
-    await uploadBytes(storageRef, file);
-    return await getDownloadURL(storageRef);
-  };
 
   // const handleEditClick = (maintenance: DocumentData) => {
   //   setEditModalOpen(true);
@@ -339,7 +334,7 @@ export default function Pending({
         timestamp: values.timestamp,
         notificationNeedsDisplay: true,
         broken_partImage: values.broken_partImage
-          ? await uploadImage(values.broken_partImage, "broken_partImage")
+          ? await doUploadImage(values.broken_partImage, "broken_partImage")
           : selectedMaintenance.broken_partImage,
       };
 
@@ -568,15 +563,14 @@ export default function Pending({
                             )}
                           </Field>
                           {values.broken_partImage && (
-                            <div>
-                              <a
-                                href={values.broken_partImage}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-500 underline"
-                              >
-                                {values.broken_partImageName}
-                              </a>
+                            <div className="mt-5">
+                              <Image
+                                src={values.broken_partImage}
+                                alt="broken part image"
+                                className="h-auto w-auto"
+                                width={150}
+                                height={150}
+                              />
                             </div>
                           )}
                         </div>
