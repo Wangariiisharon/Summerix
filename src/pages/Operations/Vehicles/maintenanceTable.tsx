@@ -1,32 +1,25 @@
 import { Button } from "@/components/Buttons";
-import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { Fragment, useEffect, useState } from "react";
 import { FormModal } from "@/components/Modals/FormModal";
 import { Field, Formik, Form } from "formik";
-import { Tab } from "@headlessui/react";
-import firebaseApp, { fbDb } from "@/firebase/configs";
+import { fbDb } from "@/firebase/configs";
 import {
   getDocs,
   collection,
   DocumentData,
-  addDoc,
   Timestamp,
-  updateDoc,
   doc,
   query,
   where,
-  getFirestore,
-  onSnapshot,
-  getDoc,
-  orderBy,
   setDoc,
 } from "firebase/firestore";
 import { format } from "date-fns";
-import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { toast } from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
-import Pending from "./pending";
+import { doUploadImage } from "@/lib/utils.service";
 import * as Yup from "yup";
+import Image from "next/image";
 
 interface MaintenanceTableProps {
   selectedTab: number;
@@ -73,8 +66,6 @@ export default function MaintananceTable({
   const [currentPage, setCurrentPage] = useState(0);
   const [checkboxState, setCheckboxState] = useState<boolean[]>([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [showScheduleMaintenanceModal, setShowScheduleMaintenanceModal] =
-    useState(false);
   const [open, setOpen] = useState(false);
   const [selectedMaintenance, setSelectedMaintenance] =
     useState<DocumentData | null>(null);
@@ -83,14 +74,7 @@ export default function MaintananceTable({
   const [drivers, setDrivers] = useState<string[]>([]);
   const [approvalCount, setApprovalCount] = useState(0);
   const [checked, setChecked] = useState(false);
-  const {
-    currentAdmin,
-    currentUser,
-    organisationId,
-    isSuperAdmin,
-    userClaims,
-    departmentData,
-  } = useAuthContext();
+  const { currentUser, organisationId } = useAuthContext();
   const [editFormInitialValues, setEditFormInitialValues] = useState({
     requested_by: "",
     vehicle: "",
@@ -170,7 +154,7 @@ export default function MaintananceTable({
     fetchVehicleNames();
     fetchJobCard();
     fetchDriver();
-  }, []);
+  }, [organisationId]);
 
   if (!maintananceList || maintananceList.length === 0) {
     return <div>No maintenance data available.</div>;
@@ -215,13 +199,6 @@ export default function MaintananceTable({
   const handleEditModalClose = () => {
     setSelectedMaintenance(null);
     setEditModalOpen(false);
-  };
-
-  const uploadImage = async (file: File, folder: string) => {
-    const storage = getStorage(firebaseApp);
-    const storageRef = ref(storage, `${folder}/${file.name}`);
-    await uploadBytes(storageRef, file);
-    return await getDownloadURL(storageRef);
   };
 
   function convertToDate(firestoreTimestamp: any) {
@@ -324,7 +301,7 @@ export default function MaintananceTable({
         timestamp: values.timestamp,
         notificationNeedsDisplay: true,
         broken_partImage: values.broken_partImage
-          ? await uploadImage(values.broken_partImage, "broken_partImage")
+          ? await doUploadImage(values.broken_partImage, "broken_partImage")
           : selectedMaintenance.broken_partImage,
       };
 
@@ -651,7 +628,7 @@ export default function MaintananceTable({
                         </label>
 
                         <label className="block ml-24">
-                          <label className="form-label">BROKEN PART</label>
+                          <label className="form-label">BROKEN PART 2</label>
                           <div className="">
                             <Field
                               name="broken_partImage"
@@ -681,15 +658,14 @@ export default function MaintananceTable({
                               )} */}
                             </Field>
                             {values.broken_partImage && (
-                              <div>
-                                <a
-                                  href={values.broken_partImage}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-500 underline"
-                                >
-                                  {values.broken_partImageName}
-                                </a>
+                              <div className="mt-5">
+                                <Image
+                                  src={values.broken_partImage}
+                                  alt="broken part image"
+                                  className="h-auto w-auto"
+                                  width={150}
+                                  height={150}
+                                />
                               </div>
                             )}
                           </div>
