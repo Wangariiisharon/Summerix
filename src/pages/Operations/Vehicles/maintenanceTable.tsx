@@ -478,9 +478,7 @@ export default function MaintananceTable({
           <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
             <div className="p-8">
               <div className="flex w-full h-full justify-between items-center mb-12">
-                <div className="text-xl font-semibold ">
-                  Edit Maintanance (Planned)
-                </div>
+                <div className="text-xl font-semibold ">Edit Maintanance</div>
                 <Button
                   className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
                   handleClick={handleEditModalClose}
@@ -627,21 +625,11 @@ export default function MaintananceTable({
                           ) : null}
                         </label>
 
-                        <label className="block ml-24">
-                          <label className="form-label">BROKEN PART 2</label>
+                        <label className="block ml-14">
+                          <label className="form-label">BROKEN PART</label>
                           <div className="">
-                            <Field
-                              name="broken_partImage"
-                              onChange={(event: {
-                                currentTarget: { files: any[] };
-                              }) => {
-                                const file = event.currentTarget.files[0];
-                                if (file) {
-                                  setFieldValue("broken_partImage", file);
-                                }
-                              }}
-                            >
-                              {/* {({ field, form }: any) => (
+                            <Field name="broken_partImage">
+                              {({ field, form }: any) => (
                                 <input
                                   type="file"
                                   onChange={(event) => {
@@ -655,19 +643,21 @@ export default function MaintananceTable({
                                     }
                                   }}
                                 />
-                              )} */}
+                              )}
                             </Field>
-                            {values.broken_partImage && (
+                            {values.broken_partImage &&
+                            typeof values.broken_partImage === "string" ? (
                               <div className="mt-5">
-                                <Image
-                                  src={values.broken_partImage}
-                                  alt="broken part image"
-                                  className="h-auto w-auto"
-                                  width={150}
-                                  height={150}
-                                />
+                                <a
+                                  href={values.broken_partImage}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 underline"
+                                >
+                                  View Broken Part
+                                </a>
                               </div>
-                            )}
+                            ) : null}
                           </div>
                           {errors.broken_partImage &&
                           touched.broken_partImage ? (
@@ -692,6 +682,7 @@ export default function MaintananceTable({
                         <Field
                           type="checkbox"
                           name="approvalCheckbox"
+                          disabled
                           checked={checkboxState[selectedMaintenance.id]}
                           onChange={(event: any) => {
                             const checked = event.currentTarget.checked;

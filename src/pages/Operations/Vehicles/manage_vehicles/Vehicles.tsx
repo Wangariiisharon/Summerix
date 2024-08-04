@@ -26,6 +26,7 @@ import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import * as Yup from "yup";
 import VehiclesTable from "./vehiclesTable";
+import Image from "next/image";
 
 interface Vehicle {
   id: string;
@@ -1212,7 +1213,7 @@ export default function Vehicles({
                               </div>
                             ) : null}
                           </label>
-                          <label className="block">
+                          {/* <label className="block">
                             <label className="form-label">
                               TRUCK INSURANCE
                             </label>
@@ -1239,11 +1240,55 @@ export default function Vehicles({
                                 {errors.truck_incurance}
                               </div>
                             ) : null}
+                          </label> */}
+
+                          <label className="block ml-24">
+                            <label className="form-label">
+                              TRUCK INSURANCE
+                            </label>
+                            <div className="">
+                              <Field name="truck_incurance">
+                                {({ field, form }: any) => (
+                                  <input
+                                    type="file"
+                                    onChange={(event) => {
+                                      const file =
+                                        event.currentTarget?.files?.[0];
+                                      if (file) {
+                                        form.setFieldValue(
+                                          "truck_incurance",
+                                          file
+                                        );
+                                      }
+                                    }}
+                                  />
+                                )}
+                              </Field>
+                              {values.truck_incurance &&
+                              typeof values.truck_incurance === "string" ? (
+                                <div className="mt-5">
+                                  <a
+                                    href={values.truck_incurance}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 underline"
+                                  >
+                                    View Truck Insurance
+                                  </a>
+                                </div>
+                              ) : null}
+                            </div>
+                            {errors.truck_incurance &&
+                            touched.truck_incurance ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.truck_incurance}
+                              </div>
+                            ) : null}
                           </label>
                         </div>
 
                         <div className="flex w-full justify-between mt-8">
-                          <label className="block ml-6">
+                          {/* <label className="block ml-6">
                             <label className="form-label">
                               CARGO INSURANCE
                             </label>
@@ -1270,9 +1315,53 @@ export default function Vehicles({
                                 {errors.cargo_insurance}
                               </div>
                             ) : null}
+                          </label> */}
+
+                          <label className="block">
+                            <label className="form-label">
+                              CARGO INSURANCE
+                            </label>
+                            <div className="">
+                              <Field name="cargo_insurance">
+                                {({ field, form }: any) => (
+                                  <input
+                                    type="file"
+                                    onChange={(event) => {
+                                      const file =
+                                        event.currentTarget?.files?.[0];
+                                      if (file) {
+                                        form.setFieldValue(
+                                          "cargo_insurance",
+                                          file
+                                        );
+                                      }
+                                    }}
+                                  />
+                                )}
+                              </Field>
+                              {values.cargo_insurance &&
+                              typeof values.cargo_insurance === "string" ? (
+                                <div className="mt-5">
+                                  <a
+                                    href={values.cargo_insurance}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 underline"
+                                  >
+                                    View Cargo Insurance
+                                  </a>
+                                </div>
+                              ) : null}
+                            </div>
+                            {errors.cargo_insurance &&
+                            touched.cargo_insurance ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.cargo_insurance}
+                              </div>
+                            ) : null}
                           </label>
 
-                          <label className="block ">
+                          {/* <label className="block ">
                             <label className="form-label">PORT PERMITS</label>
                             <Field name="port_entry_permits">
                               {({ field, form }: any) => (
@@ -1297,10 +1386,52 @@ export default function Vehicles({
                                 {errors.port_entry_permits}
                               </div>
                             ) : null}
+                          </label> */}
+
+                          <label className="block ml-24">
+                            <label className="form-label">PORT PERMITS</label>
+                            <div className="">
+                              <Field name="port_entry_permits">
+                                {({ field, form }: any) => (
+                                  <input
+                                    type="file"
+                                    onChange={(event) => {
+                                      const file =
+                                        event.currentTarget?.files?.[0];
+                                      if (file) {
+                                        form.setFieldValue(
+                                          "port_entry_permits",
+                                          file
+                                        );
+                                      }
+                                    }}
+                                  />
+                                )}
+                              </Field>
+                              {values.port_entry_permits &&
+                              typeof values.port_entry_permits === "string" ? (
+                                <div className="mt-5">
+                                  <a
+                                    href={values.port_entry_permits}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 underline"
+                                  >
+                                    View Port Entry Permit
+                                  </a>
+                                </div>
+                              ) : null}
+                            </div>
+                            {errors.port_entry_permits &&
+                            touched.port_entry_permits ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.port_entry_permits}
+                              </div>
+                            ) : null}
                           </label>
                         </div>
                         <div className="flex w-full justify-between mt-8">
-                          <label className="block ml-6">
+                          {/* <label className="block ml-6">
                             <label className="form-label">
                               TRANSIT PERMITS
                             </label>
@@ -1327,29 +1458,89 @@ export default function Vehicles({
                                 {errors.transit_permits}
                               </div>
                             ) : null}
-                          </label>
+                          </label> */}
 
                           <label className="block">
                             <label className="form-label">
+                              TRANSIT PERMITS
+                            </label>
+                            <div className="">
+                              <Field name="transit_permits">
+                                {({ field, form }: any) => (
+                                  <input
+                                    type="file"
+                                    onChange={(event) => {
+                                      const file =
+                                        event.currentTarget?.files?.[0];
+                                      if (file) {
+                                        form.setFieldValue(
+                                          "transit_permits",
+                                          file
+                                        );
+                                      }
+                                    }}
+                                  />
+                                )}
+                              </Field>
+                              {values.transit_permits &&
+                              typeof values.transit_permits === "string" ? (
+                                <div className="mt-5">
+                                  <a
+                                    href={values.transit_permits}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 underline"
+                                  >
+                                    View Transit Permit
+                                  </a>
+                                </div>
+                              ) : null}
+                            </div>
+                            {errors.transit_permits &&
+                            touched.transit_permits ? (
+                              <div className="text-red-600 text-sm">
+                                {errors.transit_permits}
+                              </div>
+                            ) : null}
+                          </label>
+
+                          <label className="block ml-20">
+                            <label className="form-label">
                               INSPECTION CERTIFICATES
                             </label>
-                            <Field name="inspection_certificates">
-                              {({ field, form }: any) => (
-                                <input
-                                  type="file"
-                                  onChange={(event) => {
-                                    const file =
-                                      event.currentTarget?.files?.[0];
-                                    if (file) {
-                                      form.setFieldValue(
-                                        "inspection_certificates",
-                                        file
-                                      );
-                                    }
-                                  }}
-                                />
-                              )}
-                            </Field>
+                            <div className="">
+                              <Field name="inspection_certificates">
+                                {({ field, form }: any) => (
+                                  <input
+                                    type="file"
+                                    onChange={(event) => {
+                                      const file =
+                                        event.currentTarget?.files?.[0];
+                                      if (file) {
+                                        form.setFieldValue(
+                                          "inspection_certificates",
+                                          file
+                                        );
+                                      }
+                                    }}
+                                  />
+                                )}
+                              </Field>
+                              {values.inspection_certificates &&
+                              typeof values.inspection_certificates ===
+                                "string" ? (
+                                <div className="mt-5">
+                                  <a
+                                    href={values.inspection_certificates}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 underline"
+                                  >
+                                    View Inspection Certificate
+                                  </a>
+                                </div>
+                              ) : null}
+                            </div>
                             {errors.inspection_certificates &&
                             touched.inspection_certificates ? (
                               <div className="text-red-600 text-sm">

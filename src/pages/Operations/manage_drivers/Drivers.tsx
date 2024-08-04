@@ -802,7 +802,7 @@ export default function Drivers() {
                       </div>
 
                       <div className="flex w-full justify-between mt-8">
-                        <label className="block">
+                        {/* <label className="block">
                           <label className="form-label">DRIVING LICENSE</label>
                           <Field name="profile">
                             {({ field, form }: any) => (
@@ -822,9 +822,46 @@ export default function Drivers() {
                               {errors.profile}
                             </div>
                           ) : null}
+                        </label>  */}
+                        <label className="block">
+                          <label className="form-label">DRIVING LICENSE</label>
+                          <div className="">
+                            <Field name="profile">
+                              {({ field, form }: any) => (
+                                <input
+                                  type="file"
+                                  onChange={(event) => {
+                                    const file =
+                                      event.currentTarget?.files?.[0];
+                                    if (file) {
+                                      form.setFieldValue("profile", file);
+                                    }
+                                  }}
+                                />
+                              )}
+                            </Field>
+                            {values.profile &&
+                            typeof values.profile === "string" ? (
+                              <div className="mt-5">
+                                <a
+                                  href={values.profile}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 underline"
+                                >
+                                  View Driving License
+                                </a>
+                              </div>
+                            ) : null}
+                          </div>
+                          {errors.profile && touched.profile ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.profile}
+                            </div>
+                          ) : null}
                         </label>
 
-                        <label className="block ml-6">
+                        {/* <label className="block ml-6">
                           <label className="form-label">GOOD CONDUCT</label>
                           <Field name="good_conduct">
                             {({ field, form }: any) => (
@@ -845,10 +882,47 @@ export default function Drivers() {
                               {errors.good_conduct}
                             </div>
                           ) : null}
+                        </label> */}
+                        <label className="block ml-14">
+                          <label className="form-label">GOOD CONDUCT</label>
+                          <div className="">
+                            <Field name="good_conduct">
+                              {({ field, form }: any) => (
+                                <input
+                                  type="file"
+                                  onChange={(event) => {
+                                    const file =
+                                      event.currentTarget?.files?.[0];
+                                    if (file) {
+                                      form.setFieldValue("good_conduct", file);
+                                    }
+                                  }}
+                                />
+                              )}
+                            </Field>
+                            {values.good_conduct &&
+                            typeof values.good_conduct === "string" ? (
+                              <div className="mt-5">
+                                <a
+                                  href={values.good_conduct}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 underline"
+                                >
+                                  View Good Conduct
+                                </a>
+                              </div>
+                            ) : null}
+                          </div>
+                          {errors.good_conduct && touched.good_conduct ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.good_conduct}
+                            </div>
+                          ) : null}
                         </label>
                       </div>
                       <div className="flex w-full justify-between mt-8">
-                        <label className="block">
+                        {/* <label className="block">
                           <label className="form-label">ID</label>
                           <Field name="identity_card">
                             {({ field, form }: any) => (
@@ -869,9 +943,47 @@ export default function Drivers() {
                               {errors.identity_card}
                             </div>
                           ) : null}
+                        </label>  */}
+
+                        <label className="block">
+                          <label className="form-label">ID</label>
+                          <div className="">
+                            <Field name="identity_card">
+                              {({ field, form }: any) => (
+                                <input
+                                  type="file"
+                                  onChange={(event) => {
+                                    const file =
+                                      event.currentTarget?.files?.[0];
+                                    if (file) {
+                                      form.setFieldValue("identity_card", file);
+                                    }
+                                  }}
+                                />
+                              )}
+                            </Field>
+                            {values.identity_card &&
+                            typeof values.identity_card === "string" ? (
+                              <div className="mt-5">
+                                <a
+                                  href={values.identity_card}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 underline"
+                                >
+                                  View Identity Card
+                                </a>
+                              </div>
+                            ) : null}
+                          </div>
+                          {errors.identity_card && touched.identity_card ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.identity_card}
+                            </div>
+                          ) : null}
                         </label>
 
-                        <label className="block ml-6">
+                        {/* <label className="block ml-6">
                           <label className="form-label">MEDICAL REPORT</label>
                           <Field name="medical_report">
                             {({ field, form }: any) => (
@@ -887,6 +999,46 @@ export default function Drivers() {
                               />
                             )}
                           </Field>
+                          {errors.medical_report && touched.medical_report ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.medical_report}
+                            </div>
+                          ) : null}
+                        </label> */}
+                        <label className="block ml-14">
+                          <label className="form-label">MEDICAL REPORT</label>
+                          <div className="">
+                            <Field name="medical_report">
+                              {({ field, form }: any) => (
+                                <input
+                                  type="file"
+                                  onChange={(event) => {
+                                    const file =
+                                      event.currentTarget?.files?.[0];
+                                    if (file) {
+                                      form.setFieldValue(
+                                        "medical_report",
+                                        file
+                                      );
+                                    }
+                                  }}
+                                />
+                              )}
+                            </Field>
+                            {values.medical_report &&
+                            typeof values.medical_report === "string" ? (
+                              <div className="mt-5">
+                                <a
+                                  href={values.medical_report}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 underline"
+                                >
+                                  View Medical Report
+                                </a>
+                              </div>
+                            ) : null}
+                          </div>
                           {errors.medical_report && touched.medical_report ? (
                             <div className="text-red-600 text-sm">
                               {errors.medical_report}
