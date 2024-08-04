@@ -619,7 +619,7 @@ export default function Cities() {
                       </div>
 
                       <div className="flex w-full justify-between mt-8">
-                        <label className="block">
+                        {/* <label className="block">
                           <label className="form-label">CLIENT DETAILS</label>
                           <Field name="client_details">
                             {({ field, form }: any) => (
@@ -634,6 +634,46 @@ export default function Cities() {
                               />
                             )}
                           </Field>
+                          {errors.client_details && touched.client_details ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.client_details}
+                            </div>
+                          ) : null}
+                        </label> */}
+                        <label className="block">
+                          <label className="form-label">CLIENT DETAILS</label>
+                          <div className="">
+                            <Field name="client_details">
+                              {({ field, form }: any) => (
+                                <input
+                                  type="file"
+                                  onChange={(event) => {
+                                    const file =
+                                      event.currentTarget?.files?.[0];
+                                    if (file) {
+                                      form.setFieldValue(
+                                        "client_details",
+                                        file
+                                      );
+                                    }
+                                  }}
+                                />
+                              )}
+                            </Field>
+                            {values.client_details &&
+                            typeof values.client_details === "string" ? (
+                              <div className="mt-5">
+                                <a
+                                  href={values.client_details}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 underline"
+                                >
+                                  View Client Details
+                                </a>
+                              </div>
+                            ) : null}
+                          </div>
                           {errors.client_details && touched.client_details ? (
                             <div className="text-red-600 text-sm">
                               {errors.client_details}

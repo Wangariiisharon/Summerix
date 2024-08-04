@@ -84,21 +84,6 @@ export default function Pending({
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [checkboxState, setCheckboxState] = useState<boolean[]>([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  // const [editFormInitialValues, setEditFormInitialValues] = useState({
-  //   requested_by: "",
-  //   vehicle: "",
-  //   cost: "",
-  //   job_cards: "",
-  //   remarks: "",
-  //   date: "",
-  //   part: "",
-  //   status: "",
-  //   serial_number: "",
-  //   approvalCount: 0,
-  //   broken_partImage: "" || null,
-  //   approvedBy: [],
-  //   timestamp: "",
-  // });
   const [editFormInitialValues, setEditFormInitialValues] = useState({
     requested_by: "",
     vehicle: "",
@@ -115,6 +100,7 @@ export default function Pending({
     approvedBy: [],
     timestamp: "",
   });
+  const [isApproved, setIsApproved] = useState(false);
 
   const [approvalCount, setApprovalCount] = useState(0);
   const [checked, setChecked] = useState(false);
@@ -286,6 +272,76 @@ export default function Pending({
     console.log("Edit Form Initial Values:", editFormInitialValues);
   };
 
+  // const handleEditSubmit = async (values: {
+  //   requested_by: any;
+  //   vehicle: any;
+  //   cost: any;
+  //   job_cards: any;
+  //   remarks: any;
+  //   date: any;
+  //   part: any;
+  //   status: any;
+  //   serial_number: any;
+  //   approvalCount: number;
+  //   broken_partImage: any;
+  //   approvedBy: any[];
+  //   timestamp: any;
+  // }) => {
+  //   if (!selectedMaintenance) {
+  //     console.error("No selected vehicle to update");
+  //     return;
+  //   }
+
+  //   console.log("Edited Values 2:", values);
+
+  //   try {
+  //     const approvedBy = userData?.email;
+
+  //     // Update the vehicle data in the database using the selectedVehicle.id
+  //     const maintenanceRef = doc(fbDb, "maintenance", selectedMaintenance.id);
+  //     const dateObj = new Date(values.date);
+  //     const timestamp = Timestamp.fromDate(dateObj);
+
+  //     const updatedData = {
+  //       approvalCount: values.approvalCount + 1,
+  //       requested_by: values.requested_by,
+  //       vehicle: values.vehicle,
+  //       date: timestamp, // Convert seconds to milliseconds
+  //       cost: values.cost,
+  //       job_cards: values.job_cards,
+  //       remarks: values.remarks,
+  //       serial_number: values.serial_number,
+  //       part: values.part,
+  //       status: values.status,
+  //       approvedBy: Array.isArray(values.approvedBy)
+  //         ? [...values.approvedBy, approvedBy].filter(Boolean)
+  //         : [approvedBy],
+  //       organisationId: organisationId,
+  //       timestamp: values.timestamp,
+  //       notificationNeedsDisplay: true,
+  //       broken_partImage: values.broken_partImage
+  //         ? await doUploadImage(values.broken_partImage, "broken_partImage")
+  //         : selectedMaintenance.broken_partImage,
+  //     };
+
+  //     if (updatedData.approvalCount === 1) {
+  //       updatedData.status = "Approved";
+  //     } else {
+  //       updatedData.status = "Pending";
+  //     }
+  //     console.log("Updated Data", updatedData);
+
+  //     await setDoc(maintenanceRef, updatedData, { merge: true });
+  //     toast.success("Maintenance Edited Successfully");
+
+  //     setSelectedMaintenance(null);
+  //     setEditModalOpen(false);
+  //     setChecked(true);
+  //   } catch (error) {
+  //     console.error("Error updating Maintenance:", error);
+  //   }
+  // };
+
   const handleEditSubmit = async (values: {
     requested_by: any;
     vehicle: any;
@@ -302,16 +358,16 @@ export default function Pending({
     timestamp: any;
   }) => {
     if (!selectedMaintenance) {
-      console.error("No selected vehicle to update");
+      console.error("No selected maintenance to update");
       return;
     }
 
-    console.log("Edited Values 2:", values);
+    console.log("Edited Values:", values);
 
     try {
       const approvedBy = userData?.email;
 
-      // Update the vehicle data in the database using the selectedVehicle.id
+      // Update the maintenance data in the database using the selectedMaintenance.id
       const maintenanceRef = doc(fbDb, "maintenance", selectedMaintenance.id);
       const dateObj = new Date(values.date);
       const timestamp = Timestamp.fromDate(dateObj);
@@ -326,7 +382,7 @@ export default function Pending({
         remarks: values.remarks,
         serial_number: values.serial_number,
         part: values.part,
-        status: values.status,
+        status: isApproved ? "Approved" : "Pending", // Set status based on checkbox
         approvedBy: Array.isArray(values.approvedBy)
           ? [...values.approvedBy, approvedBy].filter(Boolean)
           : [approvedBy],
@@ -338,12 +394,7 @@ export default function Pending({
           : selectedMaintenance.broken_partImage,
       };
 
-      if (updatedData.approvalCount === 1) {
-        updatedData.status = "Approved";
-      } else {
-        updatedData.status = "Pending";
-      }
-      console.log("Updated Data", updatedData);
+      console.log("Updated Data:", updatedData);
 
       await setDoc(maintenanceRef, updatedData, { merge: true });
       toast.success("Maintenance Edited Successfully");
@@ -352,7 +403,7 @@ export default function Pending({
       setEditModalOpen(false);
       setChecked(true);
     } catch (error) {
-      console.error("Error updating Maintenance:", error);
+      console.error("Error updating maintenance:", error);
     }
   };
 
@@ -543,7 +594,7 @@ export default function Pending({
                         ) : null}
                       </label>
 
-                      <label className="block ml-24">
+                      <label className="block ml-16">
                         <label className="form-label">BROKEN PART</label>
                         <div className="">
                           <Field name="broken_partImage">
@@ -562,17 +613,19 @@ export default function Pending({
                               />
                             )}
                           </Field>
-                          {values.broken_partImage && (
+                          {values.broken_partImage &&
+                          typeof values.broken_partImage === "string" ? (
                             <div className="mt-5">
-                              <Image
-                                src={values.broken_partImage}
-                                alt="broken part image"
-                                className="h-auto w-auto"
-                                width={150}
-                                height={150}
-                              />
+                              <a
+                                href={values.broken_partImage}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 underline"
+                              >
+                                View Broken Part
+                              </a>
                             </div>
-                          )}
+                          ) : null}
                         </div>
                         {errors.broken_partImage && touched.broken_partImage ? (
                           <div className="text-red-600 text-sm">
@@ -591,7 +644,7 @@ export default function Pending({
                       />
                     </label>
 
-                    <label className="block mt-8">
+                    {/* <label className="block mt-8">
                       <label className="form-label">APPROVE</label>
                       <Field
                         type="checkbox"
@@ -602,6 +655,23 @@ export default function Pending({
                           setApprovalCount(
                             checked ? approvalCount + 1 : approvalCount - 1
                           );
+                        }}
+                        className="form-checkbox bg-gray-200"
+                      />
+                      {errors.remarks && touched.remarks ? (
+                        <div className="text-red-600 text-sm">
+                          {errors.remarks}
+                        </div>
+                      ) : null}
+                    </label> */}
+                    <label className="block mt-8">
+                      <label className="form-label">APPROVE</label>
+                      <Field
+                        type="checkbox"
+                        name="approvalCheckbox"
+                        checked={isApproved}
+                        onChange={(event: any) => {
+                          setIsApproved(event.currentTarget.checked);
                         }}
                         className="form-checkbox bg-gray-200"
                       />
