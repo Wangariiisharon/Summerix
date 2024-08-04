@@ -1,6 +1,7 @@
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const apps = getApps();
 
@@ -27,5 +28,6 @@ if (!apps.length || apps.length === 0) {
 const firebaseApp = getApps()[0];
 export const fbDb = getFirestore(firebaseApp);
 export const auth = getAuth(firebaseApp);
+export const fbStorage = getStorage(firebaseApp);
 
 export default firebaseApp;
