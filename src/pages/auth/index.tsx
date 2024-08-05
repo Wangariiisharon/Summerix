@@ -92,51 +92,6 @@ export default function LoginPage() {
     //     }
     //   }
     // };
-    const handleSignInWithEmailLink = async () => {
-      const auth = getAuth(firebaseApp);
-
-      if (isSignInWithEmailLink(auth, window.location.href)) {
-        let email = window.localStorage.getItem("emailForSignIn");
-
-        if (!email) {
-          email = window.prompt("Please provide your email for confirmation");
-        }
-
-        if (email) {
-          try {
-            const result = await signInWithEmailLink(
-              auth,
-              email,
-              window.location.href
-            );
-            const user = result.user;
-
-            if (user) {
-              const uid = user.uid;
-              console.log("Successfully signed in with UID:", uid);
-
-              // Update the admin document with the user's UID
-              const adminId = new URLSearchParams(window.location.search).get(
-                "adminId"
-              );
-              if (adminId) {
-                const adminDocRef = doc(fbDb, "admins", adminId);
-                await updateDoc(adminDocRef, { userId: uid });
-                console.log("Admin document updated with userId:", uid);
-              }
-
-              window.localStorage.removeItem("emailForSignIn");
-              router.push("/Dashboard");
-            }
-          } catch (error) {
-            console.error("Sign-in with email link failed:", error);
-            toast.error("Sign-in failed. Please try again.");
-          }
-        }
-      }
-    };
-
-    handleSignInWithEmailLink();
   }, [router]);
 
   // const doGoogleSignIn = async () => {
