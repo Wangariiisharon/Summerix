@@ -178,7 +178,7 @@ export default function AdminsTable({
           ? { ...a, archive: newArchiveStatus, status: newStatus }
           : a
       );
-      updateFetchedAdmins(updatedAdmins);
+      // updateFetchedAdmins(updatedAdmins);
     } catch (error) {
       console.error("Error updating admin:", error);
       toast.error("Error updating admin. Please try again.");
@@ -225,6 +225,7 @@ export default function AdminsTable({
                   key={admin.id}
                   className="border-b"
                   onClick={() => handleAdminClick(admin)}
+                  // onClick={(e) => e.stopPropagation()}
                 >
                   <td className="py-3 px-6">
                     <div className="flex items-center">

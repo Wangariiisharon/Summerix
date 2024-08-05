@@ -598,26 +598,55 @@ export function DepartmentsTable({
     link.click();
     document.body.removeChild(link);
   };
-  const updateVehicleStatusInDatabase = async (
-    classId: string,
-    newStatus: boolean
-  ) => {
-    try {
-      const vehicleRef = doc(fbDb, "departments", classId);
-      await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
+  // const updateVehicleStatusInDatabase = async (
+  //   classId: string,
+  //   newStatus: boolean
+  // ) => {
+  //   try {
+  //     const vehicleRef = doc(fbDb, "departments", classId);
+  //     await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
 
-      const updatedVehicles = departments.map((department) =>
-        department.id === classId
-          ? { ...department, archive: newStatus }
-          : department
+  //     const updatedVehicles = departments.map((department) =>
+  //       department.id === classId
+  //         ? { ...department, archive: newStatus }
+  //         : department
+  //     );
+  //     updateFetchedDepartments(updatedVehicles);
+  //   } catch (error) {
+  //     console.error("Error updating Department status in database:", error);
+  //   }
+  // };
+
+  const toggleArchiveStatus = async (department: Department) => {
+    try {
+      const adminRef = doc(fbDb, "departments", department.id as string);
+
+      // Toggle the archive and status values
+      const newArchiveStatus = !department.archive;
+      const newStatus = !newArchiveStatus; // if archive is true, status should be false and vice versa
+
+      // Update the document
+      await updateDoc(adminRef, {
+        archive: newArchiveStatus,
+        status: newStatus,
+      });
+
+      console.log(`Department ${department.name} updated successfully`);
+      toast.success(`Department  ${department.name} updated successfully`);
+
+      // Update the fetchedAdmins state
+      const updatedDepartments = departments.map((a: any) =>
+        department.id === department.id
+          ? { ...a, archive: newArchiveStatus, status: newStatus }
+          : a
       );
-      updateFetchedDepartments(updatedVehicles);
+      // updateFetchedDepartments(updatedDepartments);
     } catch (error) {
-      console.error("Error updating Department status in database:", error);
+      console.error("Error updating department:", error);
+      toast.error("Error updating department. Please try again.");
     }
   };
 
-  //   const Headers = ["GROUP ID", "NAME","UPDATED"]
   const rowsPerPage = 6;
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
@@ -724,12 +753,10 @@ export function DepartmentsTable({
                         </button>
                         <button
                           className="bg-[#eae8fd] text-[#786cf1] h-8 w-18 py-1 px-2 ml-4"
-                          onClick={() =>
-                            updateVehicleStatusInDatabase(
-                              department.id,
-                              !department.archive
-                            )
-                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleArchiveStatus(department);
+                          }}
                         >
                           {department.archive ? "Unarchive" : "Archive"}
                         </button>
