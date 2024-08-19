@@ -516,6 +516,7 @@ export default function TripsComponent() {
         console.error("Error fetching Cargo names:", error);
       }
     };
+
     fetchCargo();
     fetchDrivers();
     fetchedTrips();
@@ -1055,6 +1056,13 @@ export default function TripsComponent() {
     userClaims?.admin ||
     departmentData?.permissions?.includes("Edit Trip");
 
+  const handlePaidAmountChange = (e: any, setFieldValue: any, values: any) => {
+    const paidAmount = parseFloat(e.target.value) || 0;
+    const remainingAmount = values.dealValue - paidAmount;
+    setFieldValue("paid_amount", paidAmount);
+    setFieldValue("remaining_amount", remainingAmount);
+  };
+
   return (
     <div>
       <p className="text-lg font-nunito font-bold mt-2 ml-10 mb-2">Trips</p>
@@ -1245,13 +1253,13 @@ export default function TripsComponent() {
                 setOpen(false);
               }}
             >
-              {/* {(formik) => ( */}
               {(formik) => {
-                useEffect(() => {
-                  const dealValue = Number(formik.values.dealValue);
-                  const paidAmount = Number(formik.values.paid_amount);
-                  const paymentStatus = formik.values.payment_status;
-
+                // Move useEffect outside of Formik render method
+                const calculateRemainingAmount = (
+                  dealValue: any,
+                  paidAmount: any,
+                  paymentStatus: any
+                ) => {
                   let remainingAmount = 0;
 
                   if (paymentStatus === "Partially Paid") {
@@ -1263,11 +1271,7 @@ export default function TripsComponent() {
                   }
 
                   formik.setFieldValue("remaining_amount", remainingAmount);
-                }, [
-                  formik.values.dealValue,
-                  formik.values.paid_amount,
-                  formik.values.payment_status,
-                ]);
+                };
 
                 return (
                   <Form>
@@ -1477,7 +1481,7 @@ export default function TripsComponent() {
                           <ErrorMessage
                             name="company"
                             component="div"
-                            className="error text-sm text-red-500 "
+                            className="error text-sm text-red-500"
                           />
                         </label>
                         <label className="block">
@@ -1511,6 +1515,15 @@ export default function TripsComponent() {
                             value={formik.values.dealValue}
                             placeholder="Ksh"
                             className="form-input bg-grey w-48"
+                            onChange={(e: any) => {
+                              const dealValue = Number(e.target.value);
+                              formik.setFieldValue("dealValue", dealValue);
+                              calculateRemainingAmount(
+                                dealValue,
+                                formik.values.paid_amount,
+                                formik.values.payment_status
+                              );
+                            }}
                           />
                           <ErrorMessage
                             name="dealValue"
@@ -1569,13 +1582,25 @@ export default function TripsComponent() {
                       </div>
                       <div className="mt-8 flex w-full justify-between">
                         <label className="block">
-                          <label className="form-label">OWNERSHIP STATUS</label>
+                          <label className="form-label">PAYMENT STATUS</label>
 
                           <Field
                             as="select"
                             type="text"
                             name="payment_status"
                             className="form-input bg-grey w-48"
+                            onChange={(e: any) => {
+                              const paymentStatus = e.target.value;
+                              formik.setFieldValue(
+                                "payment_status",
+                                paymentStatus
+                              );
+                              calculateRemainingAmount(
+                                formik.values.dealValue,
+                                formik.values.paid_amount,
+                                paymentStatus
+                              );
+                            }}
                           >
                             <option>Selecet Payment Status</option>
                             <option value="Paid">Paid</option>
@@ -1601,6 +1626,18 @@ export default function TripsComponent() {
                                   name="paid_amount"
                                   placeholder="Ksh"
                                   className="form-input bg-grey w-48"
+                                  onChange={(e: any) => {
+                                    const paidAmount = Number(e.target.value);
+                                    formik.setFieldValue(
+                                      "paid_amount",
+                                      paidAmount
+                                    );
+                                    calculateRemainingAmount(
+                                      formik.values.dealValue,
+                                      paidAmount,
+                                      formik.values.payment_status
+                                    );
+                                  }}
                                 />
                               </label>
                             </div>
@@ -1774,7 +1811,7 @@ export default function TripsComponent() {
               initialValues={editFormInitialValues}
               onSubmit={handleEditSubmit}
             >
-              {({ values }) => (
+              {({ values, setFieldValue }) => (
                 <Form>
                   <div className="">
                     <div className="flex w-full justify-between">
@@ -1914,6 +1951,22 @@ export default function TripsComponent() {
                                 name="paid_amount"
                                 placeholder="Ksh"
                                 className="form-input bg-grey w-48"
+                                onChange={(
+                                  event: React.ChangeEvent<HTMLInputElement>
+                                ) => {
+                                  const paidAmount =
+                                    parseFloat(event.target.value) || 0;
+                                  const dealValue =
+                                    parseFloat(values.dealValue as any) || 0; // Treat as any here
+                                  const remainingAmount =
+                                    dealValue - paidAmount;
+
+                                  setFieldValue("paid_amount", paidAmount);
+                                  setFieldValue(
+                                    "remaining_amount",
+                                    remainingAmount
+                                  );
+                                }}
                               />
                             </label>
                           </div>
