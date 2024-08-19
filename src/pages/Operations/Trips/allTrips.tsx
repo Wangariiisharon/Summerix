@@ -58,8 +58,8 @@ export default function AllTrips({ searchQuery }: any) {
     vehicle: "",
     pick_up_location: "",
     drop_off_location: "",
-    start_time: "", // Initialize as an empty string, cast to Date
-    end_time: "", // Make sure it's initialized as a string
+    start_time: "",
+    end_time: "",
     cargo_type: "",
     cargo_quantity: "",
     memo: "",
@@ -71,6 +71,14 @@ export default function AllTrips({ searchQuery }: any) {
     mileage_fee: 0,
     distance: "",
     timestamp: "",
+    company: "",
+    client: "",
+    payment_status: "",
+    paid_amount: 0,
+    remaining_amount: 0,
+    excess_weight_fee: null,
+    t1_form: null,
+    interchange_documents: null,
   });
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>("all");
@@ -147,6 +155,14 @@ export default function AllTrips({ searchQuery }: any) {
       mileage_fee: trip.mileage_fee,
       distance: trip.distance,
       timestamp: trip.timestamp,
+      company: trip.company,
+      client: trip.client,
+      payment_status: trip.payment_status,
+      paid_amount: trip.paid_amount,
+      remaining_amount: trip.remaining_amount,
+      excess_weight_fee: trip.excess_weight_fee,
+      t1_form: trip.t1_form,
+      interchange_documents: trip.interchange_documents,
     });
     setEditModalOpen(true);
   };
@@ -175,6 +191,14 @@ export default function AllTrips({ searchQuery }: any) {
     mileage_fee: any;
     distance: any;
     timestamp: any;
+    company: any;
+    client: any;
+    payment_status: any;
+    paid_amount: any;
+    remaining_amount: any;
+    excess_weight_fee: any;
+    t1_form: any;
+    interchange_documents: any;
   }) => {
     if (!selectedTrip) {
       console.error("No selected Trip to update");
@@ -228,6 +252,14 @@ export default function AllTrips({ searchQuery }: any) {
         mileage_fee: values.mileage_fee,
         distance: values.distance,
         timestamp: values.timestamp,
+        company: values.company,
+        client: values.client,
+        payment_status: values.payment_status,
+        paid_amount: values.paid_amount,
+        remaining_amount: values.remaining_amount,
+        excess_weight_fee: values.excess_weight_fee,
+        t1_form: values.t1_form,
+        interchange_documents: values.interchange_documents,
       });
 
       // Update the local fetchedVehicles state
@@ -235,6 +267,7 @@ export default function AllTrips({ searchQuery }: any) {
         trip.id === selectedTrip.id
           ? {
               ...trip,
+
               trip_id: values.trip_id,
               requested_by: values.requested_by,
               vehicle: values.vehicle,
@@ -253,6 +286,14 @@ export default function AllTrips({ searchQuery }: any) {
               mileage_fee: values.mileage_fee,
               distance: values.distance,
               timestamp: values.timestamp,
+              company: values.company,
+              client: values.client,
+              payment_status: values.payment_status,
+              paid_amount: values.paid_amount,
+              remaining_amount: values.remaining_amount,
+              excess_weight_fee: values.excess_weight_fee,
+              t1_form: values.t1_form,
+              interchange_documents: values.interchange_documents,
             }
           : trip
       );
@@ -264,22 +305,6 @@ export default function AllTrips({ searchQuery }: any) {
       console.error("Error updating trip:", error);
     }
   };
-
-  // const filteredTrips = fetchedTrips.filter((trip) => {
-  //   const fullName = `${trip.vehicle}`.toLowerCase();
-  //   const tripIdSearch = `${trip.trip_id}`.toLowerCase();
-
-  //   const nameMatch = fullName.includes(searchQuery.toLowerCase());
-  //   const tripIdMatch = tripIdSearch.includes(searchQuery.toLowerCase());
-
-  //   const startTimeMatch = `${trip.start_time}`.includes(
-  //     searchQuery.toLowerCase()
-  //   );
-  //   // const start = formatDate(new Date(trip.start_time.seconds * 1000));
-  //   // console.log("start", start);
-
-  //   return nameMatch || startTimeMatch || tripIdMatch;
-  // });
 
   const filteredTrips = fetchedTrips.filter((trip) => {
     // Convert fields to lowercase for case-insensitive comparison
@@ -563,7 +588,7 @@ export default function AllTrips({ searchQuery }: any) {
 
       {editModalOpen && selectedTrip && (
         <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
-          <div>
+          <div className="p-8">
             <div className="flex w-full h-full justify-between items-center mb-12">
               <div className="text-xl font-semibold ">Edit trip Details</div>
               <Button
@@ -692,6 +717,161 @@ export default function AllTrips({ searchQuery }: any) {
                         />
                       </label>
                     </div>
+                    <div className="mt-8 flex w-full justify-between">
+                      <label className="block">
+                        <label className="form-label">OWNERSHIP STATUS</label>
+
+                        <Field
+                          disabled
+                          as="select"
+                          type="text"
+                          name="payment_status"
+                          className="form-input bg-grey w-48"
+                        >
+                          <option>Selecet Payment Status</option>
+                          <option value="Paid">Paid</option>
+                          <option value="Partially Paid">Partially Paid</option>
+                          <option value="Not Paid">Not Paid</option>
+                        </Field>
+
+                        {values.payment_status === "Partially Paid" && (
+                          <div className="mt-8">
+                            <label className="block">
+                              <label className="form-label">PAID AMOUNT</label>
+                              <Field
+                                type="number"
+                                name="paid_amount"
+                                placeholder="Ksh"
+                                className="form-input bg-grey w-48"
+                              />
+                            </label>
+                          </div>
+                        )}
+                      </label>
+                      <label className="block">
+                        <label className="form-label">REMAINING AMOUNT</label>
+                        <Field
+                          type="text"
+                          disabled
+                          name="remaining_amount"
+                          value={values.remaining_amount}
+                          className="form-input bg-grey w-48"
+                        />
+                      </label>
+                    </div>
+
+                    <div className="mt-8 flex w-full justify-between">
+                      <label className="block">
+                        <label className="form-label">T1 FORM</label>
+                        <div className="">
+                          <Field name="t1_form" disabled>
+                            {({ field, form }: any) => (
+                              <input
+                                type="file"
+                                disabled
+                                onChange={(event) => {
+                                  const file = event.currentTarget?.files?.[0];
+                                  if (file) {
+                                    form.setFieldValue("t1_form", file);
+                                  }
+                                }}
+                              />
+                            )}
+                          </Field>
+                          {values.t1_form &&
+                          typeof values.t1_form === "string" ? (
+                            <div className="mt-5">
+                              <a
+                                href={values.t1_form}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 underline"
+                              >
+                                View T1 Form
+                              </a>
+                            </div>
+                          ) : null}
+                        </div>
+                      </label>
+
+                      <label className="block">
+                        <label className="form-label">
+                          EXCESS WEIGHT FEE DOCUMENT
+                        </label>
+                        <div className="">
+                          <Field name="excess_weight_fee" disabled>
+                            {({ field, form }: any) => (
+                              <input
+                                type="file"
+                                disabled
+                                onChange={(event) => {
+                                  const file = event.currentTarget?.files?.[0];
+                                  if (file) {
+                                    form.setFieldValue(
+                                      "excess_weight_fee",
+                                      file
+                                    );
+                                  }
+                                }}
+                              />
+                            )}
+                          </Field>
+                          {values.excess_weight_fee &&
+                          typeof values.excess_weight_fee === "string" ? (
+                            <div className="mt-5">
+                              <a
+                                href={values.excess_weight_fee}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 underline"
+                              >
+                                View Excess Weight Fee Document
+                              </a>
+                            </div>
+                          ) : null}
+                        </div>
+                      </label>
+                    </div>
+
+                    <div className="mt-8 flex w-full justify-between">
+                      <label className="block">
+                        <label className="form-label">
+                          INTERCHANGE DOCUMENT
+                        </label>
+                        <div className="">
+                          <Field name="interchange_documents" disabled>
+                            {({ field, form }: any) => (
+                              <input
+                                type="file"
+                                disabled
+                                onChange={(event) => {
+                                  const file = event.currentTarget?.files?.[0];
+                                  if (file) {
+                                    form.setFieldValue(
+                                      "interchange_documents",
+                                      file
+                                    );
+                                  }
+                                }}
+                              />
+                            )}
+                          </Field>
+                          {values.interchange_documents &&
+                          typeof values.interchange_documents === "string" ? (
+                            <div className="mt-5">
+                              <a
+                                href={values.interchange_documents}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 underline"
+                              >
+                                View Interchange Document
+                              </a>
+                            </div>
+                          ) : null}
+                        </div>
+                      </label>
+                    </div>
 
                     <p className="mt-5 font-semibold"> Cargo</p>
                     <div className="flex w-full justify-between">
@@ -726,11 +906,19 @@ export default function AllTrips({ searchQuery }: any) {
                         value={values.trip_status}
                         className="form-input bg-grey w-48"
                       >
-                        <option>Select Trip Status</option>
+                        <option>Select Trip status</option>
                         <option value="Booked">Booked</option>
+                        {/* <option value="Ready for Departure">
+                          Ready for Departure
+                        </option> */}
+                        {/* <option value="At the border">At the border</option> */}
+                        {/* <option value="Offloading dest">Offloading dest</option> */}
                         <option value="On Route">On Route</option>
                         <option value="Mechanical">Mechanical</option>
                         <option value="Done">Done </option>
+                        {/* <option value="Returning the Container">
+                          returning with Container
+                        </option> */}
                       </Field>
                     </label>
                     <label className="block mt-8">

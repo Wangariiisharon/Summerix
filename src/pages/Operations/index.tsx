@@ -9,6 +9,7 @@ import Drivers from "./manage_drivers/Drivers";
 import Class from "./manage_class/class";
 import SiteLayout from "@/Layout/SiteLayout";
 import Jobcard from "./Jobcards/jobcard";
+import Cargo from "./manage_cargo/cargo";
 
 const tabs = [
   { name: "Trips", href: "#", current: false },
@@ -17,6 +18,7 @@ const tabs = [
   { name: "Clients", href: "#", current: false },
   { name: "Drivers", href: "#", current: false },
   { name: "Jobcards", href: "#", current: false },
+  { name: "Cargo", href: "#", current: false },
   { name: "Suppliers", href: "#", current: false },
 ];
 
@@ -82,7 +84,10 @@ export default function AdministrationComponent() {
                 <Tab.Panel className="h-full">
                   <Jobcard />
                 </Tab.Panel>
-                <Tab.Panel className="h-full">{/* <Class /> */}</Tab.Panel>
+                <Tab.Panel className="h-full">
+                  <Cargo />
+                </Tab.Panel>
+                <Tab.Panel className="h-full">{/* <Cargo /> */}</Tab.Panel>
               </Tab.Panels>
             </Tab.Group>
           </div>
