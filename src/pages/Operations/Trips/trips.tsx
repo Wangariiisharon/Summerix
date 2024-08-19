@@ -3,7 +3,7 @@ import { ArrowDownTrayIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { FormModal } from "@/components/Modals/FormModal";
 import { Fragment, SetStateAction, useEffect, useState } from "react";
-import { fbDb } from "@/firebase/configs";
+import firebaseApp, { fbDb } from "@/firebase/configs";
 import {
   getDocs,
   collection,
@@ -30,6 +30,7 @@ import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import PlacesAutocomplete from "react-places-autocomplete";
 import * as Yup from "yup";
 import TripsTable from "./tripsTable";
+import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 
 interface TripCounts {
   [key: string]: number;
@@ -83,11 +84,7 @@ const validationSchema = Yup.object({
   dealValue: Yup.number().positive().required("Deal Value is required"),
   fuel: Yup.number().positive().required("Fuel is required"),
   mileage_fee: Yup.number().positive().required("Mileage Fee is required"),
-});
-
-const editValidationSchema = Yup.object({
-  end_time: Yup.date().required("End time is required"),
-  status: Yup.number().positive().required("Status is required"),
+  payment_status: Yup.string().required("Payment Status is required"),
 });
 
 export default function TripsComponent() {
@@ -121,6 +118,8 @@ export default function TripsComponent() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [distance, setDistance] = useState<string>("");
+  const [cargos, setCargos] = useState<string[]>([]);
+
   const [editFormInitialValues, setEditFormInitialValues] = useState({
     trip_id: "",
     requested_by: {
@@ -146,6 +145,12 @@ export default function TripsComponent() {
     timestamp: "",
     company: "",
     client: "",
+    payment_status: "",
+    paid_amount: 0,
+    remaining_amount: 0,
+    excess_weight_fee: null,
+    t1_form: null,
+    interchange_documents: null,
   });
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -494,7 +499,24 @@ export default function TripsComponent() {
         console.error("Error fetching companies:", error);
       }
     };
-
+    const fetchCargo = async () => {
+      try {
+        if (organisationId) {
+          const q = query(
+            collection(fbDb, "cargos"),
+            where("organisationId", "==", organisationId),
+            where("archive", "==", false) // Only fetch drivers where archive is false
+          );
+          const querySnapshot = await getDocs(q);
+          const names = querySnapshot.docs.map((doc) => doc.data().name);
+          setCargos(names);
+          console.log("Cargos:", names);
+        }
+      } catch (error) {
+        console.error("Error fetching Cargo names:", error);
+      }
+    };
+    fetchCargo();
     fetchDrivers();
     fetchedTrips();
     fetchedClients();
@@ -504,7 +526,6 @@ export default function TripsComponent() {
   function convertToDate(firestoreTimestamp: any) {
     if (firestoreTimestamp instanceof Timestamp) {
       return firestoreTimestamp.toDate();
-    } else if (typeof firestoreTimestamp === "string") {
       return new Date(firestoreTimestamp);
     } else {
       return firestoreTimestamp; // Assuming it's already a Date object or null
@@ -559,6 +580,12 @@ export default function TripsComponent() {
       timestamp: trip.timestamp,
       company: trip.company,
       client: trip.client,
+      payment_status: trip.payment_status,
+      paid_amount: trip.paid_amount,
+      remaining_amount: trip.remaining_amount,
+      excess_weight_fee: trip.excess_weight_fee,
+      t1_form: trip.t1_form,
+      interchange_documents: trip.interchange_documents,
     });
     setEditModalOpen(true);
   };
@@ -589,6 +616,12 @@ export default function TripsComponent() {
     timestamp: any;
     company: any;
     client: any;
+    payment_status: any;
+    paid_amount: any;
+    remaining_amount: any;
+    excess_weight_fee: any;
+    t1_form: any;
+    interchange_documents: any;
   }) => {
     if (!selectedTrip) {
       console.error("No selected Trip to update");
@@ -642,8 +675,14 @@ export default function TripsComponent() {
         mileage_fee: values.mileage_fee,
         distance: values.distance,
         timestamp: values.timestamp,
-        company: values.timestamp,
-        client: values.timestamp,
+        company: values.company,
+        client: values.client,
+        payment_status: values.payment_status,
+        paid_amount: values.paid_amount,
+        remaining_amount: values.remaining_amount,
+        excess_weight_fee: values.excess_weight_fee,
+        t1_form: values.t1_form,
+        interchange_documents: values.interchange_documents,
       });
 
       // Update the local fetchedVehicles state
@@ -670,8 +709,14 @@ export default function TripsComponent() {
               mileage_fee: values.mileage_fee,
               distance: values.distance,
               timestamp: values.timestamp,
-              company: values.timestamp,
-              client: values.timestamp,
+              company: values.company,
+              client: values.client,
+              payment_status: values.payment_status,
+              paid_amount: values.paid_amount,
+              remaining_amount: values.remaining_amount,
+              excess_weight_fee: values.excess_weight_fee,
+              t1_form: values.t1_form,
+              interchange_documents: values.interchange_documents,
             }
           : trip
       );
@@ -780,7 +825,6 @@ export default function TripsComponent() {
     drop_off_location: string;
     vehicle: string;
     start_time: string;
-    // end_time: string;
     cargo_type: string;
     cargo_quantity: string;
     memo: string;
@@ -789,6 +833,12 @@ export default function TripsComponent() {
     dealValue: number;
     fuel: number;
     mileage_fee: number;
+    payment_status: string;
+    paid_amount: number;
+    remaining_amount: number;
+    excess_weight_fee: any;
+    t1_form: any;
+    interchange_documents: any;
   }) => {
     console.log("Submitted Values:", values);
     console.log("Distance handlesubmit:", distance);
@@ -827,6 +877,36 @@ export default function TripsComponent() {
         console.error("Selected driver or vehicle not found");
         return;
       }
+      let excessWeightFeeUrl = "";
+      if (values.excess_weight_fee) {
+        const storage = getStorage(firebaseApp);
+        const storageRef = ref(
+          storage,
+          `excess_weight_fee/${values.excess_weight_fee.name}`
+        );
+
+        await uploadBytes(storageRef, values.excess_weight_fee);
+        excessWeightFeeUrl = await getDownloadURL(storageRef);
+      }
+      let t1FormUrl = "";
+      if (values.t1_form) {
+        const storage = getStorage(firebaseApp);
+        const storageRef = ref(storage, `t1_form/${values.t1_form.name}`);
+
+        await uploadBytes(storageRef, values.t1_form);
+        t1FormUrl = await getDownloadURL(storageRef);
+      }
+      let interchangeDocumentsUrl = "";
+      if (values.interchange_documents) {
+        const storage = getStorage(firebaseApp);
+        const storageRef = ref(
+          storage,
+          `interchange_documents/${values.interchange_documents.name}`
+        );
+
+        await uploadBytes(storageRef, values.interchange_documents);
+        interchangeDocumentsUrl = await getDownloadURL(storageRef);
+      }
       const tripId = await generateTripId(values.vehicle, values.start_time);
       const generateTripid = await generateId(organisationId);
 
@@ -854,6 +934,12 @@ export default function TripsComponent() {
         mileage_fee: values.mileage_fee,
         distance: distanceValue,
         timestamp: Timestamp.now(),
+        payment_status: values.payment_status,
+        paid_amount: values.paid_amount,
+        remaining_amount: values.remaining_amount,
+        excess_weight_fee: excessWeightFeeUrl,
+        t1_form: t1FormUrl,
+        interchange_documents: interchangeDocumentsUrl,
       };
 
       const docRef = await addDoc(collection(fbDb, "trips"), maintenanceData);
@@ -938,6 +1024,12 @@ export default function TripsComponent() {
       default:
         return 0;
     }
+  };
+  const uploadImage = async (file: File, folder: string) => {
+    const storage = getStorage(firebaseApp);
+    const storageRef = ref(storage, `${folder}/${file.name}`);
+    await uploadBytes(storageRef, file);
+    return await getDownloadURL(storageRef);
   };
 
   const allTripsCount = countTrips(0);
@@ -1139,373 +1231,527 @@ export default function TripsComponent() {
                 dealValue: 0,
                 fuel: 0,
                 mileage_fee: 0,
+                payment_status: "",
+                paid_amount: 0,
+                remaining_amount: 0,
+                excess_weight_fee: null,
+                t1_form: null,
+                interchange_documents: null,
               }}
               validationSchema={validationSchema}
               onSubmit={(values, { setSubmitting }) => {
                 handleSubmit(values);
-                // toast.success("Trip successfully saved!");
                 setSubmitting(false);
                 setOpen(false);
               }}
             >
-              {(formik) => (
-                <Form>
-                  <div className="">
-                    <div className="flex w-full justify-between mt-6">
-                      {/* PICK UP LOCATION with Autocomplete */}
-                      <div className="block">
-                        <label className="form-label">PICK UP LOCATION</label>
-                        <PlacesAutocomplete
-                          value={formik.values.pick_up_location}
-                          onChange={(address) =>
-                            formik.setFieldValue("pick_up_location", address)
-                          }
-                        >
-                          {({
-                            getInputProps,
-                            suggestions,
-                            getSuggestionItemProps,
-                            loading,
-                          }) => (
-                            <div>
-                              <input
-                                {...getInputProps({
-                                  className: "form-input bg-grey w-48",
-                                  placeholder: "Enter Pick Up Location",
-                                })}
-                              />
-                              {loading && <div>Loading...</div>}
-                              {suggestions.map((suggestion, index) => (
-                                <div
-                                  {...getSuggestionItemProps(suggestion)}
-                                  key={index}
-                                >
-                                  {suggestion.description}
-                                </div>
-                              ))}
+              {/* {(formik) => ( */}
+              {(formik) => {
+                useEffect(() => {
+                  const dealValue = Number(formik.values.dealValue);
+                  const paidAmount = Number(formik.values.paid_amount);
+                  const paymentStatus = formik.values.payment_status;
+
+                  let remainingAmount = 0;
+
+                  if (paymentStatus === "Partially Paid") {
+                    remainingAmount = dealValue - paidAmount;
+                  } else if (paymentStatus === "Paid") {
+                    remainingAmount = 0;
+                  } else if (paymentStatus === "Not Paid") {
+                    remainingAmount = dealValue;
+                  }
+
+                  formik.setFieldValue("remaining_amount", remainingAmount);
+                }, [
+                  formik.values.dealValue,
+                  formik.values.paid_amount,
+                  formik.values.payment_status,
+                ]);
+
+                return (
+                  <Form>
+                    <div className="">
+                      <div className="flex w-full justify-between mt-6">
+                        {/* PICK UP LOCATION with Autocomplete */}
+                        <div className="block">
+                          <label className="form-label">PICK UP LOCATION</label>
+                          <PlacesAutocomplete
+                            value={formik.values.pick_up_location}
+                            onChange={(address) =>
+                              formik.setFieldValue("pick_up_location", address)
+                            }
+                          >
+                            {({
+                              getInputProps,
+                              suggestions,
+                              getSuggestionItemProps,
+                              loading,
+                            }) => (
+                              <div>
+                                <input
+                                  {...getInputProps({
+                                    className: "form-input bg-grey w-48",
+                                    placeholder: "Enter Pick Up Location",
+                                  })}
+                                />
+                                {loading && <div>Loading...</div>}
+                                {suggestions.map((suggestion, index) => (
+                                  <div
+                                    {...getSuggestionItemProps(suggestion)}
+                                    key={index}
+                                  >
+                                    {suggestion.description}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </PlacesAutocomplete>
+                          <ErrorMessage
+                            name="pick_up_location"
+                            component="div"
+                            className="error text-sm text-red-500 "
+                          />
+                        </div>
+
+                        {/* DROP OFF LOCATION with Autocomplete */}
+                        <div className="block">
+                          <label className="form-label">
+                            DROP OFF LOCATION
+                          </label>
+                          <PlacesAutocomplete
+                            value={formik.values.drop_off_location}
+                            onChange={(address) =>
+                              formik.setFieldValue("drop_off_location", address)
+                            }
+                          >
+                            {({
+                              getInputProps,
+                              suggestions,
+                              getSuggestionItemProps,
+                              loading,
+                            }) => (
+                              <div>
+                                <input
+                                  {...getInputProps({
+                                    className: "form-input bg-grey w-48",
+                                    placeholder: "Enter Drop Off Location",
+                                  })}
+                                />
+                                {loading && <div>Loading...</div>}
+                                {suggestions.map((suggestion, index) => (
+                                  <div
+                                    {...getSuggestionItemProps(suggestion)}
+                                    key={index}
+                                  >
+                                    {suggestion.description}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </PlacesAutocomplete>
+                          <ErrorMessage
+                            name="drop_off_location"
+                            component="div"
+                            className="error text-sm text-red-500 "
+                          />
+                        </div>
+                      </div>
+                      {/* START TIME and END TIME */}
+                      <div className="flex w-full justify-between mt-8">
+                        <div className="block">
+                          <label className="form-label">START TIME</label>
+                          <Field
+                            type="date"
+                            value={formik.values.start_time}
+                            name="start_time"
+                            className="form-input bg-grey w-48"
+                          />
+                          <ErrorMessage
+                            name="start_time"
+                            component="div"
+                            className="error text-sm text-red-500 "
+                          />
+                        </div>
+                        <div className="block">
+                          <label className="form-label">END TIME</label>
+                          <Field
+                            disabled
+                            type="date"
+                            name="end_time"
+                            value={formik.values.end_time}
+                            className="form-input bg-grey w-48"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex w-full justify-between  mt-8">
+                        <label className="block">
+                          <label className="form-label">CLASS</label>
+                          <Field
+                            as="select"
+                            name="company"
+                            value={formik.values.company}
+                            onChange={async (e: any) => {
+                              const selectedCompanyName = e.target.value;
+                              handleCompanyChange(selectedCompanyName);
+                              console.log(
+                                "selectedCompanyName",
+                                selectedCompanyName
+                              );
+
+                              // Disable the submit button and reset the fetched flag
+                              setCompanyDetailsFetched(false);
+                              // Find the selected company's vehicles and set them
+                              const selectedCompanyDetails = companies.find(
+                                (company) =>
+                                  company.name === selectedCompanyName
+                              );
+                              setSelectedCompanyVehicles(
+                                selectedCompanyDetails
+                                  ? selectedCompanyDetails.vehicle
+                                  : []
+                              );
+                              // Enable the submit button and set the fetched flag
+                              setCompanyDetailsFetched(true);
+                              console.log(selectedCompanyDetails);
+                              formik.setFieldValue(
+                                "company",
+                                selectedCompanyName
+                              );
+                            }}
+                            className="form-input bg-grey w-48"
+                          >
+                            <option value="">Select Class</option>
+                            {companies.map((company, index) => (
+                              <option key={index} value={company.name}>
+                                {company.name}
+                              </option>
+                            ))}
+                          </Field>
+                          <ErrorMessage
+                            name="company"
+                            component="div"
+                            className="error text-sm text-red-500 "
+                          />
+                        </label>
+                        <label className="block">
+                          <label className="form-label">CLIENT</label>
+                          <Field
+                            as="select"
+                            name="client"
+                            value={formik.values.client}
+                            className="form-input bg-grey w-48"
+                          >
+                            <option value="">Select Client</option>
+                            {fetchedClients.map((client, index) => (
+                              <option key={index} value={client.name}>
+                                {client.name}
+                              </option>
+                            ))}
+                          </Field>
+                          <ErrorMessage
+                            name="client"
+                            component="div"
+                            className="error text-red-500 "
+                          />
+                        </label>
+                      </div>
+                      <div className="mt-8 flex w-full justify-between">
+                        <label className="block">
+                          <label className="form-label">SELECT DRIVER</label>
+                          <Field
+                            as="select"
+                            name="requested_by"
+                            value={formik.values.requested_by}
+                            className="form-input bg-grey w-48"
+                          >
+                            <option value="">Select Driver</option>
+                            {drivers.map((driver, index) => (
+                              <option key={index} value={driver.name}>
+                                {driver.name}
+                                {/* Display additional driver details */}
+                              </option>
+                            ))}
+                          </Field>
+                          <ErrorMessage
+                            name="company"
+                            component="div"
+                            className="error text-sm text-red-500 "
+                          />
+                        </label>
+                        <label className="block">
+                          <label className="form-label">VEHICLE</label>
+                          <Field
+                            as="select"
+                            name="vehicle"
+                            value={formik.values.vehicle}
+                            className="form-input bg-grey w-48"
+                          >
+                            <option value="">Select Vehicle</option>
+                            {selectedCompanyVehicles.map((vehicle, index) => (
+                              <option key={index} value={vehicle}>
+                                {vehicle}
+                              </option>
+                            ))}
+                          </Field>
+                          <ErrorMessage
+                            name="vehicle"
+                            component="div"
+                            className="error text-sm text-red-500 "
+                          />
+                        </label>
+                      </div>
+                      <div className="mt-8 flex w-full justify-between">
+                        <label className="block">
+                          <label className="form-label">DEAL VALUE</label>
+                          <Field
+                            type="number"
+                            name="dealValue"
+                            value={formik.values.dealValue}
+                            placeholder="Ksh"
+                            className="form-input bg-grey w-48"
+                          />
+                          <ErrorMessage
+                            name="dealValue"
+                            component="div"
+                            className="error text-sm text-red-500 "
+                          />
+                        </label>
+                        <label className="block">
+                          <label className="form-label">FUEL</label>
+                          <Field
+                            type="number"
+                            name="fuel"
+                            value={formik.values.fuel}
+                            placeholder="Ksh"
+                            className="form-input bg-grey w-48"
+                          />
+                          <ErrorMessage
+                            name="fuel"
+                            component="div"
+                            className="error text-sm text-red-500 "
+                          />
+                        </label>
+                      </div>
+                      <div className="mt-8 flex w-full justify-between">
+                        <label className="block">
+                          <label className="form-label">MILEAGE FEE</label>
+                          <Field
+                            type="number"
+                            name="mileage_fee"
+                            value={formik.values.mileage_fee}
+                            placeholder="Ksh"
+                            className="form-input bg-grey w-48"
+                          />
+                          <ErrorMessage
+                            name="mileage_fee"
+                            component="div"
+                            className="error text-sm text-red-500 "
+                          />
+                        </label>
+
+                        <label className="block">
+                          <label className="form-label">DISTANCE</label>
+                          <Field
+                            type="text"
+                            name="distance"
+                            disabled
+                            value={distance}
+                            className="form-input bg-grey w-48"
+                          />
+                          <ErrorMessage
+                            name="distance"
+                            component="div"
+                            className="error text-sm text-red-500 "
+                          />
+                        </label>
+                      </div>
+                      <div className="mt-8 flex w-full justify-between">
+                        <label className="block">
+                          <label className="form-label">OWNERSHIP STATUS</label>
+
+                          <Field
+                            as="select"
+                            type="text"
+                            name="payment_status"
+                            className="form-input bg-grey w-48"
+                          >
+                            <option>Selecet Payment Status</option>
+                            <option value="Paid">Paid</option>
+                            <option value="Partially Paid">
+                              Partially Paid
+                            </option>
+                            <option value="Not Paid">Not Paid</option>
+                          </Field>
+                          <ErrorMessage
+                            name="payment_status"
+                            component="div"
+                            className="error text-sm text-red-500 "
+                          />
+                          {formik.values.payment_status ===
+                            "Partially Paid" && (
+                            <div className="mt-8">
+                              <label className="block">
+                                <label className="form-label">
+                                  PAID AMOUNT
+                                </label>
+                                <Field
+                                  type="number"
+                                  name="paid_amount"
+                                  placeholder="Ksh"
+                                  className="form-input bg-grey w-48"
+                                />
+                              </label>
                             </div>
                           )}
-                        </PlacesAutocomplete>
-                        <ErrorMessage
-                          name="pick_up_location"
-                          component="div"
-                          className="error text-sm text-red-500 "
-                        />
+                        </label>
+                        <label className="block">
+                          <label className="form-label">REMAINING AMOUNT</label>
+                          <Field
+                            type="text"
+                            disabled
+                            name="remaining_amount"
+                            value={formik.values.remaining_amount}
+                            className="form-input bg-grey w-48"
+                          />
+                          <ErrorMessage
+                            name="cargo_type"
+                            component="div"
+                            className="error text-sm text-red-500 "
+                          />
+                        </label>
                       </div>
-
-                      {/* DROP OFF LOCATION with Autocomplete */}
-                      <div className="block">
-                        <label className="form-label">DROP OFF LOCATION</label>
-                        <PlacesAutocomplete
-                          value={formik.values.drop_off_location}
-                          onChange={(address) =>
-                            formik.setFieldValue("drop_off_location", address)
-                          }
-                        >
-                          {({
-                            getInputProps,
-                            suggestions,
-                            getSuggestionItemProps,
-                            loading,
-                          }) => (
-                            <div>
+                      <div className="flex w-full justify-between mt-8">
+                        <label className="block">
+                          <label className="form-label">T1 FORM</label>
+                          <Field name="t1_form">
+                            {({ field, form }: any) => (
                               <input
-                                {...getInputProps({
-                                  className: "form-input bg-grey w-48",
-                                  placeholder: "Enter Drop Off Location",
-                                })}
+                                type="file"
+                                onChange={(event) => {
+                                  const file = event.currentTarget?.files?.[0];
+                                  if (file) {
+                                    form.setFieldValue("t1_form", file);
+                                  }
+                                }}
                               />
-                              {loading && <div>Loading...</div>}
-                              {suggestions.map((suggestion, index) => (
-                                <div
-                                  {...getSuggestionItemProps(suggestion)}
-                                  key={index}
-                                >
-                                  {suggestion.description}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </PlacesAutocomplete>
-                        <ErrorMessage
-                          name="drop_off_location"
-                          component="div"
-                          className="error text-sm text-red-500 "
-                        />
-                      </div>
-                    </div>
-                    {/* START TIME and END TIME */}
-                    <div className="flex w-full justify-between mt-8">
-                      <div className="block">
-                        <label className="form-label">START TIME</label>
-                        <Field
-                          type="date"
-                          value={formik.values.start_time}
-                          name="start_time"
-                          className="form-input bg-grey w-48"
-                        />
-                        <ErrorMessage
-                          name="start_time"
-                          component="div"
-                          className="error text-sm text-red-500 "
-                        />
-                      </div>
-                      <div className="block">
-                        <label className="form-label">END TIME</label>
-                        <Field
-                          disabled
-                          type="date"
-                          name="end_time"
-                          value={formik.values.end_time}
-                          className="form-input bg-grey w-48"
-                        />
-                        {/* <ErrorMessage
-                        name="end_time"
-                        component="div"
-                        className="error text-red-500 "
-                      /> */}
-                      </div>
-                    </div>
+                            )}
+                          </Field>
+                        </label>
 
-                    <div className="flex w-full justify-between  mt-8">
-                      <label className="block">
-                        <label className="form-label">CLASS</label>
-                        <Field
-                          as="select"
-                          name="company"
-                          value={formik.values.company}
-                          onChange={async (e: any) => {
-                            const selectedCompanyName = e.target.value;
-                            handleCompanyChange(selectedCompanyName);
-                            console.log(
-                              "selectedCompanyName",
-                              selectedCompanyName
-                            );
+                        <label className="block">
+                          <label className="form-label">
+                            Excess Weight Fee Documentation
+                          </label>
+                          <Field name="excess_weight_fee">
+                            {({ field, form }: any) => (
+                              <input
+                                type="file"
+                                onChange={(event) => {
+                                  const file = event.currentTarget?.files?.[0];
+                                  if (file) {
+                                    form.setFieldValue(
+                                      "excess_weight_fee",
+                                      file
+                                    );
+                                  }
+                                }}
+                              />
+                            )}
+                          </Field>
+                        </label>
+                      </div>
+                      <div className="flex w-full justify-between mt-8">
+                        <label className="block">
+                          <label className="form-label">
+                            INTERCHANGE DOCUMENTS
+                          </label>
+                          <Field name="interchange_documents">
+                            {({ field, form }: any) => (
+                              <input
+                                type="file"
+                                onChange={(event) => {
+                                  const file = event.currentTarget?.files?.[0];
+                                  if (file) {
+                                    form.setFieldValue(
+                                      "interchange_documents",
+                                      file
+                                    );
+                                  }
+                                }}
+                              />
+                            )}
+                          </Field>
+                        </label>
+                      </div>
 
-                            // Disable the submit button and reset the fetched flag
-                            setCompanyDetailsFetched(false);
-                            // Find the selected company's vehicles and set them
-                            const selectedCompanyDetails = companies.find(
-                              (company) => company.name === selectedCompanyName
-                            );
-                            setSelectedCompanyVehicles(
-                              selectedCompanyDetails
-                                ? selectedCompanyDetails.vehicle
-                                : []
-                            );
-                            // Enable the submit button and set the fetched flag
-                            setCompanyDetailsFetched(true);
-                            console.log(selectedCompanyDetails);
-                            formik.setFieldValue(
-                              "company",
-                              selectedCompanyName
-                            );
-                          }}
-                          className="form-input bg-grey w-48"
-                        >
-                          <option value="">Select Class</option>
-                          {companies.map((company, index) => (
-                            <option key={index} value={company.name}>
-                              {company.name}
-                            </option>
-                          ))}
-                        </Field>
-                        <ErrorMessage
-                          name="company"
-                          component="div"
-                          className="error text-sm text-red-500 "
-                        />
-                      </label>
-                      <label className="block">
-                        <label className="form-label">CLIENT</label>
-                        <Field
-                          as="select"
-                          name="client"
-                          value={formik.values.client}
-                          className="form-input bg-grey w-48"
-                        >
-                          <option value="">Select Client</option>
-                          {fetchedClients.map((client, index) => (
-                            <option key={index} value={client.name}>
-                              {client.name}
-                            </option>
-                          ))}
-                        </Field>
-                        <ErrorMessage
-                          name="client"
-                          component="div"
-                          className="error text-red-500 "
-                        />
-                      </label>
-                    </div>
-                    <div className="mt-8 flex w-full justify-between">
-                      <label className="block">
-                        <label className="form-label">SELECT DRIVER</label>
-                        <Field
-                          as="select"
-                          name="requested_by"
-                          value={formik.values.requested_by}
-                          className="form-input bg-grey w-48"
-                        >
-                          <option value="">Select Driver</option>
-                          {drivers.map((driver, index) => (
-                            <option key={index} value={driver.name}>
-                              {driver.name}
-                              {/* Display additional driver details */}
-                            </option>
-                          ))}
-                        </Field>
-                        <ErrorMessage
-                          name="company"
-                          component="div"
-                          className="error text-sm text-red-500 "
-                        />
-                      </label>
-                      <label className="block">
-                        <label className="form-label">VEHICLE</label>
-                        <Field
-                          as="select"
-                          name="vehicle"
-                          value={formik.values.vehicle}
-                          className="form-input bg-grey w-48"
-                        >
-                          <option value="">Select Vehicle</option>
-                          {selectedCompanyVehicles.map((vehicle, index) => (
-                            <option key={index} value={vehicle}>
-                              {vehicle}
-                            </option>
-                          ))}
-                        </Field>
-                        <ErrorMessage
-                          name="vehicle"
-                          component="div"
-                          className="error text-sm text-red-500 "
-                        />
-                      </label>
-                    </div>
-                    <div className="mt-8 flex w-full justify-between">
-                      <label className="block">
-                        <label className="form-label">DEAL VALUE</label>
-                        <Field
-                          type="number"
-                          name="dealValue"
-                          value={formik.values.dealValue}
-                          placeholder="Ksh"
-                          className="form-input bg-grey w-48"
-                        />
-                        <ErrorMessage
-                          name="dealValue"
-                          component="div"
-                          className="error text-sm text-red-500 "
-                        />
-                      </label>
-                      <label className="block">
-                        <label className="form-label">FUEL</label>
-                        <Field
-                          type="number"
-                          name="fuel"
-                          value={formik.values.fuel}
-                          placeholder="Ksh"
-                          className="form-input bg-grey w-48"
-                        />
-                        <ErrorMessage
-                          name="fuel"
-                          component="div"
-                          className="error text-sm text-red-500 "
-                        />
-                      </label>
-                    </div>
-                    <div className="mt-8 flex w-full justify-between">
-                      <label className="block">
-                        <label className="form-label">MILEAGE FEE</label>
-                        <Field
-                          type="number"
-                          name="mileage_fee"
-                          value={formik.values.mileage_fee}
-                          placeholder="Ksh"
-                          className="form-input bg-grey w-48"
-                        />
-                        <ErrorMessage
-                          name="mileage_fee"
-                          component="div"
-                          className="error text-sm text-red-500 "
-                        />
-                      </label>
-
-                      <label className="block">
-                        <label className="form-label">DISTANCE</label>
-                        <Field
-                          type="text"
-                          name="distance"
-                          disabled
-                          value={distance}
-                          className="form-input bg-grey w-48"
-                        />
-                        <ErrorMessage
-                          name="distance"
-                          component="div"
-                          className="error text-sm text-red-500 "
-                        />
-                      </label>
-                    </div>
-                    <p className="mt-5 font-semibold"> CARGO</p>
-                    <div className="flex w-full justify-between">
+                      <p className="mt-5 font-semibold"> CARGO</p>
+                      <div className="flex w-full justify-between">
+                        <label className="block mt-8">
+                          <label className="form-label">CARGO TYPE</label>
+                          <Field
+                            as="select"
+                            name="cargo_type"
+                            value={formik.values.cargo_type}
+                            className="form-input bg-grey w-48"
+                          >
+                            <option value="">Select Cargo Type</option>
+                            {cargos.map((cargo, index) => (
+                              <option key={index} value={cargo}>
+                                {cargo}
+                              </option>
+                            ))}
+                          </Field>
+                          <ErrorMessage
+                            name="cargo_type"
+                            component="div"
+                            className="error text-sm text-red-500 "
+                          />
+                        </label>
+                        <label className="block mt-8">
+                          <label className="form-label">CONTAINER NUMBER</label>
+                          <Field
+                            type="text"
+                            name="cargo_quantity"
+                            value={formik.values.cargo_quantity}
+                            className="form-input bg-grey w-48"
+                          />
+                          <ErrorMessage
+                            name="cargo_quantity"
+                            component="div"
+                            className="error text-sm text-red-500 "
+                          />
+                        </label>
+                      </div>
                       <label className="block mt-8">
-                        <label className="form-label">CARGO TYPE</label>
+                        <label className="form-label">MEMO</label>
                         <Field
                           type="text"
-                          name="cargo_type"
-                          value={formik.values.cargo_type}
-                          className="form-input bg-grey w-48"
-                        />
-                        <ErrorMessage
-                          name="cargo_type"
-                          component="div"
-                          className="error text-sm text-red-500 "
+                          name="memo"
+                          value={formik.values.memo}
+                          className="form-input bg-grey w-96 h-20"
+                          placeholder="Optional"
                         />
                       </label>
-                      <label className="block mt-8">
-                        <label className="form-label">CONTAINER NUMBER</label>
-                        <Field
-                          type="text"
-                          name="cargo_quantity"
-                          value={formik.values.cargo_quantity}
-                          className="form-input bg-grey w-48"
-                        />
-                        <ErrorMessage
-                          name="cargo_quantity"
-                          component="div"
-                          className="error text-sm text-red-500 "
-                        />
-                      </label>
+                      <div className="flex w-full justify-end mt-24 ">
+                        <Button
+                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
+                          handleClick={handleReset}
+                        >
+                          Reset
+                        </Button>
+                        <button
+                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
+                          type="submit"
+                        >
+                          Save
+                        </button>
+                      </div>
                     </div>
-                    <label className="block mt-8">
-                      <label className="form-label">MEMO</label>
-                      <Field
-                        type="text"
-                        name="memo"
-                        value={formik.values.memo}
-                        className="form-input bg-grey w-96 h-20"
-                        placeholder="Optional"
-                      />
-                    </label>
-                    <div className="flex w-full justify-end mt-24 ">
-                      <Button
-                        className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
-                        handleClick={handleReset}
-                      >
-                        Reset
-                      </Button>
-                      <button
-                        className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
-                        type="submit"
-                      >
-                        Save
-                      </button>
-                    </div>
-                  </div>
-                </Form>
-              )}
+                  </Form>
+                );
+              }}
             </Formik>
           </div>
         </FormModal>
@@ -1513,7 +1759,7 @@ export default function TripsComponent() {
 
       {editModalOpen && selectedTrip && (
         <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
-          <div>
+          <div className="p-8">
             <div className="flex w-full h-full justify-between items-center mb-12">
               <div className="text-xl font-semibold ">Edit trip Details</div>
               <Button
@@ -1640,6 +1886,161 @@ export default function TripsComponent() {
                           value={values.distance}
                           className="form-input bg-grey w-48"
                         />
+                      </label>
+                    </div>
+                    <div className="mt-8 flex w-full justify-between">
+                      <label className="block">
+                        <label className="form-label">OWNERSHIP STATUS</label>
+
+                        <Field
+                          disabled
+                          as="select"
+                          type="text"
+                          name="payment_status"
+                          className="form-input bg-grey w-48"
+                        >
+                          <option>Selecet Payment Status</option>
+                          <option value="Paid">Paid</option>
+                          <option value="Partially Paid">Partially Paid</option>
+                          <option value="Not Paid">Not Paid</option>
+                        </Field>
+
+                        {values.payment_status === "Partially Paid" && (
+                          <div className="mt-8">
+                            <label className="block">
+                              <label className="form-label">PAID AMOUNT</label>
+                              <Field
+                                type="number"
+                                name="paid_amount"
+                                placeholder="Ksh"
+                                className="form-input bg-grey w-48"
+                              />
+                            </label>
+                          </div>
+                        )}
+                      </label>
+                      <label className="block">
+                        <label className="form-label">REMAINING AMOUNT</label>
+                        <Field
+                          type="text"
+                          disabled
+                          name="remaining_amount"
+                          value={values.remaining_amount}
+                          className="form-input bg-grey w-48"
+                        />
+                      </label>
+                    </div>
+
+                    <div className="mt-8 flex w-full justify-between">
+                      <label className="block">
+                        <label className="form-label">T1 FORM</label>
+                        <div className="">
+                          <Field name="t1_form" disabled>
+                            {({ field, form }: any) => (
+                              <input
+                                type="file"
+                                disabled
+                                onChange={(event) => {
+                                  const file = event.currentTarget?.files?.[0];
+                                  if (file) {
+                                    form.setFieldValue("t1_form", file);
+                                  }
+                                }}
+                              />
+                            )}
+                          </Field>
+                          {values.t1_form &&
+                          typeof values.t1_form === "string" ? (
+                            <div className="mt-5">
+                              <a
+                                href={values.t1_form}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 underline"
+                              >
+                                View T1 Form
+                              </a>
+                            </div>
+                          ) : null}
+                        </div>
+                      </label>
+
+                      <label className="block">
+                        <label className="form-label">
+                          EXCESS WEIGHT FEE DOCUMENT
+                        </label>
+                        <div className="">
+                          <Field name="excess_weight_fee" disabled>
+                            {({ field, form }: any) => (
+                              <input
+                                type="file"
+                                disabled
+                                onChange={(event) => {
+                                  const file = event.currentTarget?.files?.[0];
+                                  if (file) {
+                                    form.setFieldValue(
+                                      "excess_weight_fee",
+                                      file
+                                    );
+                                  }
+                                }}
+                              />
+                            )}
+                          </Field>
+                          {values.excess_weight_fee &&
+                          typeof values.excess_weight_fee === "string" ? (
+                            <div className="mt-5">
+                              <a
+                                href={values.excess_weight_fee}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 underline"
+                              >
+                                View Excess Weight Fee Document
+                              </a>
+                            </div>
+                          ) : null}
+                        </div>
+                      </label>
+                    </div>
+
+                    <div className="mt-8 flex w-full justify-between">
+                      <label className="block">
+                        <label className="form-label">
+                          INTERCHANGE DOCUMENT
+                        </label>
+                        <div className="">
+                          <Field name="interchange_documents" disabled>
+                            {({ field, form }: any) => (
+                              <input
+                                type="file"
+                                disabled
+                                onChange={(event) => {
+                                  const file = event.currentTarget?.files?.[0];
+                                  if (file) {
+                                    form.setFieldValue(
+                                      "interchange_documents",
+                                      file
+                                    );
+                                  }
+                                }}
+                              />
+                            )}
+                          </Field>
+                          {values.interchange_documents &&
+                          typeof values.interchange_documents === "string" ? (
+                            <div className="mt-5">
+                              <a
+                                href={values.interchange_documents}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 underline"
+                              >
+                                View Interchange Document
+                              </a>
+                            </div>
+                          ) : null}
+                        </div>
                       </label>
                     </div>
 

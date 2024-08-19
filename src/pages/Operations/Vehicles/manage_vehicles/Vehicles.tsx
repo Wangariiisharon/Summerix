@@ -1057,7 +1057,7 @@ export default function Vehicles({
 
           {editModalOpen && selectedVehicle && (
             <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
-              <div>
+              <div className="p-8">
                 <div className="flex w-full h-full justify-between items-center mb-12">
                   <div className="text-xl font-semibold ">
                     Edit Truck Details
@@ -1213,36 +1213,8 @@ export default function Vehicles({
                               </div>
                             ) : null}
                           </label>
-                          {/* <label className="block">
-                            <label className="form-label">
-                              TRUCK INSURANCE
-                            </label>
-                            <Field name="truck_incurance">
-                              {({ field, form }: any) => (
-                                <input
-                                  type="file"
-                                  onChange={(event) => {
-                                    const file =
-                                      event.currentTarget?.files?.[0];
-                                    if (file) {
-                                      form.setFieldValue(
-                                        "truck_incurance",
-                                        file
-                                      );
-                                    }
-                                  }}
-                                />
-                              )}
-                            </Field>
-                            {errors.truck_incurance &&
-                            touched.truck_incurance ? (
-                              <div className="text-red-600 text-sm">
-                                {errors.truck_incurance}
-                              </div>
-                            ) : null}
-                          </label> */}
 
-                          <label className="block ml-24">
+                          <label className="block ml-20">
                             <label className="form-label">
                               TRUCK INSURANCE
                             </label>
@@ -1288,35 +1260,6 @@ export default function Vehicles({
                         </div>
 
                         <div className="flex w-full justify-between mt-8">
-                          {/* <label className="block ml-6">
-                            <label className="form-label">
-                              CARGO INSURANCE
-                            </label>
-                            <Field name="cargo_insurance">
-                              {({ field, form }: any) => (
-                                <input
-                                  type="file"
-                                  onChange={(event) => {
-                                    const file =
-                                      event.currentTarget?.files?.[0];
-                                    if (file) {
-                                      form.setFieldValue(
-                                        "cargo_insurance",
-                                        file
-                                      );
-                                    }
-                                  }}
-                                />
-                              )}
-                            </Field>
-                            {errors.cargo_insurance &&
-                            touched.cargo_insurance ? (
-                              <div className="text-red-600 text-sm">
-                                {errors.cargo_insurance}
-                              </div>
-                            ) : null}
-                          </label> */}
-
                           <label className="block">
                             <label className="form-label">
                               CARGO INSURANCE
@@ -1388,7 +1331,7 @@ export default function Vehicles({
                             ) : null}
                           </label> */}
 
-                          <label className="block ml-24">
+                          <label className="block">
                             <label className="form-label">PORT PERMITS</label>
                             <div className="">
                               <Field name="port_entry_permits">
@@ -1504,7 +1447,7 @@ export default function Vehicles({
                             ) : null}
                           </label>
 
-                          <label className="block ml-20">
+                          <label className="block">
                             <label className="form-label">
                               INSPECTION CERTIFICATES
                             </label>

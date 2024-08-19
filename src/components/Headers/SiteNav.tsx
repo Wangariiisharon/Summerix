@@ -106,7 +106,7 @@ export default function SiteNav({ children }: Props) {
       },
       {
         name: "Report",
-        href: "/Clients",
+        href: "/Reports",
         icon: FaFileAlt,
         visible: true,
       },
@@ -238,7 +238,7 @@ export default function SiteNav({ children }: Props) {
                       >
                         <MenuItems
                           anchor="bottom end"
-                          className="py-3 px-1 w-fit min-w-52 origin-top-right rounded-b border border-white/5 bg-[#065AD8] text-white focus:outline-none"
+                          className="py-3 px-1 w-fit min-w-52 origin-top-right rounded-b border border-white/5 bg-[#065AD8]  text-white focus:outline-none"
                         >
                           <MenuItem>
                             <div className="px-3 flex items-center gap-3 text-sm">
@@ -259,13 +259,14 @@ export default function SiteNav({ children }: Props) {
                               onClick={async () => {
                                 try {
                                   await auth.signOut();
+                                  router.push("/signin");
                                 } catch (error) {
                                   console.error("On logout error:", error);
                                 }
                               }}
-                              className="py-2 px-4 w-full border border-red-500 text-red-500 font-bold rounded"
+                              className="py-2 px-4 w-full border border-[#4FD1C5] text-red-500  bg-white font-bold rounded"
                             >
-                              <div className="flex items-center justify-center gap-2">
+                              <div className="flex items-center justify-center gap-2 bg-white">
                                 <ArrowLeftOnRectangleIcon className="h-5 w-5" />
                                 <span>Log Out</span>
                               </div>
