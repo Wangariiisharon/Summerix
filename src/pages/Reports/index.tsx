@@ -287,6 +287,7 @@ export default function Reports() {
                   type="checkbox"
                   className="form-checkbox text-sm h-5 w-5 rounded-md"
                   checked={showProfitLoss}
+                  onChange={handleProfitLossChange}
                 />
                 <p className="text-sm ml-2 font-semibold">Revenue</p>
               </div>
@@ -295,6 +296,7 @@ export default function Reports() {
                   type="checkbox"
                   className="form-checkbox text-sm h-5 w-5 rounded-md"
                   checked={showProfitLoss}
+                  onChange={handleProfitLossChange}
                 />
                 <p className="text-sm ml-2 font-semibold">Expenses</p>
               </div>
