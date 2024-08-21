@@ -12,6 +12,7 @@ import SiteLayout from "@/Layout/SiteLayout";
 import SearchBar from "@/components/Forms/input";
 import Image from "next/image";
 import { saveAs } from "file-saver";
+import DatePicker from "react-datepicker"; // Assuming you have react-datepicker installed
 
 interface TripData {
   id: string;
@@ -46,8 +47,8 @@ export default function Reports() {
   const [totalPaidAmount, setTotalPaidAmount] = useState<number>(0);
   const [expensesAmount, setExpensesAmount] = useState<number>(0);
 
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showProfitLoss, setShowProfitLoss] = useState(false);
 
   const handleProfitLossChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,10 +57,33 @@ export default function Reports() {
   const handleProfitLossCancel = () => {
     setShowProfitLoss(false);
   };
+  const currentYear = new Date().getFullYear();
+  const years = Array.from(new Array(20), (val, index) => currentYear - index);
 
   useEffect(() => {
     if (!organisationId) {
       return;
+    }
+    // let startDate, endDate;
+
+    // if (selectedDate) {
+    //   startDate = new Date(selectedYear, selectedDate.getMonth(), 1); // First day of the selected month
+    //   endDate = selectedDate; // Selected date
+    // } else {
+    //   const now = new Date();
+    //   startDate = new Date(now.getFullYear(), now.getMonth(), 1); // First day of the current month
+    //   endDate = new Date(); // Current date
+    // }
+    let startDate: Date, endDate: Date;
+
+    if (selectedDate) {
+      // If a date is selected, use the selected year and date for startDate and endDate
+      startDate = new Date(selectedYear, selectedDate.getMonth(), 1); // First day of the selected month
+      endDate = selectedDate; // Selected date
+    } else {
+      // If no date is selected, fetch the data for the entire selected month
+      startDate = new Date(selectedYear, new Date().getMonth(), 1); // First day of the current month in the selected year
+      endDate = new Date(selectedYear, new Date().getMonth() + 1, 0); // Last day of the current month in the selected year
     }
     const fetchTripsAndMaintenance = async () => {
       setLoading(true);
@@ -68,11 +92,17 @@ export default function Reports() {
         // Define queries
         const tripsQuery = query(
           collection(fbDb, "trips"),
-          where("organisationId", "==", organisationId)
+          where("organisationId", "==", organisationId),
+          where("timestamp", ">=", startDate),
+          where("timestamp", "<=", endDate)
         );
         const maintenanceQuery = query(
           collection(fbDb, "maintenance"),
-          where("organisationId", "==", organisationId)
+          where("organisationId", "==", organisationId),
+          // where("timestamp", ">=", startDate),
+          // where("timestamp", "<=", endDate)
+          where("timestamp", ">=", startDate),
+          where("timestamp", "<=", endDate)
         );
         // Fetch trips data
         const tripsSnapshot = await getDocs(tripsQuery);
@@ -119,7 +149,9 @@ export default function Reports() {
       try {
         const tripsQuery = query(
           collection(fbDb, "trips"),
-          where("organisationId", "==", organisationId)
+          where("organisationId", "==", organisationId),
+          where("timestamp", ">=", startDate),
+          where("timestamp", "<=", endDate)
         );
         const tripsSnapshot = await getDocs(tripsQuery);
         const vehiclePaidAmountMap: { [key: string]: number } = {};
@@ -147,7 +179,7 @@ export default function Reports() {
     };
     fetchTotalPaidAmountByVehicle();
     fetchTripsAndMaintenance();
-  }, [organisationId]);
+  }, [organisationId, selectedYear, selectedDate]);
 
   const exportToCSV = () => {
     const headers = [
@@ -173,28 +205,14 @@ export default function Reports() {
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     saveAs(blob, "profit_and_loss_report.csv");
   };
-  // const handleDateChange = (date: Date | null) => {
-  //   if (date) {
-  //     const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-  //     setStartDate(firstDayOfMonth);
-  //     setEndDate(date);
-  //   } else {
-  //     // Set default date range to current month
-  //     const currentDate = new Date();
-  //     const firstDayOfCurrentMonth = new Date(
-  //       currentDate.getFullYear(),
-  //       currentDate.getMonth(),
-  //       1
-  //     );
-  //     const lastDayOfCurrentMonth = new Date(
-  //       currentDate.getFullYear(),
-  //       currentDate.getMonth() + 1,
-  //       0
-  //     );
-  //     setStartDate(firstDayOfCurrentMonth);
-  //     setEndDate(lastDayOfCurrentMonth);
-  //   }
-  // };
+  const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedYear(parseInt(event.target.value, 10));
+    setSelectedDate(null); // Reset the selected date when the year changes
+  };
+
+  const handleDateChange = (date: any) => {
+    setSelectedDate(date);
+  };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {};
   return (
@@ -214,49 +232,26 @@ export default function Reports() {
               className="h-6"
             />
           </div>
-          <div className="flex space-x-2 ml-[300px]">
-            <button
-              className="flex items-center px-4 border border-blue-500 text-blue-500 rounded-lg"
-              onClick={() =>
-                setStartDate(new Date(new Date().getFullYear(), 0, 1))
-              }
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                className="w-5 h-5 mr-2"
+          <div className="flex space-x-2 ml-[300px] items-center">
+            <div className="">
+              <select
+                onChange={handleYearChange}
+                value={selectedYear}
+                className="flex items-center border border-blue-500 text-blue-500 rounded-lg"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8 7V3m8 4V3m-9 4h10M4 11h16M4 15h16m-7 4h3m-10 0h3m2-4h4m-8 0h4"
-                />
-              </svg>
-              Select Year
-            </button>
-            <button
-              className="flex items-center px-4 border border-blue-500 text-blue-500 rounded-lg"
-              // onChange={(e) => handleDateChange(new Date(e.target.value))}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                className="w-5 h-5 mr-2"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8 7V3m8 4V3m-9 4h10M4 11h16M4 15h16m-7 4h3m-10 0h3m2-4h4m-8 0h4"
-                />
-              </svg>
-              Select Date
-            </button>
+                {years.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <input
+              type="date"
+              onChange={(e) => handleDateChange(new Date(e.target.value))}
+              className="flex items-center border border-blue-500 text-blue-500 rounded-lg"
+            />
           </div>
         </div>
         <div className="ml-6 mr-24 mt-6 bg-white rounded-lg shadow-md">
