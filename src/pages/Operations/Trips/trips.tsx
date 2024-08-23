@@ -1056,13 +1056,6 @@ export default function TripsComponent() {
     userClaims?.admin ||
     departmentData?.permissions?.includes("Edit Trip");
 
-  const handlePaidAmountChange = (e: any, setFieldValue: any, values: any) => {
-    const paidAmount = parseFloat(e.target.value) || 0;
-    const remainingAmount = values.dealValue - paidAmount;
-    setFieldValue("paid_amount", paidAmount);
-    setFieldValue("remaining_amount", remainingAmount);
-  };
-
   return (
     <div>
       <p className="text-lg font-nunito font-bold mt-2 ml-10 mb-2">Trips</p>
@@ -1809,371 +1802,398 @@ export default function TripsComponent() {
 
             <Formik
               initialValues={editFormInitialValues}
-              onSubmit={handleEditSubmit}
+              // onSubmit={handleEditSubmit}
+              validationSchema={validationSchema}
+              onSubmit={(values, { setSubmitting }) => {
+                handleEditSubmit(values);
+                setSubmitting(false);
+                setOpen(false);
+                handleEditModalClose(); // Close the modal after submitting
+              }}
             >
-              {({ values, setFieldValue }) => (
-                <Form>
-                  <div className="">
-                    <div className="flex w-full justify-between">
-                      <label className="block">
-                        <label className="form-label">PICK UP LOCATION</label>
-                        <Field
-                          disabled
-                          type="text"
-                          name="pick_up_location"
-                          value={values.pick_up_location}
-                          className="form-input bg-grey w-48"
-                        />
-                      </label>
-                      <label className="block">
-                        <label className="form-label">DROP OFF LOCATION</label>
-                        <Field
-                          disabled
-                          type="text"
-                          name="drop_off_location"
-                          value={values.drop_off_location}
-                          className="form-input bg-grey w-48"
-                        />
-                      </label>
-                    </div>
-                    <div className="flex w-full justify-between mt-8">
-                      <label className="block">
-                        <label className="form-label">START TIME</label>
-                        <Field
-                          disabled
-                          type="date"
-                          name="start_time"
-                          value={values.start_time}
-                          className="form-input bg-grey w-48"
-                        />
-                      </label>
-                      <label className="block">
-                        <label className="form-label">END TIME</label>
-                        <Field
-                          type="date"
-                          name="end_time"
-                          value={values.end_time}
-                          className="form-input bg-grey w-48"
-                        />
-                      </label>
-                    </div>
+              {(formik) => {
+                // Move useEffect outside of Formik render method
+                const calculateEditRemainingAmount = (
+                  dealValue: number,
+                  paidAmount: number
+                ) => {
+                  let remainingAmount = dealValue - paidAmount;
+                  formik.setFieldValue("remaining_amount", remainingAmount);
+                  console.log("remainingAmount", remainingAmount);
+                };
 
-                    <div className="flex w-full justify-between  mt-8">
-                      <label className="block">
-                        <label className="form-label">SELECT DRIVER</label>
-                        <Field
-                          disabled
-                          name="requested_by"
-                          value={values.requested_by.name}
-                          className="form-input bg-grey w-48"
-                        ></Field>
-                      </label>
-                      <label className="block">
-                        <label className="form-label">VEHICLE</label>.
-                        <Field
-                          disabled
-                          name="vehicle"
-                          value={values.vehicle}
-                          className="form-input bg-grey w-48"
-                        ></Field>
-                      </label>
-                    </div>
-                    <div className="mt-8 flex w-full justify-between">
-                      <label className="block">
-                        <label className="form-label">DEAL VALUE</label>
-                        <Field
-                          disabled
-                          type="number"
-                          name="dealValue"
-                          value={values.dealValue}
-                          placeholder="Ksh"
-                          className="form-input bg-grey w-48"
-                        />
-                      </label>
-                      <label className="block">
-                        <label className="form-label">FUEL</label>
-                        <Field
-                          disabled
-                          type="number"
-                          name="fuel"
-                          value={values.fuel}
-                          placeholder="Ksh"
-                          className="form-input bg-grey w-48"
-                        />
-                      </label>
-                    </div>
-                    <div className="mt-8 flex w-full justify-between">
-                      <label className="block">
-                        <label className="form-label">MILEAGE FEE</label>
-                        <Field
-                          disabled
-                          type="number"
-                          name="mileage_fee"
-                          value={values.mileage_fee}
-                          placeholder="Ksh"
-                          className="form-input bg-grey w-48"
-                        />
-                      </label>
-                      <label className="block">
-                        <label className="form-label">DISTANCE</label>
-                        <Field
-                          disabled
-                          type="text"
-                          name="distance"
-                          value={values.distance}
-                          className="form-input bg-grey w-48"
-                        />
-                      </label>
-                    </div>
-                    <div className="mt-8 flex w-full justify-between">
-                      <label className="block">
-                        <label className="form-label">OWNERSHIP STATUS</label>
+                return (
+                  <Form>
+                    <div className="">
+                      <div className="flex w-full justify-between">
+                        <label className="block">
+                          <label className="form-label">PICK UP LOCATION</label>
+                          <Field
+                            disabled
+                            type="text"
+                            name="pick_up_location"
+                            value={formik.values.pick_up_location}
+                            className="form-input bg-grey w-48"
+                          />
+                        </label>
+                        <label className="block">
+                          <label className="form-label">
+                            DROP OFF LOCATION
+                          </label>
+                          <Field
+                            disabled
+                            type="text"
+                            name="drop_off_location"
+                            value={formik.values.drop_off_location}
+                            className="form-input bg-grey w-48"
+                          />
+                        </label>
+                      </div>
+                      <div className="flex w-full justify-between mt-8">
+                        <label className="block">
+                          <label className="form-label">START TIME</label>
+                          <Field
+                            disabled
+                            type="date"
+                            name="start_time"
+                            value={formik.values.start_time}
+                            className="form-input bg-grey w-48"
+                          />
+                        </label>
+                        <label className="block">
+                          <label className="form-label">END TIME</label>
+                          <Field
+                            type="date"
+                            name="end_time"
+                            value={formik.values.end_time}
+                            className="form-input bg-grey w-48"
+                          />
+                        </label>
+                      </div>
+
+                      <div className="flex w-full justify-between  mt-8">
+                        <label className="block">
+                          <label className="form-label">SELECT DRIVER</label>
+                          <Field
+                            disabled
+                            name="requested_by"
+                            value={formik.values.requested_by.name}
+                            className="form-input bg-grey w-48"
+                          ></Field>
+                        </label>
+                        <label className="block">
+                          <label className="form-label">VEHICLE</label>.
+                          <Field
+                            disabled
+                            name="vehicle"
+                            value={formik.values.vehicle}
+                            className="form-input bg-grey w-48"
+                          ></Field>
+                        </label>
+                      </div>
+                      <div className="mt-8 flex w-full justify-between">
+                        <label className="block">
+                          <label className="form-label">DEAL VALUE</label>
+                          <Field
+                            disabled
+                            type="number"
+                            name="dealValue"
+                            value={formik.values.dealValue}
+                            placeholder="Ksh"
+                            className="form-input bg-grey w-48"
+                          />
+                        </label>
+                        <label className="block">
+                          <label className="form-label">FUEL</label>
+                          <Field
+                            disabled
+                            type="number"
+                            name="fuel"
+                            value={formik.values.fuel}
+                            placeholder="Ksh"
+                            className="form-input bg-grey w-48"
+                          />
+                        </label>
+                      </div>
+                      <div className="mt-8 flex w-full justify-between">
+                        <label className="block">
+                          <label className="form-label">MILEAGE FEE</label>
+                          <Field
+                            disabled
+                            type="number"
+                            name="mileage_fee"
+                            value={formik.values.mileage_fee}
+                            placeholder="Ksh"
+                            className="form-input bg-grey w-48"
+                          />
+                        </label>
+                        <label className="block">
+                          <label className="form-label">DISTANCE</label>
+                          <Field
+                            disabled
+                            type="text"
+                            name="distance"
+                            value={formik.values.distance}
+                            className="form-input bg-grey w-48"
+                          />
+                        </label>
+                      </div>
+                      <div className="mt-8 flex w-full justify-between">
+                        <label className="block">
+                          <label className="form-label">OWNERSHIP STATUS</label>
+
+                          <Field
+                            disabled
+                            as="select"
+                            type="text"
+                            name="payment_status"
+                            className="form-input bg-grey w-48"
+                            value={formik.values.payment_status}
+                          >
+                            <option>Selecet Payment Status</option>
+                            <option value="Paid">Paid</option>
+                            <option value="Partially Paid">
+                              Partially Paid
+                            </option>
+                            <option value="Not Paid">Not Paid</option>
+                          </Field>
+
+                          {formik.values.payment_status ===
+                            "Partially Paid" && (
+                            <div className="mt-8">
+                              <label className="block">
+                                <label className="form-label">
+                                  PAID AMOUNT
+                                </label>
+                                <Field
+                                  type="number"
+                                  name="paid_amount"
+                                  placeholder="Ksh"
+                                  className="form-input bg-grey w-48"
+                                  onChange={(e: any) => {
+                                    const paidAmount = Number(e.target.value);
+                                    formik.setFieldValue(
+                                      "paid_amount",
+                                      paidAmount
+                                    );
+                                    calculateEditRemainingAmount(
+                                      formik.values.dealValue,
+                                      paidAmount
+                                    );
+                                  }}
+                                />
+                              </label>
+                            </div>
+                          )}
+                        </label>
+                        <label className="block">
+                          <label className="form-label">REMAINING AMOUNT</label>
+                          <Field
+                            type="text"
+                            disabled
+                            name="remaining_amount"
+                            value={formik.values.remaining_amount}
+                            className="form-input bg-grey w-48"
+                          />
+                        </label>
+                      </div>
+
+                      <div className="mt-8 flex w-full justify-between">
+                        <label className="block">
+                          <label className="form-label">T1 FORM</label>
+                          <div className="">
+                            <Field name="t1_form" disabled>
+                              {({ field, form }: any) => (
+                                <input
+                                  type="file"
+                                  disabled
+                                  onChange={(event) => {
+                                    const file =
+                                      event.currentTarget?.files?.[0];
+                                    if (file) {
+                                      form.setFieldValue("t1_form", file);
+                                    }
+                                  }}
+                                />
+                              )}
+                            </Field>
+                            {formik.values.t1_form &&
+                            typeof formik.values.t1_form === "string" ? (
+                              <div className="mt-5">
+                                <a
+                                  href={formik.values.t1_form}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 underline"
+                                >
+                                  View T1 Form
+                                </a>
+                              </div>
+                            ) : null}
+                          </div>
+                        </label>
+
+                        <label className="block">
+                          <label className="form-label">
+                            EXCESS WEIGHT FEE DOCUMENT
+                          </label>
+                          <div className="">
+                            <Field name="excess_weight_fee" disabled>
+                              {({ field, form }: any) => (
+                                <input
+                                  type="file"
+                                  disabled
+                                  onChange={(event) => {
+                                    const file =
+                                      event.currentTarget?.files?.[0];
+                                    if (file) {
+                                      form.setFieldValue(
+                                        "excess_weight_fee",
+                                        file
+                                      );
+                                    }
+                                  }}
+                                />
+                              )}
+                            </Field>
+                            {formik.values.excess_weight_fee &&
+                            typeof formik.values.excess_weight_fee ===
+                              "string" ? (
+                              <div className="mt-5">
+                                <a
+                                  href={formik.values.excess_weight_fee}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 underline"
+                                >
+                                  View Excess Weight Fee Document
+                                </a>
+                              </div>
+                            ) : null}
+                          </div>
+                        </label>
+                      </div>
+
+                      <div className="mt-8 flex w-full justify-between">
+                        <label className="block">
+                          <label className="form-label">
+                            INTERCHANGE DOCUMENT
+                          </label>
+                          <div className="">
+                            <Field name="interchange_documents" disabled>
+                              {({ field, form }: any) => (
+                                <input
+                                  type="file"
+                                  disabled
+                                  onChange={(event) => {
+                                    const file =
+                                      event.currentTarget?.files?.[0];
+                                    if (file) {
+                                      form.setFieldValue(
+                                        "interchange_documents",
+                                        file
+                                      );
+                                    }
+                                  }}
+                                />
+                              )}
+                            </Field>
+                            {formik.values.interchange_documents &&
+                            typeof formik.values.interchange_documents ===
+                              "string" ? (
+                              <div className="mt-5">
+                                <a
+                                  href={formik.values.interchange_documents}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 underline"
+                                >
+                                  View Interchange Document
+                                </a>
+                              </div>
+                            ) : null}
+                          </div>
+                        </label>
+                      </div>
+
+                      <p className="mt-5 font-semibold"> Cargo</p>
+                      <div className="flex w-full justify-between">
+                        <label className="block mt-8">
+                          <label className="form-label">Cargo Type</label>
+                          <Field
+                            disabled
+                            type="text"
+                            name="cargo_type"
+                            value={formik.values.cargo_type}
+                            className="form-input bg-grey w-48"
+                          />
+                        </label>
+                        <label className="block mt-8">
+                          <label className="form-label">Cargo Quanitiy</label>
+                          <Field
+                            disabled
+                            type="text"
+                            name="cargo_quantity"
+                            value={formik.values.cargo_quantity}
+                            className="form-input bg-grey w-48"
+                          />
+                        </label>
+                      </div>
+                      <div className="flex w-full justify-between"></div>
+                      <label className="block mt-8">
+                        <label className="form-label">TRIP STATUS</label>
 
                         <Field
-                          disabled
                           as="select"
-                          type="text"
-                          name="payment_status"
+                          name="trip_status"
+                          value={formik.values.trip_status}
                           className="form-input bg-grey w-48"
                         >
-                          <option>Selecet Payment Status</option>
-                          <option value="Paid">Paid</option>
-                          <option value="Partially Paid">Partially Paid</option>
-                          <option value="Not Paid">Not Paid</option>
-                        </Field>
-
-                        {values.payment_status === "Partially Paid" && (
-                          <div className="mt-8">
-                            <label className="block">
-                              <label className="form-label">PAID AMOUNT</label>
-                              <Field
-                                type="number"
-                                name="paid_amount"
-                                placeholder="Ksh"
-                                className="form-input bg-grey w-48"
-                                onChange={(
-                                  event: React.ChangeEvent<HTMLInputElement>
-                                ) => {
-                                  const paidAmount =
-                                    parseFloat(event.target.value) || 0;
-                                  const dealValue =
-                                    parseFloat(values.dealValue as any) || 0; // Treat as any here
-                                  const remainingAmount =
-                                    dealValue - paidAmount;
-
-                                  setFieldValue("paid_amount", paidAmount);
-                                  setFieldValue(
-                                    "remaining_amount",
-                                    remainingAmount
-                                  );
-                                }}
-                              />
-                            </label>
-                          </div>
-                        )}
-                      </label>
-                      <label className="block">
-                        <label className="form-label">REMAINING AMOUNT</label>
-                        <Field
-                          type="text"
-                          disabled
-                          name="remaining_amount"
-                          value={values.remaining_amount}
-                          className="form-input bg-grey w-48"
-                        />
-                      </label>
-                    </div>
-
-                    <div className="mt-8 flex w-full justify-between">
-                      <label className="block">
-                        <label className="form-label">T1 FORM</label>
-                        <div className="">
-                          <Field name="t1_form" disabled>
-                            {({ field, form }: any) => (
-                              <input
-                                type="file"
-                                disabled
-                                onChange={(event) => {
-                                  const file = event.currentTarget?.files?.[0];
-                                  if (file) {
-                                    form.setFieldValue("t1_form", file);
-                                  }
-                                }}
-                              />
-                            )}
-                          </Field>
-                          {values.t1_form &&
-                          typeof values.t1_form === "string" ? (
-                            <div className="mt-5">
-                              <a
-                                href={values.t1_form}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 underline"
-                              >
-                                View T1 Form
-                              </a>
-                            </div>
-                          ) : null}
-                        </div>
-                      </label>
-
-                      <label className="block">
-                        <label className="form-label">
-                          EXCESS WEIGHT FEE DOCUMENT
-                        </label>
-                        <div className="">
-                          <Field name="excess_weight_fee" disabled>
-                            {({ field, form }: any) => (
-                              <input
-                                type="file"
-                                disabled
-                                onChange={(event) => {
-                                  const file = event.currentTarget?.files?.[0];
-                                  if (file) {
-                                    form.setFieldValue(
-                                      "excess_weight_fee",
-                                      file
-                                    );
-                                  }
-                                }}
-                              />
-                            )}
-                          </Field>
-                          {values.excess_weight_fee &&
-                          typeof values.excess_weight_fee === "string" ? (
-                            <div className="mt-5">
-                              <a
-                                href={values.excess_weight_fee}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 underline"
-                              >
-                                View Excess Weight Fee Document
-                              </a>
-                            </div>
-                          ) : null}
-                        </div>
-                      </label>
-                    </div>
-
-                    <div className="mt-8 flex w-full justify-between">
-                      <label className="block">
-                        <label className="form-label">
-                          INTERCHANGE DOCUMENT
-                        </label>
-                        <div className="">
-                          <Field name="interchange_documents" disabled>
-                            {({ field, form }: any) => (
-                              <input
-                                type="file"
-                                disabled
-                                onChange={(event) => {
-                                  const file = event.currentTarget?.files?.[0];
-                                  if (file) {
-                                    form.setFieldValue(
-                                      "interchange_documents",
-                                      file
-                                    );
-                                  }
-                                }}
-                              />
-                            )}
-                          </Field>
-                          {values.interchange_documents &&
-                          typeof values.interchange_documents === "string" ? (
-                            <div className="mt-5">
-                              <a
-                                href={values.interchange_documents}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 underline"
-                              >
-                                View Interchange Document
-                              </a>
-                            </div>
-                          ) : null}
-                        </div>
-                      </label>
-                    </div>
-
-                    <p className="mt-5 font-semibold"> Cargo</p>
-                    <div className="flex w-full justify-between">
-                      <label className="block mt-8">
-                        <label className="form-label">Cargo Type</label>
-                        <Field
-                          disabled
-                          type="text"
-                          name="cargo_type"
-                          value={values.cargo_type}
-                          className="form-input bg-grey w-48"
-                        />
-                      </label>
-                      <label className="block mt-8">
-                        <label className="form-label">Cargo Quanitiy</label>
-                        <Field
-                          disabled
-                          type="text"
-                          name="cargo_quantity"
-                          value={values.cargo_quantity}
-                          className="form-input bg-grey w-48"
-                        />
-                      </label>
-                    </div>
-                    <div className="flex w-full justify-between"></div>
-                    <label className="block mt-8">
-                      <label className="form-label">TRIP STATUS</label>
-
-                      <Field
-                        as="select"
-                        name="trip_status"
-                        value={values.trip_status}
-                        className="form-input bg-grey w-48"
-                      >
-                        <option>Select Trip status</option>
-                        <option value="Booked">Booked</option>
-                        {/* <option value="Ready for Departure">
+                          <option>Select Trip status</option>
+                          <option value="Booked">Booked</option>
+                          {/* <option value="Ready for Departure">
                           Ready for Departure
                         </option> */}
-                        {/* <option value="At the border">At the border</option> */}
-                        {/* <option value="Offloading dest">Offloading dest</option> */}
-                        <option value="On Route">On Route</option>
-                        <option value="Mechanical">Mechanical</option>
-                        <option value="Done">Done </option>
-                        {/* <option value="Returning the Container">
+                          {/* <option value="At the border">At the border</option> */}
+                          {/* <option value="Offloading dest">Offloading dest</option> */}
+                          <option value="On Route">On Route</option>
+                          <option value="Mechanical">Mechanical</option>
+                          <option value="Done">Done </option>
+                          {/* <option value="Returning the Container">
                           returning with Container
                         </option> */}
-                      </Field>
-                    </label>
-                    <label className="block mt-8">
-                      <label className="form-label">Memo</label>
-                      <Field
-                        type="text"
-                        name="memo"
-                        value={values.memo}
-                        className="form-input bg-grey w-96 h-20"
-                        placeholder="Optional"
-                      />
-                    </label>
-                    <div className="flex w-full justify-end mt-24 ">
-                      {/* <Button className='text-blue text-xl mr-32' handleClick={handleReset}>Reset</Button>
+                        </Field>
+                      </label>
+                      <label className="block mt-8">
+                        <label className="form-label">Memo</label>
+                        <Field
+                          type="text"
+                          name="memo"
+                          value={formik.values.memo}
+                          className="form-input bg-grey w-96 h-20"
+                          placeholder="Optional"
+                        />
+                      </label>
+                      <div className="flex w-full justify-end mt-24 ">
+                        {/* <Button className='text-blue text-xl mr-32' handleClick={handleReset}>Reset</Button>
                                 <button type='submit' >Save</button> */}
-                      <Button
-                        className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
-                        handleClick={handleReset}
-                      >
-                        Reset
-                      </Button>
-                      <button
-                        className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
-                        type="submit"
-                      >
-                        Save
-                      </button>
+                        <Button
+                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
+                          handleClick={handleReset}
+                        >
+                          Reset
+                        </Button>
+                        <button
+                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
+                          type="submit"
+                        >
+                          Save
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </Form>
-              )}
+                  </Form>
+                );
+              }}
             </Formik>
           </div>
         </FormModal>

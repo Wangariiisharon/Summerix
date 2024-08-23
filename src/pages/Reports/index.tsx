@@ -12,7 +12,8 @@ import SiteLayout from "@/Layout/SiteLayout";
 import SearchBar from "@/components/Forms/input";
 import Image from "next/image";
 import { saveAs } from "file-saver";
-import DatePicker from "react-datepicker"; // Assuming you have react-datepicker installed
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 interface TripData {
   id: string;
@@ -47,9 +48,13 @@ export default function Reports() {
   const [totalPaidAmount, setTotalPaidAmount] = useState<number>(0);
   const [expensesAmount, setExpensesAmount] = useState<number>(0);
 
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  // const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showProfitLoss, setShowProfitLoss] = useState(false);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [selectYear, setSelectYear] = useState<number | null>(null);
 
   const handleProfitLossChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setShowProfitLoss(e.target.checked);
@@ -64,27 +69,28 @@ export default function Reports() {
     if (!organisationId) {
       return;
     }
-    // let startDate, endDate;
 
-    // if (selectedDate) {
-    //   startDate = new Date(selectedYear, selectedDate.getMonth(), 1); // First day of the selected month
-    //   endDate = selectedDate; // Selected date
-    // } else {
-    //   const now = new Date();
-    //   startDate = new Date(now.getFullYear(), now.getMonth(), 1); // First day of the current month
-    //   endDate = new Date(); // Current date
-    // }
-    let startDate: Date, endDate: Date;
+    let start: Date;
+    let end: Date;
 
-    if (selectedDate) {
-      // If a date is selected, use the selected year and date for startDate and endDate
-      startDate = new Date(selectedYear, selectedDate.getMonth(), 1); // First day of the selected month
-      endDate = selectedDate; // Selected date
+    const year = selectYear || new Date().getFullYear();
+
+    if (startDate && endDate) {
+      // If both date range and year are selected
+      start = new Date(startDate);
+      start.setFullYear(year);
+      end = new Date(endDate);
+      end.setFullYear(year);
+    } else if (selectYear) {
+      // If only year is selected, default to the selected year's current month
+      start = new Date(selectYear, new Date().getMonth(), 1); // First day of the current month in the selected year
+      end = new Date(selectYear, new Date().getMonth(), new Date().getDate()); // Current date of the selected year and month
     } else {
-      // If no date is selected, fetch the data for the entire selected month
-      startDate = new Date(selectedYear, new Date().getMonth(), 1); // First day of the current month in the selected year
-      endDate = new Date(selectedYear, new Date().getMonth() + 1, 0); // Last day of the current month in the selected year
+      // Fallback to the current year and month
+      start = new Date(new Date().getFullYear(), new Date().getMonth(), 1); // First day of the current month in the current year
+      end = new Date(); // Today
     }
+
     const fetchTripsAndMaintenance = async () => {
       setLoading(true);
       setError(null);
@@ -93,16 +99,14 @@ export default function Reports() {
         const tripsQuery = query(
           collection(fbDb, "trips"),
           where("organisationId", "==", organisationId),
-          where("timestamp", ">=", startDate),
-          where("timestamp", "<=", endDate)
+          where("timestamp", ">=", start),
+          where("timestamp", "<=", end)
         );
         const maintenanceQuery = query(
           collection(fbDb, "maintenance"),
           where("organisationId", "==", organisationId),
-          // where("timestamp", ">=", startDate),
-          // where("timestamp", "<=", endDate)
-          where("timestamp", ">=", startDate),
-          where("timestamp", "<=", endDate)
+          where("timestamp", ">=", start),
+          where("timestamp", "<=", end)
         );
         // Fetch trips data
         const tripsSnapshot = await getDocs(tripsQuery);
@@ -150,8 +154,8 @@ export default function Reports() {
         const tripsQuery = query(
           collection(fbDb, "trips"),
           where("organisationId", "==", organisationId),
-          where("timestamp", ">=", startDate),
-          where("timestamp", "<=", endDate)
+          where("timestamp", ">=", start),
+          where("timestamp", "<=", end)
         );
         const tripsSnapshot = await getDocs(tripsQuery);
         const vehiclePaidAmountMap: { [key: string]: number } = {};
@@ -179,7 +183,7 @@ export default function Reports() {
     };
     fetchTotalPaidAmountByVehicle();
     fetchTripsAndMaintenance();
-  }, [organisationId, selectedYear, selectedDate]);
+  }, [organisationId, selectYear, startDate, endDate]);
 
   const exportToCSV = () => {
     const headers = [
@@ -205,10 +209,10 @@ export default function Reports() {
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     saveAs(blob, "profit_and_loss_report.csv");
   };
-  const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedYear(parseInt(event.target.value, 10));
-    setSelectedDate(null); // Reset the selected date when the year changes
-  };
+  // const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  //   setSelectedYear(parseInt(event.target.value, 10));
+  //   setSelectedDate(null); // Reset the selected date when the year changes
+  // };
 
   const handleDateChange = (date: any) => {
     setSelectedDate(date);
@@ -226,30 +230,48 @@ export default function Reports() {
           </div>
 
           <div className="py-3 px-6">
-            <SearchBar
+            {/* <SearchBar
               placeholder="Search User"
               onChange={handleSearchChange}
               className="h-6"
-            />
+            /> */}
           </div>
-          <div className="flex space-x-2 ml-[300px] items-center">
+          <div className="flex space-x-2 ml-[430px] items-center">
             <div className="">
               <select
-                onChange={handleYearChange}
-                value={selectedYear}
-                className="flex items-center border border-blue-500 text-blue-500 rounded-lg"
+                onChange={(e) => setSelectYear(Number(e.target.value))}
+                defaultValue=""
               >
-                {years.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
+                <option value="" disabled>
+                  Select Year
+                </option>
+                {[...Array(10).keys()].map((offset) => {
+                  const year = new Date().getFullYear() - offset;
+                  return (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  );
+                })}
               </select>
             </div>
 
-            <input
-              type="date"
-              onChange={(e) => handleDateChange(new Date(e.target.value))}
+            <DatePicker
+              selected={startDate ?? undefined}
+              onChange={(date) => setStartDate(date)}
+              selectsStart
+              startDate={startDate ?? undefined}
+              endDate={endDate ?? undefined}
+              placeholderText="Start Date"
+              className="flex items-center border border-blue-500 text-blue-500 rounded-lg"
+            />
+            <DatePicker
+              selected={endDate ?? undefined}
+              onChange={(date) => setEndDate(date)}
+              selectsEnd
+              startDate={startDate ?? undefined}
+              endDate={endDate ?? undefined}
+              placeholderText="End Date"
               className="flex items-center border border-blue-500 text-blue-500 rounded-lg"
             />
           </div>
@@ -299,22 +321,6 @@ export default function Reports() {
                   onChange={handleProfitLossChange}
                 />
                 <p className="text-sm ml-2 font-semibold">Expenses</p>
-              </div>
-              <div className="flex flex-row mb-2 ml-8">
-                <input
-                  type="checkbox"
-                  className="form-checkbox text-sm h-5 w-5  rounded-md"
-                />
-                <p className="text-sm ml-2 font-semibold">Deal Values</p>
-              </div>
-              <div className="flex flex-row mb-2 ml-8">
-                <input
-                  type="checkbox"
-                  className="form-checkbox text-sm h-5 w-5 rounded-md"
-                />
-                <p className="text-sm ml-2 font-semibold">
-                  Maintenance Reports
-                </p>
               </div>
             </div>
 
