@@ -4,6 +4,10 @@ import {
   where,
   getDocs,
   Timestamp,
+  setDoc,
+  doc,
+  onSnapshot,
+  getFirestore,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { auth, fbDb } from "@/firebase/configs";
@@ -14,6 +18,7 @@ import Image from "next/image";
 import { saveAs } from "file-saver";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import Avatar_profile_photo from "../../../public/Avatar_profile_photo.png";
 
 interface TripData {
   id: string;
@@ -24,6 +29,17 @@ interface TripData {
 interface MaintenanceData {
   id: string;
   cost: number;
+}
+
+interface JobCardData {
+  id: string;
+  publicProfile: string;
+  phoneNumber: string;
+  country: string;
+  timezone: string;
+  currency: string[];
+  primaryCurrency: string;
+  photoURL: string;
 }
 
 export default function Reports() {
@@ -47,14 +63,25 @@ export default function Reports() {
   }>({});
   const [totalPaidAmount, setTotalPaidAmount] = useState<number>(0);
   const [expensesAmount, setExpensesAmount] = useState<number>(0);
+  const [companySettings, setCompanySettings] = useState<JobCardData>({
+    id: "",
+    publicProfile: "",
+    phoneNumber: "",
+    country: "",
+    timezone: "",
+    currency: [],
+    photoURL: "",
+    primaryCurrency: "KES",
+  });
 
   // const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-
+  const [fetchedJobcards, setFetchedJobcards] = useState<JobCardData[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showProfitLoss, setShowProfitLoss] = useState(false);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [selectYear, setSelectYear] = useState<number | null>(null);
+  const [year, setYear] = useState<number | null>(null);
 
   const handleProfitLossChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setShowProfitLoss(e.target.checked);
@@ -74,6 +101,7 @@ export default function Reports() {
     let end: Date;
 
     const year = selectYear || new Date().getFullYear();
+    setYear(year);
 
     if (startDate && endDate) {
       // If both date range and year are selected
@@ -181,6 +209,60 @@ export default function Reports() {
         console.error("Error fetching total paid amount by vehicle:", error);
       }
     };
+
+    const fetchJobcards = async () => {
+      const db = getFirestore();
+
+      try {
+        if (organisationId) {
+          const q = query(
+            collection(db, "companyProfile"),
+            where("organisationId", "==", organisationId)
+          );
+
+          const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const jobcardData = querySnapshot.docs.map((doc) => ({
+              id: doc.id,
+              publicProfile: doc.data().publicProfile,
+              phoneNumber: doc.data().phoneNumber,
+              country: doc.data().country,
+              primaryCurrency: doc.data().primaryCurrency,
+              timezone: doc.data().timezone,
+              currency: doc.data().currency || [], // Ensure default value
+              photoURL: doc.data().photoURL || "", // Ensure default value
+            })) as JobCardData[];
+
+            setFetchedJobcards(jobcardData);
+
+            if (jobcardData.length > 0) {
+              setCompanySettings(jobcardData[0]);
+            } else {
+              // If no document found, create a default one
+              const newDocRef = doc(collection(db, "companyProfile"));
+              const newDocData = {
+                organisationId,
+                publicProfile: "",
+                phoneNumber: "",
+                country: "",
+                timezone: "",
+                currency: [],
+                photoURL: "",
+                primaryCurrency: "KES",
+              };
+              setDoc(newDocRef, newDocData);
+              setCompanySettings({ id: newDocRef.id, ...newDocData });
+            }
+          });
+
+          return () => unsubscribe();
+        } else {
+          console.error("Organisation ID is not available.");
+        }
+      } catch (error) {
+        console.error("Error fetching Company settings:", error);
+      }
+    };
+    fetchJobcards();
     fetchTotalPaidAmountByVehicle();
     fetchTripsAndMaintenance();
   }, [organisationId, selectYear, startDate, endDate]);
@@ -327,21 +409,43 @@ export default function Reports() {
             <div className="bg-[#F7F8FA] w-full">
               <div className="bg-white mt-4 ml-4 mr-4">
                 <div className="ml-6 py-4">
-                  <Image
+                  {/* <Image
                     src="/logo-black.png"
                     alt="Truck Mate logo"
                     className="h-auto w-auto"
                     width={150}
                     height={100}
+                  /> */}
+                  <Image
+                    src={companySettings.photoURL || Avatar_profile_photo}
+                    className="h-auto w-auto rounded-md"
+                    alt="logo"
+                    width={100}
+                    height={100}
+                    priority={true}
                   />
                 </div>
                 <div className="flex justify-center items-center flex flex-col">
                   <p className="text-lg text-[#454562] font-semibold">
-                    Truck mate Report
+                    {companySettings.publicProfile} Report
                   </p>
                   <p className="text-sm text-[#454562] ">Profit and Loss</p>
-                  <p className="text-sm text-[#A3A3A3] ">
-                    Nov 26 - Dec 02, 2023
+                  {/* <p className="text-sm text-[#A3A3A3] ">
+                    {startDate ?? undefined} - {endDate ?? undefined}, {selectYear}
+                  </p> */}
+                  <p className="text-sm text-[#A3A3A3]">
+                    {startDate
+                      ? startDate.toLocaleDateString()
+                      : `${new Date(
+                          year !== null ? year : new Date().getFullYear(),
+                          new Date().getMonth(),
+                          1
+                        ).toLocaleDateString()}`}
+                    -
+                    {endDate
+                      ? endDate.toLocaleDateString()
+                      : new Date().toLocaleDateString()}
+                    ,{selectYear || currentYear}
                   </p>
                 </div>
                 <div className="border-b border-[#A3A3A3] mt-4 mb-2 mr-4 ml-4"></div>
@@ -358,7 +462,7 @@ export default function Reports() {
                   ([vehicleId, totalPaidAmount]) => (
                     <div key={vehicleId} className="flex justify-between mt-2">
                       <p className="text-sm font-semibold ml-6 flex justify-start">
-                        Plate: {vehicleId}
+                        {vehicleId}
                       </p>
                       <p className="text-sm font-semibold mr-4 flex justify-end">
                         {totalPaidAmount}
@@ -369,7 +473,7 @@ export default function Reports() {
                 <div className="border-b border-[#A3A3A3] mt-4 mb-2 mr-4 ml-4"></div>
                 <div className="flex justify-between mt-4">
                   <p className="text-sm text-[#A3A3A3] ml-6 flex justify-start">
-                    Revenue
+                    Total Revenue
                   </p>
                   <p className="text-sm font-semibold mr-4 flex justify-end">
                     {totalPaidAmount}
@@ -408,7 +512,7 @@ export default function Reports() {
                 <div className="border-b border-[#A3A3A3] mt-4 mb-2 mr-4 ml-4"></div>
                 <div className="flex justify-between mt-4">
                   <p className="text-sm text-[#A3A3A3] ml-6 flex justify-start">
-                    Expenses Total
+                    Total Expenses
                   </p>
                   <p className="text-sm font-semibold mr-4 flex justify-end">
                     {expensesAmount}
