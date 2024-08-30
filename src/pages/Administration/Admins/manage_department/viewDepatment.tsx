@@ -456,7 +456,7 @@ export default function ViewDepatment() {
                       />
                     </svg>
 
-                    <p className="text-[#6b6b73] text-sm ml-[10px]">Memebers</p>
+                    <p className="text-[#6b6b73] text-sm ml-[10px]">Members</p>
                   </div>
                   <p className="mt-[5px] text-[#] text-sm font-semibold ml-[34px]">
                     {adminCount}

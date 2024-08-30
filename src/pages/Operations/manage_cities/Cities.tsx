@@ -331,7 +331,7 @@ export default function Cities() {
       };
 
       // Prepend the new driver to the fetchedDrivers state
-      setfetchedClients((prevJobcards) => [newClient, ...prevJobcards]);
+      // setfetchedClients((prevJobcards) => [newClient, ...prevJobcards]);
 
       setOpen(false);
       setShowAddClientModal(false);

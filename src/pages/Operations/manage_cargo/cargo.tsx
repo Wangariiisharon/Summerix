@@ -232,7 +232,7 @@ export default function Cargo() {
       };
 
       // Prepend the new driver to the fetchedDrivers state
-      setfetchedCargo((prevClasses) => [newClass, ...prevClasses]);
+      // setfetchedCargo((prevClasses) => [newClass, ...prevClasses]);
 
       setOpen(false);
       setShowAddClassModal(false);
@@ -300,7 +300,7 @@ export default function Cargo() {
           <FormModal open={open} setOpen={setOpen}>
             <div className="p-5">
               <div className="flex w-full h-full justify-between items-center mb-12">
-                <div className="text-xl font-semibold ">NEW CLASS</div>
+                <div className="text-xl font-semibold ">NEW CARGO</div>
                 <Button
                   className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
                   handleClick={handleReset}
@@ -362,7 +362,7 @@ export default function Cargo() {
           <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
             <div>
               <div className="flex w-full h-full justify-between items-center mb-12">
-                <div className="text-xl font-semibold ">Edit Class Details</div>
+                <div className="text-xl font-semibold ">EDIT CARGO DETAILS</div>
                 <Button
                   className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
                   handleClick={handleEditModalClose}

@@ -79,7 +79,7 @@ const validationSchema = Yup.object({
   start_time: Yup.date().required("Start time is required"),
   cargo_type: Yup.string().required("Cargo type is required"),
   cargo_quantity: Yup.string().required("Cargo quantity is required"),
-  company: Yup.string().required("Company is required"),
+  company: Yup.string().required("Class is required"),
   client: Yup.string().required("Client is required"),
   dealValue: Yup.number().positive().required("Deal Value is required"),
   fuel: Yup.number().positive().required("Fuel is required"),
@@ -1472,7 +1472,7 @@ export default function TripsComponent() {
                             ))}
                           </Field>
                           <ErrorMessage
-                            name="company"
+                            name="requested_by"
                             component="div"
                             className="error text-sm text-red-500"
                           />
@@ -1645,11 +1645,6 @@ export default function TripsComponent() {
                             value={formik.values.remaining_amount}
                             className="form-input bg-grey w-48"
                           />
-                          <ErrorMessage
-                            name="cargo_type"
-                            component="div"
-                            className="error text-sm text-red-500 "
-                          />
                         </label>
                       </div>
                       <div className="flex w-full justify-between mt-8">
@@ -1821,6 +1816,14 @@ export default function TripsComponent() {
                   formik.setFieldValue("remaining_amount", remainingAmount);
                   console.log("remainingAmount", remainingAmount);
                 };
+                const changePaymentStatus = (
+                  dealValue: number,
+                  paidAmount: number
+                ) => {
+                  if (paidAmount === dealValue) {
+                    formik.setFieldValue("payment_status", "Paid");
+                  }
+                };
 
                 return (
                   <Form>
@@ -1940,7 +1943,7 @@ export default function TripsComponent() {
                       </div>
                       <div className="mt-8 flex w-full justify-between">
                         <label className="block">
-                          <label className="form-label">OWNERSHIP STATUS</label>
+                          <label className="form-label">PAYMENT STATUS</label>
 
                           <Field
                             disabled
