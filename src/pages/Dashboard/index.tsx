@@ -109,7 +109,7 @@ export default function DashboardComponent() {
               id: doc.id,
               fuel: doc.data().fuel,
               mileage_fee: doc.data().mileage_fee,
-              dealValue: doc.data().dealValue,
+              paid_amount: doc.data().paid_amount,
               ...doc.data(),
             }));
             setFetchedTrips(tripsData);
@@ -120,7 +120,7 @@ export default function DashboardComponent() {
             setTotalFuel(fuelSum);
 
             const dealValueSum = tripsData.reduce(
-              (sum, trip) => sum + (trip.dealValue || 0),
+              (sum, trip) => sum + (trip.paid_amount || 0),
               0
             );
             setOverallEarnings(dealValueSum);
@@ -197,7 +197,6 @@ export default function DashboardComponent() {
             (sum, vehicle) => sum + (vehicle.lease_amount || 0),
             0
           );
-          setMileageFee(leaseSum);
           setIsVehiclesFetched(true);
         }
       } catch (error) {

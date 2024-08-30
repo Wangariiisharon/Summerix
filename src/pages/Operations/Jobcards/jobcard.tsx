@@ -220,7 +220,7 @@ export default function Jobcard() {
       };
 
       // Prepend the new driver to the fetchedDrivers state
-      setfetchedJobcards((prevJobcards) => [newJobcard, ...prevJobcards]);
+      // setfetchedJobcards((prevJobcards) => [newJobcard, ...prevJobcards]);
 
       setOpen(false);
       setShowAddJobcardModal(false);

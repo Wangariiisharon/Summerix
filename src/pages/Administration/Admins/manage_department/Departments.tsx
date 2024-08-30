@@ -331,10 +331,10 @@ export default function Departments() {
       };
 
       // Prepend the new department to the fetchedDepartments state
-      setFetchedDepartments((prevDepartments) => [
-        newDepartment,
-        ...prevDepartments,
-      ]);
+      // setFetchedDepartments((prevDepartments) => [
+      //   newDepartment,
+      //   ...prevDepartments,
+      // ]);
 
       setOpen(false);
       setIsModalOpen(false);
@@ -722,7 +722,7 @@ export function DepartmentsTable({
                             department.status ? "bg-[#11a849]" : "bg-[#065ad8]"
                           }`}
                         ></span>
-                        {department.status ? "Active" : "Offline"}
+                        {department.status ? "Active" : "Inactive"}
                       </span>
                     </td>
 

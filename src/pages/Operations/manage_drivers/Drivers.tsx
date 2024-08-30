@@ -301,7 +301,7 @@ export default function Drivers() {
       };
 
       // Prepend the new driver to the fetchedDrivers state
-      setfetchedDrivers((prevDrivers) => [newDriver, ...prevDrivers]);
+      // setfetchedDrivers((prevDrivers) => [newDriver, ...prevDrivers]);
 
       setOpen(false);
     } catch (error) {
@@ -419,7 +419,7 @@ export default function Drivers() {
       const updatedDrivers = fetchedDrivers.map((driver) =>
         driver.id === selectedDriver.id ? { ...driver, ...values } : driver
       );
-      setfetchedDrivers(updatedDrivers);
+      // setfetchedDrivers(updatedDrivers);
       toast.success("Driver edited successfully");
       setSelectedDriver(null);
       setEditModalOpen(false);

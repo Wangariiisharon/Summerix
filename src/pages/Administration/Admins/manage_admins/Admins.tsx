@@ -435,7 +435,7 @@ export default function Admins() {
         "Admin Successfully Added. An email invitation has been sent."
       );
 
-      setFetchedAdmins((prevAdmins) => [{ ...adminData }, ...prevAdmins]);
+      // setFetchedAdmins((prevAdmins) => [{ ...adminData }, ...prevAdmins]);
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error adding admin:", error);

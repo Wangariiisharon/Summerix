@@ -63,6 +63,8 @@ export default function Reports() {
   }>({});
   const [totalPaidAmount, setTotalPaidAmount] = useState<number>(0);
   const [expensesAmount, setExpensesAmount] = useState<number>(0);
+  const [netProfit, setNetProfit] = useState<number>(0);
+
   const [companySettings, setCompanySettings] = useState<JobCardData>({
     id: "",
     publicProfile: "",
@@ -190,7 +192,7 @@ export default function Reports() {
         tripsSnapshot.forEach((doc) => {
           const data = doc.data();
           const vehicle = data.vehicle;
-          const paidAmount = data.dealValue || 0;
+          const paidAmount = data.paid_amount || 0;
           if (vehicle in vehiclePaidAmountMap) {
             vehiclePaidAmountMap[vehicle] += paidAmount;
           } else {
@@ -204,6 +206,7 @@ export default function Reports() {
           0
         );
         setTotalPaidAmount(total);
+
         return vehiclePaidAmountMap;
       } catch (error) {
         console.error("Error fetching total paid amount by vehicle:", error);
@@ -262,11 +265,22 @@ export default function Reports() {
         console.error("Error fetching Company settings:", error);
       }
     };
+    // const allNetProfit = () => {
+    //   const totalNetProfit = totalPaidAmount - expensesAmount;
+    //   setNetProfit(totalNetProfit);
+    // };
+
     fetchJobcards();
     fetchTotalPaidAmountByVehicle();
     fetchTripsAndMaintenance();
   }, [organisationId, selectYear, startDate, endDate]);
-
+  useEffect(() => {
+    // Calculate net profit when totalPaidAmount or expensesAmount changes
+    if (totalPaidAmount !== null && expensesAmount !== null) {
+      const netProfit = totalPaidAmount - expensesAmount;
+      setNetProfit(netProfit);
+    }
+  }, [totalPaidAmount, expensesAmount]);
   const exportToCSV = () => {
     const headers = [
       "Vehicle ID",
@@ -274,6 +288,7 @@ export default function Reports() {
       "Total Fuel",
       "Total Maintenance",
       "Total Mileage Fee",
+      "Net Profit",
     ];
     const rows = Object.entries(vehiclePaidAmounts).map(
       ([vehicleId, totalPaidAmount]) => {
@@ -283,6 +298,7 @@ export default function Reports() {
           totalFuel,
           totalCost,
           totalMileageFee,
+          netProfit,
         ].join(",");
       }
     );
@@ -516,6 +532,17 @@ export default function Reports() {
                   </p>
                   <p className="text-sm font-semibold mr-4 flex justify-end">
                     {expensesAmount}
+                  </p>
+                </div>
+                <div className="border-b border-[#A3A3A3] mt-2 mb-2 mr-4 ml-4"></div>
+                {/* Net Profit = total rev - total exp */}
+
+                <div className="flex justify-between mt-4">
+                  <p className="text-sm text-[#A3A3A3] ml-6 flex justify-start">
+                    Net Profit
+                  </p>
+                  <p className="text-sm font-semibold mr-4 flex justify-end">
+                    {netProfit}
                   </p>
                 </div>
                 <div className="border-b border-[#A3A3A3] mt-2 mb-2 mr-4 ml-4"></div>

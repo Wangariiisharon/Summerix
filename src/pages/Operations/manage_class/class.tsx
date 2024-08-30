@@ -234,7 +234,7 @@ export default function Class() {
       };
 
       // Prepend the new driver to the fetchedDrivers state
-      setfetchedClasses((prevClasses) => [newClass, ...prevClasses]);
+      // setfetchedClasses((prevClasses) => [newClass, ...prevClasses]);
 
       setOpen(false);
       setShowAddClassModal(false);

@@ -66,6 +66,7 @@ export default function Vehicles({
     year: 0,
     ownership_status: "",
     lease_amount: 0,
+    purchase_price: 0,
     truck_incurance: null,
     cargo_insurance: null,
     port_entry_permits: null,
@@ -130,6 +131,7 @@ export default function Vehicles({
       year: vehicle.year,
       ownership_status: vehicle.ownership_status,
       lease_amount: vehicle.lease_amount,
+      purchase_price: vehicle.purchase_price,
       truck_incurance: vehicle.truck_incurance,
       cargo_insurance: vehicle.cargo_insurance,
       port_entry_permits: vehicle.port_entry_permits,
@@ -191,6 +193,7 @@ export default function Vehicles({
     year: any;
     ownership_status: any;
     lease_amount: any;
+    purchase_price: any;
     truck_incurance: any;
     cargo_insurance: any;
     port_entry_permits: any;
@@ -294,6 +297,7 @@ export default function Vehicles({
       year: values.year,
       ownership_status: values.ownership_status,
       lease_amount: values.lease_amount,
+      purchase_price: values.purchase_price,
       truck_incurance: truckIncuranceUrl,
       cargo_insurance: cargoInsuranceUrl,
       port_entry_permits: portEntryPermitsUrl,
@@ -316,7 +320,7 @@ export default function Vehicles({
       ...VehicleData,
     };
     // Prepend the new driver to the fetchedDrivers state
-    setFetchedVehicles((prevVehicle) => [newVehicle, ...prevVehicle]);
+    // setFetchedVehicles((prevVehicle) => [newVehicle, ...prevVehicle]);
 
     setOpen(false);
     setShowAddVehicleModal(false);
@@ -578,6 +582,7 @@ export default function Vehicles({
     year: any;
     ownership_status: any;
     lease_amount: any;
+    purchase_price: any;
     truck_incurance: File | null;
     cargo_insurance: File | null;
     port_entry_permits: File | null;
@@ -608,6 +613,7 @@ export default function Vehicles({
         year: values.year,
         ownership_status: values.ownership_status,
         lease_amount: values.lease_amount,
+        purchase_price: values.purchase_price,
         truck_incurance: values.truck_incurance
           ? await uploadImage(values.truck_incurance, "truck_incurance")
           : selectedVehicle.truck_incurance,
@@ -648,6 +654,7 @@ export default function Vehicles({
               year: values.year,
               ownership_status: values.ownership_status,
               lease_amount: values.lease_amount,
+              purchase_price: values.purchase_price,
               truck_incurance: values.truck_incurance,
               cargo_insurance: values.cargo_insurance,
               port_entry_permits: values.port_entry_permits,
@@ -765,6 +772,7 @@ export default function Vehicles({
                   year: 0,
                   ownership_status: "",
                   lease_amount: 0,
+                  purchase_price: 0,
                   truck_incurance: null,
                   cargo_insurance: null,
                   port_entry_permits: null,
@@ -842,6 +850,41 @@ export default function Vehicles({
                       </div>
 
                       <div className="flex w-full justify-between mt-8">
+                        {/* <label className="block">
+                          <label className="form-label">OWNERSHIP STATUS</label>
+
+                          <Field
+                            as="select"
+                            type="text"
+                            name="ownership_status"
+                            className="form-input bg-grey w-48"
+                          >
+                            <option value="">Select Status</option>
+                            <option value="Owned">Owned</option>
+                            <option value="Leased">Leased</option>
+                          </Field>
+                          {errors.ownership_status &&
+                          touched.ownership_status ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.ownership_status}
+                            </div>
+                          ) : null}
+                          {values.ownership_status === "Owned" && (
+                            <div className="mt-8">
+                              <label className="block">
+                                <label className="form-label">
+                                  PURCHASE PRICE
+                                </label>
+                                <Field
+                                  type="number"
+                                  name="lease_amount"
+                                  placeholder="Ksh"
+                                  className="form-input bg-grey w-48"
+                                />
+                              </label>
+                            </div>
+                          )}
+                        </label> */}
                         <label className="block">
                           <label className="form-label">OWNERSHIP STATUS</label>
 
@@ -866,6 +909,21 @@ export default function Vehicles({
                               <label className="block">
                                 <label className="form-label">
                                   PURCHASE PRICE
+                                </label>
+                                <Field
+                                  type="number"
+                                  name="purchase_price"
+                                  placeholder="Ksh"
+                                  className="form-input bg-grey w-48"
+                                />
+                              </label>
+                            </div>
+                          )}
+                          {values.ownership_status === "Leased" && (
+                            <div className="mt-8">
+                              <label className="block">
+                                <label className="form-label">
+                                  LEASE AMOUNT
                                 </label>
                                 <Field
                                   type="number"
@@ -907,7 +965,7 @@ export default function Vehicles({
                             </div>
                           ) : null}
                         </label>
-                        <label className="block">
+                        <label className="block ml-14">
                           <label className="form-label">TRUCK INSURANCE</label>
                           <Field name="truck_incurance">
                             {({ field, form }: any) => (
@@ -931,7 +989,7 @@ export default function Vehicles({
                       </div>
 
                       <div className="flex w-full justify-between mt-8">
-                        <label className="block ml-6">
+                        <label className="block">
                           <label className="form-label">CARGO INSURANCE</label>
                           <Field name="cargo_insurance">
                             {({ field, form }: any) => (
@@ -980,7 +1038,7 @@ export default function Vehicles({
                         </label>
                       </div>
                       <div className="flex w-full justify-between mt-8">
-                        <label className="block ml-6">
+                        <label className="block">
                           <label className="form-label">TRANSIT PERMITS</label>
                           <Field name="transit_permits">
                             {({ field, form }: any) => (
@@ -1172,6 +1230,21 @@ export default function Vehicles({
                                 <label className="block">
                                   <label className="form-label">
                                     PURCHASE PRICE
+                                  </label>
+                                  <Field
+                                    type="number"
+                                    name="purchase_price"
+                                    placeholder="Ksh"
+                                    className="form-input bg-grey w-48"
+                                  />
+                                </label>
+                              </div>
+                            )}
+                            {values.ownership_status === "Leased" && (
+                              <div className="mt-8">
+                                <label className="block">
+                                  <label className="form-label">
+                                    LEASE AMOUNT
                                   </label>
                                   <Field
                                     type="number"
