@@ -1244,7 +1244,7 @@ export default function Vehicles({
                               <div className="mt-8">
                                 <label className="block">
                                   <label className="form-label">
-                                    LEASE AMOUNT
+                                    MONTHLY LEASE AMOUNT
                                   </label>
                                   <Field
                                     type="number"
