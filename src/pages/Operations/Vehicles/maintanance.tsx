@@ -640,6 +640,7 @@ export default function Maintenance({
                         {({ field, form }: any) => (
                           <input
                             type="file"
+                            accept=".jpeg, .jpg, .pdf, .png"
                             onChange={(event) => {
                               const file = event.currentTarget?.files?.[0];
                               if (file) {

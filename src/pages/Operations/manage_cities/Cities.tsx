@@ -452,6 +452,7 @@ export default function Cities() {
                           <label className="form-label">CONTACT DETAILS</label>
                           <Field
                             type="text"
+                            accept=".jpeg, .jpg, .pdf, .png"
                             name="contact_details"
                             value={values.contact_details}
                             className="form-input bg-grey w-48"

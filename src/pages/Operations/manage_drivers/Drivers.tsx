@@ -608,6 +608,7 @@ export default function Drivers() {
                             {({ field, form }: any) => (
                               <input
                                 type="file"
+                                accept=".jpeg, .jpg, .pdf, .png"
                                 onChange={(event) => {
                                   const file = event.currentTarget?.files?.[0];
                                   if (file) {
@@ -630,7 +631,7 @@ export default function Drivers() {
                             {({ field, form }: any) => (
                               <input
                                 type="file"
-                                accept=".pdf"
+                                accept=".jpeg, .jpg, .pdf, .png"
                                 onChange={(event) => {
                                   const file = event.currentTarget?.files?.[0];
                                   if (file) {
@@ -654,7 +655,7 @@ export default function Drivers() {
                             {({ field, form }: any) => (
                               <input
                                 type="file"
-                                accept=".pdf"
+                                accept=".jpeg, .jpg, .pdf, .png"
                                 onChange={(event) => {
                                   const file = event.currentTarget?.files?.[0];
                                   if (file) {
@@ -677,7 +678,7 @@ export default function Drivers() {
                             {({ field, form }: any) => (
                               <input
                                 type="file"
-                                accept=".pdf"
+                                accept=".jpeg, .jpg, .pdf, .png"
                                 onChange={(event) => {
                                   const file = event.currentTarget?.files?.[0];
                                   if (file) {
@@ -830,6 +831,7 @@ export default function Drivers() {
                               {({ field, form }: any) => (
                                 <input
                                   type="file"
+                                  accept=".jpeg, .jpg, .pdf, .png"
                                   onChange={(event) => {
                                     const file =
                                       event.currentTarget?.files?.[0];
@@ -890,6 +892,7 @@ export default function Drivers() {
                               {({ field, form }: any) => (
                                 <input
                                   type="file"
+                                  accept=".jpeg, .jpg, .pdf, .png"
                                   onChange={(event) => {
                                     const file =
                                       event.currentTarget?.files?.[0];
@@ -952,6 +955,7 @@ export default function Drivers() {
                               {({ field, form }: any) => (
                                 <input
                                   type="file"
+                                  accept=".jpeg, .jpg, .pdf, .png"
                                   onChange={(event) => {
                                     const file =
                                       event.currentTarget?.files?.[0];
@@ -1012,6 +1016,7 @@ export default function Drivers() {
                               {({ field, form }: any) => (
                                 <input
                                   type="file"
+                                  accept=".jpeg, .jpg, .pdf, .png"
                                   onChange={(event) => {
                                     const file =
                                       event.currentTarget?.files?.[0];

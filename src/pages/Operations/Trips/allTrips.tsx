@@ -619,6 +619,14 @@ export default function AllTrips({ searchQuery }: any) {
                   formik.setFieldValue("remaining_amount", remainingAmount);
                   console.log("remainingAmount", remainingAmount);
                 };
+                const changePaymentStatus = (
+                  dealValue: number,
+                  paidAmount: number
+                ) => {
+                  if (paidAmount === dealValue) {
+                    formik.setFieldValue("payment_status", "Paid");
+                  }
+                };
 
                 return (
                   <Form>
@@ -738,15 +746,31 @@ export default function AllTrips({ searchQuery }: any) {
                       </div>
                       <div className="mt-8 flex w-full justify-between">
                         <label className="block">
-                          <label className="form-label">OWNERSHIP STATUS</label>
+                          <label className="form-label">PAYMENT STATUS</label>
 
                           <Field
-                            disabled
                             as="select"
                             type="text"
                             name="payment_status"
                             className="form-input bg-grey w-48"
+                            disabled
                             value={formik.values.payment_status}
+                            onChange={(e: any) => {
+                              const paymentStatus = e.target.value;
+                              formik.setFieldValue(
+                                "payment_status",
+                                paymentStatus
+                              );
+
+                              // Optionally reset paid_amount if payment status changes
+                              if (paymentStatus === "Not Paid") {
+                                formik.setFieldValue("paid_amount", 0);
+                                calculateEditRemainingAmount(
+                                  formik.values.dealValue,
+                                  0
+                                );
+                              }
+                            }}
                           >
                             <option>Selecet Payment Status</option>
                             <option value="Paid">Paid</option>
@@ -756,8 +780,8 @@ export default function AllTrips({ searchQuery }: any) {
                             <option value="Not Paid">Not Paid</option>
                           </Field>
 
-                          {formik.values.payment_status ===
-                            "Partially Paid" && (
+                          {formik.values.payment_status === "Partially Paid" ||
+                          formik.values.payment_status === "Not Paid" ? (
                             <div className="mt-8">
                               <label className="block">
                                 <label className="form-label">
@@ -782,7 +806,7 @@ export default function AllTrips({ searchQuery }: any) {
                                 />
                               </label>
                             </div>
-                          )}
+                          ) : null}
                         </label>
                         <label className="block">
                           <label className="form-label">REMAINING AMOUNT</label>
