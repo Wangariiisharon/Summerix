@@ -19,6 +19,8 @@ import { saveAs } from "file-saver";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Avatar_profile_photo from "../../../public/Avatar_profile_photo.png";
+import { format } from "date-fns";
+import { AnyMxRecord } from "dns";
 
 interface TripData {
   id: string;
@@ -84,7 +86,8 @@ export default function Reports() {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [selectYear, setSelectYear] = useState<number | null>(null);
   const [year, setYear] = useState<number | null>(null);
-
+  const [formattedStart, setFormattedStart] = useState<string>("");
+  const [formattedEnd, setFormattedEnd] = useState<string>("");
   const handleProfitLossChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setShowProfitLoss(e.target.checked);
   };
@@ -93,9 +96,11 @@ export default function Reports() {
   };
   const currentYear = new Date().getFullYear();
   const years = Array.from(new Array(20), (val, index) => currentYear - index);
+  const formatDate = (date: any) => format(new Date(date), "MM/dd/yyyy"); // Or 'dd/MM/yyyy' depending on your preferred format
 
   useEffect(() => {
     if (!organisationId) {
+      console.error("Organisation ID is missing");
       return;
     }
 
@@ -106,86 +111,93 @@ export default function Reports() {
     setYear(year);
 
     if (startDate && endDate) {
-      // If both date range and year are selected
       start = new Date(startDate);
       start.setFullYear(year);
       end = new Date(endDate);
       end.setFullYear(year);
     } else if (selectYear) {
-      // If only year is selected, default to the selected year's current month
-      start = new Date(selectYear, new Date().getMonth(), 1); // First day of the current month in the selected year
-      end = new Date(selectYear, new Date().getMonth(), new Date().getDate()); // Current date of the selected year and month
+      start = new Date(selectYear, new Date().getMonth(), 1);
+      end = new Date(selectYear, new Date().getMonth(), new Date().getDate());
     } else {
-      // Fallback to the current year and month
-      start = new Date(new Date().getFullYear(), new Date().getMonth(), 1); // First day of the current month in the current year
-      end = new Date(); // Today
+      start = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      end = new Date();
     }
+
+    const formattedStart = formatDate(start);
+    const formattedEnd = formatDate(end);
+    console.log(formattedStart, formattedEnd);
 
     const fetchTripsAndMaintenance = async () => {
       setLoading(true);
       setError(null);
       try {
-        // Define queries
         const tripsQuery = query(
           collection(fbDb, "trips"),
           where("organisationId", "==", organisationId),
-          where("timestamp", ">=", start),
-          where("timestamp", "<=", end)
+          where("start_time", ">=", start),
+          where("start_time", "<=", end)
         );
         const maintenanceQuery = query(
           collection(fbDb, "maintenance"),
           where("organisationId", "==", organisationId),
-          where("timestamp", ">=", start),
-          where("timestamp", "<=", end)
+          where("status", "==", "Approved"),
+          where("date", ">=", start),
+          where("date", "<=", end)
         );
-        // Fetch trips data
+
         const tripsSnapshot = await getDocs(tripsQuery);
+        console.log("tripsSnapshot", tripsSnapshot);
+
         const trips = tripsSnapshot.docs.map((doc) => ({
           id: doc.id,
           mileage_fee: doc.data().mileage_fee,
           fuel: doc.data().fuel,
           ...doc.data(),
         }));
-        // Calculate total mileage fee and fuel from trips
+        console.log("Trips", trips);
+        console.log("tripsQuery", tripsQuery);
+
         let mileageFeeSum = 0;
         let fuelSum = 0;
         trips.forEach((trip) => {
           mileageFeeSum += trip.mileage_fee || 0;
           fuelSum += trip.fuel || 0;
         });
-        // Fetch maintenance data
+
         const maintenanceSnapshot = await getDocs(maintenanceQuery);
         const maintenance = maintenanceSnapshot.docs.map((doc) => ({
           id: doc.id,
           cost: doc.data().cost,
           ...doc.data(),
         }));
-        // Calculate total cost from maintenance
+
         let costSum = 0;
         maintenance.forEach((maintenanceEntry) => {
           costSum += maintenanceEntry.cost || 0;
         });
-        // Update state
+
         setTripsData(trips);
         setMaintenanceData(maintenance);
         setTotalMileageFee(mileageFeeSum);
         setTotalFuel(fuelSum);
         setTotalCost(costSum);
+
         const allExpenses = mileageFeeSum + fuelSum + costSum;
         setExpensesAmount(allExpenses);
       } catch (err) {
-        console.error("Error fetching data:", err);
+        console.error("Error fetching trips and maintenance data:", err);
       } finally {
         setLoading(false);
       }
     };
+
     const fetchTotalPaidAmountByVehicle = async () => {
       try {
         const tripsQuery = query(
           collection(fbDb, "trips"),
           where("organisationId", "==", organisationId),
-          where("timestamp", ">=", start),
-          where("timestamp", "<=", end)
+          where("start_time", ">=", start),
+          where("start_time", "<=", end)
         );
         const tripsSnapshot = await getDocs(tripsQuery);
         const vehiclePaidAmountMap: { [key: string]: number } = {};
@@ -199,15 +211,15 @@ export default function Reports() {
             vehiclePaidAmountMap[vehicle] = paidAmount;
           }
         });
+
         console.log("Total Paid Amount by Vehicle:", vehiclePaidAmountMap);
         setVehiclePaidAmounts(vehiclePaidAmountMap);
+
         const total = Object.values(vehiclePaidAmountMap).reduce(
           (acc, curr) => acc + curr,
           0
         );
         setTotalPaidAmount(total);
-
-        return vehiclePaidAmountMap;
       } catch (error) {
         console.error("Error fetching total paid amount by vehicle:", error);
       }
@@ -231,8 +243,8 @@ export default function Reports() {
               country: doc.data().country,
               primaryCurrency: doc.data().primaryCurrency,
               timezone: doc.data().timezone,
-              currency: doc.data().currency || [], // Ensure default value
-              photoURL: doc.data().photoURL || "", // Ensure default value
+              currency: doc.data().currency || [],
+              photoURL: doc.data().photoURL || "",
             })) as JobCardData[];
 
             setFetchedJobcards(jobcardData);
@@ -240,7 +252,6 @@ export default function Reports() {
             if (jobcardData.length > 0) {
               setCompanySettings(jobcardData[0]);
             } else {
-              // If no document found, create a default one
               const newDocRef = doc(collection(db, "companyProfile"));
               const newDocData = {
                 organisationId,
@@ -265,15 +276,12 @@ export default function Reports() {
         console.error("Error fetching Company settings:", error);
       }
     };
-    // const allNetProfit = () => {
-    //   const totalNetProfit = totalPaidAmount - expensesAmount;
-    //   setNetProfit(totalNetProfit);
-    // };
 
     fetchJobcards();
     fetchTotalPaidAmountByVehicle();
     fetchTripsAndMaintenance();
   }, [organisationId, selectYear, startDate, endDate]);
+
   useEffect(() => {
     // Calculate net profit when totalPaidAmount or expensesAmount changes
     if (totalPaidAmount !== null && expensesAmount !== null) {
@@ -446,10 +454,8 @@ export default function Reports() {
                     {companySettings.publicProfile} Report
                   </p>
                   <p className="text-sm text-[#454562] ">Profit and Loss</p>
-                  {/* <p className="text-sm text-[#A3A3A3] ">
-                    {startDate ?? undefined} - {endDate ?? undefined}, {selectYear}
-                  </p> */}
-                  <p className="text-sm text-[#A3A3A3]">
+
+                  {/* <p className="text-sm text-[#A3A3A3]">
                     {startDate
                       ? startDate.toLocaleDateString()
                       : `${new Date(
@@ -462,6 +468,19 @@ export default function Reports() {
                       ? endDate.toLocaleDateString()
                       : new Date().toLocaleDateString()}
                     ,{selectYear || currentYear}
+                  </p> */}
+                  <p className="text-sm text-[#A3A3A3]">
+                    {startDate
+                      ? formatDate(startDate)
+                      : formatDate(
+                          new Date(
+                            year !== null ? year : new Date().getFullYear(),
+                            new Date().getMonth(),
+                            1
+                          )
+                        )}
+                    -{endDate ? formatDate(endDate) : formatDate(new Date())},
+                    {/* {selectYear || currentYear} */}
                   </p>
                 </div>
                 <div className="border-b border-[#A3A3A3] mt-4 mb-2 mr-4 ml-4"></div>

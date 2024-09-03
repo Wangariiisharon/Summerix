@@ -60,37 +60,43 @@ export default function DashboardComponent() {
 
   useEffect(() => {
     const currentYear = new Date().getFullYear();
-    const startOfMonth = selectedDate
-      ? new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
-      : new Date(selectedYear, new Date().getMonth(), 1);
+    // const startOfMonth = selectedDate
+    //   ? new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
+    //   : new Date(selectedYear, new Date().getMonth(), 1);
 
-    const endOfMonth = selectedDate
-      ? new Date(
-          selectedDate.getFullYear(),
-          selectedDate.getMonth() + 1,
-          0,
-          23,
-          59,
-          59
-        )
-      : new Date(selectedYear, new Date().getMonth() + 1, 0, 23, 59, 59);
+    // const endOfMonth = selectedDate
+    //   ? new Date(
+    //       selectedDate.getFullYear(),
+    //       selectedDate.getMonth() + 1,
+    //       0,
+    //       23,
+    //       59,
+    //       59
+    //     )
+    //   : new Date(selectedYear, new Date().getMonth() + 1, 0, 23, 59, 59);
 
-    const startOfYear = new Date(
-      selectedDate ? selectedDate.getFullYear() : selectedYear,
-      0,
+    // const startOfYear = new Date(
+    //   selectedDate ? selectedDate.getFullYear() : selectedYear,
+    //   0,
+    //   1
+    // );
+    // const endOfYear = new Date(
+    //   selectedDate ? selectedDate.getFullYear() : selectedYear,
+    //   11,
+    //   31,
+    //   23,
+    //   59,
+    //   59
+    // );
+    const startDate = new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
       1
     );
-    const endOfYear = new Date(
-      selectedDate ? selectedDate.getFullYear() : selectedYear,
-      11,
-      31,
-      23,
-      59,
-      59
-    );
+    const endDate = new Date();
 
-    const startDate = selectedDate ? startOfMonth : startOfYear;
-    const endDate = selectedDate ? endOfMonth : endOfYear;
+    // const startDate = selectedDate ? startOfMonth : startOfYear;
+    // const endDate = selectedDate ? endOfMonth : endOfYear;
 
     const fetchedTrips = async () => {
       const db = getFirestore();
@@ -100,8 +106,8 @@ export default function DashboardComponent() {
           const q = query(
             collection(fbDb, "trips"),
             where("organisationId", "==", organisationId),
-            where("timestamp", ">=", Timestamp.fromDate(startDate)),
-            where("timestamp", "<=", Timestamp.fromDate(endDate))
+            where("start_time", ">=", Timestamp.fromDate(startDate)),
+            where("start_time", "<=", Timestamp.fromDate(endDate))
           );
 
           const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -150,8 +156,8 @@ export default function DashboardComponent() {
             collection(db, "maintenance"),
             where("organisationId", "==", organisationId),
             where("status", "==", "Approved"),
-            where("timestamp", ">=", Timestamp.fromDate(startDate)),
-            where("timestamp", "<=", Timestamp.fromDate(endDate))
+            where("date", ">=", Timestamp.fromDate(startDate)),
+            where("date", "<=", Timestamp.fromDate(endDate))
           );
 
           const unsubscribe = onSnapshot(q, (querySnapshot) => {

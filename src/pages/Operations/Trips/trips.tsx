@@ -1248,22 +1248,42 @@ export default function TripsComponent() {
             >
               {(formik) => {
                 // Move useEffect outside of Formik render method
+                // const calculateRemainingAmount = (
+                //   dealValue: any,
+                //   paidAmount: any,
+                //   paymentStatus: any
+                // ) => {
+                //   let remainingAmount = 0;
+
+                //   if (paymentStatus === "Partially Paid") {
+                //     remainingAmount = dealValue - paidAmount;
+                //   } else if (paymentStatus === "Paid") {
+                //     remainingAmount = 0;
+                //   } else if (paymentStatus === "Not Paid") {
+                //     remainingAmount = dealValue;
+                //   }
+
+                //   formik.setFieldValue("remaining_amount", remainingAmount);
+                // };
                 const calculateRemainingAmount = (
-                  dealValue: any,
-                  paidAmount: any,
-                  paymentStatus: any
+                  dealValue: number,
+                  paidAmount: number,
+                  paymentStatus: string
                 ) => {
                   let remainingAmount = 0;
 
-                  if (paymentStatus === "Partially Paid") {
-                    remainingAmount = dealValue - paidAmount;
-                  } else if (paymentStatus === "Paid") {
+                  if (paymentStatus === "Paid") {
+                    paidAmount = dealValue; // Set paidAmount to dealValue if fully paid
                     remainingAmount = 0;
+                  } else if (paymentStatus === "Partially Paid") {
+                    remainingAmount = dealValue - paidAmount;
                   } else if (paymentStatus === "Not Paid") {
+                    paidAmount = 0; // Set paidAmount to 0 if not paid
                     remainingAmount = dealValue;
                   }
 
-                  formik.setFieldValue("remaining_amount", remainingAmount);
+                  formik.setFieldValue("paid_amount", paidAmount); // Update paidAmount
+                  formik.setFieldValue("remaining_amount", remainingAmount); // Update remainingAmount
                 };
 
                 return (
@@ -1518,6 +1538,7 @@ export default function TripsComponent() {
                               );
                             }}
                           />
+
                           <ErrorMessage
                             name="dealValue"
                             component="div"
@@ -1578,8 +1599,23 @@ export default function TripsComponent() {
                           <label className="form-label">PAYMENT STATUS</label>
 
                           <Field
+                            // as="select"
+                            // type="text"
+                            // name="payment_status"
+                            // className="form-input bg-grey w-48"
+                            // onChange={(e: any) => {
+                            //   const paymentStatus = e.target.value;
+                            //   formik.setFieldValue(
+                            //     "payment_status",
+                            //     paymentStatus
+                            //   );
+                            //   calculateRemainingAmount(
+                            //     formik.values.dealValue,
+                            //     formik.values.paid_amount,
+                            //     paymentStatus
+                            //   );
+                            // }}
                             as="select"
-                            type="text"
                             name="payment_status"
                             className="form-input bg-grey w-48"
                             onChange={(e: any) => {
@@ -1607,6 +1643,34 @@ export default function TripsComponent() {
                             component="div"
                             className="error text-sm text-red-500 "
                           />
+                          {/* {formik.values.payment_status ===
+                            "Partially Paid" && (
+                            <div className="mt-8">
+                              <label className="block">
+                                <label className="form-label">
+                                  PAID AMOUNT
+                                </label>
+                                <Field
+                                  type="number"
+                                  name="paid_amount"
+                                  placeholder="Ksh"
+                                  className="form-input bg-grey w-48"
+                                  onChange={(e: any) => {
+                                    const paidAmount = Number(e.target.value);
+                                    formik.setFieldValue(
+                                      "paid_amount",
+                                      paidAmount
+                                    );
+                                    calculateRemainingAmount(
+                                      formik.values.dealValue,
+                                      paidAmount,
+                                      formik.values.payment_status
+                                    );
+                                  }}
+                                />
+                              </label>
+                            </div>
+                          )} */}
                           {formik.values.payment_status ===
                             "Partially Paid" && (
                             <div className="mt-8">
@@ -1654,6 +1718,7 @@ export default function TripsComponent() {
                             {({ field, form }: any) => (
                               <input
                                 type="file"
+                                accept=".jpeg, .jpg, .pdf, .png"
                                 onChange={(event) => {
                                   const file = event.currentTarget?.files?.[0];
                                   if (file) {
@@ -1673,6 +1738,7 @@ export default function TripsComponent() {
                             {({ field, form }: any) => (
                               <input
                                 type="file"
+                                accept=".jpeg, .jpg, .pdf, .png"
                                 onChange={(event) => {
                                   const file = event.currentTarget?.files?.[0];
                                   if (file) {
@@ -1696,6 +1762,7 @@ export default function TripsComponent() {
                             {({ field, form }: any) => (
                               <input
                                 type="file"
+                                accept=".jpeg, .jpg, .pdf, .png"
                                 onChange={(event) => {
                                   const file = event.currentTarget?.files?.[0];
                                   if (file) {
@@ -1798,7 +1865,6 @@ export default function TripsComponent() {
             <Formik
               initialValues={editFormInitialValues}
               // onSubmit={handleEditSubmit}
-              validationSchema={validationSchema}
               onSubmit={(values, { setSubmitting }) => {
                 handleEditSubmit(values);
                 setSubmitting(false);
@@ -1946,12 +2012,28 @@ export default function TripsComponent() {
                           <label className="form-label">PAYMENT STATUS</label>
 
                           <Field
-                            disabled
                             as="select"
                             type="text"
                             name="payment_status"
                             className="form-input bg-grey w-48"
+                            disabled
                             value={formik.values.payment_status}
+                            onChange={(e: any) => {
+                              const paymentStatus = e.target.value;
+                              formik.setFieldValue(
+                                "payment_status",
+                                paymentStatus
+                              );
+
+                              // Optionally reset paid_amount if payment status changes
+                              if (paymentStatus === "Not Paid") {
+                                formik.setFieldValue("paid_amount", 0);
+                                calculateEditRemainingAmount(
+                                  formik.values.dealValue,
+                                  0
+                                );
+                              }
+                            }}
                           >
                             <option>Selecet Payment Status</option>
                             <option value="Paid">Paid</option>
@@ -1961,8 +2043,8 @@ export default function TripsComponent() {
                             <option value="Not Paid">Not Paid</option>
                           </Field>
 
-                          {formik.values.payment_status ===
-                            "Partially Paid" && (
+                          {formik.values.payment_status === "Partially Paid" ||
+                          formik.values.payment_status === "Not Paid" ? (
                             <div className="mt-8">
                               <label className="block">
                                 <label className="form-label">
@@ -1987,7 +2069,7 @@ export default function TripsComponent() {
                                 />
                               </label>
                             </div>
-                          )}
+                          ) : null}
                         </label>
                         <label className="block">
                           <label className="form-label">REMAINING AMOUNT</label>
