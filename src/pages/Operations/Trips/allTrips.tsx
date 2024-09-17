@@ -772,7 +772,7 @@ export default function AllTrips({ searchQuery }: any) {
                               }
                             }}
                           >
-                            <option>Selecet Payment Status</option>
+                            <option>Select Payment Status</option>
                             <option value="Paid">Paid</option>
                             <option value="Partially Paid">
                               Partially Paid
