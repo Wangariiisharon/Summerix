@@ -291,8 +291,8 @@ export default function Class() {
                 filteredClients={filteredClients}
                 handleEditClick={handleEditClick}
                 updateFetchedClients={updateFetchedClients}
-                // hasEditClassPermission={hasEditClassPermission}
-                // hasArchiveClassPermission={hasArchiveClassPermission}
+                hasEditClassPermission={hasEditClassPermission}
+                hasArchiveClassPermission={hasArchiveClassPermission}
               />
             </div>
           </Tab.Panel>
