@@ -1631,7 +1631,7 @@ export default function TripsComponent() {
                               );
                             }}
                           >
-                            <option>Selecet Payment Status</option>
+                            <option>Select Payment Status</option>
                             <option value="Paid">Paid</option>
                             <option value="Partially Paid">
                               Partially Paid
@@ -2035,7 +2035,7 @@ export default function TripsComponent() {
                               }
                             }}
                           >
-                            <option>Selecet Payment Status</option>
+                            <option>Select Payment Status</option>
                             <option value="Paid">Paid</option>
                             <option value="Partially Paid">
                               Partially Paid
