@@ -23,7 +23,13 @@ import firebaseApp, { fbDb } from "@/firebase/configs";
 import { useRouter } from "next/router";
 import { toast } from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
-import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+import {
+  FirebaseStorage,
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytes,
+} from "firebase/storage";
 import * as Yup from "yup";
 import VehiclesTable from "./vehiclesTable";
 import Image from "next/image";
@@ -184,6 +190,19 @@ export default function Vehicles({
     }
   }
 
+  // const uploadFile = async (storage: any, folder: any, file: any) => {
+  //   const storageRef = ref(storage, `${folder}/${file.name}`);
+  //   await uploadBytes(storageRef, file);
+  //   return getDownloadURL(storageRef);
+  // };
+  const storage = getStorage(firebaseApp); // Initialize once
+
+  const uploadFile = async (folder: any, file: any) => {
+    const storageRef = ref(storage, `${folder}/${file.name}`);
+    await uploadBytes(storageRef, file);
+    return getDownloadURL(storageRef);
+  };
+
   const handleSubmit = async (values: {
     cargo_capacity: any;
     lisence_plate: any;
@@ -230,61 +249,88 @@ export default function Vehicles({
       // Handle the null case, maybe show an error or return
       return;
     }
-    let truckIncuranceUrl = "";
-    if (values.truck_incurance) {
-      const storage = getStorage(firebaseApp);
-      const storageRef = ref(
-        storage,
-        `truck_incurance/${values.truck_incurance.name}`
-      );
+    // let truckIncuranceUrl = "";
+    // if (values.truck_incurance) {
+    //   const storage = getStorage(firebaseApp);
+    //   const storageRef = ref(
+    //     storage,
+    //     `truck_incurance/${values.truck_incurance.name}`
+    //   );
 
-      await uploadBytes(storageRef, values.truck_incurance);
-      truckIncuranceUrl = await getDownloadURL(storageRef);
-    }
-    let transitPermitsUrl = "";
-    if (values.transit_permits) {
-      const storage = getStorage(firebaseApp);
-      const storageRef = ref(
-        storage,
-        `transit_permits/${values.transit_permits.name}`
-      );
+    //   await uploadBytes(storageRef, values.truck_incurance);
+    //   truckIncuranceUrl = await getDownloadURL(storageRef);
+    // }
+    // let transitPermitsUrl = "";
+    // if (values.transit_permits) {
+    //   const storage = getStorage(firebaseApp);
+    //   const storageRef = ref(
+    //     storage,
+    //     `transit_permits/${values.transit_permits.name}`
+    //   );
 
-      await uploadBytes(storageRef, values.transit_permits);
-      transitPermitsUrl = await getDownloadURL(storageRef);
-    }
-    let inspectionCertificatesUrl = "";
-    if (values.inspection_certificates) {
-      const storage = getStorage(firebaseApp);
-      const storageRef = ref(
-        storage,
-        `inspection_certificates/${values.inspection_certificates.name}`
-      );
+    //   await uploadBytes(storageRef, values.transit_permits);
+    //   transitPermitsUrl = await getDownloadURL(storageRef);
+    // }
+    // let inspectionCertificatesUrl = "";
+    // if (values.inspection_certificates) {
+    //   const storage = getStorage(firebaseApp);
+    //   const storageRef = ref(
+    //     storage,
+    //     `inspection_certificates/${values.inspection_certificates.name}`
+    //   );
 
-      await uploadBytes(storageRef, values.inspection_certificates);
-      inspectionCertificatesUrl = await getDownloadURL(storageRef);
-    }
-    let portEntryPermitsUrl = "";
-    if (values.port_entry_permits) {
-      const storage = getStorage(firebaseApp);
-      const storageRef = ref(
-        storage,
-        `port_entry_permits/${values.port_entry_permits.name}`
-      );
+    //   await uploadBytes(storageRef, values.inspection_certificates);
+    //   inspectionCertificatesUrl = await getDownloadURL(storageRef);
+    // }
+    // let portEntryPermitsUrl = "";
+    // if (values.port_entry_permits) {
+    //   const storage = getStorage(firebaseApp);
+    //   const storageRef = ref(
+    //     storage,
+    //     `port_entry_permits/${values.port_entry_permits.name}`
+    //   );
 
-      await uploadBytes(storageRef, values.port_entry_permits);
-      portEntryPermitsUrl = await getDownloadURL(storageRef);
-    }
-    let cargoInsuranceUrl = "";
-    if (values.cargo_insurance) {
-      const storage = getStorage(firebaseApp);
-      const storageRef = ref(
-        storage,
-        `cargo_insurance/${values.cargo_insurance.name}`
-      );
+    //   await uploadBytes(storageRef, values.port_entry_permits);
+    //   portEntryPermitsUrl = await getDownloadURL(storageRef);
+    // }
+    // let cargoInsuranceUrl = "";
+    // if (values.cargo_insurance) {
+    //   const storage = getStorage(firebaseApp);
+    //   const storageRef = ref(
+    //     storage,
+    //     `cargo_insurance/${values.cargo_insurance.name}`
+    //   );
 
-      await uploadBytes(storageRef, values.cargo_insurance);
-      cargoInsuranceUrl = await getDownloadURL(storageRef);
-    }
+    //   await uploadBytes(storageRef, values.cargo_insurance);
+    //   cargoInsuranceUrl = await getDownloadURL(storageRef);
+    // }
+
+    const fileUploadPromises = [
+      values.truck_incurance
+        ? uploadFile("truck_incurance", values.truck_incurance)
+        : "",
+      values.transit_permits
+        ? uploadFile("transit_permits", values.transit_permits)
+        : "",
+      values.inspection_certificates
+        ? uploadFile("inspection_certificates", values.inspection_certificates)
+        : "",
+      values.port_entry_permits
+        ? uploadFile("port_entry_permits", values.port_entry_permits)
+        : "",
+      values.cargo_insurance
+        ? uploadFile("cargo_insurance", values.cargo_insurance)
+        : "",
+    ];
+
+    // Destructure the file URLs
+    const [
+      truckIncuranceUrl,
+      transitPermitsUrl,
+      inspectionCertificatesUrl,
+      portEntryPermitsUrl,
+      cargoInsuranceUrl,
+    ] = await Promise.all(fileUploadPromises);
 
     const generatedVehicleId = await generateVehicleId(organisationId);
 
@@ -319,8 +365,6 @@ export default function Vehicles({
       id: docRef.id,
       ...VehicleData,
     };
-    // Prepend the new driver to the fetchedDrivers state
-    // setFetchedVehicles((prevVehicle) => [newVehicle, ...prevVehicle]);
 
     setOpen(false);
     setShowAddVehicleModal(false);
@@ -694,7 +738,7 @@ export default function Vehicles({
                   />
                 )}
                 <div className="ml-2">
-                  {hasAllocatePermission && (
+                  {/* {hasAllocatePermission && (
                     <Button
                       className="rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2 "
                       handleClick={handleAllocateVehicles}
@@ -702,7 +746,7 @@ export default function Vehicles({
                       <PlusIcon className="h-6 w-6 mr-2" />
                       Allocate Vehicle
                     </Button>
-                  )}
+                  )} */}
                 </div>
               </div>
             </div>
@@ -1616,7 +1660,6 @@ export default function Vehicles({
                 vehicle: "",
                 company: "",
               }}
-              // allocationValidationSchema={allocationValidationSchema}
               onSubmit={(values) => handleAllocateSubmit(values)}
             >
               {({ values, setFieldValue }) => (
@@ -1638,11 +1681,6 @@ export default function Vehicles({
                             </option>
                           ))}
                         </Field>
-                        {/* {errors.vehicle && touched.vehicle ? (
-                          <div className="text-red-600 text-sm">
-                            {errors.vehicle}
-                          </div>
-                        ) : null} */}
                       </label>
 
                       <label className="block">
