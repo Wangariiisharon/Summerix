@@ -18,6 +18,7 @@ import {
   ArrowLeftOnRectangleIcon,
   ChevronDownIcon,
 } from "@heroicons/react/24/solid";
+import OperationsComponent from "@/pages/Operations";
 
 interface Props {
   children: ReactNode;
@@ -132,7 +133,7 @@ export default function SiteNav({ children }: Props) {
             isDrawerOpen ? "w-64" : "w-16"
           }`}
         >
-          <nav className="mt-16">
+          <nav className="mt-16 ">
             <ul className="flex flex-col">
               {navigation.map(
                 (item, index) =>

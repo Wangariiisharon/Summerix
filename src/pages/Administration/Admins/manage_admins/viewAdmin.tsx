@@ -19,6 +19,7 @@ import { Formik, Field, Form } from "formik/dist/index";
 import { FormModal, NewFormModal } from "@/components/Modals/FormModal";
 import * as Yup from "yup";
 import country from "country-list-js";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 
 interface DepatmentDetailsProps {
   departmentId: string;
@@ -102,6 +103,14 @@ export default function ViewDepatment() {
       role: "",
     }
   );
+  const {
+    currentAdmin,
+    currentUser,
+    organisationId,
+    isSuperAdmin,
+    userClaims,
+    departmentData,
+  } = useAuthContext();
 
   const sections = ["Dashboard", "Vehicles", "Drivers", "Trips"];
   const router = useRouter();
@@ -309,7 +318,7 @@ export default function ViewDepatment() {
   };
 
   useEffect(() => {
-    const unsubscribe = () => {}; // Initialize unsubscribe function
+    const unsubscribe = () => {};
 
     const fetchPermissions = async () => {
       try {
@@ -335,7 +344,6 @@ export default function ViewDepatment() {
         return {};
       }
     };
-
     const fetchAdminData = async (permissionsData: Permissions) => {
       const { id } = router.query;
 
@@ -346,6 +354,7 @@ export default function ViewDepatment() {
       }
 
       try {
+        // Fetch the admin document
         const adminDocRef = doc(fbDb, "admins", id as string);
         const adminDoc = await getDoc(adminDocRef);
 
@@ -358,32 +367,65 @@ export default function ViewDepatment() {
         const adminData = adminDoc.data() as AdminData;
         setUserData([adminData]);
 
-        const departmentDocRef = doc(fbDb, "departments", adminData.department);
+        let departmentDocRef;
+
+        // If the department field contains a name instead of an ID, we need to fetch the document ID
+        if (adminData.department.includes("/")) {
+          // The department field seems to contain a valid document path
+          departmentDocRef = doc(fbDb, "departments", adminData.department);
+        } else {
+          // If the department is just a name, query Firestore to find the corresponding document ID
+          const departmentQuery = query(
+            collection(fbDb, "departments"),
+            where("name", "==", adminData.department)
+          );
+          const departmentQuerySnapshot = await getDocs(departmentQuery);
+
+          if (departmentQuerySnapshot.empty) {
+            console.error(
+              "No department found with the name:",
+              adminData.department
+            );
+            setDepartmentPermissions([]);
+            return;
+          }
+
+          // Assuming department names are unique, we take the first document in the result
+          const departmentDoc = departmentQuerySnapshot.docs[0];
+          departmentDocRef = doc(fbDb, "departments", departmentDoc.id);
+        }
+
+        // Fetch the department document
         const departmentDoc = await getDoc(departmentDocRef);
 
         let departmentPermissions: string[] = [];
         if (departmentDoc.exists()) {
           departmentPermissions = departmentDoc.data().permissions || [];
+          console.log("Department permissions:", departmentPermissions);
         }
 
+        // Combine admin's additional permissions with the department permissions
         const combinedPermissions = new Set([
-          ...adminData.additionalPermissions,
-          ...departmentPermissions,
+          ...adminData.additionalPermissions, // Permissions specific to the admin
+          ...departmentPermissions, // Permissions from the department
         ]);
+        console.log("combinedPermissions", combinedPermissions);
 
-        setDepartmentPermissions(departmentPermissions);
-        setCombinedPermissions([...combinedPermissions]);
-
+        // Update the permissions data by marking the ones in combinedPermissions as checked
         const updatedPermissions = { ...permissionsData };
         Object.keys(updatedPermissions).forEach((section) => {
           updatedPermissions[section] = updatedPermissions[section].map(
             (permission) => ({
               ...permission,
-              checked: combinedPermissions.has(permission.name),
+              checked: combinedPermissions.has(permission.name), // Mark as checked if in combinedPermissions
             })
           );
         });
 
+        // Set the combined department permissions for later use if needed
+        setDepartmentPermissions(departmentPermissions);
+
+        // Set the updated permissions to state
         setPermissions(updatedPermissions);
         console.log(
           "Updated Permissions after fetching admin data:",
@@ -394,6 +436,65 @@ export default function ViewDepatment() {
         setUserData([]);
       }
     };
+
+    // const fetchAdminData = async (permissionsData: Permissions) => {
+    //   const { id } = router.query;
+
+    //   if (!id) {
+    //     console.error("No ID specified for fetching admin data.");
+    //     setUserData([]);
+    //     return;
+    //   }
+
+    //   try {
+    //     const adminDocRef = doc(fbDb, "admins", id as string);
+    //     const adminDoc = await getDoc(adminDocRef);
+
+    //     if (!adminDoc.exists()) {
+    //       console.log("Admin not found.");
+    //       setUserData([]);
+    //       return;
+    //     }
+
+    //     const adminData = adminDoc.data() as AdminData;
+    //     setUserData([adminData]);
+
+    //     const departmentDocRef = doc(fbDb, "departments", adminData.department);
+    //     const departmentDoc = await getDoc(departmentDocRef);
+
+    //     let departmentPermissions: string[] = [];
+    //     if (departmentDoc.exists()) {
+    //       departmentPermissions = departmentDoc.data().permissions || [];
+    //     }
+
+    //     const combinedPermissions = new Set([
+    //       ...adminData.additionalPermissions,
+    //       ...departmentPermissions,
+    //     ]);
+
+    //     setDepartmentPermissions(departmentPermissions);
+    //     setCombinedPermissions([...combinedPermissions]);
+
+    //     const updatedPermissions = { ...permissionsData };
+    //     Object.keys(updatedPermissions).forEach((section) => {
+    //       updatedPermissions[section] = updatedPermissions[section].map(
+    //         (permission) => ({
+    //           ...permission,
+    //           checked: combinedPermissions.has(permission.name),
+    //         })
+    //       );
+    //     });
+
+    //     setPermissions(updatedPermissions);
+    //     console.log(
+    //       "Updated Permissions after fetching admin data:",
+    //       updatedPermissions
+    //     );
+    //   } catch (error) {
+    //     console.error("Error fetching admin data:", error);
+    //     setUserData([]);
+    //   }
+    // };
 
     const fetchDepartments = async () => {
       try {
@@ -410,7 +511,6 @@ export default function ViewDepatment() {
         });
 
         setAllDepartments(departmentData);
-        console.log("Departments:", departmentData);
       } catch (error) {
         console.error("Error fetching departments:", error);
       }
@@ -426,6 +526,14 @@ export default function ViewDepatment() {
         setLoading(false);
       }
     };
+    // const handleFullPermisionss = () => {
+    //   if (userClaims?.admin === true) {
+    //     setAllChecked(true);
+    //   } else {
+    //     setAllChecked(false);
+    //     console.log("This user is not an admin", allChecked);
+    //   }
+    // };
 
     fetchPermissions()
       .then((permissionsData) => {
@@ -434,6 +542,7 @@ export default function ViewDepatment() {
       })
       .then(fetchDepartments)
       .then(fetchCountries);
+    // .then(handleFullPermisionss);
 
     return () => {
       unsubscribe();
@@ -442,7 +551,6 @@ export default function ViewDepatment() {
 
   const handleFullPermissionChange = () => {
     const newAllChecked = !allChecked;
-    setAllChecked(newAllChecked);
 
     const updatedPermissions = { ...permissions };
     Object.keys(updatedPermissions).forEach((section) => {
@@ -519,178 +627,6 @@ export default function ViewDepatment() {
       toast.error("Error updating Permissions");
     }
   };
-
-  // useEffect(() => {
-  //   const unsubscribe = () => {}; // Initialize unsubscribe function  fetchAdditionalPermissions
-
-  //   const fetchPermissions = async () => {
-  //     const permissionsCollection = collection(fbDb, "permisions");
-  //     const permissionsSnapshot = await getDocs(permissionsCollection);
-  //     const permissionsData: Permissions = {};
-  //     permissionsSnapshot.forEach((doc) => {
-  //       const data = doc.data();
-  //       Object.keys(data).forEach((key) => {
-  //         permissionsData[key] = data[key].map((permission: string) => ({
-  //           name: permission,
-  //           checked: false,
-  //         }));
-  //       });
-  //     });
-  //     setPermissions(permissionsData);
-  //     console.log("permissionsData", permissionsData);
-  //   };
-
-  //   fetchPermissions();
-
-  //   const fetchAdmins = async () => {
-  //     const { id } = router.query;
-
-  //     if (!id) {
-  //       console.error("No ID specified for fetching admin data.");
-  //       setUserData([]);
-  //       return;
-  //     }
-
-  //     try {
-  //       const adminDocRef = doc(fbDb, "admins", id as string);
-  //       const adminDoc = await getDoc(adminDocRef);
-
-  //       if (!adminDoc.exists()) {
-  //         console.log("Admin not found.");
-  //         setUserData([]);
-  //         return;
-  //       }
-
-  //       const adminData = adminDoc.data() as AdminData;
-  //       setUserData([adminData]);
-  //       console.log("THIS IS THE USER DATA", adminData);
-  //     } catch (error) {
-  //       console.error("Error fetching admin data:", error);
-  //       setUserData([]);
-  //     }
-  //   };
-
-  //   const fetchDepartments = async () => {
-  //     try {
-  //       const departmentData: { id: string; name: string }[] = []; // Modify the type here
-
-  //       const departmentQuery = query(collection(fbDb, "departments"));
-  //       const departmentSnapshot = await getDocs(departmentQuery);
-
-  //       departmentSnapshot.forEach((doc) => {
-  //         const departmentName = doc.data().name; // Assuming department name is stored in the 'name' field
-  //         departmentData.push({
-  //           id: doc.id, // Add the document ID to the department object
-  //           name: departmentName, // Store the department name
-  //         });
-  //       });
-
-  //       setAllDepartments(departmentData);
-  //       console.log("Departments:", departmentData);
-  //     } catch (error) {
-  //       console.error("Error fetching departments:", error);
-  //     }
-  //   };
-  //   const fetchCountries = () => {
-  //     try {
-  //       const country_names = country.names();
-  //       setCountries(country_names);
-  //       setLoading(false);
-  //     } catch (error) {
-  //       console.error("Error fetching countries:", error);
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchPermissions();
-  //   fetchDepartments();
-  //   fetchAdmins();
-  //   fetchCountries();
-
-  //   // Clean up function to unsubscribe from snapshot listener
-  //   return () => {
-  //     unsubscribe();
-  //   };
-  // }, [id, fetchedPermisions]);
-
-  // const handleFullPermissionChange = () => {
-  //   const newAllChecked = !allChecked;
-  //   setAllChecked(newAllChecked);
-
-  //   const updatedPermissions = { ...permissions };
-  //   Object.keys(updatedPermissions).forEach((section) => {
-  //     updatedPermissions[section] = updatedPermissions[section].map(
-  //       (permission) => ({
-  //         ...permission,
-  //         checked: newAllChecked,
-  //       })
-  //     );
-  //   });
-  //   setPermissions(updatedPermissions);
-  // };
-
-  // const handleSectionSelectAllChange = (section: string) => {
-  //   const newSectionAllChecked = !permissions[section].every((p) => p.checked);
-  //   const updatedPermissions = { ...permissions };
-  //   updatedPermissions[section] = updatedPermissions[section].map(
-  //     (permission) => ({
-  //       ...permission,
-  //       checked: newSectionAllChecked,
-  //     })
-  //   );
-  //   setPermissions(updatedPermissions);
-  // };
-
-  // const handlePermissionChange = (section: string, permissionName: string) => {
-  //   const updatedPermissions = { ...permissions };
-  //   const permissionIndex = updatedPermissions[section].findIndex(
-  //     (p) => p.name === permissionName
-  //   );
-  //   updatedPermissions[section][permissionIndex].checked =
-  //     !updatedPermissions[section][permissionIndex].checked;
-
-  //   setPermissions(updatedPermissions);
-
-  //   const allChecked = Object.keys(updatedPermissions).every((section) =>
-  //     updatedPermissions[section].every((p) => p.checked)
-  //   );
-  //   setAllChecked(allChecked);
-  // };
-
-  // const handleSaveChanges = async () => {
-  //   const { id } = router.query;
-
-  //   if (!id || Array.isArray(id)) {
-  //     toast.error("Admin ID is missing or invalid");
-  //     return;
-  //   }
-
-  //   const selectedPermissions: string[] = [];
-  //   Object.keys(permissions).forEach((section) => {
-  //     permissions[section].forEach((permission: any) => {
-  //       if (permission.checked) {
-  //         selectedPermissions.push(permission.name);
-  //       }
-  //     });
-  //   });
-
-  //   const settingsRef = doc(fbDb, "admins", id as string);
-
-  //   try {
-  //     await setDoc(
-  //       settingsRef,
-  //       {
-  //         additionalPermissions: selectedPermissions,
-  //       },
-  //       { merge: true }
-  //     );
-
-  //     console.log("Permissions successfully updated!");
-  //     toast.success("Permissions successfully updated!");
-  //   } catch (error) {
-  //     console.error("Error updating Permissions: ", error);
-  //     toast.error("Error updating Permissions");
-  //   }
-  // };
 
   return (
     <SiteLayout>

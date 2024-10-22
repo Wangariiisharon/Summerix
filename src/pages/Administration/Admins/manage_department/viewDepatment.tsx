@@ -1,25 +1,3 @@
-// import {
-//   DocumentData,
-//   collection,
-//   doc,
-//   getDoc,
-//   getDocs,
-//   getFirestore,
-//   onSnapshot,
-//   query,
-//   setDoc,
-//   updateDoc,
-//   where,
-// } from "firebase/firestore";
-// import React, { useEffect, useState } from "react";
-// import { fbDb } from "@/firebase/configs";
-// import { useRouter } from "next/router";
-// import SiteLayout from "@/Layout/SiteLayout";
-// import {
-//   AuthProvider,
-//   useAuthContext,
-// } from "@/components/Authentication/AuthProvider";
-// import toast from "react-hot-toast";
 import { Tab } from "@headlessui/react";
 import { Fragment, SetStateAction, useEffect, useState } from "react";
 import { AddButton, Button, EditBtn } from "@/components/Buttons";
