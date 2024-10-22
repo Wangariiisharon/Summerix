@@ -60,6 +60,7 @@
 //     return res.status(500).json({ error: "Internal Server Error" });
 //   }
 // }
+
 import { admin, db } from "../../lib/firebaseAdmin";
 
 export default async function handler(req, res) {
@@ -89,10 +90,14 @@ export default async function handler(req, res) {
     // Fetch custom claims
     const user = await admin.auth().getUser(uid);
     let customClaims = user.customClaims || {};
+    console.log("Custom claims set for user:", uid, customClaims);
 
     // Check if the role field is "admin" and set custom claims if necessary
-    if (userData.role === "Admin" && !customClaims.admin) {
+    if (userData.role === "Admin") {
       customClaims.admin = true;
+    }
+    if (userData.role === "User") {
+      customClaims.admin = false;
     }
 
     // Add additionalPermissions to custom claims
@@ -126,6 +131,7 @@ export default async function handler(req, res) {
     // Refresh user to get updated custom claims
     const updatedUser = await admin.auth().getUser(uid);
     customClaims = updatedUser.customClaims;
+    console.log("customClaims:", customClaims);
 
     return res.status(200).json({
       uid: user.uid,

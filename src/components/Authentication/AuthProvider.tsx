@@ -1,46 +1,3 @@
-// import React, {
-//   createContext,
-//   useContext,
-//   useState,
-//   useEffect,
-//   useMemo,
-// } from "react";
-// import { getAuth, onAuthStateChanged } from "firebase/auth";
-// import {
-//   getFirestore,
-//   collection,
-//   query,
-//   where,
-//   getDocs,
-// } from "firebase/firestore";
-// import firebaseApp from "@/firebase/configs";
-// import { AdminUser } from "@/lib/types/admin.model";
-// import { useRouter } from "next/navigation";
-
-// interface User {
-//   uid: string;
-//   email?: string | null;
-// }
-
-// interface AdminData {
-//   docId: string;
-//   organisationId: string;
-//   departments: string[];
-//   super_admin: boolean;
-//   email: string;
-//   userId: string;
-// }
-
-// interface AuthContextType {
-//   isAuthenticated: boolean;
-//   isSuperAdmin: boolean;
-//   currentAdmin: AdminUser | null;
-//   currentUser: User | null;
-//   userId: string | null;
-//   organisationId: string | null;
-//   userData: AdminData | null;
-//   userClaims: ParsedToken | null; // Updated this line
-//   hasPermission: (permissionKey: string) => boolean;
 // }
 // interface ParsedToken {
 //   role?: string;
@@ -186,6 +143,7 @@ interface AdminData {
   super_admin: boolean;
   email: string;
   userId: string;
+  role: string;
 }
 
 interface AuthContextType {
@@ -240,7 +198,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const isSuperAdmin = useMemo(() => {
     return userData?.super_admin ?? false;
   }, [userData]);
-
   useEffect(() => {
     const auth = getAuth(firebaseApp);
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -248,6 +205,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setCurrentUser(user);
 
         try {
+          // Force refresh token to get updated custom claims
           await user.getIdToken(true);
           const token = await user.getIdToken();
           const uid = user.uid;
@@ -267,7 +225,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
           const userClaims = data.customClaims || {};
           setUserClaims(userClaims);
+          console.log("userClaims AuthProvid:", userClaims);
 
+          // Fetch department data if departmentId exists
           if (userClaims.departmentId) {
             const firestore = getFirestore(firebaseApp);
             const departmentDocRef = doc(
@@ -297,17 +257,87 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           setUserData(null);
           setUserClaims(null);
           setDepartmentData(null);
+          console.log("Error fetching user data Custom Claims:", error);
         }
       } else {
         setCurrentUser(null);
         setUserData(null);
         setUserClaims(null);
         setDepartmentData(null);
+        console.log("Error fetching user data Custom Claims: Null");
       }
     });
 
     return () => unsubscribe();
   }, [router]);
+
+  // useEffect(() => {
+  //   const auth = getAuth(firebaseApp);
+  //   const unsubscribe = onAuthStateChanged(auth, async (user) => {
+  //     if (user) {
+  //       setCurrentUser(user);
+
+  //       try {
+  //         await user.getIdToken(true);
+  //         const token = await user.getIdToken();
+  //         const uid = user.uid;
+
+  //         const res = await fetch(`/api/user?uid=${uid}`, {
+  //           headers: {
+  //             Authorization: `Bearer ${token}`,
+  //           },
+  //         });
+
+  //         if (!res.ok) {
+  //           throw new Error("Failed to fetch user data");
+  //         }
+
+  //         const data = await res.json();
+  //         setUserData(data);
+
+  //         const userClaims = data.customClaims || {};
+  //         setUserClaims(userClaims);
+
+  //         if (userClaims.departmentId) {
+  //           const firestore = getFirestore(firebaseApp);
+  //           const departmentDocRef = doc(
+  //             firestore,
+  //             "departments",
+  //             userClaims.departmentId
+  //           );
+  //           const departmentDoc = await getDoc(departmentDocRef);
+
+  //           if (departmentDoc.exists()) {
+  //             setDepartmentData(departmentDoc.data());
+  //           } else {
+  //             setDepartmentData(null);
+  //           }
+  //         } else {
+  //           setDepartmentData(null);
+  //         }
+
+  //         const adminUser = data as AdminUser;
+  //         adminUser.initials =
+  //           data.firstname?.charAt(0)?.toUpperCase() +
+  //           data.lastname?.charAt(0)?.toUpperCase();
+  //         setCurrentAdmin(adminUser);
+  //       } catch (error) {
+  //         console.error(error);
+  //         setCurrentUser(null);
+  //         setUserData(null);
+  //         setUserClaims(null);
+  //         setDepartmentData(null);
+  //       }
+  //     } else {
+  //       setCurrentUser(null);
+  //       setUserData(null);
+  //       setUserClaims(null);
+  //       setDepartmentData(null);
+  //     }
+  //   });
+
+  //   return () => unsubscribe();
+  // }, [router]);
 
   return (
     <AuthContext.Provider
