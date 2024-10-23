@@ -79,6 +79,7 @@ export default function AllTrips({ searchQuery }: any) {
     excess_weight_fee: null,
     t1_form: null,
     interchange_documents: null,
+    cargoSize: 0,
   });
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>("all");
@@ -163,6 +164,7 @@ export default function AllTrips({ searchQuery }: any) {
       excess_weight_fee: trip.excess_weight_fee,
       t1_form: trip.t1_form,
       interchange_documents: trip.interchange_documents,
+      cargoSize: trip.cargoSize,
     });
     setEditModalOpen(true);
   };
@@ -199,6 +201,7 @@ export default function AllTrips({ searchQuery }: any) {
     excess_weight_fee: any;
     t1_form: any;
     interchange_documents: any;
+    cargoSize: any;
   }) => {
     if (!selectedTrip) {
       console.error("No selected Trip to update");
@@ -260,6 +263,7 @@ export default function AllTrips({ searchQuery }: any) {
         excess_weight_fee: values.excess_weight_fee,
         t1_form: values.t1_form,
         interchange_documents: values.interchange_documents,
+        cargoSize: values.cargoSize,
       });
 
       // Update the local fetchedVehicles state
@@ -294,6 +298,7 @@ export default function AllTrips({ searchQuery }: any) {
               excess_weight_fee: values.excess_weight_fee,
               t1_form: values.t1_form,
               interchange_documents: values.interchange_documents,
+              cargoSize: values.cargoSize,
             }
           : trip
       );
@@ -961,31 +966,38 @@ export default function AllTrips({ searchQuery }: any) {
                           />
                         </label>
                       </div>
-                      <div className="flex w-full justify-between"></div>
-                      <label className="block mt-8">
-                        <label className="form-label">TRIP STATUS</label>
 
-                        <Field
-                          as="select"
-                          name="trip_status"
-                          value={formik.values.trip_status}
-                          className="form-input bg-grey w-48"
-                        >
-                          <option>Select Trip status</option>
-                          <option value="Booked">Booked</option>
-                          {/* <option value="Ready for Departure">
-                          Ready for Departure
-                        </option> */}
-                          {/* <option value="At the border">At the border</option> */}
-                          {/* <option value="Offloading dest">Offloading dest</option> */}
-                          <option value="On Route">On Route</option>
-                          <option value="Mechanical">Mechanical</option>
-                          <option value="Done">Done </option>
-                          {/* <option value="Returning the Container">
-                          returning with Container
-                        </option> */}
-                        </Field>
-                      </label>
+                      <div className="flex w-full justify-between mt-8">
+                        <label className="block">
+                          <label className="form-label">CARGO SIZE</label>
+                          <Field
+                            type="number"
+                            name="cargoSize"
+                            value={formik.values.cargoSize}
+                            placeholder="ft"
+                            className="form-input bg-grey w-48"
+                          />
+                        </label>
+
+                        <label className="block ">
+                          <label className="form-label">TRIP STATUS</label>
+
+                          <Field
+                            as="select"
+                            name="trip_status"
+                            value={formik.values.trip_status}
+                            className="form-input bg-grey w-48"
+                          >
+                            <option>Select Trip status</option>
+                            <option value="Booked">Booked</option>
+
+                            <option value="On Route">On Route</option>
+                            <option value="Mechanical">Mechanical</option>
+                            <option value="Done">Done </option>
+                          </Field>
+                        </label>
+                      </div>
+
                       <label className="block mt-8">
                         <label className="form-label">Memo</label>
                         <Field
@@ -996,6 +1008,7 @@ export default function AllTrips({ searchQuery }: any) {
                           placeholder="Optional"
                         />
                       </label>
+
                       <div className="flex w-full justify-end mt-24 ">
                         {/* <Button className='text-blue text-xl mr-32' handleClick={handleReset}>Reset</Button>
                                 <button type='submit' >Save</button> */}
@@ -1072,7 +1085,7 @@ export function TripsTable({
     if (selectedTab === 0) {
       return true;
     } else if (selectedTab === 1) {
-      return currentDate > maintenanceDate;
+      return currentDate < maintenanceDate;
     }
 
     return true;

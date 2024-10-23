@@ -83,6 +83,7 @@ const validationSchema = Yup.object({
   client: Yup.string().required("Client is required"),
   dealValue: Yup.number().positive().required("Deal Value is required"),
   fuel: Yup.number().positive().required("Fuel is required"),
+  cargoSize: Yup.number().positive().required("Cargo Size is required"),
   mileage_fee: Yup.number().positive().required("Mileage Fee is required"),
   payment_status: Yup.string().required("Payment Status is required"),
 });
@@ -92,9 +93,9 @@ export default function TripsComponent() {
   const [drivers, setDrivers] = useState<
     { id: string; name: string; phonenumber: string }[]
   >([]);
-  const [companies, setCompanies] = useState<
-    { id: string; name: string; vehicle: string[] }[]
-  >([]);
+  // const [companies, setCompanies] = useState<
+  //   { id: string; name: string; vehicle: string[] }[]
+  // >([]);
   const [selectedCompanyVehicles, setSelectedCompanyVehicles] = useState<
     string[]
   >([]);
@@ -119,6 +120,9 @@ export default function TripsComponent() {
   const [isExporting, setIsExporting] = useState(false);
   const [distance, setDistance] = useState<string>("");
   const [cargos, setCargos] = useState<string[]>([]);
+  const [vehicle, setVehicles] = useState<string[]>([]);
+
+  const [companies, setCompanies] = useState<string[]>([]);
 
   const [editFormInitialValues, setEditFormInitialValues] = useState({
     trip_id: "",
@@ -151,6 +155,7 @@ export default function TripsComponent() {
     excess_weight_fee: null,
     t1_form: null,
     interchange_documents: null,
+    cargoSize: 0,
   });
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -203,17 +208,17 @@ export default function TripsComponent() {
     setOpen(false);
   };
 
-  const updateSelectedCompanyVehicles = (companyName: string) => {
-    if (companyName) {
-      const company = companies.find((company) => company.name === companyName);
-      if (company) {
-        setSelectedCompanyVehicles(company.vehicle);
-        console.log(setSelectedCompanyVehicles);
-      }
-    } else {
-      setSelectedCompanyVehicles([]);
-    }
-  };
+  // const updateSelectedCompanyVehicles = (companyName: string) => {
+  //   if (companyName) {
+  //     const company = companies.find((company) => company.name === companyName);
+  //     if (company) {
+  //       setSelectedCompanyVehicles(company.vehicle);
+  //       console.log(setSelectedCompanyVehicles);
+  //     }
+  //   } else {
+  //     setSelectedCompanyVehicles([]);
+  //   }
+  // };
 
   const fetchOngoingTrips = async () => {
     const now = new Date();
@@ -384,121 +389,140 @@ export default function TripsComponent() {
         console.error("Error fetching Trips:", error);
       }
     };
+    // const fetchedCompanies = async () => {
+    //   try {
+    //     if (organisationId) {
+    //       const q = query(
+    //         collection(fbDb, "classes"),
+    //         where("organisationId", "==", organisationId),
+    //         where("archive", "==", false)
+    //       );
+    //       const querySnapshot = await getDocs(q);
+
+    //       if (querySnapshot.empty) {
+    //         console.log(
+    //           "No classes found for the organisationId:",
+    //           organisationId
+    //         );
+    //         return;
+    //       }
+
+    //       const companyDetails = await Promise.all(
+    //         querySnapshot.docs.map(async (doc) => {
+    //           const data = doc.data();
+    //           console.log("Class Data:", data);
+
+    //           if (!data.vehicle || !Array.isArray(data.vehicle)) {
+    //             console.log(
+    //               "No vehicles or invalid vehicle format in class:",
+    //               doc.id
+    //             );
+    //             return null;
+    //           }
+
+    //           const vehiclesPromises = data.vehicle.map(
+    //             async (licensePlate: string) => {
+    //               const vehicleQuery = query(
+    //                 collection(fbDb, "vehicles"),
+    //                 where("lisence_plate", "==", licensePlate)
+    //               );
+    //               const vehicleSnapshot = await getDocs(vehicleQuery);
+
+    //               if (vehicleSnapshot.empty) {
+    //                 console.log(
+    //                   "No vehicle found for licensePlate:",
+    //                   licensePlate
+    //                 );
+    //                 return null;
+    //               }
+
+    //               const vehicleDocs = vehicleSnapshot.docs.map(
+    //                 async (vehicleDoc) => {
+    //                   const vehicleData = vehicleDoc.data();
+    //                   console.log("Vehicle Data:", vehicleData);
+
+    //                   if (
+    //                     !vehicleData.archive &&
+    //                     vehicleData.availability_status !== "Out Of Service"
+    //                   ) {
+    //                     const tripQuery = query(
+    //                       collection(fbDb, "trips"),
+    //                       where("vehicle", "==", licensePlate),
+    //                       where("trip_status", "==", "On Route")
+    //                     );
+    //                     const tripSnapshot = await getDocs(tripQuery);
+
+    //                     if (tripSnapshot.empty) {
+    //                       return licensePlate; // Return the license plate of available vehicles
+    //                     }
+    //                   }
+    //                   return null;
+    //                 }
+    //               );
+
+    //               const filteredVehicles = await Promise.all(vehicleDocs);
+    //               return filteredVehicles.filter((v) => v); // Filter out null results
+    //             }
+    //           );
+
+    //           const vehicles = await Promise.all(vehiclesPromises);
+    //           const availableVehicles = vehicles.flat().filter((v) => v); // Flatten and filter to remove falsy values
+    //           console.log(
+    //             "Available Vehicles for class",
+    //             doc.id,
+    //             ":",
+    //             availableVehicles
+    //           );
+
+    //           // Ensure name is a string
+    //           if (typeof data.name !== "string") {
+    //             console.log("Invalid name format in class:", doc.id);
+    //             return null;
+    //           }
+
+    //           return {
+    //             id: doc.id,
+    //             name: data.name,
+    //             vehicle: availableVehicles,
+    //           };
+    //         })
+    //       );
+
+    //       // Filter out null results and assert the correct type
+    //       const validCompanyDetails: {
+    //         id: string;
+    //         name: string;
+    //         vehicle: string[];
+    //       }[] = companyDetails.filter(
+    //         (c): c is { id: string; name: string; vehicle: string[] } =>
+    //           c !== null
+    //       );
+
+    //       setCompanies(validCompanyDetails);
+    //     }
+    //   } catch (error) {
+    //     console.error("Error fetching companies:", error);
+    //   }
+    // };
+
     const fetchedCompanies = async () => {
       try {
         if (organisationId) {
           const q = query(
             collection(fbDb, "classes"),
             where("organisationId", "==", organisationId),
-            where("archive", "==", false)
+            where("archive", "==", false) // Only fetch drivers where archive is false
           );
           const querySnapshot = await getDocs(q);
-
-          if (querySnapshot.empty) {
-            console.log(
-              "No classes found for the organisationId:",
-              organisationId
-            );
-            return;
-          }
-
-          const companyDetails = await Promise.all(
-            querySnapshot.docs.map(async (doc) => {
-              const data = doc.data();
-              console.log("Class Data:", data);
-
-              if (!data.vehicle || !Array.isArray(data.vehicle)) {
-                console.log(
-                  "No vehicles or invalid vehicle format in class:",
-                  doc.id
-                );
-                return null;
-              }
-
-              const vehiclesPromises = data.vehicle.map(
-                async (licensePlate: string) => {
-                  const vehicleQuery = query(
-                    collection(fbDb, "vehicles"),
-                    where("lisence_plate", "==", licensePlate)
-                  );
-                  const vehicleSnapshot = await getDocs(vehicleQuery);
-
-                  if (vehicleSnapshot.empty) {
-                    console.log(
-                      "No vehicle found for licensePlate:",
-                      licensePlate
-                    );
-                    return null;
-                  }
-
-                  const vehicleDocs = vehicleSnapshot.docs.map(
-                    async (vehicleDoc) => {
-                      const vehicleData = vehicleDoc.data();
-                      console.log("Vehicle Data:", vehicleData);
-
-                      if (
-                        !vehicleData.archive &&
-                        vehicleData.availability_status !== "Out Of Service"
-                      ) {
-                        const tripQuery = query(
-                          collection(fbDb, "trips"),
-                          where("vehicle", "==", licensePlate),
-                          where("trip_status", "==", "On Route")
-                        );
-                        const tripSnapshot = await getDocs(tripQuery);
-
-                        if (tripSnapshot.empty) {
-                          return licensePlate; // Return the license plate of available vehicles
-                        }
-                      }
-                      return null;
-                    }
-                  );
-
-                  const filteredVehicles = await Promise.all(vehicleDocs);
-                  return filteredVehicles.filter((v) => v); // Filter out null results
-                }
-              );
-
-              const vehicles = await Promise.all(vehiclesPromises);
-              const availableVehicles = vehicles.flat().filter((v) => v); // Flatten and filter to remove falsy values
-              console.log(
-                "Available Vehicles for class",
-                doc.id,
-                ":",
-                availableVehicles
-              );
-
-              // Ensure name is a string
-              if (typeof data.name !== "string") {
-                console.log("Invalid name format in class:", doc.id);
-                return null;
-              }
-
-              return {
-                id: doc.id,
-                name: data.name,
-                vehicle: availableVehicles,
-              };
-            })
-          );
-
-          // Filter out null results and assert the correct type
-          const validCompanyDetails: {
-            id: string;
-            name: string;
-            vehicle: string[];
-          }[] = companyDetails.filter(
-            (c): c is { id: string; name: string; vehicle: string[] } =>
-              c !== null
-          );
-
-          setCompanies(validCompanyDetails);
+          const names = querySnapshot.docs.map((doc) => doc.data().name);
+          setCompanies(names);
+          console.log("Classes:", names);
         }
       } catch (error) {
-        console.error("Error fetching companies:", error);
+        console.error("Error fetching Class names:", error);
       }
     };
+
     const fetchCargo = async () => {
       try {
         if (organisationId) {
@@ -516,12 +540,29 @@ export default function TripsComponent() {
         console.error("Error fetching Cargo names:", error);
       }
     };
-
+    const fetchVehicleNames = async () => {
+      try {
+        if (organisationId) {
+          const q = query(
+            collection(fbDb, "vehicles"),
+            where("organisationId", "==", organisationId)
+          );
+          const querySnapshot = await getDocs(q);
+          const names = querySnapshot.docs.map(
+            (doc) => doc.data().lisence_plate
+          );
+          setVehicles(names);
+        }
+      } catch (error) {
+        console.error("Error fetching Vehicle names:", error);
+      }
+    };
     fetchCargo();
     fetchDrivers();
     fetchedTrips();
     fetchedClients();
     fetchedCompanies();
+    fetchVehicleNames();
   }, [organisationId]);
 
   function convertToDate(firestoreTimestamp: any) {
@@ -587,6 +628,7 @@ export default function TripsComponent() {
       excess_weight_fee: trip.excess_weight_fee,
       t1_form: trip.t1_form,
       interchange_documents: trip.interchange_documents,
+      cargoSize: trip.cargoSize,
     });
     setEditModalOpen(true);
   };
@@ -623,6 +665,7 @@ export default function TripsComponent() {
     excess_weight_fee: any;
     t1_form: any;
     interchange_documents: any;
+    cargoSize: any;
   }) => {
     if (!selectedTrip) {
       console.error("No selected Trip to update");
@@ -684,6 +727,7 @@ export default function TripsComponent() {
         excess_weight_fee: values.excess_weight_fee,
         t1_form: values.t1_form,
         interchange_documents: values.interchange_documents,
+        cargoSize: values.cargoSize,
       });
 
       // Update the local fetchedVehicles state
@@ -718,6 +762,7 @@ export default function TripsComponent() {
               excess_weight_fee: values.excess_weight_fee,
               t1_form: values.t1_form,
               interchange_documents: values.interchange_documents,
+              cargoSize: values.cargoSize,
             }
           : trip
       );
@@ -840,6 +885,7 @@ export default function TripsComponent() {
     excess_weight_fee: any;
     t1_form: any;
     interchange_documents: any;
+    cargoSize: number;
   }) => {
     console.log("Submitted Values:", values);
     console.log("Distance handlesubmit:", distance);
@@ -932,6 +978,7 @@ export default function TripsComponent() {
         client: values.client,
         dealValue: values.dealValue,
         fuel: values.fuel,
+        cargoSize: values.cargoSize,
         mileage_fee: values.mileage_fee,
         distance: distanceValue,
         timestamp: Timestamp.now(),
@@ -1231,6 +1278,7 @@ export default function TripsComponent() {
                 client: "",
                 dealValue: 0,
                 fuel: 0,
+                cargoSize: 0,
                 mileage_fee: 0,
                 payment_status: "",
                 paid_amount: 0,
@@ -1409,40 +1457,12 @@ export default function TripsComponent() {
                             as="select"
                             name="company"
                             value={formik.values.company}
-                            onChange={async (e: any) => {
-                              const selectedCompanyName = e.target.value;
-                              handleCompanyChange(selectedCompanyName);
-                              console.log(
-                                "selectedCompanyName",
-                                selectedCompanyName
-                              );
-
-                              // Disable the submit button and reset the fetched flag
-                              setCompanyDetailsFetched(false);
-                              // Find the selected company's vehicles and set them
-                              const selectedCompanyDetails = companies.find(
-                                (company) =>
-                                  company.name === selectedCompanyName
-                              );
-                              setSelectedCompanyVehicles(
-                                selectedCompanyDetails
-                                  ? selectedCompanyDetails.vehicle
-                                  : []
-                              );
-                              // Enable the submit button and set the fetched flag
-                              setCompanyDetailsFetched(true);
-                              console.log(selectedCompanyDetails);
-                              formik.setFieldValue(
-                                "company",
-                                selectedCompanyName
-                              );
-                            }}
                             className="form-input bg-grey w-48"
                           >
                             <option value="">Select Class</option>
                             {companies.map((company, index) => (
-                              <option key={index} value={company.name}>
-                                {company.name}
+                              <option key={index} value={company}>
+                                {company}
                               </option>
                             ))}
                           </Field>
@@ -1505,8 +1525,15 @@ export default function TripsComponent() {
                             value={formik.values.vehicle}
                             className="form-input bg-grey w-48"
                           >
-                            <option value="">Select Vehicle</option>
+                            {/* <option value="">Select Vehicle</option>
                             {selectedCompanyVehicles.map((vehicle, index) => (
+                              <option key={index} value={vehicle}>
+                                {vehicle}
+                              </option>
+                            ))} */}
+
+                            <option value="">Select Vehicle</option>
+                            {vehicle.map((vehicle, index) => (
                               <option key={index} value={vehicle}>
                                 {vehicle}
                               </option>
@@ -1816,6 +1843,21 @@ export default function TripsComponent() {
                           />
                         </label>
                       </div>
+                      <label className="block mt-8">
+                        <label className="form-label">CARGO SIZE</label>
+                        <Field
+                          type="number"
+                          name="cargoSize"
+                          value={formik.values.cargoSize}
+                          placeholder="ft"
+                          className="form-input bg-grey w-48"
+                        />
+                        <ErrorMessage
+                          name="cargoSize"
+                          component="div"
+                          className="error text-sm text-red-500 "
+                        />
+                      </label>
                       <label className="block mt-8">
                         <label className="form-label">MEMO</label>
                         <Field
@@ -2204,7 +2246,7 @@ export default function TripsComponent() {
                       <p className="mt-5 font-semibold"> Cargo</p>
                       <div className="flex w-full justify-between">
                         <label className="block mt-8">
-                          <label className="form-label">Cargo Type</label>
+                          <label className="form-label">CARGO TYPE</label>
                           <Field
                             disabled
                             type="text"
@@ -2214,7 +2256,7 @@ export default function TripsComponent() {
                           />
                         </label>
                         <label className="block mt-8">
-                          <label className="form-label">Cargo Quanitiy</label>
+                          <label className="form-label">CONTAINER NUMBER</label>
                           <Field
                             disabled
                             type="text"
@@ -2224,6 +2266,17 @@ export default function TripsComponent() {
                           />
                         </label>
                       </div>
+                      <label className="block mt-8">
+                        <label className="form-label">CARGO SIZE</label>
+                        <Field
+                          type="number"
+                          name="cargoSize"
+                          value={formik.values.cargoSize}
+                          placeholder="ft"
+                          className="form-input bg-grey w-48"
+                        />
+                      </label>
+
                       <div className="flex w-full justify-between"></div>
                       <label className="block mt-8">
                         <label className="form-label">TRIP STATUS</label>
