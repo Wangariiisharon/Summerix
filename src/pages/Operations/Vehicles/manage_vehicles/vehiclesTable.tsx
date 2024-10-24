@@ -5,6 +5,7 @@ import { AddButton, Button, EditBtn } from "@/components/Buttons";
 import { doc, setDoc, DocumentData } from "firebase/firestore";
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import { useRouter } from "next/router";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 
 interface VehiclesTableProps {
   selectedTab: number;
@@ -29,6 +30,7 @@ export default function VehiclesTable({
   const [currentPage, setCurrentPage] = useState(0);
   const rowsPerPage = 3;
   const router = useRouter();
+  const { currentUser } = useAuthContext();
 
   if (!vehicles || vehicles.length === 0) {
     return <div>No vehicles data available.</div>;
@@ -55,7 +57,11 @@ export default function VehiclesTable({
   ) => {
     try {
       const vehicleRef = doc(fbDb, "vehicles", vehicleId);
-      await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
+      await setDoc(
+        vehicleRef,
+        { archive: newStatus, addedBy: currentUser?.email },
+        { merge: true }
+      );
       console.log("Vehicle status updated in the database:", vehicleId);
 
       const updatedVehicles = vehicles.map((vehicle) =>

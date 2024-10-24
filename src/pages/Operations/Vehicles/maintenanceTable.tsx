@@ -86,7 +86,7 @@ export default function MaintananceTable({
     status: "",
     serial_number: "",
     approvalCount: 0,
-    broken_partImage: "" || null,
+    broken_partImage: "",
     broken_partImageName: "", // Add this field
     approvedBy: [],
     timestamp: "",

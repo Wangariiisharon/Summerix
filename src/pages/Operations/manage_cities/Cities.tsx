@@ -66,6 +66,7 @@ export default function Cities() {
     clientId: "",
     organisationId: "",
     archive: false,
+    addedBy: "",
   });
   const {
     currentAdmin,
@@ -103,6 +104,7 @@ export default function Cities() {
       clientId: client.clientId,
       organisationId: client.organisationId,
       archive: client.name,
+      addedBy: client.addedBy,
     });
     setEditModalOpen(true);
   };
@@ -167,6 +169,7 @@ export default function Cities() {
         clientId: values.clientId,
         organisationId: values.organisationId,
         archive: values.archive,
+        addedBy: currentUser?.email,
       });
 
       // Update the local fetchedVehicles state
@@ -320,6 +323,7 @@ export default function Cities() {
         clientId: generatedCitiesId,
         organisationId: organisationId,
         archive: false,
+        addedBy: currentUser?.email,
       };
 
       const docRef = await addDoc(collection(fbDb, "clients"), clientsData);

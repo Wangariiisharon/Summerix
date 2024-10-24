@@ -57,6 +57,7 @@ interface Admin {
   organisationId: any;
   // super_admin: boolean;
   inviterUid: string | null;
+  addedBy: string;
 }
 
 type EditFormValues = {
@@ -77,6 +78,7 @@ type EditFormValues = {
   id: string;
   role: string;
   country: string;
+  addedBy: string;
 };
 
 export default function Admins() {
@@ -105,6 +107,7 @@ export default function Admins() {
       role: "",
       country: "",
       phonenumber: "",
+      addedBy: "",
     });
 
   const [departments, setDepartments] = useState<DocumentData[]>([]);
@@ -271,6 +274,7 @@ export default function Admins() {
       id: admin.id || "",
       role: admin.role,
       country: admin.country,
+      addedBy: admin.addedBy,
     });
     setEditModalOpen(true);
   };
@@ -322,6 +326,7 @@ export default function Admins() {
         invitationSent: values.invitationSent || false,
         country: values.country || "",
         role: values.role || "",
+        addedBy: currentUser?.email || "",
       };
 
       await setDoc(AdminRef, adminDataToUpdate, { merge: true });
@@ -415,6 +420,7 @@ export default function Admins() {
         archive: false,
         additionalPermissions: [],
         invitationSent: true,
+        addedBy: currentUser?.email || "",
       };
 
       console.log("Admin Data to be added:", adminData);

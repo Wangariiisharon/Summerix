@@ -46,6 +46,7 @@ export default function Jobcard() {
     name: "",
     organisationId: "",
     archive: false,
+    addedBy: "",
   });
   const {
     currentAdmin,
@@ -91,6 +92,7 @@ export default function Jobcard() {
       name: jobcard.name,
       organisationId: jobcard.organisationId,
       archive: jobcard.archive,
+      addedBy: jobcard.addedBy,
     });
     setEditModalOpen(true);
   };
@@ -123,6 +125,7 @@ export default function Jobcard() {
         name: values.name,
         organisationId: values.organisationId,
         archive: values.archive,
+        addedBy: currentUser?.email,
       });
 
       // Update the local fetchedVehicles state
@@ -150,7 +153,11 @@ export default function Jobcard() {
     try {
       // Update the vehicle status in the database
       const vehicleRef = doc(fbDb, "jobcard", classId);
-      await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
+      await setDoc(
+        vehicleRef,
+        { archive: newStatus, addedBy: currentUser?.email },
+        { merge: true }
+      );
       toast.success("Job card status updated");
 
       // Update the local state with the new status
@@ -209,6 +216,7 @@ export default function Jobcard() {
         status: true,
         archive: false,
         organisationId: organisationId,
+        addedBy: currentUser?.email,
       };
 
       const docRef = await addDoc(jobcardCollection, JobcardData);

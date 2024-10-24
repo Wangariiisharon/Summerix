@@ -64,7 +64,7 @@ export default function Maintenance({
   const [checkboxState, setCheckboxState] = useState<boolean[]>([]);
   const [checkedIndexes, setCheckedIndexes] = useState<number[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const { organisationId, userData } = useAuthContext();
+  const { organisationId, userData, currentUser } = useAuthContext();
 
   const approvedBy = userData?.email;
 
@@ -248,6 +248,7 @@ export default function Maintenance({
         notificationNeedsDisplay: true,
         isNotificationViewed: false,
         userId: userData?.userId,
+        addedBy: currentUser?.email,
       };
       console.log("Maintenance Data:", maintenanceData);
 

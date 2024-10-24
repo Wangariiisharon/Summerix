@@ -1,8 +1,3 @@
-import TripsComponent from "./trips";
-import { Button } from "@/components/Buttons";
-import { ArrowDownTrayIcon, PlusIcon } from "@heroicons/react/24/solid";
-import { XMarkIcon } from "@heroicons/react/24/outline";
-import { FormModal } from "@/components/Modals/FormModal";
 import { Fragment, SetStateAction, useEffect, useState } from "react";
 import { fbDb } from "@/firebase/configs";
 import {
@@ -19,17 +14,7 @@ import {
   onSnapshot,
   updateDoc,
 } from "firebase/firestore";
-import { Field, Formik, Form } from "formik";
-import { Tab } from "@headlessui/react";
 import { useRouter } from "next/router";
-import AllTrips from "./allTrips";
-import { ErrorMessage } from "formik";
-import { exportDataToCSV } from "../../../components/Exports/tripsExport";
-import toast from "react-hot-toast";
-import { startOfMonth, endOfMonth, format } from "date-fns";
-import { useAuthContext } from "@/components/Authentication/AuthProvider";
-import PlacesAutocomplete from "react-places-autocomplete";
-import * as Yup from "yup";
 
 interface TripsTableProps {
   selectedTab: number;

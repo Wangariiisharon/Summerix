@@ -34,6 +34,7 @@ import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import json2csv from "json2csv";
 import { useRouter } from "next/router";
+
 interface Department {
   status: boolean;
   members: number;
@@ -44,6 +45,7 @@ interface Department {
   organisationId: string;
   archive: boolean;
   permissions: string[];
+  addedBy: string;
 }
 
 const validationSchema = Yup.object({
@@ -67,9 +69,16 @@ export default function Departments() {
     archive: false,
     organisationId: "",
     permissions: [] as string[],
+    addedBy: "",
   });
-  const { organisationId } = useAuthContext();
-
+  const {
+    currentAdmin,
+    currentUser,
+    organisationId,
+    isSuperAdmin,
+    userClaims,
+    departmentData,
+  } = useAuthContext();
   const handleAdd = () => {
     setIsModalOpen(true);
   };
@@ -155,6 +164,7 @@ export default function Departments() {
                   archive: data.archive,
                   organisationId: data.organisationId,
                   permissions: data.permissions,
+                  addedBy: data.addedBy,
                   ...data,
                 };
               })
@@ -186,6 +196,7 @@ export default function Departments() {
       archive: department.archive,
       updated: updated,
       permissions: department.permissions,
+      addedBy: department.addedBy,
     });
     setEditModalOpen(true);
   };
@@ -223,6 +234,7 @@ export default function Departments() {
         archive: values.archive,
         updated: values.updated,
         permissions: values.permissions,
+        addedBy: currentUser?.email,
       });
 
       // Update the local fetchedVehicles state
@@ -316,6 +328,7 @@ export default function Departments() {
         archive: false,
         organisationId: organisationId,
         permissions: [],
+        addedBy: currentUser?.email,
       };
 
       const docRef = await addDoc(
@@ -325,10 +338,10 @@ export default function Departments() {
       await updateDoc(docRef, { id: docRef.id });
       toast.success("Department Successfully Added.");
 
-      const newDepartment: Department = {
-        id: docRef.id,
-        ...DepartmentsData,
-      };
+      // const newDepartment: Department = {
+      //   id: docRef.id,
+      //   ...DepartmentsData,
+      // };
 
       // Prepend the new department to the fetchedDepartments state
       // setFetchedDepartments((prevDepartments) => [
@@ -522,6 +535,7 @@ export function DepartmentsTable({
   const [selectedDepartments, setSelectedDepartments] = useState<Department[]>(
     []
   );
+  const { currentUser } = useAuthContext();
 
   const handleCheckboxChange = (department: Department) => {
     const isAdminSelected = selectedDepartments.includes(department);
@@ -598,24 +612,6 @@ export function DepartmentsTable({
     link.click();
     document.body.removeChild(link);
   };
-  // const updateVehicleStatusInDatabase = async (
-  //   classId: string,
-  //   newStatus: boolean
-  // ) => {
-  //   try {
-  //     const vehicleRef = doc(fbDb, "departments", classId);
-  //     await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
-
-  //     const updatedVehicles = departments.map((department) =>
-  //       department.id === classId
-  //         ? { ...department, archive: newStatus }
-  //         : department
-  //     );
-  //     updateFetchedDepartments(updatedVehicles);
-  //   } catch (error) {
-  //     console.error("Error updating Department status in database:", error);
-  //   }
-  // };
 
   const toggleArchiveStatus = async (department: Department) => {
     try {
@@ -629,6 +625,7 @@ export function DepartmentsTable({
       await updateDoc(adminRef, {
         archive: newArchiveStatus,
         status: newStatus,
+        addedBy: currentUser?.email,
       });
 
       console.log(`Department ${department.name} updated successfully`);
@@ -640,7 +637,6 @@ export function DepartmentsTable({
           ? { ...a, archive: newArchiveStatus, status: newStatus }
           : a
       );
-      // updateFetchedDepartments(updatedDepartments);
     } catch (error) {
       console.error("Error updating department:", error);
       toast.error("Error updating department. Please try again.");
