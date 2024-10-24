@@ -1,7 +1,6 @@
 import { Header } from "@/components/Headers";
 import { Tab } from "@headlessui/react";
 import { Fragment, useEffect, useState } from "react";
-
 import Cities from "./manage_cities/Cities";
 import Vehicles from "./Vehicles";
 import Trips from "./Trips/trips";
@@ -18,7 +17,7 @@ const tabs = [
   { name: "Clients", href: "#", current: false },
   { name: "Drivers", href: "#", current: false },
   { name: "Jobcards", href: "#", current: false },
-  { name: "Cargo", href: "#", current: false },
+  { name: "Cargo Type", href: "#", current: false },
   { name: "Suppliers", href: "#", current: false },
 ];
 

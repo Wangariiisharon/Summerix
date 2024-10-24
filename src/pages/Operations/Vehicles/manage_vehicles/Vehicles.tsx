@@ -85,6 +85,7 @@ export default function Vehicles({
     vehiclesId: "", // Assign the result of the function
     organisationId: "",
     timestamp: "",
+    addedBy: "",
   });
   const {
     currentAdmin,
@@ -150,6 +151,7 @@ export default function Vehicles({
       vehiclesId: vehicle.vehiclesId, // Assign the result of the function
       organisationId: vehicle.organisationId,
       timestamp: vehicle.timestamp,
+      addedBy: vehicle.addedBy,
     });
     setEditModalOpen(true);
   };
@@ -356,6 +358,7 @@ export default function Vehicles({
       vehiclesId: generatedVehicleId,
       organisationId: organisationId,
       timestamp: Timestamp.now(),
+      addedBy: currentUser?.email,
     };
 
     const docRef = await addDoc(vehiclesCollection, VehicleData);
@@ -683,39 +686,8 @@ export default function Vehicles({
         vehiclesId: values.vehiclesId,
         organisationId: values.organisationId,
         timestamp: values.timestamp,
+        addedBy: currentUser?.email,
       });
-
-      // Update the local fetchedVehicles state
-      const updatedVehicles = fetchedVehicles.map((vehicle) =>
-        vehicle.id === selectedVehicle.id
-          ? {
-              ...vehicle,
-              cargo_capacity: values.cargo_capacity,
-              lisence_plate: values.lisence_plate,
-              vehicle_type: values.vehicle_type,
-              make: values.make,
-              model: values.model,
-              year: values.year,
-              ownership_status: values.ownership_status,
-              lease_amount: values.lease_amount,
-              purchase_price: values.purchase_price,
-              truck_incurance: values.truck_incurance,
-              cargo_insurance: values.cargo_insurance,
-              port_entry_permits: values.port_entry_permits,
-              inspection_certificates: values.inspection_certificates,
-              transit_permits: values.transit_permits,
-              status: values.status,
-              archive: values.archive,
-              registration_date: values.registration_date,
-              availability_status: values.availability_status,
-              vehiclesId: values.vehiclesId,
-              organisationId: values.organisationId,
-              timestamp: values.timestamp,
-            }
-          : vehicle
-      );
-
-      setFetchedVehicles(updatedVehicles);
 
       setSelectedVehicle(null);
       setEditModalOpen(false);

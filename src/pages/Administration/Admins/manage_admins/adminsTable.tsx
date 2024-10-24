@@ -14,6 +14,7 @@ import SearchBar from "@/components/Forms/input";
 import { useRouter } from "next/router";
 import { AnyPtrRecord } from "dns";
 import { AnyObject } from "yup";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 
 interface Admin {
   adminId: string;
@@ -32,6 +33,7 @@ interface Admin {
   invitationSent: any;
   organisationId: any;
   inviterUid: string | null;
+  addedBy: string;
 }
 
 interface AdminsTableProps {
@@ -50,6 +52,8 @@ export default function AdminsTable({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectAll, setSelectAll] = useState(false);
   const [selectedAdmins, setSelectedAdmins] = useState<Admin[]>([]);
+  let { currentUser, organisationId, isSuperAdmin } = useAuthContext();
+
   const router = useRouter();
 
   const handleCheckboxChange = (admin: Admin) => {
@@ -165,6 +169,7 @@ export default function AdminsTable({
       await updateDoc(adminRef, {
         archive: newArchiveStatus,
         status: newStatus,
+        addedBy: currentUser?.email,
       });
 
       console.log(`Admin ${admin.adminId} updated successfully`);
@@ -178,7 +183,6 @@ export default function AdminsTable({
           ? { ...a, archive: newArchiveStatus, status: newStatus }
           : a
       );
-      // updateFetchedAdmins(updatedAdmins);
     } catch (error) {
       console.error("Error updating admin:", error);
       toast.error("Error updating admin. Please try again.");

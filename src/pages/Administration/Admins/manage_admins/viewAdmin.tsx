@@ -37,7 +37,7 @@ interface AdminData {
   lastname: string;
   email: string;
   phonenumber: string;
-  super_admin: boolean;
+  // super_admin: boolean;
   status: boolean;
   additionalPermissions: string[];
   adminId: string;
@@ -48,6 +48,7 @@ interface AdminData {
   department: string;
   country: string;
   role: string;
+  addedby: string;
 }
 
 type PermissionObject = { name: string; checked: boolean };
@@ -90,7 +91,7 @@ export default function ViewDepatment() {
       lastname: "",
       email: "",
       phonenumber: "",
-      super_admin: false,
+      // super_admin: false,
       status: true,
       additionalPermissions: [],
       adminId: "",
@@ -101,6 +102,7 @@ export default function ViewDepatment() {
       department: "",
       country: "",
       role: "",
+      addedby: "",
     }
   );
   const {
@@ -130,7 +132,7 @@ export default function ViewDepatment() {
       lastname: admin.lastname,
       email: admin.email,
       phonenumber: admin.phonenumber,
-      super_admin: admin.super_admin,
+      // super_admin: admin.super_admin,
       status: admin.status,
       additionalPermissions: admin.additionalPermissions,
       department: admin.department,
@@ -141,6 +143,7 @@ export default function ViewDepatment() {
       userId: admin.userId,
       country: "",
       role: admin.role,
+      addedby: admin.addedby,
     });
     setEditModalOpen(true);
   };
@@ -154,7 +157,7 @@ export default function ViewDepatment() {
     lastname: string;
     email: string;
     phonenumber: string;
-    super_admin: boolean;
+    // super_admin: boolean;
     status: boolean;
     additionalPermissions: string[];
     department: string;
@@ -165,6 +168,7 @@ export default function ViewDepatment() {
     userId: string;
     country: string;
     role: string;
+    addedby: string;
   }) => {
     console.log("Edited Values:", values);
     const { id } = router.query;
@@ -180,7 +184,7 @@ export default function ViewDepatment() {
           lastname: values.lastname,
           email: values.email,
           phonenumber: values.phonenumber,
-          super_admin: values.super_admin,
+          // super_admin: values.super_admin,
           status: values.status,
           additionalPermissions: values.additionalPermissions,
           department: values.department,
@@ -191,6 +195,7 @@ export default function ViewDepatment() {
           userId: values.userId,
           country: values.country,
           role: values.role,
+          addedby: currentUser?.email,
         },
         { merge: true } // Use merge to only update the specified fields
       );
@@ -204,7 +209,7 @@ export default function ViewDepatment() {
               lastname: values.lastname,
               email: values.email,
               phonenumber: values.phonenumber,
-              super_admin: values.super_admin,
+              // super_admin: values.super_admin,
               status: values.status,
               additionalPermissions: values.additionalPermissions,
               department: values.department,
@@ -215,6 +220,7 @@ export default function ViewDepatment() {
               userId: values.userId,
               country: values.country,
               role: values.role,
+              addedby: values.addedby,
             }
           : admin
       );
@@ -616,6 +622,7 @@ export default function ViewDepatment() {
         settingsRef,
         {
           additionalPermissions: selectedPermissions,
+          addedBy: currentUser?.email,
         },
         { merge: true }
       );
@@ -1184,7 +1191,7 @@ export default function ViewDepatment() {
           >
             <div className="p-5">
               <Formik
-                validationSchema={EditvalidationSchema}
+                // validationSchema={EditvalidationSchema}
                 initialValues={editFormInitialValues}
                 onSubmit={handleEditSubmit}
               >

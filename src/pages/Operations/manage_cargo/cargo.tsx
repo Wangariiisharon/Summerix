@@ -40,6 +40,7 @@ export default function Cargo() {
     cargoId: "",
     organisationId: "",
     archive: false,
+    addedBy: "",
   });
   const {
     currentAdmin,
@@ -73,6 +74,7 @@ export default function Cargo() {
       cargoId: client.cargoId,
       organisationId: client.organisationId,
       archive: client.archive,
+      addedBy: client.addedBy,
     });
     setEditModalOpen(true);
   };
@@ -108,6 +110,7 @@ export default function Cargo() {
         cargoId: values.cargoId,
         organisationId: values.organisationId,
         archive: values.archive,
+        addedBy: currentUser?.email,
       });
 
       // Update the local fetchedVehicles state
@@ -220,6 +223,7 @@ export default function Cargo() {
         cargoId: generatedCargoId,
         archive: false,
         organisationId: organisationId,
+        addedBy: currentUser?.email,
       };
 
       const docRef = await addDoc(collection(fbDb, "cargos"), clientsData);

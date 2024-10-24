@@ -58,6 +58,7 @@ interface Department {
   organisationId: string;
   archive: boolean;
   permissions: string[];
+  addedBy: any;
 }
 type PermissionObject = { name: string; checked: boolean };
 type Permissions = { [key: string]: PermissionObject[] };
@@ -86,7 +87,7 @@ export default function ViewDepatment() {
   const [permissions, setPermissions] = useState<Permissions>({});
   const [allChecked, setAllChecked] = useState(false);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
-  const { organisationId } = useAuthContext();
+  const { organisationId, currentUser } = useAuthContext();
   const [editFormInitialValues, setEditFormInitialValues] = useState({
     departmentId: "",
     name: "",
@@ -97,6 +98,7 @@ export default function ViewDepatment() {
     status: true,
     members: 0,
     id: "",
+    addedBy: "",
   });
 
   const router = useRouter();
@@ -280,6 +282,7 @@ export default function ViewDepatment() {
         settingsRef,
         {
           permissions: selectedPermissions,
+          addedBy: currentUser?.email,
         },
         { merge: true }
       );
@@ -307,6 +310,7 @@ export default function ViewDepatment() {
       status: true,
       members: 0,
       id: "",
+      addedBy: department.addedBy,
     });
     setEditModalOpen(true);
   };
@@ -344,6 +348,7 @@ export default function ViewDepatment() {
         permissions: values.permissions,
         status: values.status,
         members: values.members,
+        addedBy: currentUser?.email,
       });
 
       // Update the local fetchedVehicles state
@@ -359,6 +364,7 @@ export default function ViewDepatment() {
               permissions: values.permissions,
               status: values.status,
               members: values.members,
+              addedBy: currentUser?.email,
             }
           : department
       );

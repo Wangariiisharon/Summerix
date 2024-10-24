@@ -30,7 +30,9 @@ interface JobCardData {
   timezone: string;
   currency: string;
   photoURL?: string;
+  addedBy: string;
 }
+// addedBy: currentUser?.email || ""
 
 const tabs = [
   { name: "Company Profile", href: "#", current: false },
@@ -44,7 +46,6 @@ function classNames(...classes: any) {
 
 export default function AdministrationComponent() {
   const [fetchedJobcards, setFetchedJobcards] = useState<JobCardData[]>([]);
-  const { organisationId } = useAuthContext();
   const [companySettings, setCompanySettings] = useState<JobCardData>({
     id: "",
     publicProfile: "",
@@ -53,7 +54,16 @@ export default function AdministrationComponent() {
     timezone: "",
     currency: "",
     photoURL: "",
+    addedBy: "",
   });
+  const {
+    currentAdmin,
+    currentUser,
+    organisationId,
+    isSuperAdmin,
+    userClaims,
+    departmentData,
+  } = useAuthContext();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -85,6 +95,7 @@ export default function AdministrationComponent() {
               timezone: doc.data().timezone,
               currency: doc.data().currency,
               photoURL: doc.data().photoURL || "",
+              addedBy: doc.data().addedBy || "",
             })) as JobCardData[];
             setFetchedJobcards(jobcardData);
             if (jobcardData.length > 0) {
@@ -152,11 +163,14 @@ export default function AdministrationComponent() {
       const docSnap = await getDoc(settingsRef);
 
       if (docSnap.exists()) {
-        await updateDoc(settingsRef, { photoURL });
+        await updateDoc(settingsRef, {
+          photoURL,
+          addedBy: currentUser?.email || "",
+        });
       } else {
         await setDoc(
           settingsRef,
-          { organisationId, photoURL },
+          { organisationId, photoURL, addedBy: currentUser?.email || "" },
           { merge: true }
         );
       }

@@ -9,6 +9,7 @@ import { setDoc, DocumentData } from "firebase/firestore";
 import { fbDb } from "@/firebase/configs";
 import { useRouter } from "next/router";
 import { doc } from "firebase/firestore";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 
 interface DriversTableProps {
   drivers: DocumentData[];
@@ -29,6 +30,14 @@ export default function DriversTable({
   const [currentPage, setCurrentPage] = useState(0);
   const rowsPerPage = 6;
   const router = useRouter();
+  const {
+    currentAdmin,
+    currentUser,
+    organisationId,
+    isSuperAdmin,
+    userClaims,
+    departmentData,
+  } = useAuthContext();
 
   const handleSearchChange = (e: any) => {
     setSearchQuery(e.target.value);
@@ -67,7 +76,9 @@ export default function DriversTable({
       await setDoc(driverRef, { archive: newStatus }, { merge: true });
 
       const updatedDrivers = drivers.map((driver) =>
-        driver.id === driverId ? { ...driver, archive: newStatus } : driver
+        driver.id === driverId
+          ? { ...driver, archive: newStatus, addedBy: currentUser?.email }
+          : driver
       );
       updateFetchedDrivers(updatedDrivers);
     } catch (error) {

@@ -40,6 +40,7 @@ export default function Class() {
     classId: "",
     organisationId: "",
     archive: false,
+    addedBy: "",
   });
   const {
     currentAdmin,
@@ -49,7 +50,6 @@ export default function Class() {
     userClaims,
     departmentData,
   } = useAuthContext();
-  const handleAdd = () => {};
 
   const handleReset = () => {
     setOpen(false);
@@ -73,6 +73,7 @@ export default function Class() {
       classId: client.classId,
       organisationId: client.organisationId,
       archive: client.archive,
+      addedBy: client.addedBy,
     });
     setEditModalOpen(true);
   };
@@ -108,6 +109,7 @@ export default function Class() {
         classId: values.classId,
         organisationId: values.organisationId,
         archive: values.archive,
+        addedBy: currentUser?.email,
       });
 
       // Update the local fetchedVehicles state
@@ -222,6 +224,7 @@ export default function Class() {
         classId: generatedClassId,
         archive: false,
         organisationId: organisationId,
+        addedBy: currentUser?.email,
       };
 
       const docRef = await addDoc(collection(fbDb, "classes"), clientsData);

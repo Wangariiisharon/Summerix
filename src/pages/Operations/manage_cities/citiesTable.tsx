@@ -4,6 +4,7 @@ import { Button, EditBtn } from "@/components/Buttons";
 import SearchBar from "../../../components/Forms/input";
 import { fbDb } from "@/firebase/configs";
 import { DocumentData, doc, setDoc } from "firebase/firestore";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 
 interface ClientsTableProps {
   filteredClients: DocumentData[];
@@ -26,6 +27,14 @@ const CitiesTable = ({
   const rowsPerPage = 6;
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
+  const {
+    currentAdmin,
+    currentUser,
+    organisationId,
+    isSuperAdmin,
+    userClaims,
+    departmentData,
+  } = useAuthContext();
 
   const handleSearchChange = (e: any) => {
     const query = e.target.value;
@@ -56,7 +65,11 @@ const CitiesTable = ({
   ) => {
     try {
       const vehicleRef = doc(fbDb, "clients", clientId);
-      await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
+      await setDoc(
+        vehicleRef,
+        { archive: newStatus, addedBy: currentUser?.email },
+        { merge: true }
+      );
       console.log("Vehicle status updated in the database:", clientId);
 
       const updatedVehicles = clients.map((client) =>

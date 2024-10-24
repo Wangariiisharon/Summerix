@@ -80,6 +80,7 @@ export default function AllTrips({ searchQuery }: any) {
     t1_form: null,
     interchange_documents: null,
     cargoSize: 0,
+    addedBy: "",
   });
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>("all");
@@ -165,6 +166,7 @@ export default function AllTrips({ searchQuery }: any) {
       t1_form: trip.t1_form,
       interchange_documents: trip.interchange_documents,
       cargoSize: trip.cargoSize,
+      addedBy: trip.addedBy,
     });
     setEditModalOpen(true);
   };
@@ -264,45 +266,9 @@ export default function AllTrips({ searchQuery }: any) {
         t1_form: values.t1_form,
         interchange_documents: values.interchange_documents,
         cargoSize: values.cargoSize,
+        addedBy: currentUser?.email,
       });
 
-      // Update the local fetchedVehicles state
-      const updatedVehicles = fetchedTrips.map((trip) =>
-        trip.id === selectedTrip.id
-          ? {
-              ...trip,
-
-              trip_id: values.trip_id,
-              requested_by: values.requested_by,
-              vehicle: values.vehicle,
-              pick_up_location: values.pick_up_location,
-              drop_off_location: values.drop_off_location,
-              start_time: values.start_time,
-              end_time: values.end_time,
-              cargo_type: values.cargo_type,
-              cargo_quantity: values.cargo_quantity,
-              memo: values.memo,
-              trip_status: values.trip_status,
-              organisationId: values.organisationId,
-              tripId: values.tripId,
-              fuel: values.fuel,
-              dealValue: values.dealValue,
-              mileage_fee: values.mileage_fee,
-              distance: values.distance,
-              timestamp: values.timestamp,
-              company: values.company,
-              client: values.client,
-              payment_status: values.payment_status,
-              paid_amount: values.paid_amount,
-              remaining_amount: values.remaining_amount,
-              excess_weight_fee: values.excess_weight_fee,
-              t1_form: values.t1_form,
-              interchange_documents: values.interchange_documents,
-              cargoSize: values.cargoSize,
-            }
-          : trip
-      );
-      setfetchedTrips(updatedVehicles);
       setSelectedTrip(null);
       setEditModalOpen(false);
       toast.success("Trip Successfully Updated.");

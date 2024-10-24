@@ -3,6 +3,7 @@ import { EditBtn } from "@/components/Buttons";
 import SearchBar from "../../../components/Forms/input";
 import { fbDb } from "@/firebase/configs";
 import { DocumentData, doc, setDoc } from "firebase/firestore";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 
 interface CargoTableProps {
   clients?: DocumentData[];
@@ -25,6 +26,14 @@ export default function CargoTable({
   const rowsPerPage = 6;
   const startIndex = currentPage * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
+  const {
+    currentAdmin,
+    currentUser,
+    organisationId,
+    isSuperAdmin,
+    userClaims,
+    departmentData,
+  } = useAuthContext();
 
   const handleSearchChange = (e: any) => {
     const query = e.target.value;
@@ -56,7 +65,11 @@ export default function CargoTable({
   ) => {
     try {
       const vehicleRef = doc(fbDb, "cargos", cargoId);
-      await setDoc(vehicleRef, { archive: newStatus }, { merge: true });
+      await setDoc(
+        vehicleRef,
+        { archive: newStatus, addedBy: currentUser?.email },
+        { merge: true }
+      );
       console.log("Class status updated in the database:", cargoId);
 
       const updatedVehicles = clients.map((client) =>

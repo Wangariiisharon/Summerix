@@ -75,6 +75,7 @@ export default function Drivers() {
     good_conduct: null,
     medical_report: null,
     driversId: "",
+    addedBy: "",
   });
   const [isExporting, setIsExporting] = useState(false);
 
@@ -290,6 +291,7 @@ export default function Drivers() {
         registration_date: registration_date,
         driversId: generatedVehicleId,
         organisationId: organisationId,
+        addedBy: currentUser?.email,
       };
 
       const docRef = await addDoc(collection(fbDb, "drivers"), DriversData);
@@ -326,6 +328,7 @@ export default function Drivers() {
       good_conduct: driver.good_conduct,
       medical_report: driver.medical_report,
       organisationId: driver.organisationId,
+      addedBy: driver.addedBy,
     });
     setEditModalOpen(true);
   };
@@ -399,6 +402,7 @@ export default function Drivers() {
           ...values,
           organisationId: values.organisationId,
           driversId: values.driversId,
+          addedBy: currentUser?.email,
           profile: values.profile
             ? await uploadImage(values.profile, "profile_images")
             : selectedDriver.profile,

@@ -1,10 +1,7 @@
 import { FaHome } from "react-icons/fa";
 import { FaPlusCircle } from "react-icons/fa";
 import { toast } from "react-hot-toast";
-import {
-  AuthProvider,
-  useAuthContext,
-} from "@/components/Authentication/AuthProvider";
+
 import { fbDb } from "@/firebase/configs";
 import {
   DocumentData,
@@ -32,6 +29,7 @@ import {
 import Modal from "./modal"; // Adjust the path if necessary
 import moment from "moment-timezone";
 import country from "country-list-js";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
 
 interface JobCardData {
   id: string;
@@ -42,9 +40,17 @@ interface JobCardData {
   currency: string[];
   primaryCurrency: string;
   photoURL: string;
+  addedBy: string;
 }
 export default function CompanyProfile() {
-  const { organisationId } = useAuthContext();
+  const {
+    currentAdmin,
+    currentUser,
+    organisationId,
+    isSuperAdmin,
+    userClaims,
+    departmentData,
+  } = useAuthContext();
   const [fetchedJobcards, setFetchedJobcards] = useState<JobCardData[]>([]);
   const [companySettings, setCompanySettings] = useState<JobCardData>({
     id: "",
@@ -55,6 +61,7 @@ export default function CompanyProfile() {
     currency: [],
     photoURL: "",
     primaryCurrency: "KES",
+    addedBy: "",
   });
   // const [currencies, setCurrencies] = useState([]);
   // photoURL
@@ -105,6 +112,7 @@ export default function CompanyProfile() {
               timezone: doc.data().timezone,
               currency: doc.data().currency || [], // Ensure default value
               photoURL: doc.data().photoURL || "", // Ensure default value
+              addedBy: doc.data().addedBy,
             })) as JobCardData[];
 
             setFetchedJobcards(jobcardData);
@@ -123,6 +131,7 @@ export default function CompanyProfile() {
                 currency: [],
                 photoURL: "",
                 primaryCurrency: "KES",
+                addedBy: "",
               };
               setDoc(newDocRef, newDocData);
               setCompanySettings({ id: newDocRef.id, ...newDocData });
@@ -289,6 +298,7 @@ export default function CompanyProfile() {
       currency: companySettings.currency || [],
       photoURL: companySettings.photoURL || "",
       primaryCurrency: companySettings.primaryCurrency || "KES",
+      addedBy: currentUser?.email || "",
     };
 
     const db = getFirestore();
@@ -338,7 +348,7 @@ export default function CompanyProfile() {
 
         await setDoc(
           settingsRef,
-          { currency: newCurrencyArray },
+          { currency: newCurrencyArray, addedBy: currentUser?.email || "" },
           { merge: true }
         );
         console.log("Currency successfully updated!");
@@ -373,7 +383,10 @@ export default function CompanyProfile() {
           companySettings.id || doc(collection(db, "companyProfile")).id
         );
 
-        await updateDoc(settingsRef, { primaryCurrency: newPrimaryCurrency });
+        await updateDoc(settingsRef, {
+          primaryCurrency: newPrimaryCurrency,
+          addedBy: currentUser?.email || "",
+        });
         console.log("Primary Currency successfully updated!");
         toast.success("Primary Currency successfully updated!");
       } catch (error) {
@@ -415,7 +428,10 @@ export default function CompanyProfile() {
           companySettings.id || doc(collection(db, "companyProfile")).id
         );
 
-        await updateDoc(settingsRef, { currency: newCurrencyArray });
+        await updateDoc(settingsRef, {
+          currency: newCurrencyArray,
+          addedBy: currentUser?.email || "",
+        });
         console.log("Currency successfully updated!");
         toast.success("Currency successfully updated!");
       } catch (error) {
@@ -447,7 +463,10 @@ export default function CompanyProfile() {
         companySettings.id || doc(collection(db, "companyProfile")).id
       );
 
-      await updateDoc(settingsRef, { currency: updatedCurrencyArray });
+      await updateDoc(settingsRef, {
+        currency: updatedCurrencyArray,
+        addedBy: currentUser?.email || "",
+      });
       console.log("Currency successfully removed!");
       toast.success("Currency successfully removed!");
     } catch (error) {
