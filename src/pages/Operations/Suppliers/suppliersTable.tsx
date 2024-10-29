@@ -1,0 +1,177 @@
+import React from "react";
+import { Tab } from "@headlessui/react";
+import { Fragment, useState } from "react";
+import { Button, EditBtn } from "@/components/Buttons";
+import SearchBar from "../../../components/Forms/input";
+import { fbDb } from "@/firebase/configs";
+import { DocumentData, doc, setDoc } from "firebase/firestore";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
+
+interface suppliersTableProps {
+  filteredClients: DocumentData[];
+  suppliers: DocumentData[];
+  updateFetchedSuppliers: (updatedClients: DocumentData[]) => void;
+  handleEditClick: any;
+}
+
+const SuppliersTable = ({
+  suppliers = [], // Set default value to an empty array
+  updateFetchedSuppliers,
+  handleEditClick,
+}: suppliersTableProps) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
+  const rowsPerPage = 6;
+  const startIndex = currentPage * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const {
+    currentAdmin,
+    currentUser,
+    organisationId,
+    isSuperAdmin,
+    userClaims,
+    departmentData,
+  } = useAuthContext();
+
+  const handleSearchChange = (e: any) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+  };
+
+  const filteredClients = suppliers.filter((supplier) => {
+    const fullName = `${supplier.supplier}`.toLowerCase();
+    const nameMatch = fullName.includes(searchQuery.toLowerCase());
+    return nameMatch;
+  });
+
+  const sortedClients = [...filteredClients].sort((a, b) => {
+    if (a.archive && !b.archive) {
+      return 1; // a should come after b (archived vehicles come after non-archived)
+    } else if (!a.archive && b.archive) {
+      return -1; // a should come before b
+    } else {
+      return 0; // no change in order
+    }
+  });
+
+  const visibleClients = sortedClients.slice(startIndex, endIndex);
+
+  const updateSupplierStatusInDatabase = async (
+    supplierId: string,
+    newStatus: boolean
+  ) => {
+    try {
+      const vehicleRef = doc(fbDb, "suppliers", supplierId);
+      await setDoc(
+        vehicleRef,
+        { archive: newStatus, addedBy: currentUser?.email },
+        { merge: true }
+      );
+      console.log("Supplier status updated in the database:", supplierId);
+
+      const updatedVehicles = suppliers.map((supplier) =>
+        supplier.id === supplierId
+          ? { ...supplier, archive: newStatus }
+          : supplier
+      );
+      updateFetchedSuppliers(updatedVehicles);
+    } catch (error) {
+      console.error("Error updating Supplier status in database:", error);
+    }
+  };
+
+  return (
+    <>
+      <p className="text-base ml-10 font-bold">Suppliers</p>
+      <div className="flex text-base mt-2 ml-8 w-72 searchBarContainer">
+        <SearchBar
+          placeholder="Search For supplier"
+          value={searchQuery}
+          onChange={handleSearchChange}
+          className="ml-5"
+        />
+      </div>
+
+      <div className="ml-5 px-4 sm:px-6 lg:px-8">
+        <div className="flow-root">
+          <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+              <table className="min-w-full divide-y divide-gray-300">
+                <thead>
+                  <tr>
+                    <th
+                      scope="col"
+                      className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+                    >
+                      SUPPLIER ID
+                    </th>
+                    <th
+                      scope="col"
+                      className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+                    >
+                      SUPPLIER
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-[#FAFAFB]">
+                  {visibleClients.map((supplier, index) => (
+                    <Fragment key={index}>
+                      <tr className="hover:bg-gray-100">
+                        <td className="whitespace-nowrap font-nunito font-regular pt-1 pl-4 pr-3 text-d-blue text-base sm:pl-0">
+                          {supplier.supplierId}
+                        </td>
+                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
+                          {supplier.supplier}
+                        </td>
+
+                        <td className="whitespace-nowrap px-2 py-2 relative flex flex-row">
+                          <div onClick={() => handleEditClick(supplier)}>
+                            <EditBtn />
+                          </div>
+                          <div>
+                            <button
+                              className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2 ml-4"
+                              onClick={() =>
+                                updateSupplierStatusInDatabase(
+                                  supplier.id,
+                                  !supplier.archive
+                                )
+                              }
+                            >
+                              {supplier.archive ? "Unarchive" : "Archive"}
+                            </button>
+                          </div>
+                          <div className="h-10"></div>
+                        </td>
+                      </tr>
+                    </Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-row justify-center my-4 ui-selected:border-b-4 outline-none text-sm font-nunito font-bold uppercase bg-[#FAFAFB]">
+        <button
+          className="ml-5"
+          onClick={() => setCurrentPage(currentPage - 1)}
+          disabled={currentPage === 0}
+        >
+          Prev
+        </button>
+        <span className="ml-5">{currentPage + 1}</span>
+        <button
+          className="ml-5"
+          onClick={() => setCurrentPage(currentPage + 1)}
+          disabled={endIndex >= filteredClients.length}
+        >
+          Next
+        </button>
+      </div>
+    </>
+  );
+};
+
+export default SuppliersTable;

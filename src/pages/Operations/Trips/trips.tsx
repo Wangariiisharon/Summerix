@@ -17,6 +17,8 @@ import {
   getFirestore,
   onSnapshot,
   updateDoc,
+  writeBatch,
+  runTransaction,
 } from "firebase/firestore";
 import { Field, Formik, Form } from "formik";
 import { Tab } from "@headlessui/react";
@@ -814,26 +816,42 @@ export default function TripsComponent() {
       throw error;
     }
   }
-  async function generateId(organisationId: any) {
-    try {
-      const querySnapshot = await getDocs(
-        query(
-          collection(fbDb, "trips"),
-          where("organisationId", "==", organisationId)
-        )
-      );
-      const adminCount = querySnapshot.size;
 
-      // Customize this logic based on your requirements
-      return `T${(adminCount + 1).toString().padStart(3, "0")}`;
+  async function generateId(organisationId: string) {
+    const counterRef = doc(fbDb, "organisationTripCounters", organisationId);
+
+    try {
+      const tripId = await runTransaction(fbDb, async (transaction) => {
+        const counterDoc = await transaction.get(counterRef);
+        let newTripCount = 1;
+
+        if (counterDoc.exists()) {
+          newTripCount = counterDoc.data().tripCounter + 1;
+          transaction.update(counterRef, { tripCounter: newTripCount });
+        } else {
+          transaction.set(counterRef, { tripCounter: newTripCount });
+        }
+
+        return `T${newTripCount.toString().padStart(3, "0")}`;
+      });
+
+      return tripId;
     } catch (error) {
-      console.error("Error fetching Drivers count:", error);
-      // Handle error or return a default value
-      return "T001";
+      console.error("Error generating trip ID:", error);
+      // return "T001"; // Return default value in case of an error
     }
   }
 
-  const handleSubmit = async (values: {
+  const storage = getStorage(firebaseApp); // Initialize once
+
+  const uploadFile = async (folder: any, file: any) => {
+    const storageRef = ref(storage, `${folder}/${file.name}`);
+    await uploadBytes(storageRef, file);
+    return getDownloadURL(storageRef);
+  };
+
+  // Assume generateId is already defined based on the code provided earlier
+  async function handleSubmit(values: {
     requested_by: string;
     pick_up_location: string;
     drop_off_location: string;
@@ -853,37 +871,35 @@ export default function TripsComponent() {
     excess_weight_fee: any;
     t1_form: any;
     interchange_documents: any;
-    cargoSize: number;
-  }) => {
-    console.log("Submitted Values:", values);
-    console.log("Distance handlesubmit:", distance);
-
+  }) {
     try {
-      const pickUpAddress = values.pick_up_location;
-      const dropOffAddress = values.drop_off_location;
-      console.log("PickUpAddress", pickUpAddress);
-      console.log("dropOffAddress", dropOffAddress);
-
-      //  const distanceValue = await fetchDistance(pickUpAddress, dropOffAddress);
-      const distanceValue = await fetchDistance(pickUpAddress, dropOffAddress);
-      console.log("Fetched Distance Value:", distanceValue);
-      // Query Firestore to get the number of trips for the selected vehicle
-      const tripsQuery = query(
-        collection(fbDb, "trips"),
-        where("vehicle", "==", values.vehicle)
-      );
-      const tripsSnapshot = await getDocs(tripsQuery);
-      const numberOfTrips = tripsSnapshot.size;
-
-      console.log(`Number of trips for ${values.vehicle}: ${numberOfTrips}`);
-
       const startDateObj = new Date(values.start_time + "T00:00:00");
-      // const endDateObj = new Date(values.end_time + "T00:00:00");
-
       const startTimestamp = Timestamp.fromDate(startDateObj);
-      // const endTimestamp = Timestamp.fromDate(endDateObj);
 
-      // Find the selected driver based on the provided name
+      if (!organisationId) {
+        console.error("organisationId is required but was null or undefined.");
+        return;
+      }
+      const [
+        distanceValue,
+        [excessWeightFeeUrl, t1FormUrl, interchangeDocumentsUrl],
+        generateTripId,
+      ] = await Promise.all([
+        fetchDistance(values.pick_up_location, values.drop_off_location),
+        Promise.all([
+          values.excess_weight_fee && values.excess_weight_fee.size
+            ? uploadFile("excess_weight_fee", values.excess_weight_fee)
+            : Promise.resolve(""),
+          values.t1_form && values.t1_form.size
+            ? uploadFile("t1_form", values.t1_form)
+            : Promise.resolve(""),
+          values.interchange_documents && values.interchange_documents.size
+            ? uploadFile("interchange_documents", values.interchange_documents)
+            : Promise.resolve(""),
+        ]),
+        generateId(organisationId),
+      ]);
+
       const selectedDriver = drivers.find(
         (driver) => driver.name === values.requested_by
       );
@@ -892,48 +908,16 @@ export default function TripsComponent() {
         console.error("Selected driver or vehicle not found");
         return;
       }
-      let excessWeightFeeUrl = "";
-      if (values.excess_weight_fee) {
-        const storage = getStorage(firebaseApp);
-        const storageRef = ref(
-          storage,
-          `excess_weight_fee/${values.excess_weight_fee.name}`
-        );
 
-        await uploadBytes(storageRef, values.excess_weight_fee);
-        excessWeightFeeUrl = await getDownloadURL(storageRef);
-      }
-      let t1FormUrl = "";
-      if (values.t1_form) {
-        const storage = getStorage(firebaseApp);
-        const storageRef = ref(storage, `t1_form/${values.t1_form.name}`);
-
-        await uploadBytes(storageRef, values.t1_form);
-        t1FormUrl = await getDownloadURL(storageRef);
-      }
-      let interchangeDocumentsUrl = "";
-      if (values.interchange_documents) {
-        const storage = getStorage(firebaseApp);
-        const storageRef = ref(
-          storage,
-          `interchange_documents/${values.interchange_documents.name}`
-        );
-
-        await uploadBytes(storageRef, values.interchange_documents);
-        interchangeDocumentsUrl = await getDownloadURL(storageRef);
-      }
-      const tripId = await generateTripId(values.vehicle, values.start_time);
-      const generateTripid = await generateId(organisationId);
-
-      const maintenanceData = {
+      // Prepare trip data to be saved in Firestore
+      const tripData = {
         organisationId: organisationId,
         requested_by: {
           id: selectedDriver.id,
           name: selectedDriver.name,
           phonenumber: selectedDriver.phonenumber,
         },
-        tripId: tripId,
-        trip_id: generateTripid,
+        trip_id: generateTripId,
         vehicle: values.vehicle,
         start_time: startTimestamp,
         pick_up_location: values.pick_up_location,
@@ -946,7 +930,6 @@ export default function TripsComponent() {
         client: values.client,
         dealValue: values.dealValue,
         fuel: values.fuel,
-        cargoSize: values.cargoSize,
         mileage_fee: values.mileage_fee,
         distance: distanceValue,
         timestamp: Timestamp.now(),
@@ -956,25 +939,25 @@ export default function TripsComponent() {
         excess_weight_fee: excessWeightFeeUrl,
         t1_form: t1FormUrl,
         interchange_documents: interchangeDocumentsUrl,
-        addedBy: currentUser?.email,
       };
 
-      const docRef = await addDoc(collection(fbDb, "trips"), maintenanceData);
+      // Use a batch write to save data faster
+      const batch = writeBatch(fbDb);
+      const docRef = doc(collection(fbDb, "trips"));
+      batch.set(docRef, tripData);
+
+      await batch.commit(); // Commit batch write
+
       console.log("Trip added with ID: ", docRef.id);
       toast.success("Trip Successfully Added.");
-      const newTrip = {
-        id: docRef.id,
-        ...maintenanceData,
-      };
-      // Prepend the new driver to the fetchedDrivers state
-      setfetchedTrips((prevTrip) => [newTrip, ...prevTrip]);
 
+      // Update state asynchronously after batch commit
       setOpen(false);
     } catch (error) {
       console.error("Error adding Trip:", error);
       toast.error("Error adding Trip. Please try again.");
     }
-  };
+  }
 
   const handleCompanyChange = (selectedCompanyName: SetStateAction<string>) => {
     setSelectedCompany(selectedCompanyName);

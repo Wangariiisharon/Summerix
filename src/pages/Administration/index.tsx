@@ -21,6 +21,7 @@ import {
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import toast from "react-hot-toast";
+import { useRouter } from "next/router";
 
 interface JobCardData {
   id: string;
@@ -35,9 +36,21 @@ interface JobCardData {
 // addedBy: currentUser?.email || ""
 
 const tabs = [
-  { name: "Company Profile", href: "#", current: false },
-  { name: "User Management", href: "#", current: false },
-  { name: "Departments", href: "#", current: false },
+  {
+    name: "Company Profile",
+    href: "/Administration?tab=Companyprofile",
+    current: false,
+  },
+  {
+    name: "User Management",
+    href: "/Administration?tab=Usermanagement",
+    current: false,
+  },
+  {
+    name: "Departments",
+    href: "/Administration?tab=Departments",
+    current: false,
+  },
 ];
 
 function classNames(...classes: any) {
@@ -67,13 +80,27 @@ export default function AdministrationComponent() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
+  const router = useRouter();
+
   useEffect(() => {
-    // Retrieve the saved tab index from local storage when the component mounts
-    const savedIndex = localStorage.getItem("selectedTabIndex");
-    if (savedIndex !== null) {
-      setSelectedIndex(parseInt(savedIndex, 10));
+    const { tab } = router.query;
+
+    // Find the tab index based on the query parameter
+    const tabIndex = tabs.findIndex((t) => t.name === tab);
+    if (tabIndex !== -1) {
+      setSelectedIndex(tabIndex);
     }
-  }, []);
+  }, [router.query]);
+
+  const handleTabChange = (index: any) => {
+    localStorage.setItem("selectedTabIndex", index.toString());
+    setSelectedIndex(index);
+
+    router.push({
+      pathname: "/Administration", // Keeps the current route
+      query: { tab: tabs[index].name }, // Updates the tab query parameter
+    });
+  };
 
   useEffect(() => {
     const fetchJobcards = async () => {
@@ -244,10 +271,7 @@ export default function AdministrationComponent() {
 
         <div>
           <div className="pl-9 mt-[16px]">
-            <Tab.Group
-              selectedIndex={selectedIndex}
-              onChange={setSelectedIndex}
-            >
+            <Tab.Group selectedIndex={selectedIndex} onChange={handleTabChange}>
               <Tab.List
                 className="flex justify-start
                items-center gap-2.5 py-2.5 px-4 border-b border-gray-300 rounded-lg"
