@@ -37,16 +37,6 @@ const validationSchema = Yup.object({
   client_details: Yup.mixed().required("Client details are required"),
 });
 
-const EditvalidationSchema = Yup.object({
-  name: Yup.string().required("Name is required"),
-  address: Yup.string().required("Address is required"),
-  contact_details: Yup.string().required("Contact details are required"),
-  representative_address: Yup.string().required(
-    "Representative address is required"
-  ),
-  client_details: Yup.mixed().required("Client details are required"),
-});
-
 export default function Cities() {
   const [searchQuery, setSearchQuery] = useState("");
   const [fetchedClients, setfetchedClients] = useState<DocumentData[]>([]);
@@ -76,10 +66,10 @@ export default function Cities() {
     userClaims,
     departmentData,
   } = useAuthContext();
-  const handleAdd = () => {};
 
   const handleReset = () => {
     setOpen(false);
+    setShowAddClientModal(false);
   };
 
   const handleSearchChange = (e: any) => {
@@ -172,25 +162,6 @@ export default function Cities() {
         addedBy: currentUser?.email,
       });
 
-      // Update the local fetchedVehicles state
-      const updatedVehicles = fetchedClients.map((client) =>
-        client.id === selectedClient.id
-          ? {
-              ...client,
-              name: values.name,
-              address: values.address,
-              contact_details: values.contact_details,
-              representative_address: values.representative_address,
-              client_details: values.client_details,
-              clientId: values.clientId,
-              organisationId: values.organisationId,
-              archive: values.archive,
-            }
-          : client
-      );
-
-      setfetchedClients(updatedVehicles);
-
       setSelectedClient(null);
       setEditModalOpen(false);
     } catch (error) {
@@ -262,22 +233,6 @@ export default function Cities() {
     setShowAddClientModal(true);
 
     try {
-      if (!values) {
-        console.error("Form values are undefined");
-        return;
-      }
-
-      if (
-        !values.name ||
-        !values.address ||
-        !values.contact_details ||
-        !values.representative_address ||
-        !values.client_details
-      ) {
-        console.error("Required form fields are missing");
-        return;
-      }
-
       let clientDetailsImageUrl = "";
       if (values.client_details) {
         const storage = getStorage(firebaseApp);
@@ -333,9 +288,6 @@ export default function Cities() {
         id: docRef.id,
         ...clientsData,
       };
-
-      // Prepend the new driver to the fetchedDrivers state
-      // setfetchedClients((prevJobcards) => [newClient, ...prevJobcards]);
 
       setOpen(false);
       setShowAddClientModal(false);

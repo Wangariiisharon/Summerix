@@ -18,6 +18,10 @@ import {
   where,
   onSnapshot,
   Timestamp,
+  runTransaction,
+  writeBatch,
+  increment,
+  DocumentReference,
 } from "firebase/firestore";
 import firebaseApp, { fbDb } from "@/firebase/configs";
 import { useRouter } from "next/router";
@@ -33,6 +37,7 @@ import {
 import * as Yup from "yup";
 import VehiclesTable from "./vehiclesTable";
 import Image from "next/image";
+import { AnyPtrRecord } from "dns";
 
 interface Vehicle {
   id: string;
@@ -175,37 +180,68 @@ export default function Vehicles({
     setOpen(false);
     setShowAddVehicleModal(false);
   };
-  async function generateVehicleId(organisationId: string) {
-    try {
-      const querySnapshot = await getDocs(
-        query(
-          collection(fbDb, "vehicles"),
-          where("organisationId", "==", organisationId)
-        )
-      );
-      const adminCount = querySnapshot.size;
 
-      return `V${(adminCount + 1).toString().padStart(3, "0")}`;
+  // async function generateVehicleId(organisationId: string): Promise<string> {
+  //   const counterRef: DocumentReference = doc(
+  //     fbDb,
+  //     "organisationVehicleCounters",
+  //     organisationId
+  //   );
+  //   const batch = writeBatch(fbDb);
+
+  //   // Update counter with increment
+  //   batch.update(counterRef, { tripCounter: increment(1) });
+  //   await batch.commit();
+
+  //   // Get updated counter document
+  //   const newTripCountDoc = await getDoc(counterRef);
+  //   const newTripCount = newTripCountDoc.data()?.tripCounter;
+
+  //   return `V${(newTripCount || 1).toString().padStart(3, "0")}`;
+  // }
+  async function generateVehicleId(organisationId: string) {
+    const counterRef = doc(fbDb, "organisationVehicleCounters", organisationId);
+
+    try {
+      const vehiclesId = await runTransaction(fbDb, async (transaction) => {
+        const counterDoc = await transaction.get(counterRef);
+        let newVehicleCount = 1;
+
+        if (counterDoc.exists()) {
+          newVehicleCount = counterDoc.data().vehicleCounter + 1;
+          transaction.update(counterRef, { vehicleCounter: newVehicleCount });
+        } else {
+          transaction.set(counterRef, { vehicleCounter: newVehicleCount });
+        }
+
+        return `V${newVehicleCount.toString().padStart(3, "0")}`;
+      });
+      return vehiclesId;
     } catch (error) {
-      console.error("Error fetching Vehicles count:", error);
-      return "V001";
+      console.error("Error generating vehicle ID:", error);
+      // return "T001"; // Return default value in case of an error
     }
   }
+  const storage = getStorage(firebaseApp);
 
-  // const uploadFile = async (storage: any, folder: any, file: any) => {
-  //   const storageRef = ref(storage, `${folder}/${file.name}`);
-  //   await uploadBytes(storageRef, file);
-  //   return getDownloadURL(storageRef);
-  // };
-  const storage = getStorage(firebaseApp); // Initialize once
-
-  const uploadFile = async (folder: any, file: any) => {
+  const uploadFile = async (folder: string, file: File): Promise<string> => {
     const storageRef = ref(storage, `${folder}/${file.name}`);
     await uploadBytes(storageRef, file);
     return getDownloadURL(storageRef);
   };
 
-  const handleSubmit = async (values: {
+  const uploadFiles = async (
+    files: { folder: string; file: File }[]
+  ): Promise<string[]> => {
+    const uploadPromises = files.map((fileObj) =>
+      fileObj.file && fileObj.file.size
+        ? uploadFile(fileObj.folder, fileObj.file)
+        : Promise.resolve("")
+    );
+    return Promise.all(uploadPromises);
+  };
+
+  async function handleSubmit(values: {
     cargo_capacity: any;
     lisence_plate: any;
     vehicle_type: any;
@@ -220,123 +256,45 @@ export default function Vehicles({
     port_entry_permits: any;
     inspection_certificates: any;
     transit_permits: any;
-  }) => {
-    setShowAddVehicleModal(true);
-    setOpen(true);
-    console.log("Submitted Values", values);
-
-    const registration_date = new Date();
+  }): Promise<void> {
     const vehiclesCollection = collection(fbDb, "vehicles");
 
-    const existingDepartmentQuery = query(
-      collection(fbDb, "vehicles"),
+    // Check existence before proceeding to avoid redundant processing
+    const existingVehicleQuery = query(
+      vehiclesCollection,
       where("lisence_plate", "==", values.lisence_plate),
       where("organisationId", "==", organisationId)
     );
+    const existingVehicleSnapshot = await getDocs(existingVehicleQuery);
 
-    const existingDepartmentSnapshot = await getDocs(existingDepartmentQuery);
-
-    if (!existingDepartmentSnapshot.empty) {
-      console.error(
-        "Vehicle with this license plate already exists in the same organisation"
+    if (!existingVehicleSnapshot.empty) {
+      console.log(
+        `Vehicle with license plate ${values.lisence_plate} already exists.`
       );
       toast.error(
-        `A Vehicle with the vehicle identification number  '${values.lisence_plate}' already exists`
+        `Vehicle with license plate ${values.lisence_plate} already exists.`
       );
+    }
+    if (!organisationId) {
+      console.error("organisationId is required but was null or undefined.");
       return;
     }
+    // Initiate concurrent tasks: vehicle ID generation and file uploads
+    const [uploadedUrls, generatedVehicleId] = await Promise.all([
+      uploadFiles([
+        { folder: "truck_incurance", file: values.truck_incurance },
+        { folder: "transit_permits", file: values.transit_permits },
+        {
+          folder: "inspection_certificates",
+          file: values.inspection_certificates,
+        },
+        { folder: "port_entry_permits", file: values.port_entry_permits },
+        { folder: "cargo_insurance", file: values.cargo_insurance },
+      ]),
+      generateVehicleId(organisationId),
+    ]);
 
-    if (organisationId === null) {
-      console.error("organisationId is null");
-      // Handle the null case, maybe show an error or return
-      return;
-    }
-    // let truckIncuranceUrl = "";
-    // if (values.truck_incurance) {
-    //   const storage = getStorage(firebaseApp);
-    //   const storageRef = ref(
-    //     storage,
-    //     `truck_incurance/${values.truck_incurance.name}`
-    //   );
-
-    //   await uploadBytes(storageRef, values.truck_incurance);
-    //   truckIncuranceUrl = await getDownloadURL(storageRef);
-    // }
-    // let transitPermitsUrl = "";
-    // if (values.transit_permits) {
-    //   const storage = getStorage(firebaseApp);
-    //   const storageRef = ref(
-    //     storage,
-    //     `transit_permits/${values.transit_permits.name}`
-    //   );
-
-    //   await uploadBytes(storageRef, values.transit_permits);
-    //   transitPermitsUrl = await getDownloadURL(storageRef);
-    // }
-    // let inspectionCertificatesUrl = "";
-    // if (values.inspection_certificates) {
-    //   const storage = getStorage(firebaseApp);
-    //   const storageRef = ref(
-    //     storage,
-    //     `inspection_certificates/${values.inspection_certificates.name}`
-    //   );
-
-    //   await uploadBytes(storageRef, values.inspection_certificates);
-    //   inspectionCertificatesUrl = await getDownloadURL(storageRef);
-    // }
-    // let portEntryPermitsUrl = "";
-    // if (values.port_entry_permits) {
-    //   const storage = getStorage(firebaseApp);
-    //   const storageRef = ref(
-    //     storage,
-    //     `port_entry_permits/${values.port_entry_permits.name}`
-    //   );
-
-    //   await uploadBytes(storageRef, values.port_entry_permits);
-    //   portEntryPermitsUrl = await getDownloadURL(storageRef);
-    // }
-    // let cargoInsuranceUrl = "";
-    // if (values.cargo_insurance) {
-    //   const storage = getStorage(firebaseApp);
-    //   const storageRef = ref(
-    //     storage,
-    //     `cargo_insurance/${values.cargo_insurance.name}`
-    //   );
-
-    //   await uploadBytes(storageRef, values.cargo_insurance);
-    //   cargoInsuranceUrl = await getDownloadURL(storageRef);
-    // }
-
-    const fileUploadPromises = [
-      values.truck_incurance
-        ? uploadFile("truck_incurance", values.truck_incurance)
-        : "",
-      values.transit_permits
-        ? uploadFile("transit_permits", values.transit_permits)
-        : "",
-      values.inspection_certificates
-        ? uploadFile("inspection_certificates", values.inspection_certificates)
-        : "",
-      values.port_entry_permits
-        ? uploadFile("port_entry_permits", values.port_entry_permits)
-        : "",
-      values.cargo_insurance
-        ? uploadFile("cargo_insurance", values.cargo_insurance)
-        : "",
-    ];
-
-    // Destructure the file URLs
-    const [
-      truckIncuranceUrl,
-      transitPermitsUrl,
-      inspectionCertificatesUrl,
-      portEntryPermitsUrl,
-      cargoInsuranceUrl,
-    ] = await Promise.all(fileUploadPromises);
-
-    const generatedVehicleId = await generateVehicleId(organisationId);
-
-    const VehicleData = {
+    const vehicleData = {
       cargo_capacity: values.cargo_capacity,
       lisence_plate: values.lisence_plate,
       vehicle_type: values.vehicle_type,
@@ -346,14 +304,14 @@ export default function Vehicles({
       ownership_status: values.ownership_status,
       lease_amount: values.lease_amount,
       purchase_price: values.purchase_price,
-      truck_incurance: truckIncuranceUrl,
-      cargo_insurance: cargoInsuranceUrl,
-      port_entry_permits: portEntryPermitsUrl,
-      inspection_certificates: inspectionCertificatesUrl,
-      transit_permits: transitPermitsUrl,
+      truck_incurance: uploadedUrls[0],
+      transit_permits: uploadedUrls[1],
+      inspection_certificates: uploadedUrls[2],
+      port_entry_permits: uploadedUrls[3],
+      cargo_insurance: uploadedUrls[4],
       status: true,
       archive: false,
-      registration_date: registration_date,
+      registration_date: new Date(),
       availability_status: "Available",
       vehiclesId: generatedVehicleId,
       organisationId: organisationId,
@@ -361,21 +319,17 @@ export default function Vehicles({
       addedBy: currentUser?.email,
     };
 
-    const docRef = await addDoc(vehiclesCollection, VehicleData);
-    toast.success("Vehicle Successfully Added.");
-
-    const newVehicle = {
-      id: docRef.id,
-      ...VehicleData,
-    };
-
+    // Batch write for faster execution and fewer network requests
+    const batch = writeBatch(fbDb);
+    batch.set(doc(vehiclesCollection), vehicleData);
+    await batch.commit();
+    toast.success(`Vehicle ${values.lisence_plate} added successfully!`);
     setOpen(false);
     setShowAddVehicleModal(false);
-  };
-
+  }
   interface CompanyData {
     name: string;
-    vehicle?: string[]; // Assuming 'vehicle' is an array of strings
+    vehicle?: string[];
   }
   const handleAllocateSubmit = async (values: {
     vehicle: string;
