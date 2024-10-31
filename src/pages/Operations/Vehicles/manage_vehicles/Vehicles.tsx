@@ -181,24 +181,6 @@ export default function Vehicles({
     setShowAddVehicleModal(false);
   };
 
-  // async function generateVehicleId(organisationId: string): Promise<string> {
-  //   const counterRef: DocumentReference = doc(
-  //     fbDb,
-  //     "organisationVehicleCounters",
-  //     organisationId
-  //   );
-  //   const batch = writeBatch(fbDb);
-
-  //   // Update counter with increment
-  //   batch.update(counterRef, { tripCounter: increment(1) });
-  //   await batch.commit();
-
-  //   // Get updated counter document
-  //   const newTripCountDoc = await getDoc(counterRef);
-  //   const newTripCount = newTripCountDoc.data()?.tripCounter;
-
-  //   return `V${(newTripCount || 1).toString().padStart(3, "0")}`;
-  // }
   async function generateVehicleId(organisationId: string) {
     const counterRef = doc(fbDb, "organisationVehicleCounters", organisationId);
 
@@ -1545,6 +1527,16 @@ export default function Vehicles({
                             ) : null}
                           </label>
                         </div>
+                        <label className="block mt-8">
+                          <label className="form-label">EDITED BY</label>
+                          <Field
+                            type="text"
+                            disabled
+                            name="addedBy"
+                            value={values.addedBy}
+                            className="form-input bg-grey w-48"
+                          />
+                        </label>
 
                         <div className="flex w-full justify-end mt-24 ">
                           <Button

@@ -65,7 +65,6 @@ export default function AllTrips({ searchQuery }: any) {
     memo: "",
     trip_status: "",
     organisationId: "",
-    tripId: "",
     dealValue: 0,
     fuel: 0,
     mileage_fee: 0,
@@ -151,7 +150,6 @@ export default function AllTrips({ searchQuery }: any) {
       memo: trip.memo,
       trip_status: trip.trip_status,
       organisationId: trip.organisationId,
-      tripId: trip.tripId,
       fuel: trip.fuel,
       dealValue: trip.dealValue,
       mileage_fee: trip.mileage_fee,
@@ -189,7 +187,6 @@ export default function AllTrips({ searchQuery }: any) {
     memo: any;
     trip_status: any;
     organisationId: any;
-    tripId: any;
     fuel: any;
     dealValue: any;
     mileage_fee: any;
@@ -251,7 +248,6 @@ export default function AllTrips({ searchQuery }: any) {
         memo: values.memo,
         trip_status: values.trip_status,
         organisationId: values.organisationId,
-        tripId: values.tripId,
         dealValue: values.dealValue,
         fuel: values.fuel,
         mileage_fee: values.mileage_fee,
@@ -647,6 +643,26 @@ export default function AllTrips({ searchQuery }: any) {
                           />
                         </label>
                       </div>
+                      <div className="flex w-full justify-between  mt-8">
+                        <label className="block">
+                          <label className="form-label">CLASS</label>
+                          <Field
+                            disabled
+                            name="requested_by"
+                            value={formik.values.company}
+                            className="form-input bg-grey w-48"
+                          ></Field>
+                        </label>
+                        <label className="block">
+                          <label className="form-label">SELECT CLIENT</label>.
+                          <Field
+                            disabled
+                            name="vehicle"
+                            value={formik.values.client}
+                            className="form-input bg-grey w-48"
+                          ></Field>
+                        </label>
+                      </div>
 
                       <div className="flex w-full justify-between  mt-8">
                         <label className="block">
@@ -906,6 +922,16 @@ export default function AllTrips({ searchQuery }: any) {
                               </div>
                             ) : null}
                           </div>
+                        </label>
+                        <label className="block">
+                          <label className="form-label">EDITED BY</label>
+                          <Field
+                            type="text"
+                            disabled
+                            name="addedBy"
+                            value={formik.values.addedBy}
+                            className="form-input bg-grey w-48"
+                          />
                         </label>
                       </div>
 

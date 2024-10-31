@@ -44,6 +44,7 @@ interface MaintenanceData {
   timestamp: Timestamp;
   broken_partImage?: string;
   broken_partImageName?: string;
+  addedBy: string;
 }
 
 const validationSchema = Yup.object({
@@ -90,6 +91,7 @@ export default function MaintananceTable({
     broken_partImageName: "", // Add this field
     approvedBy: [],
     timestamp: "",
+    addedBy: "",
   });
 
   const rowsPerPage = 6;
@@ -246,6 +248,7 @@ export default function MaintananceTable({
       broken_partImageName: maintenance.broken_partImageName || "",
       approvedBy: maintenance.approvedBy,
       timestamp: maintenance.timestamp,
+      addedBy: maintenance.addedBy,
     });
     console.log("Edit Form Initial Values:", editFormInitialValues);
   };
@@ -294,6 +297,7 @@ export default function MaintananceTable({
         serial_number: values.serial_number,
         part: values.part,
         status: values.status,
+        addedBy: currentUser?.email,
         approvedBy: Array.isArray(values.approvedBy)
           ? [...values.approvedBy, approvedBy].filter(Boolean)
           : [approvedBy],
@@ -667,6 +671,16 @@ export default function MaintananceTable({
                           ) : null}
                         </label>
                       </div>
+                      <label className="block mt-8">
+                        <label className="form-label">EDITED BY</label>
+                        <Field
+                          type="text"
+                          disabled
+                          name="addedBy"
+                          value={values.addedBy}
+                          className="form-input bg-grey w-48"
+                        />
+                      </label>
                       <label className="block mt-8">
                         <label className="form-label">REMARKS</label>
                         <Field

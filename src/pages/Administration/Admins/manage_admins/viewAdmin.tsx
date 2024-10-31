@@ -48,7 +48,7 @@ interface AdminData {
   department: string;
   country: string;
   role: string;
-  addedby: string;
+  addedBy: string;
 }
 
 type PermissionObject = { name: string; checked: boolean };
@@ -102,7 +102,7 @@ export default function ViewDepatment() {
       department: "",
       country: "",
       role: "",
-      addedby: "",
+      addedBy: "",
     }
   );
   const {
@@ -143,7 +143,7 @@ export default function ViewDepatment() {
       userId: admin.userId,
       country: "",
       role: admin.role,
-      addedby: admin.addedby,
+      addedBy: admin.addedBy,
     });
     setEditModalOpen(true);
   };
@@ -168,7 +168,7 @@ export default function ViewDepatment() {
     userId: string;
     country: string;
     role: string;
-    addedby: string;
+    addedBy: string;
   }) => {
     console.log("Edited Values:", values);
     const { id } = router.query;
@@ -200,36 +200,11 @@ export default function ViewDepatment() {
         { merge: true } // Use merge to only update the specified fields
       );
 
-      // Update the local fetchedAdmins state
-      const updatedAdmins = fetchedAdmins.map((admin) =>
-        admin.userId === values.userId // Compare against values.userId to find the correct admin
-          ? {
-              ...admin,
-              firstname: values.firstname,
-              lastname: values.lastname,
-              email: values.email,
-              phonenumber: values.phonenumber,
-              // super_admin: values.super_admin,
-              status: values.status,
-              additionalPermissions: values.additionalPermissions,
-              department: values.department,
-              adminId: values.adminId,
-              fcmToken: values.fcmToken,
-              invitationSent: values.invitationSent,
-              organisationId: values.organisationId,
-              userId: values.userId,
-              country: values.country,
-              role: values.role,
-              addedby: values.addedby,
-            }
-          : admin
-      );
-      setFetchedAdmins(updatedAdmins);
       setEditModalOpen(false);
-      console.log("Admin Updated:", updatedAdmins);
       toast.success("Admin  updated successfully!");
     } catch (error) {
       console.error("Error updating Admin:", error);
+      toast.error("Error updating Admin");
     }
   };
 
@@ -443,65 +418,6 @@ export default function ViewDepatment() {
       }
     };
 
-    // const fetchAdminData = async (permissionsData: Permissions) => {
-    //   const { id } = router.query;
-
-    //   if (!id) {
-    //     console.error("No ID specified for fetching admin data.");
-    //     setUserData([]);
-    //     return;
-    //   }
-
-    //   try {
-    //     const adminDocRef = doc(fbDb, "admins", id as string);
-    //     const adminDoc = await getDoc(adminDocRef);
-
-    //     if (!adminDoc.exists()) {
-    //       console.log("Admin not found.");
-    //       setUserData([]);
-    //       return;
-    //     }
-
-    //     const adminData = adminDoc.data() as AdminData;
-    //     setUserData([adminData]);
-
-    //     const departmentDocRef = doc(fbDb, "departments", adminData.department);
-    //     const departmentDoc = await getDoc(departmentDocRef);
-
-    //     let departmentPermissions: string[] = [];
-    //     if (departmentDoc.exists()) {
-    //       departmentPermissions = departmentDoc.data().permissions || [];
-    //     }
-
-    //     const combinedPermissions = new Set([
-    //       ...adminData.additionalPermissions,
-    //       ...departmentPermissions,
-    //     ]);
-
-    //     setDepartmentPermissions(departmentPermissions);
-    //     setCombinedPermissions([...combinedPermissions]);
-
-    //     const updatedPermissions = { ...permissionsData };
-    //     Object.keys(updatedPermissions).forEach((section) => {
-    //       updatedPermissions[section] = updatedPermissions[section].map(
-    //         (permission) => ({
-    //           ...permission,
-    //           checked: combinedPermissions.has(permission.name),
-    //         })
-    //       );
-    //     });
-
-    //     setPermissions(updatedPermissions);
-    //     console.log(
-    //       "Updated Permissions after fetching admin data:",
-    //       updatedPermissions
-    //     );
-    //   } catch (error) {
-    //     console.error("Error fetching admin data:", error);
-    //     setUserData([]);
-    //   }
-    // };
-
     const fetchDepartments = async () => {
       try {
         const departmentData: { id: string; name: string }[] = [];
@@ -532,14 +448,6 @@ export default function ViewDepatment() {
         setLoading(false);
       }
     };
-    // const handleFullPermisionss = () => {
-    //   if (userClaims?.admin === true) {
-    //     setAllChecked(true);
-    //   } else {
-    //     setAllChecked(false);
-    //     console.log("This user is not an admin", allChecked);
-    //   }
-    // };
 
     fetchPermissions()
       .then((permissionsData) => {
@@ -1310,6 +1218,16 @@ export default function ViewDepatment() {
                             {errors.department}
                           </div>
                         ) : null}
+                      </label>
+                      <label className="block mt-8">
+                        <label className="form-label">EDITED BY</label>
+                        <Field
+                          type="text"
+                          disabled
+                          name="addedBy"
+                          value={values.addedBy}
+                          className="form-input bg-grey w-48"
+                        />
                       </label>
                     </div>
                     <div className="flex justify-end mt-4">

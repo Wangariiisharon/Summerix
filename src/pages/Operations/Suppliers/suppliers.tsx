@@ -360,6 +360,93 @@ export default function Suppliers() {
             </div>
           </FormModal>
         )}
+
+        {editModalOpen && selectedSupplier && (
+          <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
+            <div>
+              <div className="flex w-full h-full justify-between items-center mb-12">
+                <div className="text-xl font-semibold ">
+                  Edit Supplier Details
+                </div>
+                <Button
+                  className="bg-red-50 h-12 w-12 flex items-center justify-center rounded-full"
+                  handleClick={handleEditModalClose}
+                >
+                  <XMarkIcon className="h-6 w-6 text-red-400" />
+                </Button>
+              </div>
+
+              <Formik
+                initialValues={editFormInitialValues}
+                validationSchema={validationSchema}
+                onSubmit={handleEditSubmit}
+              >
+                {({ values, errors, touched }) => (
+                  <Form>
+                    <div className="">
+                      <div className="flex w-full justify-between">
+                        <label className="block">
+                          <label className="form-label">SUPPLIER</label>
+                          <Field
+                            type="text"
+                            name="supplier"
+                            value={values.supplier}
+                            className="form-input bg-grey w-48"
+                          />
+                          {errors.supplier && touched.supplier ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.supplier}
+                            </div>
+                          ) : null}
+                        </label>
+
+                        <label className="block">
+                          <label className="form-label">TYPE</label>
+                          <Field
+                            type="text"
+                            name="type"
+                            value={values.type}
+                            className="form-input bg-grey w-48"
+                          />
+                          {errors.type && touched.type ? (
+                            <div className="text-red-600 text-sm">
+                              {errors.type}
+                            </div>
+                          ) : null}
+                        </label>
+                      </div>
+                      <label className="block mt-8">
+                        <label className="form-label">EDITED BY</label>
+                        <Field
+                          type="text"
+                          disabled
+                          name="addedBy"
+                          value={values.addedBy}
+                          className="form-input bg-grey w-48"
+                        />
+                      </label>
+
+                      <div className="flex w-full justify-end mt-24 ">
+                        <Button
+                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
+                          handleClick={handleReset}
+                        >
+                          Reset
+                        </Button>
+                        <button
+                          className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4"
+                          type="submit"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  </Form>
+                )}
+              </Formik>
+            </div>
+          </FormModal>
+        )}
       </div>
     </>
   );

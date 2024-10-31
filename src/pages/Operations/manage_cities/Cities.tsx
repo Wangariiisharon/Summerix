@@ -576,27 +576,6 @@ export default function Cities() {
                       </div>
 
                       <div className="flex w-full justify-between mt-8">
-                        {/* <label className="block">
-                          <label className="form-label">CLIENT DETAILS</label>
-                          <Field name="client_details">
-                            {({ field, form }: any) => (
-                              <input
-                                type="file"
-                                onChange={(event) => {
-                                  const file = event.currentTarget?.files?.[0];
-                                  if (file) {
-                                    form.setFieldValue("client_details", file);
-                                  }
-                                }}
-                              />
-                            )}
-                          </Field>
-                          {errors.client_details && touched.client_details ? (
-                            <div className="text-red-600 text-sm">
-                              {errors.client_details}
-                            </div>
-                          ) : null}
-                        </label> */}
                         <label className="block">
                           <label className="form-label">CLIENT DETAILS</label>
                           <div className="">
@@ -636,6 +615,17 @@ export default function Cities() {
                               {errors.client_details}
                             </div>
                           ) : null}
+                        </label>
+
+                        <label className="block">
+                          <label className="form-label">EDITED BY</label>
+                          <Field
+                            type="text"
+                            disabled
+                            name="addedBy"
+                            value={values.addedBy}
+                            className="form-input bg-grey w-48"
+                          />
                         </label>
                       </div>
 

@@ -40,21 +40,6 @@ interface PendingProps {
   hasApprpveMaintenancePermission: any;
 }
 
-interface MaintenanceData {
-  id: string;
-  approvalCount: number;
-  status: string;
-  requested_by: any;
-  vehicle: any;
-  cost: any;
-  job_cards: any;
-  remarks: any;
-  date: any;
-  part: any;
-  serial_number: any;
-  broken_partImage: null;
-}
-
 const validationSchema = Yup.object({
   requested_by: Yup.string().required("Requested By is required"),
   cost: Yup.number().positive().required("Cost is required"),
@@ -99,13 +84,21 @@ export default function Pending({
     broken_partImageName: "", // Add this field
     approvedBy: [],
     timestamp: "",
+    addedBy: "",
   });
   const [isApproved, setIsApproved] = useState(false);
 
   const [approvalCount, setApprovalCount] = useState(0);
   const [checked, setChecked] = useState(false);
-  const { organisationId, userData } = useAuthContext() as AuthContextData;
-  const isSuperAdmin = userData?.super_admin;
+  // const { organisationId, userData, currentUser } =
+  //   useAuthContext() as AuthContextData;
+  const {
+    currentAdmin,
+    currentUser,
+    organisationId,
+    isSuperAdmin,
+    userClaims,
+  } = useAuthContext();
 
   const handleMaintenanceReset = () => {
     setShowScheduleMaintenanceModal(false);
@@ -219,32 +212,6 @@ export default function Pending({
     setEditModalOpen(false);
   };
 
-  // const handleEditClick = (maintenance: DocumentData) => {
-  //   setEditModalOpen(true);
-  //   setChecked(false);
-  //   setSelectedMaintenance(maintenance);
-  //   const maintenanceDate =
-  //     maintenance.date && maintenance.date.toDate()
-  //       ? maintenance.date.toDate()
-  //       : convertToDate(maintenance.date);
-  //   setEditFormInitialValues({
-  //     requested_by: maintenance.requested_by,
-  //     vehicle: maintenance.vehicle,
-  //     cost: maintenance.cost,
-  //     job_cards: maintenance.job_cards,
-  //     remarks: maintenance.remarks,
-  //     date: convertDateToInputString(maintenanceDate),
-  //     part: maintenance.part,
-  //     status: maintenance.status,
-  //     serial_number: maintenance.serial_number,
-  //     approvalCount: maintenance.approvalCount,
-  //     broken_partImage: maintenance.broken_partImage,
-  //     approvedBy: maintenance.approvedBy,
-  //     timestamp: maintenance.timestamp,
-  //   });
-  //   console.log("Edit Form Initial Values:", editFormInitialValues);
-  // };
-
   const handleEditClick = (maintenance: DocumentData) => {
     setEditModalOpen(true);
     setChecked(false);
@@ -268,79 +235,10 @@ export default function Pending({
       broken_partImageName: maintenance.broken_partImageName || "",
       approvedBy: maintenance.approvedBy,
       timestamp: maintenance.timestamp,
+      addedBy: maintenance.addedBy,
     });
     console.log("Edit Form Initial Values:", editFormInitialValues);
   };
-
-  // const handleEditSubmit = async (values: {
-  //   requested_by: any;
-  //   vehicle: any;
-  //   cost: any;
-  //   job_cards: any;
-  //   remarks: any;
-  //   date: any;
-  //   part: any;
-  //   status: any;
-  //   serial_number: any;
-  //   approvalCount: number;
-  //   broken_partImage: any;
-  //   approvedBy: any[];
-  //   timestamp: any;
-  // }) => {
-  //   if (!selectedMaintenance) {
-  //     console.error("No selected vehicle to update");
-  //     return;
-  //   }
-
-  //   console.log("Edited Values 2:", values);
-
-  //   try {
-  //     const approvedBy = userData?.email;
-
-  //     // Update the vehicle data in the database using the selectedVehicle.id
-  //     const maintenanceRef = doc(fbDb, "maintenance", selectedMaintenance.id);
-  //     const dateObj = new Date(values.date);
-  //     const timestamp = Timestamp.fromDate(dateObj);
-
-  //     const updatedData = {
-  //       approvalCount: values.approvalCount + 1,
-  //       requested_by: values.requested_by,
-  //       vehicle: values.vehicle,
-  //       date: timestamp, // Convert seconds to milliseconds
-  //       cost: values.cost,
-  //       job_cards: values.job_cards,
-  //       remarks: values.remarks,
-  //       serial_number: values.serial_number,
-  //       part: values.part,
-  //       status: values.status,
-  //       approvedBy: Array.isArray(values.approvedBy)
-  //         ? [...values.approvedBy, approvedBy].filter(Boolean)
-  //         : [approvedBy],
-  //       organisationId: organisationId,
-  //       timestamp: values.timestamp,
-  //       notificationNeedsDisplay: true,
-  //       broken_partImage: values.broken_partImage
-  //         ? await doUploadImage(values.broken_partImage, "broken_partImage")
-  //         : selectedMaintenance.broken_partImage,
-  //     };
-
-  //     if (updatedData.approvalCount === 1) {
-  //       updatedData.status = "Approved";
-  //     } else {
-  //       updatedData.status = "Pending";
-  //     }
-  //     console.log("Updated Data", updatedData);
-
-  //     await setDoc(maintenanceRef, updatedData, { merge: true });
-  //     toast.success("Maintenance Edited Successfully");
-
-  //     setSelectedMaintenance(null);
-  //     setEditModalOpen(false);
-  //     setChecked(true);
-  //   } catch (error) {
-  //     console.error("Error updating Maintenance:", error);
-  //   }
-  // };
 
   const handleEditSubmit = async (values: {
     requested_by: any;
@@ -365,7 +263,7 @@ export default function Pending({
     console.log("Edited Values:", values);
 
     try {
-      const approvedBy = userData?.email;
+      const approvedBy = currentUser?.email;
 
       // Update the maintenance data in the database using the selectedMaintenance.id
       const maintenanceRef = doc(fbDb, "maintenance", selectedMaintenance.id);
@@ -387,6 +285,8 @@ export default function Pending({
           ? [...values.approvedBy, approvedBy].filter(Boolean)
           : [approvedBy],
         organisationId: organisationId,
+        addedBy: currentUser?.email,
+
         timestamp: values.timestamp,
         notificationNeedsDisplay: true,
         broken_partImage: values.broken_partImage
@@ -635,6 +535,16 @@ export default function Pending({
                         ) : null}
                       </label>
                     </div>
+                    <label className="block mt-8">
+                      <label className="form-label">EDITED BY</label>
+                      <Field
+                        type="text"
+                        disabled
+                        name="addedBy"
+                        value={values.addedBy}
+                        className="form-input bg-grey w-48"
+                      />
+                    </label>
                     <label className="block mt-8">
                       <label className="form-label">REMARKS</label>
                       <Field

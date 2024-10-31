@@ -143,7 +143,6 @@ export default function TripsComponent() {
     memo: "",
     trip_status: "",
     organisationId: "",
-    tripId: "",
     dealValue: 0,
     fuel: 0,
     mileage_fee: 0,
@@ -617,7 +616,6 @@ export default function TripsComponent() {
       memo: trip.memo,
       trip_status: trip.trip_status,
       organisationId: trip.organisationId,
-      tripId: trip.tripId,
       fuel: trip.fuel,
       dealValue: trip.dealValue,
       mileage_fee: trip.mileage_fee,
@@ -655,7 +653,6 @@ export default function TripsComponent() {
     memo: any;
     trip_status: any;
     organisationId: any;
-    tripId: any;
     fuel: any;
     dealValue: any;
     mileage_fee: any;
@@ -717,7 +714,6 @@ export default function TripsComponent() {
         memo: values.memo,
         trip_status: values.trip_status,
         organisationId: values.organisationId,
-        tripId: values.tripId,
         dealValue: values.dealValue,
         fuel: values.fuel,
         mileage_fee: values.mileage_fee,
@@ -850,7 +846,6 @@ export default function TripsComponent() {
     return getDownloadURL(storageRef);
   };
 
-  // Assume generateId is already defined based on the code provided earlier
   async function handleSubmit(values: {
     requested_by: string;
     pick_up_location: string;
@@ -871,6 +866,7 @@ export default function TripsComponent() {
     excess_weight_fee: any;
     t1_form: any;
     interchange_documents: any;
+    cargoSize: number;
   }) {
     try {
       const startDateObj = new Date(values.start_time + "T00:00:00");
@@ -939,6 +935,8 @@ export default function TripsComponent() {
         excess_weight_fee: excessWeightFeeUrl,
         t1_form: t1FormUrl,
         interchange_documents: interchangeDocumentsUrl,
+        cargoSize: values.cargoSize,
+        addedBy: currentUser?.email,
       };
 
       // Use a batch write to save data faster
@@ -1933,6 +1931,26 @@ export default function TripsComponent() {
                           />
                         </label>
                       </div>
+                      <div className="flex w-full justify-between  mt-8">
+                        <label className="block">
+                          <label className="form-label">CLASS</label>
+                          <Field
+                            disabled
+                            name="requested_by"
+                            value={formik.values.company}
+                            className="form-input bg-grey w-48"
+                          ></Field>
+                        </label>
+                        <label className="block">
+                          <label className="form-label">SELECT CLIENT</label>.
+                          <Field
+                            disabled
+                            name="vehicle"
+                            value={formik.values.client}
+                            className="form-input bg-grey w-48"
+                          ></Field>
+                        </label>
+                      </div>
 
                       <div className="flex w-full justify-between  mt-8">
                         <label className="block">
@@ -2193,6 +2211,16 @@ export default function TripsComponent() {
                             ) : null}
                           </div>
                         </label>
+                        <label className="block">
+                          <label className="form-label">EDITED BY</label>
+                          <Field
+                            type="text"
+                            disabled
+                            name="addedBy"
+                            value={formik.values.addedBy}
+                            className="form-input bg-grey w-48"
+                          />
+                        </label>
                       </div>
 
                       <p className="mt-5 font-semibold"> Cargo</p>
@@ -2218,42 +2246,46 @@ export default function TripsComponent() {
                           />
                         </label>
                       </div>
-                      <label className="block mt-8">
-                        <label className="form-label">CARGO SIZE</label>
-                        <Field
-                          type="number"
-                          name="cargoSize"
-                          value={formik.values.cargoSize}
-                          placeholder="ft"
-                          className="form-input bg-grey w-48"
-                        />
-                      </label>
 
-                      <div className="flex w-full justify-between"></div>
-                      <label className="block mt-8">
-                        <label className="form-label">TRIP STATUS</label>
+                      <div className="flex w-full justify-between">
+                        <label className="block mt-8">
+                          <label className="form-label">CARGO SIZE</label>
+                          <Field
+                            type="number"
+                            name="cargoSize"
+                            value={formik.values.cargoSize}
+                            placeholder="ft"
+                            className="form-input bg-grey w-48"
+                          />
+                        </label>
 
-                        <Field
-                          as="select"
-                          name="trip_status"
-                          value={formik.values.trip_status}
-                          className="form-input bg-grey w-48"
-                        >
-                          <option>Select Trip status</option>
-                          <option value="Booked">Booked</option>
-                          {/* <option value="Ready for Departure">
+                        <div className="flex w-full justify-between"></div>
+                        <label className="block mt-8">
+                          <label className="form-label">TRIP STATUS</label>
+
+                          <Field
+                            as="select"
+                            name="trip_status"
+                            value={formik.values.trip_status}
+                            className="form-input bg-grey w-48"
+                          >
+                            <option>Select Trip status</option>
+                            <option value="Booked">Booked</option>
+                            {/* <option value="Ready for Departure">
                           Ready for Departure
                         </option> */}
-                          {/* <option value="At the border">At the border</option> */}
-                          {/* <option value="Offloading dest">Offloading dest</option> */}
-                          <option value="On Route">On Route</option>
-                          <option value="Mechanical">Mechanical</option>
-                          <option value="Done">Done </option>
-                          {/* <option value="Returning the Container">
+                            {/* <option value="At the border">At the border</option> */}
+                            {/* <option value="Offloading dest">Offloading dest</option> */}
+                            <option value="On Route">On Route</option>
+                            <option value="Mechanical">Mechanical</option>
+                            <option value="Done">Done </option>
+                            {/* <option value="Returning the Container">
                           returning with Container
                         </option> */}
-                        </Field>
-                      </label>
+                          </Field>
+                        </label>
+                      </div>
+
                       <label className="block mt-8">
                         <label className="form-label">Memo</label>
                         <Field
