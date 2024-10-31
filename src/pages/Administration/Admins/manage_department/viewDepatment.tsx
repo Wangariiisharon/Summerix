@@ -968,7 +968,17 @@ export default function ViewDepatment() {
                             type="text"
                             name="name"
                             value={values.name}
-                            className="form-input mt-1 block w-96 bg-gray-100"
+                            className="form-input bg-grey w-48"
+                          />
+                        </label>
+                        <label className="block">
+                          <label className="form-label">EDITED BY</label>
+                          <Field
+                            type="text"
+                            disabled
+                            name="addedBy"
+                            value={values.addedBy}
+                            className="form-input bg-grey w-48"
                           />
                         </label>
                       </div>

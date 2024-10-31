@@ -343,8 +343,10 @@ export default function Admins() {
 
       setSelectedAdmin(null);
       setEditModalOpen(false);
+      toast.success("Admin  updated successfully!");
     } catch (error) {
       console.error("Error updating Admin:", error);
+      toast.error("Error updating Admin");
     }
   };
 
@@ -823,6 +825,16 @@ export default function Admins() {
                               {errors.department}
                             </div>
                           ) : null}
+                        </label>
+                        <label className="block mt-8">
+                          <label className="form-label">EDITED BY</label>
+                          <Field
+                            type="text"
+                            disabled
+                            name="addedBy"
+                            value={values.addedBy}
+                            className="form-input bg-grey w-48"
+                          />
                         </label>
                       </div>
                       <div className="flex justify-end mt-4">

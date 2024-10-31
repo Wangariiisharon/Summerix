@@ -396,6 +396,16 @@ export default function Cargo() {
                             <div className="text-red-600">{errors.name}</div>
                           ) : null}
                         </label>
+                        <label className="block">
+                          <label className="form-label">EDITED BY</label>
+                          <Field
+                            type="text"
+                            disabled
+                            name="addedBy"
+                            value={values.addedBy}
+                            className="form-input bg-grey w-48"
+                          />
+                        </label>
                       </div>
 
                       <div className="flex w-full justify-end mt-24 ">

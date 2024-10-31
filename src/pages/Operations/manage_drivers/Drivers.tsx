@@ -1055,6 +1055,16 @@ export default function Drivers() {
                           ) : null}
                         </label>
                       </div>
+                      <label className="block mt-8">
+                        <label className="form-label">EDITED BY</label>
+                        <Field
+                          type="text"
+                          disabled
+                          name="addedBy"
+                          value={values.addedBy}
+                          className="form-input bg-grey w-48"
+                        />
+                      </label>
                       <div className="flex w-full justify-end mt-24 ">
                         <Button
                           className="rounded bg-d-green w-[160px] h-8 uppercase text-white font-semibold flex items-center justify-center py-4 px-4 mr-32"
