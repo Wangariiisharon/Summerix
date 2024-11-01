@@ -18,6 +18,7 @@ import {
   query,
   where,
   onSnapshot,
+  runTransaction,
 } from "firebase/firestore";
 import * as Yup from "yup";
 import firebaseApp, { fbDb } from "@/firebase/configs";
@@ -126,24 +127,41 @@ export default function Drivers() {
     };
     fetchedDrivers();
   }, [organisationId]);
-  async function generateDriverId(organisationId: string) {
-    try {
-      const querySnapshot = await getDocs(
-        query(
-          collection(fbDb, "drivers"),
-          where("organisationId", "==", organisationId)
-        )
-      );
-      const adminCount = querySnapshot.size;
 
-      // Customize this logic based on your requirements
-      return `D${(adminCount + 1).toString().padStart(3, "0")}`;
+  async function generateDriverId(organisationId: string) {
+    const counterRef = doc(fbDb, "organisationDriverCounters", organisationId);
+
+    try {
+      const driverId = await runTransaction(fbDb, async (transaction) => {
+        const counterDoc = await transaction.get(counterRef);
+        let newDriverCount = 1;
+
+        if (counterDoc.exists()) {
+          newDriverCount = counterDoc.data().driverCounter + 1;
+          transaction.update(counterRef, {
+            driverCounter: newDriverCount,
+          });
+        } else {
+          transaction.set(counterRef, {
+            driverCounter: newDriverCount,
+          });
+        }
+
+        return `D${newDriverCount.toString().padStart(3, "0")}`;
+      });
+
+      return driverId;
     } catch (error) {
-      console.error("Error fetching Drivers count:", error);
-      // Handle error or return a default value
-      return "D001";
+      console.error("Error generating driver ID:", error);
     }
   }
+  const storage = getStorage(firebaseApp); // Initialize once
+
+  const uploadFile = async (folder: any, file: any) => {
+    const storageRef = ref(storage, `${folder}/${file.name}`);
+    await uploadBytes(storageRef, file);
+    return getDownloadURL(storageRef);
+  };
 
   const handleSubmit = async (values: {
     name: any;
@@ -161,47 +179,6 @@ export default function Drivers() {
     console.log("Submitted Values:", values);
 
     try {
-      if (!values.name) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Name field");
-        return;
-      }
-      if (!values.phonenumber) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Phone number field");
-        return;
-      }
-      if (!values.email_adress) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Email Address field");
-        return;
-      }
-      if (!values.city) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the City field");
-        return;
-      }
-      if (!values.profile) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Profile field");
-        return;
-      }
-      if (!values.identity_card) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Identity Card field");
-        return;
-      }
-      if (!values.good_conduct) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Good Conduct field");
-        return;
-      }
-      if (!values.medical_report) {
-        console.error("Required form fields are missing");
-        toast.error("please fill the Medical Report field");
-        return;
-      }
-
       const existingDepartmentQuery = query(
         collection(fbDb, "drivers"),
         where("email_adress", "==", values.email_adress),
@@ -220,55 +197,33 @@ export default function Drivers() {
         return;
       }
 
+      if (!organisationId) {
+        console.error("organisationId is required but was null or undefined.");
+        return;
+      }
+
       // medical_report
 
-      let idImageUrl = "";
-      if (values.identity_card) {
-        const storage = getStorage(firebaseApp);
-        const storageRef = ref(
-          storage,
-          `id_images/${values.identity_card.name}`
-        );
-
-        await uploadBytes(storageRef, values.identity_card);
-        idImageUrl = await getDownloadURL(storageRef);
-        console.log("ID Image URL:", idImageUrl);
-      }
-      let medicalReportUrl = "";
-      if (values.medical_report) {
-        const storage = getStorage(firebaseApp);
-        const storageRef = ref(
-          storage,
-          `medical_report/${values.medical_report.name}`
-        );
-
-        await uploadBytes(storageRef, values.medical_report);
-        medicalReportUrl = await getDownloadURL(storageRef);
-        console.log("Medical Report Image URL:", medicalReportUrl);
-      }
-
-      let profileImageUrl = "";
-      if (values.profile) {
-        const storage = getStorage(firebaseApp);
-        const storageRef = ref(
-          storage,
-          `profile_images/${values.profile.name}`
-        );
-        await uploadBytes(storageRef, values.profile);
-        profileImageUrl = await getDownloadURL(storageRef);
-        console.log("Profile Image URL:", profileImageUrl);
-      }
-      let pdfFileUrl = "";
-      if (values.good_conduct) {
-        const storage = getStorage(firebaseApp);
-        const pdfStorageRef = ref(
-          storage,
-          `good_conduct/${values.good_conduct.name}`
-        );
-        await uploadBytes(pdfStorageRef, values.good_conduct);
-        pdfFileUrl = await getDownloadURL(pdfStorageRef);
-        console.log("Good Conduct File URL:", pdfFileUrl);
-      }
+      const [
+        [idImageUrl, medicalReportUrl, profileImageUrl, pdfFileUrl],
+        generatedVehicleId,
+      ] = await Promise.all([
+        Promise.all([
+          values.identity_card && values.identity_card.size
+            ? uploadFile("identity_card", values.identity_card)
+            : Promise.resolve(""),
+          values.medical_report && values.medical_report.size
+            ? uploadFile("medical_report", values.medical_report)
+            : Promise.resolve(""),
+          values.profile && values.profile.size
+            ? uploadFile("profile", values.profile)
+            : Promise.resolve(""),
+          values.good_conduct && values.good_conduct.size
+            ? uploadFile("good_conduct", values.good_conduct)
+            : Promise.resolve(""),
+        ]),
+        generateDriverId(organisationId),
+      ]);
 
       if (organisationId === null) {
         console.error("organisationId is null");
@@ -276,7 +231,7 @@ export default function Drivers() {
         return;
       }
       const registration_date = new Date();
-      const generatedVehicleId = await generateDriverId(organisationId);
+      // const generatedVehicleId = await generateDriverId(organisationId);
 
       const DriversData = {
         name: values.name,

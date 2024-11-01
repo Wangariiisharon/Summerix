@@ -15,6 +15,7 @@ import {
   where,
   getFirestore,
   onSnapshot,
+  runTransaction,
 } from "firebase/firestore";
 import { FormModal } from "@/components/Modals/FormModal";
 import { Formik, Field, Form } from "formik/dist/index";
@@ -60,8 +61,8 @@ export default function Class() {
     setSearchQuery(query);
   };
 
-  const filteredClients = fetchedClasses.filter((client) => {
-    const fullName = `${client.name}`.toLowerCase();
+  const filteredClasses = fetchedClasses.filter((classes) => {
+    const fullName = `${classes.name}`.toLowerCase();
     const nameMatch = fullName.includes(searchQuery.toLowerCase());
     return nameMatch;
   });
@@ -163,25 +164,34 @@ export default function Class() {
     fetchedClasses();
   }, [organisationId]);
 
-  async function generateAdminId(organisationId: string) {
-    try {
-      const querySnapshot = await getDocs(
-        query(
-          collection(fbDb, "classes"),
-          where("organisationId", "==", organisationId)
-        )
-      );
-      const adminCount = querySnapshot.size;
+  async function generateClassId(organisationId: string) {
+    const counterRef = doc(fbDb, "organisationClassCounters", organisationId);
 
-      // Customize this logic based on your requirements
-      return `CS ${(adminCount + 1).toString().padStart(3, "0")}`;
+    try {
+      const classId = await runTransaction(fbDb, async (transaction) => {
+        const counterDoc = await transaction.get(counterRef);
+        let newClassCount = 1;
+
+        if (counterDoc.exists()) {
+          newClassCount = counterDoc.data().classCounter + 1;
+          transaction.update(counterRef, {
+            classCounter: newClassCount,
+          });
+        } else {
+          transaction.set(counterRef, {
+            classCounter: newClassCount,
+          });
+        }
+
+        return `C${newClassCount.toString().padStart(3, "0")}`;
+      });
+
+      return classId;
     } catch (error) {
-      console.error("Error fetching Classes count:", error);
-      // Handle error or return a default value
-      return "CS001";
+      console.error("Error generating client ID:", error);
     }
   }
-  const handleAddClient = async (values: { name: any }) => {
+  const handleAddClass = async (values: { name: any }) => {
     console.log("Submitted Values:", values);
     setOpen(true);
 
@@ -217,7 +227,7 @@ export default function Class() {
         // Handle the null case, maybe show an error or return
         return;
       }
-      const generatedClassId = await generateAdminId(organisationId);
+      const generatedClassId = await generateClassId(organisationId);
 
       const clientsData = {
         name: values.name,
@@ -246,7 +256,7 @@ export default function Class() {
     }
   };
 
-  const updateFetchedClients = (
+  const updateFetchedClasses = (
     updatedClasses: SetStateAction<DocumentData[]>
   ) => {
     setfetchedClasses(updatedClasses);
@@ -275,7 +285,7 @@ export default function Class() {
                 {hasAddPermission && (
                   <Button
                     className="rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2"
-                    handleClick={handleAddClient}
+                    handleClick={handleAddClass}
                   >
                     <>
                       <PlusIcon className="h-6 w-6 mr-2" />
@@ -290,10 +300,10 @@ export default function Class() {
           <Tab.Panel>
             <div className="h-full overflow-y-auto">
               <CitiesTable
-                clients={fetchedClasses}
-                filteredClients={filteredClients}
+                classes={fetchedClasses}
+                filteredClasses={filteredClasses}
                 handleEditClick={handleEditClick}
-                updateFetchedClients={updateFetchedClients}
+                updateFetchedClasses={updateFetchedClasses}
                 hasEditClassPermission={hasEditClassPermission}
                 hasArchiveClassPermission={hasArchiveClassPermission}
               />
@@ -319,7 +329,7 @@ export default function Class() {
                   name: "",
                 }}
                 validationSchema={validationSchema}
-                onSubmit={(values) => handleAddClient(values)}
+                onSubmit={(values) => handleAddClass(values)}
 
                 // onSubmit={(values) => handleEditSubmit(values)}
               >

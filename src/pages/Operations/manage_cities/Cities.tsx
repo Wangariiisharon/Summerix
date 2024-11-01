@@ -15,6 +15,7 @@ import {
   onSnapshot,
   doc,
   setDoc,
+  runTransaction,
 } from "firebase/firestore";
 import { FormModal } from "@/components/Modals/FormModal";
 import { Formik, Field, Form } from "formik/dist/index";
@@ -199,26 +200,43 @@ export default function Cities() {
   }, [organisationId]);
 
   async function generateCitiesId(organisationId: string) {
-    try {
-      const querySnapshot = await getDocs(
-        query(
-          collection(fbDb, "clients"),
-          where("organisationId", "==", organisationId)
-        )
-      );
-      const adminCount = querySnapshot.size;
+    const counterRef = doc(fbDb, "organisationCLientCounters", organisationId);
 
-      return `CL${(adminCount + 1).toString().padStart(3, "0")}`;
+    try {
+      const clientId = await runTransaction(fbDb, async (transaction) => {
+        const counterDoc = await transaction.get(counterRef);
+        let newClientCount = 1;
+
+        if (counterDoc.exists()) {
+          newClientCount = counterDoc.data().clientCounter + 1;
+          transaction.update(counterRef, {
+            clientCounter: newClientCount,
+          });
+        } else {
+          transaction.set(counterRef, {
+            clientCounter: newClientCount,
+          });
+        }
+
+        return `CL${newClientCount.toString().padStart(3, "0")}`;
+      });
+
+      return clientId;
     } catch (error) {
-      console.error("Error fetching Client count:", error);
-      return "CL001";
+      console.error("Error generating client ID:", error);
     }
   }
-
   const updateFetchedClients = (
     updatedClients: SetStateAction<DocumentData[]>
   ) => {
     setfetchedClients(updatedClients);
+  };
+  const storage = getStorage(firebaseApp); // Initialize once
+
+  const uploadFile = async (folder: any, file: any) => {
+    const storageRef = ref(storage, `${folder}/${file.name}`);
+    await uploadBytes(storageRef, file);
+    return getDownloadURL(storageRef);
   };
 
   const handleAddClient = async (values: {
@@ -233,18 +251,19 @@ export default function Cities() {
     setShowAddClientModal(true);
 
     try {
-      let clientDetailsImageUrl = "";
-      if (values.client_details) {
-        const storage = getStorage(firebaseApp);
-        const storageRef = ref(
-          storage,
-          `client_details/${values.client_details.name}`
-        );
-
-        await uploadBytes(storageRef, values.client_details);
-        clientDetailsImageUrl = await getDownloadURL(storageRef);
-        console.log("Client Details URL:", clientDetailsImageUrl);
+      if (!organisationId) {
+        console.error("organisationId is required but was null or undefined.");
+        return;
       }
+
+      const [clientDetailsImageUrl, generatedCitiesId] = await Promise.all([
+        Promise.all([
+          values.client_details && values.client_details.size
+            ? uploadFile("client_details", values.client_details)
+            : Promise.resolve(""),
+        ]),
+        generateCitiesId(organisationId),
+      ]);
 
       const existingDepartmentQuery = query(
         collection(fbDb, "clients"),
@@ -267,7 +286,7 @@ export default function Cities() {
         // Handle the null case, maybe show an error or return
         return;
       }
-      const generatedCitiesId = await generateCitiesId(organisationId);
+      // const generatedCitiesId = await generateCitiesId(organisationId);
 
       const clientsData = {
         name: values.name,

@@ -15,6 +15,7 @@ import {
   where,
   getFirestore,
   onSnapshot,
+  runTransaction,
 } from "firebase/firestore";
 import { FormModal } from "@/components/Modals/FormModal";
 import { Formik, Field, Form } from "formik/dist/index";
@@ -33,8 +34,8 @@ export default function Cargo() {
   const [fetchedCargo, setfetchedCargo] = useState<DocumentData[]>([]);
   const [open, setOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [showAddClassModal, setShowAddClassModal] = useState(false);
-  const [selectedClass, setSelectedClass] = useState<DocumentData | null>(null);
+  const [showAddCargoModal, setShowAddCargoModal] = useState(false);
+  const [selectedCargo, setSelectedCargo] = useState<DocumentData | null>(null);
   const [editFormInitialValues, setEditFormInitialValues] = useState({
     name: "",
     cargoId: "",
@@ -68,7 +69,7 @@ export default function Cargo() {
   });
 
   const handleEditClick = (client: DocumentData) => {
-    setSelectedClass(client);
+    setSelectedCargo(client);
     setEditFormInitialValues({
       name: client.name,
       cargoId: client.cargoId,
@@ -80,7 +81,7 @@ export default function Cargo() {
   };
 
   const handleEditModalClose = () => {
-    setSelectedClass(null);
+    setSelectedCargo(null);
     setEditModalOpen(false);
   };
 
@@ -90,7 +91,7 @@ export default function Cargo() {
     organisationId: any;
     archive: any;
   }) => {
-    if (!selectedClass) {
+    if (!selectedCargo) {
       console.error("No selected Cargo to update");
       return;
     }
@@ -104,7 +105,7 @@ export default function Cargo() {
         return;
       }
       // Update the vehicle data in the database using the selectedVehicle.id
-      const vehicleRef = doc(fbDb, "cargos", selectedClass.id);
+      const vehicleRef = doc(fbDb, "cargos", selectedCargo.id);
       await setDoc(vehicleRef, {
         name: values.name,
         cargoId: values.cargoId,
@@ -115,7 +116,7 @@ export default function Cargo() {
 
       // Update the local fetchedVehicles state
       const updatedVehicles = fetchedCargo.map((cargo) =>
-        cargo.id === selectedClass.id
+        cargo.id === selectedCargo.id
           ? {
               ...cargo,
               name: values.name,
@@ -127,7 +128,7 @@ export default function Cargo() {
       );
       toast.success("Cargo updated successfully");
       setfetchedCargo(updatedVehicles);
-      setSelectedClass(null);
+      setSelectedCargo(null);
       setEditModalOpen(false);
     } catch (error) {
       console.error("Error updating Vehicle:", error);
@@ -163,25 +164,34 @@ export default function Cargo() {
     fetchedCargos();
   }, [organisationId]);
 
-  async function generateAdminId(organisationId: string) {
-    try {
-      const querySnapshot = await getDocs(
-        query(
-          collection(fbDb, "cargos"),
-          where("organisationId", "==", organisationId)
-        )
-      );
-      const adminCount = querySnapshot.size;
+  async function generateCargotId(organisationId: string) {
+    const counterRef = doc(fbDb, "organisationCargoCounters", organisationId);
 
-      // Customize this logic based on your requirements
-      return `C ${(adminCount + 1).toString().padStart(3, "0")}`;
+    try {
+      const cargoId = await runTransaction(fbDb, async (transaction) => {
+        const counterDoc = await transaction.get(counterRef);
+        let newCargoCount = 1;
+
+        if (counterDoc.exists()) {
+          newCargoCount = counterDoc.data().cargoCounter + 1;
+          transaction.update(counterRef, {
+            cargoCounter: newCargoCount,
+          });
+        } else {
+          transaction.set(counterRef, {
+            cargoCounter: newCargoCount,
+          });
+        }
+
+        return `C${newCargoCount.toString().padStart(3, "0")}`;
+      });
+
+      return cargoId;
     } catch (error) {
-      console.error("Error fetching Classes count:", error);
-      // Handle error or return a default value
-      return "C001";
+      console.error("Error generating cargo ID:", error);
     }
   }
-  const handleAddClient = async (values: { name: any }) => {
+  const handleAddCargo = async (values: { name: any }) => {
     console.log("Submitted Values:", values);
     setOpen(true);
 
@@ -196,29 +206,28 @@ export default function Cargo() {
         return;
       }
 
-      const existingDepartmentQuery = query(
+      const existingCargoQuery = query(
         collection(fbDb, "cargos"),
         where("name", "==", values.name),
         where("organisationId", "==", organisationId)
       );
 
-      const existingDepartmentSnapshot = await getDocs(existingDepartmentQuery);
+      const existingCargoSnapshot = await getDocs(existingCargoQuery);
 
-      if (!existingDepartmentSnapshot.empty) {
+      if (!existingCargoSnapshot.empty) {
         console.error(
-          "Class with this name already exists in the same organisation"
+          "Cargo with this name already exists in the same organisation"
         );
-        toast.error(`A Class with the name '${values.name}' already exists`);
+        toast.error(`A Cargo with the name '${values.name}' already exists`);
         return;
       }
 
       if (organisationId === null) {
         console.error("organisationId is null");
-        // Handle the null case, maybe show an error or return
         return;
       }
-      const generatedCargoId = await generateAdminId(organisationId);
-      const clientsData = {
+      const generatedCargoId = await generateCargotId(organisationId);
+      const cargoData = {
         name: values.name,
         cargoId: generatedCargoId,
         archive: false,
@@ -226,29 +235,21 @@ export default function Cargo() {
         addedBy: currentUser?.email,
       };
 
-      const docRef = await addDoc(collection(fbDb, "cargos"), clientsData);
+      const docRef = await addDoc(collection(fbDb, "cargos"), cargoData);
       console.log("Cargo added with ID: ", docRef.id);
       toast.success("Cargo Successfully Added.");
 
-      const newClass = {
-        id: docRef.id,
-        ...clientsData,
-      };
-
-      // Prepend the new driver to the fetchedDrivers state
-      // setfetchedCargo((prevClasses) => [newClass, ...prevClasses]);
-
       setOpen(false);
-      setShowAddClassModal(false);
+      setShowAddCargoModal(false);
     } catch (error) {
       console.error("Error adding Class:", error);
     }
   };
 
-  const updateFetchedClients = (
-    updatedClasses: SetStateAction<DocumentData[]>
+  const updateFetchedCargos = (
+    updatedCargos: SetStateAction<DocumentData[]>
   ) => {
-    setfetchedCargo(updatedClasses);
+    setfetchedCargo(updatedCargos);
   };
 
   const hasAddPermission =
@@ -274,7 +275,7 @@ export default function Cargo() {
                 {hasAddPermission && (
                   <Button
                     className="rounded bg-d-green min-w-[160px] h-6 uppercase text-white text-sm font-semibold flex items-center py-4 px-4 mr-2"
-                    handleClick={handleAddClient}
+                    handleClick={handleAddCargo}
                   >
                     <>
                       <PlusIcon className="h-6 w-6 mr-2" />
@@ -289,10 +290,10 @@ export default function Cargo() {
           <Tab.Panel>
             <div className="h-full overflow-y-auto">
               <CargoTable
-                clients={fetchedCargo}
-                filteredClients={filteredCargo}
+                cargos={fetchedCargo}
+                filteredCargos={filteredCargo}
                 handleEditClick={handleEditClick}
-                updateFetchedClients={updateFetchedClients}
+                updateFetchedCargos={updateFetchedCargos}
                 hasEditClassPermission={hasEditClassPermission}
                 hasArchiveClassPermission={hasArchiveClassPermission}
               />
@@ -318,7 +319,7 @@ export default function Cargo() {
                   name: "",
                 }}
                 validationSchema={validationSchema}
-                onSubmit={(values) => handleAddClient(values)}
+                onSubmit={(values) => handleAddCargo(values)}
 
                 // onSubmit={(values) => handleEditSubmit(values)}
               >
@@ -362,7 +363,7 @@ export default function Cargo() {
           </FormModal>
         )}
 
-        {editModalOpen && selectedClass && (
+        {editModalOpen && selectedCargo && (
           <FormModal open={editModalOpen} setOpen={handleEditModalClose}>
             <div>
               <div className="flex w-full h-full justify-between items-center mb-12">

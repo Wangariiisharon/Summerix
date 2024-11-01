@@ -6,18 +6,18 @@ import { DocumentData, doc, setDoc } from "firebase/firestore";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 
 interface ClientsTableProps {
-  clients?: DocumentData[];
-  filteredClients: DocumentData[];
+  classes?: DocumentData[];
+  filteredClasses: DocumentData[];
   handleEditClick: any;
-  updateFetchedClients: (updatedClasses: DocumentData[]) => void;
+  updateFetchedClasses: (updatedClasses: DocumentData[]) => void;
   hasEditClassPermission: any;
   hasArchiveClassPermission: any;
 }
 
 export default function CitiesTable({
-  clients = [],
+  classes = [],
   handleEditClick,
-  updateFetchedClients,
+  updateFetchedClasses,
   hasEditClassPermission,
   hasArchiveClassPermission,
 }: ClientsTableProps) {
@@ -41,8 +41,8 @@ export default function CitiesTable({
     setSearchQuery(query);
   };
 
-  const filteredClients = clients.filter((client) => {
-    const fullName = `${client.name}`.toLowerCase();
+  const filteredClients = classes.filter((classes) => {
+    const fullName = `${classes.name}`.toLowerCase();
     const nameMatch = fullName.includes(searchQuery.toLowerCase());
     return nameMatch;
   });
@@ -72,10 +72,10 @@ export default function CitiesTable({
       );
       console.log("Class status updated in the database:", classId);
 
-      const updatedVehicles = clients.map((client) =>
-        client.id === classId ? { ...client, archive: newStatus } : client
+      const updatedVehicles = classes.map((classes) =>
+        classes.id === classId ? { ...classes, archive: newStatus } : classes
       );
-      updateFetchedClients(updatedVehicles);
+      updateFetchedClasses(updatedVehicles);
     } catch (error) {
       console.error("Error updating Vehicle status in database:", error);
     }
