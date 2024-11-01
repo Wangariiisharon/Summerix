@@ -6,18 +6,18 @@ import { DocumentData, doc, setDoc } from "firebase/firestore";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 
 interface CargoTableProps {
-  clients?: DocumentData[];
-  filteredClients: DocumentData[];
+  cargos?: DocumentData[];
+  filteredCargos: DocumentData[];
   handleEditClick: any;
-  updateFetchedClients: (updatedClasses: DocumentData[]) => void;
+  updateFetchedCargos: (updatedCargos: DocumentData[]) => void;
   hasEditClassPermission: any;
   hasArchiveClassPermission: any;
 }
 
 export default function CargoTable({
-  clients = [],
+  cargos = [],
   handleEditClick,
-  updateFetchedClients,
+  updateFetchedCargos,
   hasEditClassPermission,
   hasArchiveClassPermission,
 }: CargoTableProps) {
@@ -41,13 +41,13 @@ export default function CargoTable({
     setSearchQuery(query);
   };
 
-  const filteredClients = clients.filter((client) => {
-    const fullName = `${client.name}`.toLowerCase();
+  const filteredClients = cargos.filter((cargo) => {
+    const fullName = `${cargo.name}`.toLowerCase();
     const nameMatch = fullName.includes(searchQuery.toLowerCase());
     return nameMatch;
   });
 
-  const sortedClasses = [...filteredClients].sort((a, b) => {
+  const sortedCargos = [...filteredClients].sort((a, b) => {
     if (a.archive && !b.archive) {
       return 1; // a should come after b (archived vehicles come after non-archived)
     } else if (!a.archive && b.archive) {
@@ -57,25 +57,25 @@ export default function CargoTable({
     }
   });
 
-  const visibleClasses = sortedClasses.slice(startIndex, endIndex);
+  const visibleCargos = sortedCargos.slice(startIndex, endIndex);
 
-  const updateVehicleStatusInDatabase = async (
+  const updateCargoStatusInDatabase = async (
     cargoId: string,
     newStatus: boolean
   ) => {
     try {
-      const vehicleRef = doc(fbDb, "cargos", cargoId);
+      const cargoRef = doc(fbDb, "cargos", cargoId);
       await setDoc(
-        vehicleRef,
+        cargoRef,
         { archive: newStatus, addedBy: currentUser?.email },
         { merge: true }
       );
-      console.log("Class status updated in the database:", cargoId);
+      console.log("Cargo status updated in the database:", cargoId);
 
-      const updatedVehicles = clients.map((client) =>
-        client.id === cargoId ? { ...client, archive: newStatus } : client
+      const updatedCargos = cargos.map((cargo) =>
+        cargo.id === cargoId ? { ...cargo, archive: newStatus } : cargo
       );
-      updateFetchedClients(updatedVehicles);
+      updateFetchedCargos(updatedCargos);
     } catch (error) {
       console.error("Error updating Cargo status in database:", error);
     }
@@ -115,33 +115,33 @@ export default function CargoTable({
                   </tr>
                 </thead>
                 <tbody className="bg-[#FAFAFB]">
-                  {visibleClasses.map((clients, index) => {
+                  {visibleCargos.map((cargos, index) => {
                     return (
                       <Fragment key={index}>
                         <tr className="hover:bg-gray-100">
                           <td className="whitespace-nowrap font-nunito font-regular pr-3 pt-1 pl-4 pr-3 text-d-blue text-base sm:pl-0">
-                            {clients.cargoId}
+                            {cargos.cargoId}
                           </td>
                           <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
-                            {clients.name}
+                            {cargos.name}
                           </td>
                           {hasEditClassPermission &&
                             hasArchiveClassPermission && (
                               <td className="whitespace-nowrap px-2 py-2 relative flex flex-row">
-                                <div onClick={() => handleEditClick(clients)}>
+                                <div onClick={() => handleEditClick(cargos)}>
                                   <EditBtn />
                                 </div>
                                 <div>
                                   <button
                                     className="bg-[#E7EDF4] text-[#777E96] h-8 w-18 py-1 px-2 ml-4"
                                     onClick={() =>
-                                      updateVehicleStatusInDatabase(
-                                        clients.id,
-                                        !clients.archive
+                                      updateCargoStatusInDatabase(
+                                        cargos.id,
+                                        !cargos.archive
                                       )
                                     }
                                   >
-                                    {clients.archive ? "Unarchive" : "Archive"}
+                                    {cargos.archive ? "Unarchive" : "Archive"}
                                   </button>
                                 </div>
                                 <div className="h-10"></div>

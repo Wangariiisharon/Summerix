@@ -20,6 +20,7 @@ import {
   getFirestore,
   onSnapshot,
   query,
+  runTransaction,
   setDoc,
   updateDoc,
   where,
@@ -87,46 +88,6 @@ export default function Departments() {
     setOpen(false);
   };
 
-  //   const fetchedDepartments = async () => {
-  //     const db = getFirestore();
-
-  //     try {
-  //       if (organisationId) {
-  //         const q = query(
-  //           collection(db, "departments"),
-  //           where("organisationId", "==", organisationId)
-  //         );
-
-  //         const unsubscribe = onSnapshot(q, (querySnapshot) => {
-  //           const departmentsData = querySnapshot.docs.map((doc) => {
-  //             const data = doc.data();
-  //             const updated = data.updated?.seconds
-  //               ? new Date(data.updated.seconds * 1000).toISOString()
-  //               : data.updated;
-
-  //             return {
-  //               id: doc.id,
-  //               name: data.name,
-  //               status: data.status,
-  //               members: data.members,
-  //               departmentId: data.departmentId,
-  //               updated: updated, // Use the converted updated field
-  //               archive: data.archive,
-  //               organisationId: data.organisationId,
-  //               permissions: data.permissions,
-  //               ...data,
-  //             };
-  //           });
-  //           setFetchedDepartments(departmentsData);
-  //         });
-
-  //         return () => unsubscribe();
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching Departments:", error);
-  //     }
-  //   };
-  //   fetchedDepartments();
   useEffect(() => {
     const fetchDepartments = async () => {
       const db = getFirestore();
@@ -261,23 +222,35 @@ export default function Departments() {
     }
   };
 
-  // Function to generate departmentId based on the count of departments
   async function generateDepartmentId(organisationId: string) {
-    try {
-      const querySnapshot = await getDocs(
-        query(
-          collection(fbDb, "departments"),
-          where("organisationId", "==", organisationId)
-        )
-      );
-      const departmentCount = querySnapshot.size;
+    const counterRef = doc(
+      fbDb,
+      "organisationDepartmentCounters",
+      organisationId
+    );
 
-      // Customize this logic based on your requirements
-      return `G${(departmentCount + 1).toString().padStart(3, "0")}`;
+    try {
+      const tripId = await runTransaction(fbDb, async (transaction) => {
+        const counterDoc = await transaction.get(counterRef);
+        let newDepartmentCount = 1;
+
+        if (counterDoc.exists()) {
+          newDepartmentCount = counterDoc.data().departmentCounter + 1;
+          transaction.update(counterRef, {
+            departmentCounter: newDepartmentCount,
+          });
+        } else {
+          transaction.set(counterRef, {
+            departmentCounter: newDepartmentCount,
+          });
+        }
+
+        return `D${newDepartmentCount.toString().padStart(3, "0")}`;
+      });
+
+      return tripId;
     } catch (error) {
-      console.error("Error fetching departments count:", error);
-      // Handle error or return a default value
-      return "D001";
+      console.error("Error generating deparment ID:", error);
     }
   }
 
@@ -337,17 +310,6 @@ export default function Departments() {
       );
       await updateDoc(docRef, { id: docRef.id });
       toast.success("Department Successfully Added.");
-
-      // const newDepartment: Department = {
-      //   id: docRef.id,
-      //   ...DepartmentsData,
-      // };
-
-      // Prepend the new department to the fetchedDepartments state
-      // setFetchedDepartments((prevDepartments) => [
-      //   newDepartment,
-      //   ...prevDepartments,
-      // ]);
 
       setOpen(false);
       setIsModalOpen(false);

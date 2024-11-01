@@ -27,6 +27,7 @@ import {
   getDoc,
   onSnapshot,
   DocumentReference,
+  runTransaction,
 } from "firebase/firestore";
 import { toast } from "react-hot-toast";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
@@ -55,7 +56,6 @@ interface Admin {
   additionalPermissions: string[];
   invitationSent: any;
   organisationId: any;
-  // super_admin: boolean;
   inviterUid: string | null;
   addedBy: string;
 }
@@ -133,19 +133,27 @@ export default function Admins() {
     department: Yup.string().required("Department is required"),
   });
 
-  async function generateAdminId(organisationId: string | null) {
+  async function generateAdminId(organisationId: string) {
+    const counterRef = doc(fbDb, "organisationAdminCounters", organisationId);
+
     try {
-      const querySnapshot = await getDocs(
-        query(
-          collection(fbDb, "admins"),
-          where("organisationId", "==", organisationId)
-        )
-      );
-      const adminCount = querySnapshot.size;
-      return `U${(adminCount + 1).toString().padStart(3, "0")}`;
+      const adminId = await runTransaction(fbDb, async (transaction) => {
+        const counterDoc = await transaction.get(counterRef);
+        let newAdminCount = 1;
+
+        if (counterDoc.exists()) {
+          newAdminCount = counterDoc.data().adminCounter + 1;
+          transaction.update(counterRef, { adminCounter: newAdminCount });
+        } else {
+          transaction.set(counterRef, { adminCounter: newAdminCount });
+        }
+
+        return `A${newAdminCount.toString().padStart(3, "0")}`;
+      });
+
+      return adminId;
     } catch (error) {
-      console.error("Error fetching admins count:", error);
-      return "U001";
+      console.error("Error generating trip ID:", error);
     }
   }
 
@@ -255,7 +263,7 @@ export default function Admins() {
     setFetchedAdmins(updatedAdmins);
   };
 
-  const handleEditClick = (admin: Admin) => {
+  const handleEditClick = (admin: any) => {
     setSelectedAdmin(admin);
     setEditFormInitialValues({
       firstname: admin.firstname,
@@ -403,10 +411,15 @@ export default function Admins() {
         console.error("Inviter not found");
       }
 
+      if (!organisationId) {
+        console.error("organisationId is required but was null or undefined.");
+        return;
+      }
+
       const generatedAdminId = await generateAdminId(organisationId);
       console.log("Generated Admin ID:", generatedAdminId);
 
-      const adminData: Admin = {
+      const adminData = {
         adminId: generatedAdminId,
         firstname: values.firstname,
         lastname: values.lastname,
