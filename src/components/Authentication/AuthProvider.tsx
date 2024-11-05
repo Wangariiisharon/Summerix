@@ -23,15 +23,15 @@ interface User {
   email?: string | null;
 }
 
-interface AdminData {
-  docId: string;
-  organisationId: string;
-  departments: string[];
-  super_admin: boolean;
-  email: string;
-  userId: string;
-  role: string;
-}
+// interface AdminData {
+//   docId: string;
+//   organisationId: string;
+//   departments: string[];
+//   super_admin: boolean;
+//   email: string;
+//   userId: string;
+//   role: string;
+// }
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -112,6 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           const data = snapshot.docs[0].data() as AdminUser;
           data.docId = snapshot.docs[0].id;
 
+          data.displayName = `${data.firstname} ${data.lastname}`
           data.initials =
             data.firstname?.charAt(0)?.toUpperCase() +
             data.lastname?.charAt(0)?.toUpperCase();

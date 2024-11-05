@@ -182,18 +182,16 @@ export default function SiteNav({ children }: Props) {
 
                   {currentAdmin && (
                     <Menu as="div" className="relative flex-shrink-0">
-                      <MenuButton className="p-2 inline-flex items-center gap-2 rounded-md font-semibold focus:outline-none">
+                      <MenuButton className="p-2 inline-flex items-center gap-2 rounded-md focus:outline-none text-white">
                         <span className="p-4 h-10 w-10 flex items-center justify-center bg-blue-800 rounded-full">
-                          <span className="font-bold text-white">
-                            {currentAdmin.initials}
-                          </span>
+                          <span className="">{currentAdmin.initials}</span>
                         </span>
-                        <span className="flex flex-col text-white">
-                          <span>
-                            {`${currentAdmin.firstname} ${currentAdmin.lastname}`}
-                          </span>
-                          <span>{currentAdmin.email}</span>
-                        </span>
+                        <div className="flex flex-col text-white">
+                          <p className="font-semibold">
+                            {currentAdmin.displayName}
+                          </p>
+                          <p className="text-xs">{currentAdmin.email}</p>
+                        </div>
                         <ChevronDownIcon className="size-4 fill-white/60" />
                       </MenuButton>
                       <Transition
@@ -206,17 +204,17 @@ export default function SiteNav({ children }: Props) {
                       >
                         <MenuItems
                           anchor="bottom end"
-                          className="py-3 px-1 w-fit min-w-52 origin-top-right rounded-b border border-white/5 bg-[#065AD8]  text-white focus:outline-none"
+                          className="p-3 w-fit min-w-60 origin-top-right rounded-b border border-[#065AD8] bg-white focus:outline-none"
                         >
                           <MenuItem>
                             <div className="px-3 flex items-center gap-3 text-sm">
-                              <div className="p-4 h-10 w-10 flex items-center justify-center bg-blue-800 rounded-full">
+                              <div className="p-4 h-10 w-10 flex items-center justify-center bg-[#065AD8] rounded-full">
                                 <span className="font-bold text-white">
                                   {currentAdmin.initials}
                                 </span>
                               </div>
-                              <div>
-                                <p>{`${currentAdmin.firstname} ${currentAdmin.lastname}`}</p>
+                              <div className="">
+                                <p className="">{currentAdmin.displayName}</p>
                                 <p className="text-xs">{currentAdmin.email}</p>
                               </div>
                             </div>
@@ -232,9 +230,9 @@ export default function SiteNav({ children }: Props) {
                                   console.error("On logout error:", error);
                                 }
                               }}
-                              className="py-2 px-4 w-full border border-[#4FD1C5] text-red-500  bg-white font-bold rounded"
+                              className="w-full btn border-red-500 text-red-500 hover:border-red-600 hover:text-red-600 rounded"
                             >
-                              <div className="flex items-center justify-center gap-2 bg-white">
+                              <div className="flex items-center justify-center gap-2">
                                 <ArrowLeftEndOnRectangleIcon className="h-5 w-5" />
                                 <span>Log Out</span>
                               </div>
