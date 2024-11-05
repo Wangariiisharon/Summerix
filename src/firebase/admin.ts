@@ -1,4 +1,4 @@
-import admin, { apps, credential } from 'firebase-admin';
+import { apps, auth, credential, firestore } from 'firebase-admin';
 import { initializeApp } from 'firebase-admin/app';
 import { getStorage } from 'firebase-admin/storage';
 
@@ -19,7 +19,7 @@ if (!apps.length) {
   }
 }
 
-// eslint-disable-next-line import/no-unused-modules
+export const fbAuth = auth();
 export const storage = getStorage();
 
-export default admin;
+export default firestore();

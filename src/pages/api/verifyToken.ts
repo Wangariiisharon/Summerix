@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import admin from "@/firebase/admin";
+import { fbAuth } from "@/firebase/admin";
 
 export default async function handler(
   req: NextApiRequest,
@@ -12,7 +12,7 @@ export default async function handler(
   }
 
   try {
-    const decodedToken = await admin.auth().verifyIdToken(token);
+    const decodedToken = await fbAuth.verifyIdToken(token);
     res.status(200).json({ message: "Token is valid", uid: decodedToken.uid });
   } catch (error: any) {
     console.error("Error verifying token:", error);

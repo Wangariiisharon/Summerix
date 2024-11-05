@@ -24,8 +24,6 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "src/pages/api/distance.js",
-    "src/pages/api/verifyToken.js",
     "src/components/useActivityTracker.js",
     "functions/index.tsx"
   ],
