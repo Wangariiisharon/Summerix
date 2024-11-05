@@ -3,11 +3,7 @@ const admin = require("firebase-admin");
 const axios = require("axios");
 const cors = require("cors")({ origin: true }); // Allow requests from any origin
 
-const serviceAccount = require("./../src/serviceAccount.json");
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+admin.initializeApp();
 
 const db = admin.firestore();
 
