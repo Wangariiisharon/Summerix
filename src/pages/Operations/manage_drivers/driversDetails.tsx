@@ -10,6 +10,7 @@ import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { fbDb } from "@/firebase/configs";
 import SiteLayout from "@/Layout/SiteLayout";
+import Image from "next/image";
 
 interface DriverDetailsProps {
   driverId: string;
@@ -93,15 +94,16 @@ const DriverDetailsPage: React.FC = () => {
         >
           <div className="p-4 flex flex-row">
             <div className=" border-2 w-28 h-28  text-xl mb-2  ">
-              <img
+              <Image
                 className="w-full h-full rounded-full"
                 src={driverDetails.profile}
-                alt="Driver Profile"
+                alt={driverDetails.name}
+                height={100}
+                width={100}
               />
             </div>
             <div className="ml-2">
-              <p className="p-2  pb-1 text-[##030229] text-base font-bold text-sm ">
-                {" "}
+              <p className="p-2 pb-1 text-[##030229] font-bold text-sm">
                 {driverDetails.name}
               </p>
               <p className="p-2 text-gray-700 text-sm">

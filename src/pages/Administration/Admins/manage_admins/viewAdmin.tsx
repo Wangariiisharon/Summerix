@@ -6,31 +6,17 @@ import {
   getDocs,
   query,
   setDoc,
-  updateDoc,
   where,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { fbDb } from "@/firebase/configs";
 import { useRouter } from "next/router";
 import SiteLayout from "@/Layout/SiteLayout";
-
 import toast from "react-hot-toast";
 import { Formik, Field, Form } from "formik/dist/index";
-import { FormModal, NewFormModal } from "@/components/Modals/FormModal";
-import * as Yup from "yup";
+import { NewFormModal } from "@/components/Modals/FormModal";
 import country from "country-list-js";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
-
-interface DepatmentDetailsProps {
-  departmentId: string;
-  department: {
-    departmentId?: string;
-    name: string;
-    members: number;
-    permissions: string[];
-    update: Date;
-  };
-}
 
 interface AdminData {
   firstname: string;
@@ -54,44 +40,36 @@ interface AdminData {
 type PermissionObject = { name: string; checked: boolean };
 type Permissions = { [key: string]: PermissionObject[] };
 
-export default function ViewDepatment() {
-  const [departments, setDepartments] = useState<
-    DepatmentDetailsProps["department"] | null
-  >(null);
-  const [fetchedDepartments, setFetchedDepartments] = useState<DocumentData[]>(
-    []
-  );
-  const [permissions, setPermissions] = useState<Permissions>({});
-  const [allPermissions, setAllPermissions] = useState<Permissions>({});
+// const EditvalidationSchema = Yup.object({
+//   firstname: Yup.string().required("First name is required"),
+//   lastname: Yup.string().required("Last name is required"),
+//   email: Yup.string().required("Email details are required"),
+//   phonenumber: Yup.string().required("Phone number address is required"),
+//   department: Yup.string().required("Department is required"),
+// });
 
+// const sections = ["Dashboard", "Vehicles", "Drivers", "Trips"];
+
+export default function ViewDepatment() {
+  const [loading, setLoading] = useState(true);
+  const [permissions, setPermissions] = useState<Permissions>({});
   const [fetchedPermissions, setFetchedPermissions] = useState<DocumentData[]>(
     []
   );
   const [departmentPermissions, setDepartmentPermissions] = useState<string[]>(
     []
   );
-  const [admins, setAdmins] = useState<AdminData[]>([]);
-  const [additionalPermissions, setAdditionalPermissions] = useState<string[]>(
-    []
-  );
-  const [open, setOpen] = useState(false);
-  const [admin, setAdmin] = useState<DocumentData[]>([]);
-  const [fetchedAdmins, setFetchedAdmins] = useState<DocumentData[]>([]);
-  const [combinedPermissions, setCombinedPermissions] = useState<string[]>([]);
   const [allDepartments, setAllDepartments] = useState<DocumentData[]>([]);
-  const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<AdminData[]>([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [allChecked, setAllChecked] = useState(false);
   const [countries, setCountries] = useState<string[]>([]);
-
   const [editFormInitialValues, setEditFormInitialValues] = useState<AdminData>(
     {
       firstname: "",
       lastname: "",
       email: "",
       phonenumber: "",
-      // super_admin: false,
       status: true,
       additionalPermissions: [],
       adminId: "",
@@ -105,26 +83,10 @@ export default function ViewDepatment() {
       addedBy: "",
     }
   );
-  const {
-    currentAdmin,
-    currentUser,
-    organisationId,
-    isSuperAdmin,
-    userClaims,
-    departmentData,
-  } = useAuthContext();
+  const { currentUser } = useAuthContext();
 
-  const sections = ["Dashboard", "Vehicles", "Drivers", "Trips"];
   const router = useRouter();
   const { id } = router.query;
-
-  const EditvalidationSchema = Yup.object({
-    firstname: Yup.string().required("First name is required"),
-    lastname: Yup.string().required("Last name is required"),
-    email: Yup.string().required("Email details are required"),
-    phonenumber: Yup.string().required("Phone number address is required"),
-    department: Yup.string().required("Department is required"),
-  });
 
   const handleEditClick = (admin: AdminData) => {
     setEditFormInitialValues({
@@ -132,7 +94,6 @@ export default function ViewDepatment() {
       lastname: admin.lastname,
       email: admin.email,
       phonenumber: admin.phonenumber,
-      // super_admin: admin.super_admin,
       status: admin.status,
       additionalPermissions: admin.additionalPermissions,
       department: admin.department,
@@ -148,16 +109,11 @@ export default function ViewDepatment() {
     setEditModalOpen(true);
   };
 
-  const handleEditModalClose = () => {
-    setEditModalOpen(false);
-  };
-
   const handleEditSubmit = async (values: {
     firstname: string;
     lastname: string;
     email: string;
     phonenumber: string;
-    // super_admin: boolean;
     status: boolean;
     additionalPermissions: string[];
     department: string;
@@ -208,99 +164,7 @@ export default function ViewDepatment() {
     }
   };
 
-  async function addPermission(adminId: string, permissionId: string) {
-    try {
-      const adminRef = doc(fbDb, "admins", adminId);
-      const permissionRef = doc(fbDb, "permisions", permissionId);
-
-      const adminDocSnap = await getDoc(adminRef);
-      const permissionDocSnap = await getDoc(permissionRef);
-
-      if (adminDocSnap.exists() && permissionDocSnap.exists()) {
-        const adminData = adminDocSnap.data() as AdminData;
-        const permissionData = permissionDocSnap.data();
-
-        // Check if permission already exists in combinedPermissions
-        if (combinedPermissions.includes(permissionData.name)) {
-          console.log("Permission already exists in combined permissions");
-          toast.error("Permission already exists in Selected");
-          return;
-        }
-
-        if (!adminData.additionalPermissions) {
-          adminData.additionalPermissions = [];
-        }
-
-        if (!adminData.additionalPermissions.includes(permissionData.name)) {
-          adminData.additionalPermissions.push(permissionData.name);
-          await updateDoc(adminRef, {
-            additionalPermissions: adminData.additionalPermissions,
-          });
-          console.log("Permission added successfully");
-          toast.success("Permission added successfully");
-        } else {
-          console.log("Permission already exists");
-          toast.error("Permission already exists");
-        }
-      } else {
-        console.log("Admin or permission document not found");
-        toast.error("Admin or permission document not found");
-      }
-    } catch (error) {
-      console.error("Error adding permission:", error);
-      toast.error("Error adding permission");
-    }
-  }
-
-  // // Function to remove a permission from the department
-  const removePermission = async (adminId: string, permissionId: string) => {
-    console.log("permissionId", permissionId);
-    console.log("adminId", adminId);
-    try {
-      const adminRef = doc(fbDb, "admins", adminId);
-      const adminDocSnap = await getDoc(adminRef);
-
-      if (adminDocSnap.exists()) {
-        let additionalPermissions: string[] = Array.isArray(
-          adminDocSnap.data().additionalPermissions
-        )
-          ? adminDocSnap.data().additionalPermissions
-          : [];
-
-        // Check if the permission is a department permission
-        if (departmentPermissions.includes(permissionId)) {
-          console.log("Cannot remove department permissions");
-          toast.error("Cannot remove department permissions");
-          return; // Stop execution if it is a department permission
-        }
-
-        const index = additionalPermissions.indexOf(permissionId);
-        if (index !== -1) {
-          additionalPermissions.splice(index, 1);
-          await updateDoc(adminRef, { additionalPermissions });
-          console.log("Permission removed successfully");
-          toast.success("Permission removed successfully");
-        } else {
-          console.log("Permission not found");
-          toast.error("Permission not found");
-        }
-      } else {
-        console.log("Admin not found");
-        toast.error("Admin not found");
-      }
-    } catch (error) {
-      console.error("Error removing permission:", error);
-      toast.error("Error removing permission");
-    }
-  };
-
-  const handleReset = () => {
-    setOpen(false);
-  };
-
   useEffect(() => {
-    const unsubscribe = () => {};
-
     const fetchPermissions = async () => {
       try {
         const permissionsCollection = collection(fbDb, "permisions");
@@ -325,6 +189,7 @@ export default function ViewDepatment() {
         return {};
       }
     };
+    
     const fetchAdminData = async (permissionsData: Permissions) => {
       const { id } = router.query;
 
@@ -457,11 +322,7 @@ export default function ViewDepatment() {
       .then(fetchDepartments)
       .then(fetchCountries);
     // .then(handleFullPermisionss);
-
-    return () => {
-      unsubscribe();
-    };
-  }, [id, fetchedPermissions]);
+  }, [id, fetchedPermissions, router.query]);
 
   const handleFullPermissionChange = () => {
     const newAllChecked = !allChecked;
@@ -1094,7 +955,7 @@ export default function ViewDepatment() {
         {editModalOpen && (
           <NewFormModal
             isOpen={editModalOpen}
-            setOpen={handleEditModalClose}
+            setOpen={() => setEditModalOpen(false)}
             heading="Edit Member"
           >
             <div className="p-5">

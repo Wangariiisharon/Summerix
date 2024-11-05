@@ -26,6 +26,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -271,10 +272,12 @@ export default function LoginPage() {
                   >
                     <span className="flex items-center">
                       {/* <i className="fa-brands fa-google mr-2"></i> */}
-                      <img
-                        src="google.png"
+                      <Image
+                        src="/google.png"
                         className="w-4 mr-9 ml-7"
-                        alt="Google Logo"
+                        alt="Google signin logo"
+                        height={100}
+                        width={100}
                       />
                       Sign In With Google
                     </span>
