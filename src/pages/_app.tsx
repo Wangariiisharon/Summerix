@@ -4,11 +4,10 @@ import { Toaster } from "react-hot-toast";
 import "@/globals.css";
 import React from "react";
 import Script from "next/script";
-import { useActivityTracker } from "@/components/SessionTimeOut/useActivityTracker";
+import { useActivityTracker } from "@/lib/hooks/useActivityTracker";
 import InactivityModal from "@/components/SessionTimeOut/inactivityModal";
 
 export default function MyApp({ Component, pageProps }: any) {
-  // useActivityTracker(300000); // 5 minutes timeout
   const { isModalOpen, setModalOpen } = useActivityTracker(900000); // 5 minutes timeout
 
   return (

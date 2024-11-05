@@ -21,7 +21,7 @@ import { useRouter } from "next/router";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
-import { auth, fbDb } from "@/firebase/configs";
+import { fbAuth, fbDb } from "@/firebase/configs";
 import { NotificationDropdown } from "./notifications";
 
 interface Props {
@@ -226,7 +226,7 @@ export default function SiteNav({ children }: Props) {
                             <button
                               onClick={async () => {
                                 try {
-                                  await auth.signOut();
+                                  await fbAuth.signOut();
                                   router.push("/signin");
                                 } catch (error) {
                                   console.error("On logout error:", error);
