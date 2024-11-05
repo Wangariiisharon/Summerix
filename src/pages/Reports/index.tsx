@@ -3,24 +3,21 @@ import {
   collection,
   where,
   getDocs,
-  Timestamp,
   setDoc,
   doc,
   onSnapshot,
   getFirestore,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import { auth, fbDb } from "@/firebase/configs";
+import { fbDb } from "@/firebase/configs";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import SiteLayout from "@/Layout/SiteLayout";
-import SearchBar from "@/components/Forms/input";
 import Image from "next/image";
 import { saveAs } from "file-saver";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Avatar_profile_photo from "../../../public/Avatar_profile_photo.png";
 import { format } from "date-fns";
-import { AnyMxRecord } from "dns";
 
 interface TripData {
   id: string;
@@ -52,14 +49,7 @@ export default function Reports() {
   const [totalCost, setTotalCost] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const {
-    currentAdmin,
-    currentUser,
-    organisationId,
-    isSuperAdmin,
-    userClaims,
-    departmentData,
-  } = useAuthContext();
+  const { organisationId } = useAuthContext();
   const [vehiclePaidAmounts, setVehiclePaidAmounts] = useState<{
     [key: string]: number;
   }>({});
@@ -86,8 +76,6 @@ export default function Reports() {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [selectYear, setSelectYear] = useState<number | null>(null);
   const [year, setYear] = useState<number | null>(null);
-  const [formattedStart, setFormattedStart] = useState<string>("");
-  const [formattedEnd, setFormattedEnd] = useState<string>("");
   const handleProfitLossChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setShowProfitLoss(e.target.checked);
   };
