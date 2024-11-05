@@ -27,7 +27,7 @@ if (!apps.length || apps.length === 0) {
 
 const firebaseApp = getApps()[0];
 export const fbDb = getFirestore(firebaseApp);
-export const auth = getAuth(firebaseApp);
+export const fbAuth = getAuth(firebaseApp);
 export const fbStorage = getStorage(firebaseApp);
 
 export default firebaseApp;

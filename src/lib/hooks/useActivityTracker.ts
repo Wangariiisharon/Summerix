@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { signOut } from "firebase/auth";
-import { auth } from "@/firebase/configs";
+import { fbAuth } from "@/firebase/configs";
 
 export const useActivityTracker = (timeout = 300000) => {
   const [isModalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     let timer = setTimeout(() => {
-      signOut(auth).then(() => {
+      signOut(fbAuth).then(() => {
         setModalOpen(true);
       });
     }, timeout);
@@ -15,7 +15,7 @@ export const useActivityTracker = (timeout = 300000) => {
     const resetTimer = () => {
       clearTimeout(timer);
       timer = setTimeout(() => {
-        signOut(auth).then(() => {
+        signOut(fbAuth).then(() => {
           setModalOpen(true);
         });
       }, timeout);
