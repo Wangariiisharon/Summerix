@@ -167,16 +167,13 @@ export default function LoginPage() {
           {({ errors, values, handleSubmit }) => (
             <Form className="mt-6" onSubmit={handleSubmit}>
               <div className="flex flex-col">
-                <p className="font-inter font-bold text-base mt-4 ml-8">
-                  Log in to your Account
+                <p className="font-bold text-base mt-4 ml-8">
+                  Log in to your account
                 </p>
-                {/* <p className="font-mulish text-[#8692A6] text-sm mt-2 ml-8">
-                  Welcome back! Select method to log in
-                </p> */}
                 <div className="m-4 p-4  grid gap-5 shadow">
                   <label className="block">
-                    <label className="form-label font-mulish font-semibold text-[#333333]">
-                      Email
+                    <label className="form-label font-semibold">
+                      Email address
                     </label>
                     <Field
                       type="email"
@@ -188,9 +185,7 @@ export default function LoginPage() {
                     />
                   </label>
                   <label className="block">
-                    <label className="form-label font-mulish font-semibold">
-                      Password
-                    </label>
+                    <label className="form-label font-semibold">Password</label>
                     <Field
                       type="password"
                       name="password"
@@ -202,9 +197,15 @@ export default function LoginPage() {
                   </label>
                 </div>
                 <div className="w-full px-4 flex justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <input className="" type="checkbox" />
-                    <p className="">Remember me</p>
+                  <div className="flex items-center gap-2 opacity-70">
+                    <input
+                      id="remember-me"
+                      type="checkbox"
+                      className="form-checkbox"
+                    />
+                    <label htmlFor="remember-me" className="">
+                      Remember me
+                    </label>
                   </div>
                   <Link
                     className="text-blue-700 hover:underline"
@@ -216,7 +217,7 @@ export default function LoginPage() {
                 <div className="my-5 flex justify-center">
                   <button
                     type="submit"
-                    className="w-full btn font-inter font-medium rounded-md btn-primary px-5"
+                    className="w-full btn font-medium rounded-md btn-primary px-5"
                   >
                     Submit
                   </button>

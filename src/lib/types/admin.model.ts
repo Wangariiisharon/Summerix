@@ -3,6 +3,7 @@ export interface AdminUser {
   email: string;
   firstname: string;
   lastname: string;
+  displayName?: string;
   initials?: string;
   phonenumber: string;
   organisationId: string;

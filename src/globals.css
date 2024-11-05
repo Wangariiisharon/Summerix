@@ -41,7 +41,7 @@
   }
 
   .btn {
-    @apply p-2 text-sm font-semibold rounded-xl outline-none border transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50;
+    @apply p-2 text-sm font-semibold rounded outline-none border transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .btn-accent {
@@ -50,11 +50,6 @@
 
   .btn-primary {
     @apply text-white  bg-blue-600 hover:bg-blue-700 disabled:opacity-60;
-  }
-  .btn-google {
-    @apply shadow-lg text-black bg-white disabled:opacity-60 py-2 px-4 text-sm
-    font-semibold rounded-xl outline-none border transition duration-150 ease-in-out disabled:cursor-not-allowed 
-    disabled:opacity-50;
   }
 
   .btn-secondary {
@@ -76,6 +71,13 @@
   .btn-flex {
     @apply flex items-center gap-2;
   }
+
+  .btn-google {
+    @apply text-black bg-white py-2 px-4 text-sm font-semibold rounded-xl outline-none 
+      border transition duration-150 ease-in-out disabled:cursor-not-allowed 
+      disabled:opacity-50 shadow hover:shadow-lg;
+  }
+
   .table-body {
     @apply divide-y divide-gray-200 bg-white px-8;
   }
@@ -87,6 +89,7 @@
   }
   /* Media query for larger screens */
 }
+
 .Tab.List {
   justify-start: center; /* Default behavior for small screens */
 }

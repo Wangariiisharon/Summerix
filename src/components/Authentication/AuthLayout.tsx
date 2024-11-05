@@ -19,15 +19,15 @@ export default function AuthLayout({ children }: Props) {
           />
         </div>
       </div>
-      <div className="w-2/5 m-auto max-w-sm grid">
-        <div className="mt-10 flex flex-col">
+      <div className="w-full lg:w-2/5 m-auto max-w-sm grid">
+        <div className="mt-10 p-4 flex flex-col">
           <header className="flex justify-center">
             <Image
               src="/logo-black.png"
               alt="company logo image"
               className="h-auto w-auto"
-              width={150}
-              height={50}
+              width={200}
+              height={100}
             />
           </header>
 
