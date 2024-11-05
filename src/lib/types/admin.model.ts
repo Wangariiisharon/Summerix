@@ -7,7 +7,7 @@ export interface AdminUser {
   phonenumber: string;
   organisationId: string;
   fcmToken: string;
-  super_admin: string;
+  super_admin: boolean;
   adminId: string;
   userId: string;
   department: string;

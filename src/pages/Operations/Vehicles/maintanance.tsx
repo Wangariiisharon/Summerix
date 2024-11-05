@@ -64,9 +64,8 @@ export default function Maintenance({
   const [checkboxState, setCheckboxState] = useState<boolean[]>([]);
   const [checkedIndexes, setCheckedIndexes] = useState<number[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const { organisationId, userData, currentUser } = useAuthContext();
-
-  const approvedBy = userData?.email;
+  const { organisationId, currentAdmin, currentUser } = useAuthContext();
+  const approvedBy = currentAdmin?.email;
 
   const MaintainanceTabs = [
     { name: "PLANNED", href: "#", current: selectedTabIndex === 0 },
@@ -247,7 +246,7 @@ export default function Maintenance({
         organisationId: organisationId,
         notificationNeedsDisplay: true,
         isNotificationViewed: false,
-        userId: userData?.userId,
+        userId: currentAdmin?.userId,
         addedBy: currentUser?.email,
       };
       console.log("Maintenance Data:", maintenanceData);
@@ -310,7 +309,7 @@ export default function Maintenance({
   //       organisationId: organisationId,
   //       notificationNeedsDisplay: true,
   //       isNotificationViewed: false,
-  //       userId: userData?.userId,
+  //       userId: currentAdmin?.userId,
   //     };
 
   //     const docRef = await addDoc(
@@ -346,11 +345,11 @@ export default function Maintenance({
         const approvedByArray = docSnapshot.data()?.approvedBy || [];
 
         // Check if the user has already approved
-        if (!approvedByArray.includes(userData?.email)) {
+        if (!approvedByArray.includes(currentAdmin?.email)) {
           // Update the approvalCount and add the user email to approvedBy array in Firestore
           await updateDoc(maintenanceDocRef, {
             approvalCount: currentApprovalCount + 1,
-            approvedBy: [...approvedByArray, userData?.email],
+            approvedBy: [...approvedByArray, currentAdmin?.email],
           });
 
           // Check if the approval count reaches 3
