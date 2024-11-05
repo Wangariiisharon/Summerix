@@ -1,12 +1,3 @@
-import { collection, where, query, onSnapshot } from "firebase/firestore";
-import { ReactNode, useRef, useState, useEffect, useMemo } from "react";
-import { FaHome, FaTools, FaChartBar, FaFileAlt } from "react-icons/fa";
-import { useRouter } from "next/router";
-import Image from "next/image";
-import Link from "next/link";
-import { useAuthContext } from "@/components/Authentication/AuthProvider";
-import { auth, fbDb } from "@/firebase/configs";
-import { NotificationDropdown } from "./notifications";
 import {
   Menu,
   MenuButton,
@@ -15,44 +6,42 @@ import {
   Transition,
 } from "@headlessui/react";
 import {
-  ArrowLeftOnRectangleIcon,
+  ArrowLeftEndOnRectangleIcon,
   ChevronDownIcon,
 } from "@heroicons/react/24/solid";
-import OperationsComponent from "@/pages/Operations";
+import {
+  collection,
+  where,
+  query,
+  getCountFromServer,
+} from "firebase/firestore";
+import { ReactNode, useRef, useState, useEffect, useMemo } from "react";
+import { FaHome, FaTools, FaChartBar, FaFileAlt } from "react-icons/fa";
+import { useRouter } from "next/router";
+import Image from "next/image";
+import Link from "next/link";
+import { useAuthContext } from "@/components/Authentication/AuthProvider";
+import { auth, fbDb } from "@/firebase/configs";
+import { NotificationDropdown } from "./notifications";
 
 interface Props {
   children: ReactNode;
 }
 
 export default function SiteNav({ children }: Props) {
-  const drawerRef = useRef<HTMLDivElement | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(true);
-  const {
-    currentAdmin,
-    currentUser,
-    organisationId,
-    isSuperAdmin,
-    userClaims,
-    departmentData,
-  } = useAuthContext();
-
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(true);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const { currentAdmin, currentUser, organisationId, userClaims } =
+    useAuthContext();
+  const drawerRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
-
-  const toggleNotificationDropdown = () => {
-    setShowDropdown(!showDropdown);
-  };
-
-  const closeDropdown = () => {
-    setShowDropdown(false);
-  };
 
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
         if (currentUser && currentUser.uid) {
+          console.debug("fetchNotifications > uid:", currentUser.uid);
           const notificationsRef = collection(
             fbDb,
             `user_notifications/${currentUser.uid}/notifications`
@@ -60,27 +49,12 @@ export default function SiteNav({ children }: Props) {
 
           const q = query(
             notificationsRef,
-            where("organisationId", "==", organisationId)
+            where("organisationId", "==", organisationId),
+            where("readBy", "!=", currentUser.uid)
           );
 
-          const unsubscribe = onSnapshot(q, (snapshot) => {
-            const loadedNotifications = snapshot.docs.map((doc) => ({
-              id: doc.id,
-              readBy: doc.data().readBy || [],
-              ...doc.data(),
-            }));
-
-            const unreadNotifications = loadedNotifications.filter(
-              (notification) =>
-                notification.readBy &&
-                !notification.readBy.includes(currentUser.uid)
-            );
-
-            setUnreadCount(unreadNotifications.length);
-            setNotifications(loadedNotifications);
-          });
-
-          return unsubscribe;
+          const snapshot = await getCountFromServer(q);
+          setUnreadCount(snapshot.data().count);
         }
       } catch (error) {
         console.error("Error fetching notifications:", error);
@@ -112,17 +86,8 @@ export default function SiteNav({ children }: Props) {
         visible: true,
       },
     ],
-    [userClaims, isSuperAdmin]
+    [userClaims]
   );
-
-  const toggleSidebar = () => {
-    setIsDrawerOpen(!isDrawerOpen);
-  };
-
-  const preventLinkClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    event.stopPropagation();
-    event.preventDefault();
-  };
 
   return (
     <>
@@ -188,14 +153,14 @@ export default function SiteNav({ children }: Props) {
                 <i
                   className="fa fa-bars text-white"
                   aria-hidden="true"
-                  onClick={toggleSidebar}
+                  onClick={() => setIsDrawerOpen(!isDrawerOpen)}
                 ></i>
               </div>
               <div className="fixed right-14 w-8">
                 <div className="flex items-center justify-end">
                   <div className="relative mr-4">
                     <button
-                      onClick={toggleNotificationDropdown}
+                      onClick={() => setShowDropdown(!showDropdown)}
                       className="text-white focus:outline-none"
                     >
                       <i
@@ -209,7 +174,9 @@ export default function SiteNav({ children }: Props) {
                       )}
                     </button>
                     {showDropdown && (
-                      <NotificationDropdown onClose={closeDropdown} />
+                      <NotificationDropdown
+                        onClose={() => setShowDropdown(false)}
+                      />
                     )}
                   </div>
 
@@ -268,7 +235,7 @@ export default function SiteNav({ children }: Props) {
                               className="py-2 px-4 w-full border border-[#4FD1C5] text-red-500  bg-white font-bold rounded"
                             >
                               <div className="flex items-center justify-center gap-2 bg-white">
-                                <ArrowLeftOnRectangleIcon className="h-5 w-5" />
+                                <ArrowLeftEndOnRectangleIcon className="h-5 w-5" />
                                 <span>Log Out</span>
                               </div>
                             </button>

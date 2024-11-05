@@ -18,9 +18,7 @@ export default function SiteLayout({ children }: Props) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <SiteNav>
-        <div className="">{children}</div>
-      </SiteNav>
+      <SiteNav>{children}</SiteNav>
     </>
   );
 }

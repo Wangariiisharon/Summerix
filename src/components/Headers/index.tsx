@@ -108,7 +108,7 @@ export default function TopMenu() {
             <HamburgerMenu />
           </div>
           <div>
-            <img
+            {/* <img
               src="Frame 13.png"
               className="fixed right-14 w-8"
               alt="Notification"
@@ -117,7 +117,7 @@ export default function TopMenu() {
               src="Ellipse 1.png"
               className=" w-9 fixed right-4 pl-2"
               alt=""
-            />
+            /> */}
           </div>
         </div>
       </div>
