@@ -14,10 +14,8 @@ import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import SiteNav from "@/components/Headers/SiteNav";
 import MetricCard from "./metrics";
 import OutOfServiceVehicles from "./OutOfService";
-import VehicleOverview from "@/pages/Dashboard/VehicleOverview";
 import TripsPieGraph from "@/pages/Dashboard/TripsPieGraph";
 import OnRoute from "@/pages/Dashboard/OnRoute";
-import { ChevronDownIcon } from "@heroicons/react/24/solid";
 
 export default function DashboardComponent() {
   const [fetchedTrips, setFetchedTrips] = useState<DocumentData[]>([]);
@@ -34,17 +32,9 @@ export default function DashboardComponent() {
   );
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [totalFuel, setTotalFuel] = useState(0);
-  const [totalPurchasePrice, setTotalPurchasePrice] = useState(0);
   const [mileageFee, setMileageFee] = useState(0);
   const [totalMaintenanceCost, setTotalMaintenanceCost] = useState(0);
-  const {
-    currentAdmin,
-    currentUser,
-    organisationId,
-    isSuperAdmin,
-    userClaims,
-    departmentData,
-  } = useAuthContext();
+  const { organisationId, userClaims, departmentData } = useAuthContext();
   const [isTripsFetched, setIsTripsFetched] = useState(false);
   const [isMaintenanceFetched, setIsMaintenanceFetched] = useState(false);
   const [isVehiclesFetched, setIsVehiclesFetched] = useState(false);
@@ -259,6 +249,7 @@ export default function DashboardComponent() {
     setSelectedDate(date);
     setSelectedYear(date.getFullYear()); // Update selected year to match the selected date
   };
+
   const hasViewTotalIncomePermission =
     userClaims?.additionalPermissions?.includes("View Total Income") ||
     userClaims?.admin ||
@@ -335,8 +326,8 @@ export default function DashboardComponent() {
 
   return (
     <SiteNav>
-      <div className=" bg-[#f7f8fa]">
-        <div className="py-[10px] flex items-center justify-center bg-white flex justify-between w-full">
+      <div className="w-full bg-[#f7f8fa]">
+        <div className="py-[10px] flex items-center justify-center bg-white w-full">
           <div className="">
             <h1 className="text-base font-semibold text-gray-800 mr-4 ml-[35px]">
               Analytics

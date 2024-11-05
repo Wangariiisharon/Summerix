@@ -9,12 +9,10 @@ import {
   Timestamp,
   arrayUnion,
   orderBy,
-  getFirestore,
 } from "firebase/firestore";
-import firebaseApp, { fbDb } from "@/firebase/configs";
+import { fbDb } from "@/firebase/configs";
 import { useAuthContext } from "@/components/Authentication/AuthProvider";
 import { formatDistanceToNow } from "date-fns";
-import { TableBody } from "@/components/Table/Row";
 
 interface Notification {
   id: string;
@@ -28,15 +26,12 @@ interface Notification {
 
 export const NotificationDropdown = ({ isOpen, onClose }: any) => {
   const { currentUser, organisationId } = useAuthContext();
-  const [isClosed, setIsClosed] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!organisationId || !currentUser) return;
 
-    // const notificationsRef = collection(fbDb, "notifications");
     const notificationsRef = collection(
       fbDb,
       `user_notifications/${currentUser.uid}/notifications`
@@ -44,21 +39,16 @@ export const NotificationDropdown = ({ isOpen, onClose }: any) => {
 
     const q = query(
       notificationsRef,
-      where("organisationId", "==", organisationId)
+      where("organisationId", "==", organisationId),
+      orderBy("timestamp", "desc")
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const loadedNotifications = snapshot.docs.map((doc) => ({
+      const results = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as Notification[];
-
-      const unreadNotifications = loadedNotifications.filter(
-        (notification) => !notification.readBy.includes(currentUser.uid)
-      );
-
-      setUnreadCount(unreadNotifications.length);
-      setNotifications(loadedNotifications);
+      setNotifications(results);
     });
 
     return () => unsubscribe();
@@ -66,9 +56,8 @@ export const NotificationDropdown = ({ isOpen, onClose }: any) => {
 
   const markAllAsRead = async () => {
     const batch = writeBatch(fbDb);
+
     notifications.forEach((notification) => {
-      // const notificationRef = doc(fbDb, `notifications`, notification.id);
-      // `user_notifications/${currentUser.uid}/notifications`
       const notificationRef = doc(
         fbDb,
         `user_notifications/${currentUser?.uid}/notifications`,
@@ -79,18 +68,8 @@ export const NotificationDropdown = ({ isOpen, onClose }: any) => {
         readBy: arrayUnion(currentUser?.uid),
       });
     });
+
     await batch.commit();
-
-    const updatedNotifications = notifications.map((notification) => ({
-      ...notification,
-      readBy: [...notification.readBy, currentUser?.uid].filter(
-        Boolean
-      ) as string[], // Filter out undefined values
-    }));
-
-    setNotifications(updatedNotifications);
-    setIsClosed(false);
-    setUnreadCount(0);
   };
 
   useEffect(() => {
