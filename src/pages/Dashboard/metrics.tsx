@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function MetricCard({ value, label, icon, lineColor }: any) {
   return (
     <div
@@ -12,7 +14,13 @@ export default function MetricCard({ value, label, icon, lineColor }: any) {
           </div>
         </div>
         <div className="ml-[40px]">
-          <img className="w-[40px] h-[40px] mr-[26px]" src={icon} alt={label} />
+          <Image
+            src={icon}
+            alt={label}
+            height={100}
+            width={100}
+            className="w-[40px] h-[40px] mr-[26px]"
+          />
         </div>
       </div>
     </div>

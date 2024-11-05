@@ -1,13 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import AuthLayout from "../../components/Authentication/AuthLayout";
 import Seo from "../../components/Seo";
-import firebaseApp, { fbDb } from "../../firebase/configs";
-import {
-  getAuth,
-  isSignInWithEmailLink,
-  signInWithEmailLink,
-  onAuthStateChanged,
-} from "firebase/auth";
+import { fbAuth, fbDb } from "../../firebase/configs";
+import { isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
 import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
@@ -17,7 +12,6 @@ import { Field, Form, Formik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { toast } from "react-hot-toast";
-import admin from "@/firebase/admin";
 import {
   collection,
   doc,
@@ -26,78 +20,15 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const auth = getAuth();
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const token = await user.getIdToken();
-        const uid = user.uid;
-
-        console.log("User ID Token:", token);
-
-        try {
-          const res = await fetch(`/api/user?uid=${uid}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          console.log("API Response:", res);
-
-          if (!res.ok) {
-            throw new Error("Failed to fetch user data");
-          }
-
-          const data = await res.json();
-          setUserData(data);
-          console.log("UserData signiin:", data);
-        } catch (error) {
-          console.error(error);
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        console.log("This user has no userClaims");
-      }
-    });
-
-    // const handleSignInWithEmailLink = async () => {
-    //   const auth = getAuth(firebaseApp);
-
-    //   if (isSignInWithEmailLink(auth, window.location.href)) {
-    //     let email = window.localStorage.getItem("emailForSignIn");
-
-    //     if (!email) {
-    //       email = window.prompt("Please provide your email for confirmation");
-    //     }
-
-    //     if (email) {
-    //       try {
-    //         await signInWithEmailLink(auth, email, window.location.href);
-
-    //         window.localStorage.removeItem("emailForSignIn");
-    //         console.log("Successfully signed in");
-
-    //         router.push("/Dashboard");
-    //       } catch (error) {
-    //         console.error("Sign-in with email link failed:", error);
-    //         toast.error("Sign-in failed. Please try again.");
-    //       }
-    //     }
-    //   }
-    // };
     const handleSignInWithEmailLink = async () => {
-      const auth = getAuth(firebaseApp);
-
-      if (isSignInWithEmailLink(auth, window.location.href)) {
+      if (isSignInWithEmailLink(fbAuth, window.location.href)) {
         let email = window.localStorage.getItem("emailForSignIn");
-
         if (!email) {
           email = window.prompt("Please provide your email for confirmation");
         }
@@ -105,7 +36,7 @@ export default function LoginPage() {
         if (email) {
           try {
             const result = await signInWithEmailLink(
-              auth,
+              fbAuth,
               email,
               window.location.href
             );
@@ -113,7 +44,7 @@ export default function LoginPage() {
 
             if (user) {
               const uid = user.uid;
-              console.log("Successfully signed in with UID:", uid);
+              console.debug("Successfully signed in with UID:", uid);
 
               // Update the admin document with the user's UID
               const adminId = new URLSearchParams(window.location.search).get(
@@ -139,28 +70,13 @@ export default function LoginPage() {
     handleSignInWithEmailLink();
   }, [router]);
 
-  // const doGoogleSignIn = async () => {
-  //   const fbAuth = getAuth(firebaseApp);
-  //   const provider = new GoogleAuthProvider();
-
-  //   try {
-  //     const results = await signInWithPopup(fbAuth, provider);
-  //     console.log("doGoogleSignIn > results:", results);
-  //     if (results.user) {
-  //       router.push("/Dashboard");
-  //     }
-  //   } catch (error) {
-  //     console.error("DO GOOGLE SIGN-IN ERROR:", error);
-  //     toast.error("Google Sign-In failed. Please try again.");
-  //   }
-  // };
   const doGoogleSignIn = async () => {
-    const fbAuth = getAuth(firebaseApp);
     const provider = new GoogleAuthProvider();
 
     try {
       const results = await signInWithPopup(fbAuth, provider);
-      console.log("doGoogleSignIn > results:", results);
+      console.debug("doGoogleSignIn > results:", results);
+
       if (results.user) {
         const user = results.user;
         const uid = user.uid;
@@ -173,7 +89,6 @@ export default function LoginPage() {
             where("email", "==", email)
           );
           const adminSnapshot = await getDocs(adminQuery);
-
           if (!adminSnapshot.empty) {
             const adminDoc = adminSnapshot.docs[0];
             const adminDocRef = adminDoc.ref;
@@ -195,15 +110,14 @@ export default function LoginPage() {
   };
 
   const doLogin = async (formValues: { email: string; password: string }) => {
-    console.log("doLogin > formValues:", formValues);
+    console.debug("doLogin > formValues:", formValues);
 
     try {
       const { email, password } = formValues;
-      const auth = getAuth();
 
       // Use Firebase Authentication to sign in
       const userCredential = await signInWithEmailAndPassword(
-        auth,
+        fbAuth,
         email,
         password
       );
@@ -218,7 +132,6 @@ export default function LoginPage() {
           where("email", "==", email)
         );
         const adminSnapshot = await getDocs(adminQuery);
-
         if (!adminSnapshot.empty) {
           const adminDoc = adminSnapshot.docs[0];
           const adminDocRef = adminDoc.ref;
@@ -240,8 +153,6 @@ export default function LoginPage() {
     }
   };
 
-  const auth = getAuth();
-
   return (
     <main className="">
       <Seo title="Login" />
@@ -262,17 +173,18 @@ export default function LoginPage() {
                 {/* <p className="font-mulish text-[#8692A6] text-sm mt-2 ml-8">
                   Welcome back! Select method to log in
                 </p> */}
-                <div className="m-4 px-4  grid gap-5 shadow-sm">
+                <div className="m-4 p-4  grid gap-5 shadow">
                   <label className="block">
                     <label className="form-label font-mulish font-semibold text-[#333333]">
                       Email
                     </label>
                     <Field
-                      required
                       type="email"
                       name="email"
                       value={values.email}
                       className="form-input"
+                      autoComplete="username"
+                      required
                     />
                   </label>
                   <label className="block">
@@ -280,19 +192,22 @@ export default function LoginPage() {
                       Password
                     </label>
                     <Field
-                      required
                       type="password"
                       name="password"
                       value={values.password}
                       className="form-input"
+                      autoComplete="current-password"
+                      required
                     />
                   </label>
                 </div>
-                <div className=" px-4 w-full mt-4  flex flex-row">
-                  <input className="ml-6" type="checkbox" />
-                  <p className="ml-4 text-xs font-inter">Remember me</p>
+                <div className="w-full px-4 flex justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <input className="" type="checkbox" />
+                    <p className="">Remember me</p>
+                  </div>
                   <Link
-                    className="ml-20 text-xs font-inter text-blue-700"
+                    className="text-blue-700 hover:underline"
                     href="/ResetPassword"
                   >
                     Forgot Password?
@@ -301,33 +216,38 @@ export default function LoginPage() {
                 <div className="my-5 flex justify-center">
                   <button
                     type="submit"
-                    className="btn font-inter font-medium rounded-md btn-primary w-72 px-5"
+                    className="w-full btn font-inter font-medium rounded-md btn-primary px-5"
                   >
                     Submit
                   </button>
                 </div>
 
-                <p className="flex justify-center mt-5">Or</p>
-                <div className="my-5 flex justify-center">
+                <p className="mt-5 text-center">Or</p>
+
+                <div className="my-5 font-medium">
                   <button
                     type="button"
-                    className="btn-google w-72 px-5 font-inter font-medium"
+                    className="w-full btn-google items-center"
                     onClick={doGoogleSignIn}
                   >
-                    <span className="flex items-center">
-                      {/* <i className="fa-brands fa-google mr-2"></i> */}
-                      <img
-                        src="google.png"
-                        className="w-4 mr-9 ml-7"
-                        alt="Google Logo"
+                    <div className="w-full p-1 flex items-center justify-center gap-2">
+                      <Image
+                        src="/google.png"
+                        className="h-5 w-5"
+                        alt="Google signin logo"
+                        height={100}
+                        width={100}
                       />
-                      Sign In With Google
-                    </span>
+                      <span>Sign In With Google</span>
+                    </div>
                   </button>
                 </div>
-                <p className="flex justify-center mt-7 underline text-xs font-mulish">
-                  Dont have an account?
-                  <Link className="text-blue-700" href="/signUp">
+                <p className="mt-5 flex justify-center gap-1">
+                  <span>Dont have an account?</span>
+                  <Link
+                    className="text-blue-700 hover:underline"
+                    href="/signUp"
+                  >
                     Register
                   </Link>
                 </p>
