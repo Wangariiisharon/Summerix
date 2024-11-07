@@ -2,7 +2,7 @@
 
 export default function Home() {
   return (
-    <main className="container p-4 mx-auto">
+    <main className="">
       <h2>Home</h2>
       <p>
         Lorem ipsum dolor sit amet consectetur, adipisicing elit. Animi eos
