@@ -1,5 +1,7 @@
+const flowbite = require("flowbite-react/tailwind");
+
 /** @type {import('tailwindcss').Config} */
-const defaultTheme = require("tailwindcss/defaultTheme");
+
 module.exports = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx}",
@@ -8,14 +10,15 @@ module.exports = {
 
     // Or if using `src` directory:
     "./src/**/*.{js,ts,jsx,tsx}",
+    flowbite.content(),
   ],
   theme: {
     extend: {
       colors: {
-        primary: '#065AD8',
-        secondary: '#4FD1C5',
-        accent: '#030229',
-        danger: '#C80815',
+        primary: "#065AD8",
+        secondary: "#4FD1C5",
+        accent: "#030229",
+        danger: "#C80815",
 
         yellow: "#FFC107",
         "light-yellow": "#FFF0C5",
@@ -48,5 +51,9 @@ module.exports = {
       },
     },
   },
-  plugins: [require("@tailwindcss/forms"), require("@headlessui/tailwindcss")],
+  plugins: [
+    require("@tailwindcss/forms"),
+    require("@headlessui/tailwindcss"),
+    flowbite.plugin(),
+  ],
 };
