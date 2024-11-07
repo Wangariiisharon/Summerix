@@ -1,13 +1,13 @@
 import Constants from "@/Constants";
 import "@/globals.css";
 
-import { Raleway } from "next/font/google";
+import { Outfit } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { ReactNode } from "react";
 import { Toaster } from "react-hot-toast";
 import { AuthContextProvider } from "./auth-provider";
 
-const raleway = Raleway({ subsets: ["latin"] });
+const font = Outfit({ subsets: ["latin"] });
 
 export const metadata = {
   title: {
@@ -32,7 +32,7 @@ type Props = {
 
 export default function RootLayout({ children }: Props) {
   return (
-    <html lang="en" className={raleway.className}>
+    <html lang="en" className={font.className}>
       <head>
         <link
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
