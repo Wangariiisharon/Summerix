@@ -1,0 +1,225 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .form-label {
+    @apply block mb-1 text-gray-600 text-xs;
+  }
+  /* Notification.module.css */
+
+  .notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 300px;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .visible {
+    opacity: 1;
+  }
+
+  .field-validation-error {
+    @apply text-red-500 text-sm; /* Use Tailwind's @apply directive to apply the text-red-500 and text-lg classes */
+  }
+  .form-input,
+  .form-textarea {
+    @apply w-full mx-auto p-2 rounded-md outline-none border border-gray-300 focus:border-blue-600 text-xs text-gray-900 focus:bg-white disabled:opacity-50 invalid:border-red-500 invalid:text-red-600
+		focus:invalid:border-red-500 focus:invalid:ring-red-500;
+  }
+  .searchbar {
+    @apply w-80 mx-auto p-2 rounded-md outline-none  focus:border-blue-600 text-xs text-gray-900 focus:bg-white disabled:opacity-50 invalid:border-red-500 invalid:text-red-600
+		focus:invalid:border-red-500 focus:invalid:ring-red-500;
+  }
+
+  .btn {
+    @apply p-2 text-sm font-semibold rounded outline-none border transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-accent {
+    @apply text-white bg-accent border-accent hover:opacity-80;
+  }
+
+  .btn-primary {
+    @apply text-white  bg-blue-600 hover:bg-blue-700 disabled:opacity-60;
+  }
+
+  .btn-secondary {
+    @apply text-black bg-secondary border-secondary hover:opacity-80;
+  }
+
+  .btn-outline {
+    @apply text-gray-700 border-primary hover:text-primary hover:border-primary;
+  }
+
+  .btn-outline-accent {
+    @apply text-gray-700 border-accent hover:text-accent hover:border-accent;
+  }
+
+  .btn-icon-suffix {
+    @apply ml-3 py-2 bg-white text-center text-primary rounded-full;
+  }
+
+  .btn-flex {
+    @apply flex items-center gap-2;
+  }
+
+  .btn-google {
+    @apply text-black bg-white py-2 px-4 text-sm font-semibold rounded-xl outline-none 
+      border transition duration-150 ease-in-out disabled:cursor-not-allowed 
+      disabled:opacity-50 shadow hover:shadow-lg;
+  }
+
+  .table-body {
+    @apply divide-y divide-gray-200 bg-white px-8;
+  }
+  .searchBarContainer {
+    width: 64;
+  }
+  .submit {
+    @apply w-full mx-auto p-2 rounded-md outline-none bg-blue-600 text-white;
+  }
+  /* Media query for larger screens */
+}
+
+.Tab.List {
+  justify-start: center; /* Default behavior for small screens */
+}
+/* Add this CSS to your global stylesheet or inside a <style> tag in your component */
+.scrollable-tbody {
+  display: block;
+  max-height: 400px; /* Adjust based on your requirement */
+  overflow-y: auto;
+}
+
+.fixed-thead th {
+  position: sticky;
+  top: 0;
+  background-color: #fff; /* Match your table header background */
+  z-index: 1; /* Ensure the header overlaps the body rows when scrolling */
+}
+.table-container {
+  max-height: 300px; /* Adjustable based on your design */
+  overflow-y: auto; /* Enables vertical scrolling */
+  overflow-x: hidden; /* Hides horizontal scrollbar */
+}
+
+.smaller-icon {
+  transform: scale(0); /* Scale down to 75% of the original size */
+}
+.sidebar {
+  transition: width 0.3s ease;
+  width: 200px; /* expanded width */
+}
+
+.sidebar.collapsed {
+  width: 50px; /* collapsed width, showing only icons */
+}
+
+.sidebar li span {
+  transition: opacity 0.3s ease;
+  opacity: 1;
+}
+
+.sidebar.collapsed li span {
+  opacity: 0; /* hide text in collapsed mode */
+  pointer-events: none;
+}
+/* Ensure icons do not change size */
+.sidebar-icon {
+  width: 24px; /* or any specific size */
+  height: 24px; /* must match width for consistency */
+  display: flex; /* ensures the icon is properly aligned */
+  align-items: center; /* centers vertically */
+  justify-content: center; /* centers horizontally in its container */
+}
+
+.collapsed-sidebar .sidebar-text {
+  display: none; /* Hide text in collapsed state */
+}
+
+.collapsed-sidebar .sidebar-icon {
+  margin-left: auto;
+  margin-right: auto;
+  /* remove any padding or margin that may affect the centered alignment */
+  padding: 0;
+}
+
+.top-bar {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: 100; /* higher than sidebar for overlay */
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin-left: 20px;
+    margin-right: 20px;
+    height: 376px;
+  }
+}
+
+@media (min-width: full) {
+  .Tab.List {
+    justify-between: center; /* Tabs fill available space on larger screens */
+  }
+}
+
+/* Media query for screens smaller than 640px */
+@media (max-width: 640px) {
+  .form-input,
+  .form-textarea,
+  .searchbar,
+  .searchBarContainer,
+  .btn-google,
+  .btn-flex {
+    /* Adjust styles for smaller screens */
+    /* For example: */
+    font-size: 14px;
+    padding: 8px;
+  }
+}
+
+/* Media query for screens between 641px and 768px */
+@media (min-width: 641px) and (max-width: 768px) {
+  .form-input,
+  .form-textarea,
+  .searchbar,
+  .searchBarContainer,
+  .btn-google,
+  .btn-flex {
+    /* Adjust styles for medium-sized screens */
+    /* For example: */
+    font-size: 14px;
+    padding: 8px;
+  }
+}
+
+/* Media query for screens larger than 768px */
+@media (min-width: 769px) {
+  .form-input,
+  .form-textarea,
+  .searchbar,
+  .searchBarContainer,
+  .btn-google,
+  .btn-flex {
+    /* Adjust styles for larger screens */
+    /* For example: */
+    font-size: 14px;
+    padding: 8px;
+  }
+}
+
+/* Additional media queries as needed */
+
+/* Your existing styles */
