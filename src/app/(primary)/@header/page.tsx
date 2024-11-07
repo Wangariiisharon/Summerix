@@ -23,6 +23,7 @@ import Image from "next/image";
 import { fbAuth, fbDb } from "@/firebase/configs";
 import { useAuthContext } from "../../auth-provider";
 import { NotificationDropdown } from "./notifications";
+import Link from "next/link";
 
 export default function Header() {
   const [unreadCount, setUnreadCount] = useState(0);
@@ -61,15 +62,15 @@ export default function Header() {
   return (
     <>
       <div className="p-4 w-full flex flex-row items-center gap-2 bg-primary">
-        <div className="flex h-10 w-full">
+        <Link href="/home" className="flex h-10 w-full">
           <Image
-            src="/logo.png"
-            alt="company logo"
+            src="/images/logo.svg"
+            alt="company logo image"
             className="h-auto w-auto"
             width={200}
             height={100}
           />
-        </div>
+        </Link>
 
         <div className="flex items-center justify-end">
           <div className="relative mr-4">
