@@ -1,0 +1,110 @@
+"use client";
+
+import { useAuthContext } from "@/app/auth-provider";
+import Constants from "@/Constants";
+import { fbDb } from "@/firebase/configs";
+import { Trip } from "@/lib/types/trip.model";
+import {
+  collection,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
+import moment from "moment-timezone";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+
+export default function LatestTrips() {
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const { organisationId } = useAuthContext();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!organisationId) return;
+
+    const q = query(
+      collection(fbDb, Constants.fbTrips),
+      where("organisationId", "==", organisationId),
+      orderBy("timestamp", "desc"),
+      limit(5)
+    );
+
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      const results = snapshot.docs.map(
+        (doc) => {
+          const data = doc.data() as any;
+          data.docId = doc.id;
+          return data;
+        },
+        (error: any) => {
+          console.error("onSnapshot > error:", error);
+        }
+      );
+      setTrips(results);
+    });
+    return () => unsubscribe();
+  }, [organisationId]);
+
+  return (
+    <Suspense fallback="Loading">
+      <main className="bg-white p-4">
+        <div className="flex items-center justify-between gap-5">
+          <h3 className="text-lg">Latest Trips</h3>
+          <Link
+            href="/trips"
+            className="btn btn-outline border-[#C0D7FA] font-light"
+          >
+            View All
+          </Link>
+        </div>
+
+        <div className="table-wrapper">
+          <div className="table-scroll text-sm">
+            <table className="my-table">
+              <thead className="sticky top-0">
+                <tr className="tr-header">
+                  <th className="th">Vehicle</th>
+                  <th className="th table-cell-sm">From</th>
+                  <th className="th table-cell-sm">To</th>
+                  <th className="th table-cell-md">Distance</th>
+                  <th className="th">Status</th>
+                  <th className="th">Timestamp</th>
+                </tr>
+              </thead>
+              <tbody>
+                {trips.map((trip: Trip) => {
+                  return (
+                    <tr
+                      key={trip.docId}
+                      onClick={() => router.push(`/trips/${trip.docId}`)}
+                      className="tr-body cursor-pointer"
+                    >
+                      <td className="td">{trip.vehicle}</td>
+                      <td className="td table-cell-sm">
+                        {trip.pick_up_location}
+                      </td>
+                      <td className="td table-cell-sm">
+                        {trip.drop_off_location}
+                      </td>
+                      <td className="td table-cell-md">{trip.distance}</td>
+                      <td className="td">{trip.trip_status}</td>
+                      <td className="td">
+                        {trip.timestamp &&
+                          moment(trip.timestamp.toDate()).format(
+                            Constants.dateTimeFormat
+                          )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </Suspense>
+  );
+}

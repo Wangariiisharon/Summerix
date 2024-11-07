@@ -2,6 +2,11 @@ const Constants = {
   description: '',
   imageURL: '',
 
+  phoneRegExp: /\+\d{12}$/,
+  defaultPageSize: 20,
+  dateFormat: 'MMMM DD, YYYY',
+  dateTimeFormat: 'DD/MM/YYYY HH:mm',
+
   // firebase collections
   fbAdmins: 'admins',
   fbClients: 'clients',

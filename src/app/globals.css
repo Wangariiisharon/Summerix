@@ -31,6 +31,58 @@
     @apply mt-1 text-xs italic text-gray-500;
   }
 
+  .table-wrapper {
+    @apply py-4 w-full overscroll-x-auto;
+  }
+
+  .table-scroll {
+    @apply h-full overflow-y-auto;
+  }
+
+  .my-table {
+    @apply w-full bg-gray-50 rounded;
+  }
+
+  .my-tbody {
+    @apply h-[1600px] overflow-y-auto;
+  }
+
+  .tr-header {
+    @apply py-2 sticky top-0 bottom-0 left-0 bg-gray-100 text-center z-[1];
+  }
+
+  .tr-body {
+    @apply border-t-[1px] border-t-slate-200 hover:bg-gray-200 odd:bg-accent/5;
+  }
+
+  .th {
+    @apply p-4 font-medium leading-4 tracking-wider text-left md:text-center text-accent;
+  }
+
+  .td {
+    @apply p-3 text-left md:text-center whitespace-normal;
+  }
+
+  .td-actions {
+    @apply flex items-center justify-center gap-2;
+  }
+
+  .table-cell-sm {
+    @apply hidden sm:table-cell;
+  }
+
+  .table-cell-md {
+    @apply hidden md:table-cell;
+  }
+
+  .table-cell-lg {
+    @apply hidden lg:table-cell;
+  }
+
+  .table-cell-xl {
+    @apply hidden xl:table-cell;
+  }
+
   .notification {
     position: fixed;
     top: 20px;
