@@ -165,88 +165,82 @@ export default function SignIn() {
       >
         {({ values, handleSubmit }) => (
           <Form className="mt-6" onSubmit={handleSubmit}>
-            <div className="flex flex-col">
-              <p className="font-bold text-base mt-4 ml-8">
-                Log in to your account
-              </p>
-              <div className="m-4 p-4  grid gap-5 shadow">
-                <label className="block">
-                  <label className="form-label font-semibold">
-                    Email address
-                  </label>
-                  <Field
-                    type="email"
-                    name="email"
-                    value={values.email}
-                    className="form-input"
-                    autoComplete="username"
-                    required
-                  />
-                </label>
-                <label className="block">
-                  <label className="form-label font-semibold">Password</label>
-                  <Field
-                    type="password"
-                    name="password"
-                    value={values.password}
-                    className="form-input"
-                    autoComplete="current-password"
-                    required
-                  />
+            <h2 className="font-bold text-center">Log in to your account</h2>
+
+            <div className="my-5 p-4 grid gap-5 shadow-sm">
+              <label className="block">
+                <label className="form-label">Email address</label>
+                <Field
+                  type="email"
+                  name="email"
+                  value={values.email}
+                  className="form-input"
+                  autoComplete="username"
+                  required
+                />
+              </label>
+              <label className="block">
+                <label className="form-label">Password</label>
+                <Field
+                  type="password"
+                  name="password"
+                  value={values.password}
+                  className="form-input"
+                  autoComplete="current-password"
+                  required
+                />
+              </label>
+            </div>
+
+            <div className="w-full px-4 flex justify-between text-xs">
+              <div className="flex items-center gap-2 opacity-70">
+                <input
+                  id="remember-me"
+                  type="checkbox"
+                  className="form-checkbox"
+                />
+                <label htmlFor="remember-me" className="">
+                  Remember me
                 </label>
               </div>
-              <div className="w-full px-4 flex justify-between text-xs">
-                <div className="flex items-center gap-2 opacity-70">
-                  <input
-                    id="remember-me"
-                    type="checkbox"
-                    className="form-checkbox"
+              <Link
+                className="text-primary hover:underline"
+                href="/auth/forgot-password"
+              >
+                Forgot Password?
+              </Link>
+            </div>
+
+            <div className="mt-5 grid gap-5">
+              <button
+                type="submit"
+                className="w-full btn font-medium rounded-md btn-primary px-5"
+              >
+                Submit
+              </button>
+              <p className="text-center">Or</p>
+              <button
+                type="button"
+                className="w-full btn-google items-center"
+                onClick={doGoogleSignIn}
+              >
+                <div className="w-full p-1 flex items-center justify-center gap-2">
+                  <Image
+                    src="/google.png"
+                    className="h-5 w-5"
+                    alt="Google signin logo"
+                    height={100}
+                    width={100}
                   />
-                  <label htmlFor="remember-me" className="">
-                    Remember me
-                  </label>
+                  <span>Sign In With Google</span>
                 </div>
-                <Link
-                  className="text-blue-700 hover:underline"
-                  href="/auth/reset-password"
-                >
-                  Forgot Password?
-                </Link>
-              </div>
-              <div className="my-5 flex justify-center">
-                <button
-                  type="submit"
-                  className="w-full btn font-medium rounded-md btn-primary px-5"
-                >
-                  Submit
-                </button>
-              </div>
+              </button>
 
-              <p className="mt-5 text-center">Or</p>
-
-              <div className="my-5 font-medium">
-                <button
-                  type="button"
-                  className="w-full btn-google items-center"
-                  onClick={doGoogleSignIn}
-                >
-                  <div className="w-full p-1 flex items-center justify-center gap-2">
-                    <Image
-                      src="/google.png"
-                      className="h-5 w-5"
-                      alt="Google signin logo"
-                      height={100}
-                      width={100}
-                    />
-                    <span>Sign In With Google</span>
-                  </div>
-                </button>
-              </div>
-              <p className="mt-5 flex justify-center gap-1">
+              <p className="flex justify-center gap-1 text-sm">
                 <span>Dont have an account?</span>
                 <Link
                   href="/auth/sign-up"
-                  className="text-blue-700 hover:underline"
+                  className="text-primary hover:underline"
                 >
                   Register
                 </Link>
