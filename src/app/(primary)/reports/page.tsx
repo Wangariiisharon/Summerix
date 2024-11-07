@@ -3,7 +3,7 @@
 export default function Home() {
   return (
     <main className="">
-      <h2 className="font-bold">Analytics</h2>
+      <h2 className="font-bold">Reports</h2>
       <p className="mt-5">
         Lorem ipsum dolor sit amet consectetur, adipisicing elit. Animi eos
         neque laborum corporis dolore molestias. Modi unde in magnam neque
