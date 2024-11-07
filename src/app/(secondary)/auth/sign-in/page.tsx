@@ -208,7 +208,7 @@ export default function SignIn() {
                 </div>
                 <Link
                   className="text-blue-700 hover:underline"
-                  href="/ResetPassword"
+                  href="/auth/reset-password"
                 >
                   Forgot Password?
                 </Link>
@@ -244,7 +244,10 @@ export default function SignIn() {
               </div>
               <p className="mt-5 flex justify-center gap-1">
                 <span>Dont have an account?</span>
-                <Link className="text-blue-700 hover:underline" href="/signUp">
+                <Link
+                  href="/auth/sign-up"
+                  className="text-blue-700 hover:underline"
+                >
                   Register
                 </Link>
               </p>
