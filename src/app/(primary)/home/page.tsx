@@ -16,6 +16,7 @@ import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { TruckIcon } from "@heroicons/react/24/solid";
 import Constants from "@/Constants";
+import LatestTrips from "./latest-trips";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -377,6 +378,10 @@ export default function Home() {
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="mt-5">
+        <LatestTrips />
       </section>
     </main>
   );

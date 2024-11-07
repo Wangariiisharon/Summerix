@@ -44,17 +44,12 @@ export default function Sidebar() {
 
   return (
     <>
-      <Popover as="header" className="bg-inherit relative" aria-label="Header">
+      <Popover as="header" className="w-full" aria-label="Header">
         {({ open }) => (
           <>
-            <div className="-mt-2 fixed w-full z-20">
-              <div className="flex lg:hidden justify-end items-center bg-gray-100">
-                <PopoverButton
-                  aria-label="Open menu"
-                  className="inline-flex items-center justify-center rounded-md p-2 text-gray-400
-                      focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white
-                      hover:bg-gray-700 hover:text-white"
-                >
+            <div className="-mt-7 p-4 w-auto flex lg:hidden z-20 bg-primary">
+              <div className="w-full flex justify-end">
+                <PopoverButton aria-label="Open menu" className="btn">
                   <span className="sr-only">Open menu</span>
                   {open ? (
                     <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
@@ -125,7 +120,7 @@ export default function Sidebar() {
                       : "border-transparent"
                   }`}
                 >
-                  <div className="w-52 px-4 flex items-center justify-start">
+                  <div className="w-full px-4 flex items-center justify-start">
                     <ItemIcon
                       className={`h-7 w-7 ${
                         isActive ? "text-blue-500" : "text-gray-500"
