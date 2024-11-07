@@ -62,53 +62,44 @@ export default function SignUp() {
         }}
         onSubmit={(values) => doCreateAccount(values)}
       >
-        {({ errors, values, handleChange }) => (
-          <Form className="">
-            <div className="flex flex-col">
-              <div className="m-4 px-4 grid gap-5 shadow-sm">
-                <p className="font-inter font-bold text-base mt-4">
-                  Create Account
-                </p>
-                <h1 className="text-sm font-mulish text-[#8692A6]">
-                  Lets get you all set up
-                </h1>
-                <label className="block">
-                  <label className="form-label font-mulish font-semibold">
-                    Organisation Name
-                  </label>
-                  <Field
-                    type="text"
-                    name="organisation"
-                    value={values.organisation}
-                    onChange={handleChange}
-                    className="form-input"
-                  />
-                </label>
-                <label className="block">
-                  <label className="form-label font-mulish font-semibold">
-                    Location
-                  </label>
-                  <Field
-                    type="text"
-                    name="location"
-                    value={values.location}
-                    onChange={handleChange}
-                    className="form-input"
-                  />
-                </label>
-              </div>
-              <div className="my-5 mr-7 flex justify-center">
-                <button
-                  type="submit"
-                  disabled={processing}
-                  className="btn font-inter font-medium rounded-md btn-primary w-72 px-5"
-                >
-                  Next<i className="fa-solid fa-arrow-right ml-10"></i>
-                </button>
-              </div>
+        {({ values, handleChange }) => (
+          <Form className="mt-6">
+            <h2 className="font-bold text-center">Create Account</h2>
+
+            <div className="mt-5 p-4 grid gap-5 shadow-sm">
+              <label className="block">
+                <label className="form-label">Organisation Name</label>
+                <Field
+                  type="text"
+                  name="organisation"
+                  value={values.organisation}
+                  onChange={handleChange}
+                  className="form-input"
+                />
+              </label>
+              <label className="block">
+                <label className="form-label">Location</label>
+                <Field
+                  type="text"
+                  name="location"
+                  value={values.location}
+                  onChange={handleChange}
+                  className="form-input"
+                />
+              </label>
+            </div>
+
+            <div className="mt-5 w-full grid gap-5 justify-items-center">
+              <button
+                type="submit"
+                disabled={processing}
+                className="btn btn-primary w-full"
+              >
+                Next <i className="fa-solid fa-arrow-right"></i>
+              </button>
               <Link
-                className="mt-15 ml-10 text-[#757575] underline text-xs "
                 href="/auth/sign-in"
+                className="text-primary text-xs hover:underline"
               >
                 Already have an account?
               </Link>

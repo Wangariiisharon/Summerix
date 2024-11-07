@@ -12,6 +12,11 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        primary: '#2563eb',
+        secondary: '#4FD1C5',
+        accent: '#030229',
+        danger: '#C80815',
+
         yellow: "#FFC107",
         "light-yellow": "#FFF0C5",
         "light-pink": "#FFBFB8",
