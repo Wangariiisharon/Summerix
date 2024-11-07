@@ -1,5 +1,5 @@
 import Constants from "@/Constants";
-import "@/globals.css";
+import "@/app/globals.css";
 
 import { Outfit } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
