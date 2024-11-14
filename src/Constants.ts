@@ -1,5 +1,5 @@
 const Constants = {
-  description: '',
+  description: 'Truck mate logistics',
   imageURL: '',
 
   phoneRegExp: /\+\d{12}$/,
@@ -10,18 +10,15 @@ const Constants = {
   // firebase collections
   fbAdmins: 'admins',
   fbClients: 'clients',
-  fbCompanies: 'companies',
+  fbOrganisations: 'organizations',
   fbDepartments: 'departments',
   fbDrivers: 'drivers',
   fbJobCards: 'jobcard',
   fbMaintenance: 'maintenance',
   fbNotifications: 'notifications',
-  fbOrganisations: 'organizations',
   fbSettings: 'settings',
   fbSuppliers: 'suppliers',
   fbTrips: 'trips',
-  fbUserNotifications: 'user_notifications',
-  fbVehicleAllocations: 'vehicleAllocations',
   fbVehicles: 'vehicles',
 };
 
