@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "truck-mate-dev"
+    "default": "truck-mate-dev",
+    "dev": "truck-mate-dev",
+    "prod": "truck-mate-prod"
   }
 }
