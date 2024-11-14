@@ -16,9 +16,11 @@ import Image from "next/image";
 import { fbAuth } from "@/firebase/configs";
 import { useAuthContext } from "../../auth-provider";
 import Link from "next/link";
+import useCurrentClient from "@/hooks/useCurrentClient";
 
 export default function Header() {
-  const { currentAdmin } = useAuthContext();
+  const { appCheck, authUser, isAuthenticated } = useAuthContext();
+  const { client: currentClient } = useCurrentClient();
   const router = useRouter();
 
   return (
@@ -39,12 +41,19 @@ export default function Header() {
             <i className="fa fa-bell fa-lg" aria-hidden="true"></i>
           </button>
 
-          {currentAdmin && (
+          {currentClient && (
             <Menu as="div" className="relative flex-shrink-0">
               <MenuButton className="p-2 inline-flex items-center gap-2 rounded-md focus:outline-none text-white">
-                <span className="p-4 h-10 w-10 flex items-center justify-center bg-blue-800 rounded-full">
-                  <span className="">{currentAdmin.initials}</span>
-                </span>
+                <span className="sr-only">Open user menu</span>
+                {currentClient.photoURL && (
+                  <Image
+                    src={currentClient.photoURL}
+                    alt={`${currentClient.displayName} image`}
+                    className="h-12 w-12 rounded-full"
+                    width={50}
+                    height={50}
+                  />
+                )}
                 <ChevronDownIcon className="size-4 fill-white/60" />
               </MenuButton>
               <Transition
@@ -61,18 +70,24 @@ export default function Header() {
                 >
                   <MenuItem>
                     <div className="mt-5 px-3 flex items-center gap-3 text-sm">
-                      <div className="p-4 h-12 w-12 flex items-center justify-center bg-primary rounded-full">
-                        <span className="font-bold text-white">
-                          {currentAdmin.initials}
-                        </span>
-                      </div>
+                      {currentClient.photoURL && (
+                        <Image
+                          src={currentClient.photoURL}
+                          alt={`${currentClient.displayName} image`}
+                          className="h-14 w-14 rounded-full"
+                          width={20}
+                          height={20}
+                        />
+                      )}
                       <div className="font-medium">
-                        <p className="">{currentAdmin.displayName}</p>
-                        <p className="text-xs">{currentAdmin.email}</p>
+                        <p className="">{currentClient.displayName}</p>
+                        <p className="text-xs">{currentClient.email}</p>
                       </div>
                     </div>
                   </MenuItem>
+
                   <div className="my-3 h-px bg-white/5" />
+                  
                   <MenuItem>
                     <button
                       onClick={async () => {

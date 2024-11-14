@@ -3,6 +3,8 @@
 @tailwind utilities;
 
 @layer components {
+  /* GRIDS */
+
   .grid-1-2 {
     @apply grid grid-cols-1 md:grid-cols-2;
   }
@@ -23,6 +25,9 @@
     @apply grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5;
   }
 
+
+  /* FORMS */
+
   .form-label {
     @apply block mb-1 text-gray-600 text-xs;
   }
@@ -30,6 +35,19 @@
   .form-hint {
     @apply mt-1 text-xs italic text-gray-500;
   }
+
+  .form-input,
+  .form-textarea {
+    @apply w-full mx-auto p-2 rounded-md outline-none border border-gray-300 focus:border-blue-600 text-xs text-gray-900 focus:bg-white disabled:opacity-50 invalid:border-red-500 invalid:text-red-600
+		focus:invalid:border-red-500 focus:invalid:ring-red-500;
+  }
+
+  .form-error {
+    @apply text-red-500 text-sm;
+  }
+
+
+  /* TABLE */
 
   .table-wrapper {
     @apply py-4 w-full overscroll-x-auto;
@@ -83,15 +101,8 @@
     @apply hidden xl:table-cell;
   }
 
-  .form-input,
-  .form-textarea {
-    @apply w-full mx-auto p-2 rounded-md outline-none border border-gray-300 focus:border-blue-600 text-xs text-gray-900 focus:bg-white disabled:opacity-50 invalid:border-red-500 invalid:text-red-600
-		focus:invalid:border-red-500 focus:invalid:ring-red-500;
-  }
-
-  .field-error {
-    @apply text-red-500 text-sm; /* Use Tailwind's @apply directive to apply the text-red-500 and text-lg classes */
-  }
+  
+  /* BUTTONS */
 
   .btn {
     @apply p-2 text-sm font-semibold rounded outline-none border transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50;
@@ -130,4 +141,6 @@
       border transition duration-150 ease-in-out disabled:cursor-not-allowed 
       disabled:opacity-50 shadow hover:shadow-lg;
   }
+
+  /* OTHERS */
 }
