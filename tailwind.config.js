@@ -1,14 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 
 module.exports = {
-  content: [
-    "./app/**/*.{js,ts,jsx,tsx}",
-    "./pages/**/*.{js,ts,jsx,tsx}",
-    "./components/**/*.{js,ts,jsx,tsx}",
-
-    // Or if using `src` directory:
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
       colors: {
@@ -38,13 +31,6 @@ module.exports = {
         "t-blue": "#4945FF",
         //blacks
         "f-black": "#030229",
-      },
-
-      fontFamily: {
-        nunito: ["Nunito", "sans-serif"],
-      },
-      backgroundImage: {
-        truck: "/truck.png",
       },
     },
   },
