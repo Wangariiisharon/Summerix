@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 
 export const metadata = {
-  title: 'Sign Up',
+  title: 'Register',
 };
 
 type Props = {

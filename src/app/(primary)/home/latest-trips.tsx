@@ -3,7 +3,7 @@
 import { useAuthContext } from "@/app/auth-provider";
 import Constants from "@/Constants";
 import { fbDb } from "@/firebase/configs";
-import { Trip } from "@/lib/types/trip.model";
+import { Trip } from "@/types/trip.model";
 import {
   collection,
   limit,

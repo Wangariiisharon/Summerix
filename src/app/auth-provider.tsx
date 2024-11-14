@@ -5,162 +5,94 @@ import React, {
   useContext,
   useState,
   useEffect,
-  useMemo,
+  ReactNode,
 } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import {
-  doc,
-  onSnapshot,
-  collection,
-  query,
-  where,
-  limit,
-} from "firebase/firestore";
-import { fbAuth, fbDb } from "@/firebase/configs";
-import { AdminUser } from "@/lib/types/admin.model";
+import firebaseApp, { fbAuth } from "@/firebase/configs";
 import { useRouter } from "next/navigation";
-
-interface User {
-  uid: string;
-  email?: string | null;
-}
-
-// interface AdminData {
-//   docId: string;
-//   organisationId: string;
-//   departments: string[];
-//   super_admin: boolean;
-//   email: string;
-//   userId: string;
-//   role: string;
-// }
+import { AUTH_USER } from "@/models/auth-user";
+import { getAuthUser } from "@/services/auth";
+import {
+  type AppCheck,
+  initializeAppCheck,
+  ReCaptchaEnterpriseProvider,
+} from "@firebase/app-check";
 
 interface AuthContextType {
+  appCheck: AppCheck | null;
+  authUser: AUTH_USER | null;
   isAuthenticated: boolean;
-  isSuperAdmin: boolean;
-  currentAdmin: AdminUser | null;
-  currentUser: User | null;
-  userId: string | null;
-  organisationId: string | null;
-  userClaims: ParsedToken | null;
-  departmentData: any | null;
-  hasPermission: (permissionKey: string) => boolean;
-}
-
-interface ParsedToken {
-  role?: string;
-  super_admin?: boolean;
-  departmentId?: string;
-  [key: string]: any;
+  isAuthLoading: boolean;
+  setAuthUser: Function;
 }
 
 const defaultContextValue: AuthContextType = {
+  appCheck: null,
+  authUser: null,
   isAuthenticated: false,
-  isSuperAdmin: false,
-  currentAdmin: null,
-  currentUser: null,
-  userId: null,
-  organisationId: null,
-  userClaims: null,
-  departmentData: null,
-  hasPermission: () => false,
+  isAuthLoading: true,
+  // eslint-disable-next-line no-unused-vars
+  setAuthUser: (_authUser: AUTH_USER | null) => {},
 };
 
 export const AuthContext = createContext<AuthContextType>(defaultContextValue);
 
-export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const [currentAdmin, setCurrentAdmin] = useState<AdminUser | null>(null);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userClaims, setUserClaims] = useState<ParsedToken | null>(null);
-  const [departmentData, setDepartmentData] = useState<any | null>(null);
+type Props = {
+  children: ReactNode;
+};
+
+export const AuthContextProvider = ({ children }: Props) => {
+  const [authUser, setAuthUser] = useState<AUTH_USER | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
+  const [appCheck, setAppCheck] = useState<AppCheck | null>(null);
 
   const router = useRouter();
 
   useEffect(() => {
-    setCurrentUser(null);
-    setUserClaims(null);
+    setIsAuthLoading(true);
 
-    const unsubscribe = onAuthStateChanged(fbAuth, async (fbUser) => {
-      console.debug("onAuthStateChanged > fbUser:", { uid: fbUser?.uid });
+    const unsubscribe = onAuthStateChanged(fbAuth, async (fUser) => {
+      console.debug('onAuthStateChanged > fUser:', fUser);
 
-      if (fbUser) {
-        setCurrentUser(fbUser);
+      if (fUser) {
+        const authUser = await getAuthUser(fUser);
+        // console.debug('onAuthStateChanged > authUser:', authUser);
+        setAuthUser(authUser);
+      } else setAuthUser(null);
 
-        const tokenResult = await fbUser.getIdTokenResult();
-        console.debug("AuthContextProvider > tokenResult:", {
-          claims: tokenResult.claims,
-        });
-        setUserClaims(tokenResult.claims || {});
-      } else {
-        console.debug("AuthContextProvider > redirect to signin");
-        router.push("/auth/sign-in");
-      }
+      setIsAuthLoading(false);
     });
 
     return () => unsubscribe();
-  }, [router]);
+  }, []);
 
   useEffect(() => {
-    setCurrentAdmin(null);
+    if (process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_KEY) {
+      if (process.env.NODE_ENV !== "production") {
+        Object.assign(window, {
+          FIREBASE_APPCHECK_DEBUG_TOKEN:
+            process.env.NEXT_PUBLIC_APP_CHECK_DEBUG_TOKEN,
+        });
+      }
 
-    // Fetch department data if departmentId exists
-    if (currentUser && currentUser.uid) {
-      const colRef = collection(fbDb, "admins");
-      const unsubscribe = onSnapshot(
-        query(colRef, where("userId", "==", currentUser.uid), limit(1)),
-        async (snapshot) => {
-          const data = snapshot.docs[0].data() as AdminUser;
-          data.docId = snapshot.docs[0].id;
-
-          data.displayName = `${data.firstname} ${data.lastname}`;
-          data.initials =
-            data.firstname?.charAt(0)?.toUpperCase() +
-            data.lastname?.charAt(0)?.toUpperCase();
-          console.debug("AuthContextProvider > adminUser:", data);
-
-          setCurrentAdmin(data);
-        }
-      );
-      return () => unsubscribe();
-    }
-  }, [currentUser]);
-
-  useEffect(() => {
-    setDepartmentData(null);
-
-    // Fetch department data if departmentId exists
-    if (userClaims && userClaims.departmentId) {
-      const docRef = doc(fbDb, "departments", userClaims.departmentId);
-      const unsubscribe = onSnapshot(docRef, async (snapshot) => {
-        if (snapshot.exists()) {
-          setDepartmentData(snapshot.data());
-        }
+      const results = initializeAppCheck(firebaseApp, {
+        provider: new ReCaptchaEnterpriseProvider(
+          process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_KEY!
+        ),
+        isTokenAutoRefreshEnabled: true, // Set to true to allow auto-refresh.
       });
-      return () => unsubscribe();
+      setAppCheck(results);
     }
-  }, [userClaims]);
-
-  const hasPermission = (permissionKey: string) =>
-    departmentData?.permissions.includes(permissionKey) ?? false;
-
-  const isSuperAdmin = useMemo(() => {
-    return currentAdmin?.super_admin ?? false;
-  }, [currentAdmin]);
+  }, []);
 
   return (
     <AuthContext.Provider
       value={{
-        currentAdmin,
-        currentUser,
-        isAuthenticated: !!currentUser,
-        userId: currentUser?.uid || null,
-        organisationId: currentAdmin?.organisationId || null,
-        userClaims,
-        departmentData,
-        hasPermission,
-        isSuperAdmin,
+        appCheck,
+        authUser,
+        isAuthenticated: !!authUser,
+        isAuthLoading,
+        setAuthUser,
       }}
     >
       {children}

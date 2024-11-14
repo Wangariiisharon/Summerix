@@ -239,7 +239,7 @@ export default function SignIn() {
               <p className="flex justify-center gap-1 text-sm">
                 <span>Dont have an account?</span>
                 <Link
-                  href="/auth/sign-up"
+                  href="/auth/register"
                   className="text-primary hover:underline"
                 >
                   Register
