@@ -11,53 +11,15 @@ import {
   ArrowLeftEndOnRectangleIcon,
   ChevronDownIcon,
 } from "@heroicons/react/24/solid";
-import {
-  collection,
-  where,
-  query,
-  getCountFromServer,
-} from "firebase/firestore";
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { fbAuth, fbDb } from "@/firebase/configs";
+import { fbAuth } from "@/firebase/configs";
 import { useAuthContext } from "../../auth-provider";
-import { NotificationDropdown } from "./notifications";
 import Link from "next/link";
 
 export default function Header() {
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const { currentAdmin, currentUser, organisationId } = useAuthContext();
+  const { currentAdmin } = useAuthContext();
   const router = useRouter();
-
-  useEffect(() => {
-    console.debug("fetchNotifications > uid:", currentUser?.uid);
-
-    const fetchNotifications = async () => {
-      try {
-        if (currentUser && currentUser.uid) {
-          const notificationsRef = collection(
-            fbDb,
-            `user_notifications/${currentUser.uid}/notifications`
-          );
-
-          const q = query(
-            notificationsRef,
-            where("organisationId", "==", organisationId),
-            where("readBy", "!=", currentUser.uid)
-          );
-
-          const snapshot = await getCountFromServer(q);
-          setUnreadCount(snapshot.data().count);
-        }
-      } catch (error) {
-        console.error("Error fetching notifications:", error);
-      }
-    };
-
-    fetchNotifications();
-  }, [currentUser, organisationId]);
 
   return (
     <>
@@ -72,23 +34,10 @@ export default function Header() {
           />
         </Link>
 
-        <div className="flex items-center justify-end">
-          <div className="relative mr-4">
-            <button
-              onClick={() => setShowDropdown(!showDropdown)}
-              className="text-white focus:outline-none"
-            >
-              <i className="fa fa-bell fa-lg text-white" aria-hidden="true"></i>
-              {unreadCount > 0 && (
-                <span className="absolute top-0 right-0 flex items-center justify-center w-6 h-6 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full transform translate-x-1/2 -translate-y-1/2">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-            {showDropdown && (
-              <NotificationDropdown onClose={() => setShowDropdown(false)} />
-            )}
-          </div>
+        <div className="flex items-center justify-end gap-3">
+          <button className="relative text-white focus:outline-none">
+            <i className="fa fa-bell fa-lg" aria-hidden="true"></i>
+          </button>
 
           {currentAdmin && (
             <Menu as="div" className="relative flex-shrink-0">
