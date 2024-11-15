@@ -25,7 +25,6 @@
     @apply grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5;
   }
 
-
   /* FORMS */
 
   .form-label {
@@ -45,7 +44,6 @@
   .form-error {
     @apply text-red-500 text-sm;
   }
-
 
   /* TABLE */
 
@@ -101,7 +99,6 @@
     @apply hidden xl:table-cell;
   }
 
-  
   /* BUTTONS */
 
   .btn {
@@ -126,6 +123,10 @@
 
   .btn-outline-accent {
     @apply text-gray-700 border-accent hover:text-accent hover:border-accent;
+  }
+
+  .btn-outline-danger {
+    @apply border-danger text-danger hover:opacity-70 disabled:opacity-40;
   }
 
   .btn-icon-suffix {

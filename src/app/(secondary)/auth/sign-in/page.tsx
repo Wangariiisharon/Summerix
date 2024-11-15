@@ -1,156 +1,86 @@
 "use client";
 
+import { useAuthContext } from "@/app/auth-provider";
+import Constants from "@/Constants";
 import { fbAuth, fbDb } from "@/firebase/configs";
+import { doLoginApiCall } from "@/services/auth";
 import {
+  AuthProvider,
   GoogleAuthProvider,
-  isSignInWithEmailLink,
   signInWithEmailAndPassword,
-  signInWithEmailLink,
   signInWithPopup,
+  UserCredential,
 } from "firebase/auth";
-import {
-  collection,
-  doc,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-} from "firebase/firestore";
+import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { Field, Form, Formik } from "formik";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import toast from "react-hot-toast";
+import * as Yup from 'yup';
+
+const EmailAuthSchema = () => {
+  return Yup.object().shape({
+    email: Yup.string().required('Email address is required.'),
+    password: Yup.string().required('Password is required.'),
+  });
+};
 
 export default function SignIn() {
+  const { appCheck } = useAuthContext();
   const router = useRouter();
 
-  useEffect(() => {
-    const handleSignInWithEmailLink = async () => {
-      if (isSignInWithEmailLink(fbAuth, window.location.href)) {
-        let email = window.localStorage.getItem("emailForSignIn");
-        if (!email) {
-          email = window.prompt("Please provide your email for confirmation");
-        }
+  const onSignInCallback = async (credential: UserCredential) => {
+    console.debug("onSignInCallback > credential:", credential);
 
-        if (email) {
-          try {
-            const result = await signInWithEmailLink(
-              fbAuth,
-              email,
-              window.location.href
-            );
-            const user = result.user;
+    if (credential && credential.user) {
+      const idToken = await credential.user.getIdToken();
+      await doLoginApiCall(idToken, appCheck);
 
-            if (user) {
-              const uid = user.uid;
-              console.debug("Successfully signed in with UID:", uid);
-
-              // Update the admin document with the user's UID
-              const adminId = new URLSearchParams(window.location.search).get(
-                "adminId"
-              );
-              if (adminId) {
-                const adminDocRef = doc(fbDb, "admins", adminId);
-                await updateDoc(adminDocRef, { userId: uid });
-                console.log("Admin document updated with userId:", uid);
-              }
-
-              window.localStorage.removeItem("emailForSignIn");
-              router.push("/Dashboard");
-            }
-          } catch (error) {
-            console.error("Sign-in with email link failed:", error);
-            toast.error("Sign-in failed. Please try again.");
-          }
-        }
+      const docRef = doc(fbDb, Constants.fbClients, credential.user.uid);
+      const snapshot = await getDoc(docRef);
+      if (snapshot.exists()) {
+        await setDoc(
+          docRef,
+          {
+            lastLoginDate: serverTimestamp(),
+            lastUpdated: serverTimestamp(),
+          },
+          { merge: true }
+        );
       }
-    };
 
-    handleSignInWithEmailLink();
-  }, [router]);
-
-  const doGoogleSignIn = async () => {
-    const provider = new GoogleAuthProvider();
-
-    try {
-      const results = await signInWithPopup(fbAuth, provider);
-      console.debug("doGoogleSignIn > results:", results);
-
-      if (results.user) {
-        const user = results.user;
-        const uid = user.uid;
-        const email = user.email;
-
-        if (email) {
-          // Find the corresponding admin document using the user's email
-          const adminQuery = query(
-            collection(fbDb, "admins"),
-            where("email", "==", email)
-          );
-          const adminSnapshot = await getDocs(adminQuery);
-          if (!adminSnapshot.empty) {
-            const adminDoc = adminSnapshot.docs[0];
-            const adminDocRef = adminDoc.ref;
-
-            // Update the userId field in the admin document
-            await updateDoc(adminDocRef, { userId: uid });
-            console.log("Admin document updated with userId:", uid);
-          } else {
-            console.error("Admin document not found for the given email.");
-          }
-        }
-
-        router.push("/home");
-      }
-    } catch (error) {
-      console.error("DO GOOGLE SIGN-IN ERROR:", error);
-      toast.error("Google Sign-In failed. Please try again.");
+      router.push('/home');
     }
   };
 
-  const doLogin = async (formValues: { email: string; password: string }) => {
-    console.debug("doLogin > formValues:", formValues);
+  const doSignInWithEmailAndPassword = async (formValues: any) => {
+    console.debug("doSignInWithEmailAndPassword > formValues:", formValues);
 
     try {
-      const { email, password } = formValues;
-
-      // Use Firebase Authentication to sign in
-      const userCredential = await signInWithEmailAndPassword(
+      const credential = await signInWithEmailAndPassword(
         fbAuth,
-        email,
-        password
+        formValues.email,
+        formValues.password
       );
-      const user = userCredential.user;
-
-      if (user) {
-        const uid = user.uid;
-
-        // Find the corresponding admin document using the user's email
-        const adminQuery = query(
-          collection(fbDb, "admins"),
-          where("email", "==", email)
-        );
-        const adminSnapshot = await getDocs(adminQuery);
-        if (!adminSnapshot.empty) {
-          const adminDoc = adminSnapshot.docs[0];
-          const adminDocRef = adminDoc.ref;
-
-          // Update the userId field in the admin document
-          await updateDoc(adminDocRef, { userId: uid });
-          console.log("Admin document updated with userId:", uid);
-        } else {
-          console.error("Admin document not found for the given email.");
-        }
-
-        router.push("/home");
+      await onSignInCallback(credential);
+    } catch (error: any) {
+      console.error("doSignInWithEmailAndPassword error:", error);
+      if (error.code === "auth/invalid-credential") {
+        toast.error("Please enter valid email & password.");
       } else {
-        toast.error("Invalid credentials");
+        toast.error("Auth signin failed. Please try again.");
       }
+    }
+  };
+
+  const doSignInWithPopup = async (provider: AuthProvider) => {
+    try {
+      const credential = await signInWithPopup(fbAuth, provider);
+      await onSignInCallback(credential);
     } catch (error) {
-      console.error("Login error:", error);
-      toast.error("Login failed. Please try again.");
+      console.error("doSignInWithPopup error:", error);
+      toast.error("Auth signin failed. Please try again.");
     }
   };
 
@@ -161,10 +91,11 @@ export default function SignIn() {
           email: "",
           password: "",
         }}
-        onSubmit={(values) => doLogin(values)}
+        validationSchema={EmailAuthSchema()}
+        onSubmit={(values) => doSignInWithEmailAndPassword(values)}
       >
-        {({ values, handleSubmit }) => (
-          <Form className="mt-6" onSubmit={handleSubmit}>
+        {({ isValid }) => (
+          <Form className="mt-6">
             <h2 className="font-bold text-center">Log in to your account</h2>
 
             <div className="my-5 p-4 grid gap-5 shadow-sm">
@@ -173,10 +104,8 @@ export default function SignIn() {
                 <Field
                   type="email"
                   name="email"
-                  value={values.email}
+                  placeholder="Enter email address"
                   className="form-input"
-                  autoComplete="username"
-                  required
                 />
               </label>
               <label className="block">
@@ -184,25 +113,13 @@ export default function SignIn() {
                 <Field
                   type="password"
                   name="password"
-                  value={values.password}
+                  placeholder="Enter password"
                   className="form-input"
-                  autoComplete="current-password"
-                  required
                 />
               </label>
             </div>
 
-            <div className="w-full px-4 flex justify-between text-xs">
-              <div className="flex items-center gap-2 opacity-70">
-                <input
-                  id="remember-me"
-                  type="checkbox"
-                  className="form-checkbox"
-                />
-                <label htmlFor="remember-me" className="">
-                  Remember me
-                </label>
-              </div>
+            <div className="w-full px-4 flex justify-end text-xs">
               <Link
                 className="text-primary hover:underline"
                 href="/auth/forgot-password"
@@ -214,15 +131,19 @@ export default function SignIn() {
             <div className="mt-5 grid gap-5">
               <button
                 type="submit"
-                className="w-full btn font-medium rounded-md btn-primary px-5"
+                className="w-full btn btn-primary px-5"
+                disabled={!isValid}
               >
-                Submit
+                Continue
               </button>
               <p className="text-center">Or</p>
               <button
                 type="button"
                 className="w-full btn-google items-center"
-                onClick={doGoogleSignIn}
+                onClick={async () => {
+                  const provider = new GoogleAuthProvider();
+                  await doSignInWithPopup(provider);
+                }}
               >
                 <div className="w-full p-1 flex items-center justify-center gap-2">
                   <Image
@@ -237,7 +158,7 @@ export default function SignIn() {
               </button>
 
               <p className="flex justify-center gap-1 text-sm">
-                <span>Dont have an account?</span>
+                <span>Don`t have an account?</span>
                 <Link
                   href="/auth/register"
                   className="text-primary hover:underline"
