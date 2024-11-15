@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   authMiddleware,
   redirectToHome,
+  redirectToLogin,
   Tokens,
 } from "next-firebase-auth-edge";
 import { filterStandardClaims } from "next-firebase-auth-edge/lib/auth/claims";
@@ -119,23 +120,23 @@ export async function middleware(req: NextRequest) {
         },
       });
     },
-    // handleInvalidToken: async (reason) => {
-    //   console.debug('Missing or malformed credentials', { reason });
-    //   // return NextResponse.next({ request: req });
+    handleInvalidToken: async (reason) => {
+      console.debug('Missing or malformed credentials', { reason });
+      // return NextResponse.next({ request: req });
 
-    //   return redirectToLogin(req, {
-    //     publicPaths: publicRoutes,
-    //     path: '/home',
-    //   });
-    // },
-    // handleError: async (error) => {
-    //   console.error('Unhandled authentication error', { error });
+      return redirectToLogin(req, {
+        publicPaths: publicRoutes,
+        path: '/auth/sign-in',
+      });
+    },
+    handleError: async (error) => {
+      console.error('Unhandled authentication error', { error });
 
-    //   return redirectToLogin(req, {
-    //     publicPaths: publicRoutes,
-    //     path: '/home',
-    //   });
-    // },
+      return redirectToLogin(req, {
+        publicPaths: publicRoutes,
+        path: '//auth/sign-in',
+      });
+    },
   });
 }
 

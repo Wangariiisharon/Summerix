@@ -50,7 +50,7 @@ export const AuthContextProvider = ({ children }: Props) => {
     setIsAuthLoading(true);
 
     const unsubscribe = onAuthStateChanged(fbAuth, async (fUser) => {
-      console.debug('onAuthStateChanged > fUser:', fUser);
+      console.debug("onAuthStateChanged > fUser:", fUser);
 
       if (fUser) {
         const authUser = await getAuthUser(fUser);
@@ -77,7 +77,7 @@ export const AuthContextProvider = ({ children }: Props) => {
         provider: new ReCaptchaEnterpriseProvider(
           process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_KEY!
         ),
-        isTokenAutoRefreshEnabled: true, // Set to true to allow auto-refresh.
+        isTokenAutoRefreshEnabled: true,
       });
       setAppCheck(results);
     }

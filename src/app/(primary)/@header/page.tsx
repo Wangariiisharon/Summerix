@@ -18,9 +18,10 @@ import { fbAuth } from "@/firebase/configs";
 import { useAuthContext } from "../../auth-provider";
 import Link from "next/link";
 import useCurrentClient from "@/hooks/useCurrentClient";
+import { doLogoutApiCall } from "@/services/auth";
 
 export default function Header() {
-  const { authUser } = useAuthContext();
+  const { appCheck, authUser } = useAuthContext();
   const { client: currentClient } = useCurrentClient();
   const router = useRouter();
 
@@ -95,6 +96,7 @@ export default function Header() {
                     <button
                       onClick={async () => {
                         await fbAuth.signOut();
+                        await doLogoutApiCall(appCheck);
                         router.push("/auth/sign-in");
                       }}
                       className="w-full btn btn-outline-danger rounded"
