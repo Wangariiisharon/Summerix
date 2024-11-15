@@ -9,7 +9,6 @@ import React, {
 } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import firebaseApp, { fbAuth } from "@/firebase/configs";
-import { useRouter } from "next/navigation";
 import { AUTH_USER } from "@/models/auth-user";
 import { getAuthUser } from "@/services/auth";
 import {
@@ -75,7 +74,7 @@ export const AuthContextProvider = ({ children }: Props) => {
 
       const results = initializeAppCheck(firebaseApp, {
         provider: new ReCaptchaEnterpriseProvider(
-          process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_KEY!
+          process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_KEY!,
         ),
         isTokenAutoRefreshEnabled: true,
       });

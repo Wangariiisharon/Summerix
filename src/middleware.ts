@@ -121,20 +121,20 @@ export async function middleware(req: NextRequest) {
       });
     },
     handleInvalidToken: async (reason) => {
-      console.debug('Missing or malformed credentials', { reason });
+      console.debug("Missing or malformed credentials", { reason });
       // return NextResponse.next({ request: req });
 
       return redirectToLogin(req, {
         publicPaths: publicRoutes,
-        path: '/auth/sign-in',
+        path: "/auth/sign-in",
       });
     },
     handleError: async (error) => {
-      console.error('Unhandled authentication error', { error });
+      console.error("Unhandled authentication error", { error });
 
       return redirectToLogin(req, {
         publicPaths: publicRoutes,
-        path: '//auth/sign-in',
+        path: "//auth/sign-in",
       });
     },
   });

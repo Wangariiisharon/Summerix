@@ -57,7 +57,7 @@ export default function RegisterPage() {
       const userCredential = await createUserWithEmailAndPassword(
         fbAuth,
         formValues.email,
-        formValues.password!
+        formValues.password!,
       );
 
       if (userCredential && userCredential.user) {
@@ -75,7 +75,7 @@ export default function RegisterPage() {
             dateCreated: serverTimestamp(),
             lastUpdated: serverTimestamp(),
           },
-          { merge: true }
+          { merge: true },
         );
         toast.success("Account created successfully.");
         router.push("/");
@@ -103,7 +103,7 @@ export default function RegisterPage() {
         validationSchema={SignUpSchema()}
         onSubmit={(values) => doSignUpWithEmailAndPassword(values)}
       >
-        {({ errors, isValid }) => (
+        {({ isValid }) => (
           <Form className="mt-6">
             <h2 className="font-bold text-center">New account setup</h2>
 

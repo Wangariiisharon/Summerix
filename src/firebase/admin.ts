@@ -1,10 +1,10 @@
-import { apps, auth, credential, firestore } from 'firebase-admin';
-import { initializeApp } from 'firebase-admin/app';
-import { getStorage } from 'firebase-admin/storage';
+import { apps, auth, credential, firestore } from "firebase-admin";
+import { initializeApp } from "firebase-admin/app";
+import { getStorage } from "firebase-admin/storage";
 
 if (!apps.length) {
-  console.debug('do initialize firebase admin...');
-  
+  console.debug("do initialize firebase admin...");
+
   try {
     initializeApp({
       credential: credential.cert({
