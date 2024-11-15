@@ -3,7 +3,7 @@
 import { useAuthContext } from "@/app/auth-provider";
 import Constants from "@/Constants";
 import { fbDb } from "@/firebase/configs";
-import { Trip } from "@/types/trip.model";
+import { TRIP } from "@/models/trip";
 import {
   collection,
   limit,
@@ -18,16 +18,16 @@ import { useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
 export default function LatestTrips() {
-  const [trips, setTrips] = useState<Trip[]>([]);
-  const { organisationId } = useAuthContext();
+  const [trips, setTrips] = useState<TRIP[]>([]);
+  const { authUser } = useAuthContext();
   const router = useRouter();
 
   useEffect(() => {
-    if (!organisationId) return;
+    if (!authUser || !authUser.companyId) return;
 
     const q = query(
       collection(fbDb, Constants.fbTrips),
-      where("organisationId", "==", organisationId),
+      where("companyId", "==", authUser.companyId),
       orderBy("timestamp", "desc"),
       limit(5)
     );
@@ -35,7 +35,7 @@ export default function LatestTrips() {
     const unsubscribe = onSnapshot(q, async (snapshot) => {
       const results = snapshot.docs.map(
         (doc) => {
-          const data = doc.data() as any;
+          const data = doc.data() as TRIP;
           data.docId = doc.id;
           return data;
         },
@@ -46,7 +46,7 @@ export default function LatestTrips() {
       setTrips(results);
     });
     return () => unsubscribe();
-  }, [organisationId]);
+  }, [authUser]);
 
   return (
     <Suspense fallback="Loading">
@@ -75,7 +75,7 @@ export default function LatestTrips() {
                 </tr>
               </thead>
               <tbody>
-                {trips.map((trip: Trip) => {
+                {trips.map((trip: TRIP) => {
                   return (
                     <tr
                       key={trip.docId}
@@ -83,17 +83,13 @@ export default function LatestTrips() {
                       className="tr-body cursor-pointer"
                     >
                       <td className="td">{trip.vehicle}</td>
-                      <td className="td table-cell-sm">
-                        {trip.pick_up_location}
-                      </td>
-                      <td className="td table-cell-sm">
-                        {trip.drop_off_location}
-                      </td>
+                      <td className="td table-cell-sm">{trip.from.location}</td>
+                      <td className="td table-cell-sm">{trip.to.location}</td>
                       <td className="td table-cell-md">{trip.distance}</td>
-                      <td className="td">{trip.trip_status}</td>
+                      <td className="td">{trip.status}</td>
                       <td className="td">
-                        {trip.timestamp &&
-                          moment(trip.timestamp.toDate()).format(
+                        {trip.dateCreated &&
+                          moment(trip.dateCreated.toDate()).format(
                             Constants.dateTimeFormat
                           )}
                       </td>

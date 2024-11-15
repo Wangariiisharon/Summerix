@@ -21,7 +21,7 @@ import LatestTrips from "./latest-trips";
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function Home() {
-  const { organisationId } = useAuthContext();
+  const { authUser } = useAuthContext();
   const [tripStats, setTripStats] = useState({
     total: 0,
     booked: 0,
@@ -37,11 +37,11 @@ export default function Home() {
   });
 
   const doFilterVehicles = useCallback(async () => {
-    if (!organisationId) return;
+    if (!authUser || !authUser.companyId) return;
 
     let q = query(
       collection(fbDb, Constants.fbVehicles),
-      where("organisationId", "==", organisationId)
+      where("companyId", "==", authUser.companyId)
       // where("timestamp", ">=", Timestamp.fromDate(startDate)),
       // where("timestamp", "<=", Timestamp.fromDate(endDate))
     );
@@ -85,14 +85,14 @@ export default function Home() {
       outOfService: snapshot3.data().docsCount,
       underMaintenance: snapshot4.data().docsCount,
     });
-  }, [organisationId]);
+  }, [authUser]);
 
   const doFilterTrips = useCallback(async () => {
-    if (!organisationId) return;
+    if (!authUser || !authUser.companyId) return;
 
     let q = query(
       collection(fbDb, Constants.fbTrips),
-      where("organisationId", "==", organisationId)
+      where("companyId", "==", authUser.companyId)
       // where("timestamp", ">=", Timestamp.fromDate(startDate)),
       // where("timestamp", "<=", Timestamp.fromDate(endDate))
     );
@@ -128,7 +128,7 @@ export default function Home() {
       completed: snapshot2.data().docsCount,
       cancelled: snapshot3.data().docsCount,
     });
-  }, [organisationId]);
+  }, [authUser]);
 
   useEffect(() => {
     doFilterVehicles();
