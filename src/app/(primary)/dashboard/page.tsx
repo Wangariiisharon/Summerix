@@ -177,7 +177,7 @@ export default function Home() {
           <div className="flex items-center justify-between gap-5">
             <h3 className="text-lg">Vehicles Overview</h3>
             <Link
-              href="/vehicles/"
+              href="/operations/vehicles"
               className="btn btn-outline border-[#C0D7FA] font-light"
             >
               View All
@@ -287,7 +287,7 @@ export default function Home() {
           <div className="flex items-center justify-between gap-5">
             <h3 className="text-lg">Trips Overview</h3>
             <Link
-              href="/trips"
+              href="/operations/trips"
               className="btn btn-outline border-[#C0D7FA] font-light"
             >
               View All

@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuthContext } from "@/app/auth-provider";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import {
   ChartBarIcon,
@@ -9,22 +8,22 @@ import {
   WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/solid";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
+import Link from "next/link";
 
 export default function Sidebar() {
-  const { authUser } = useAuthContext();
+  // const { authUser } = useAuthContext();
   const pathname = usePathname();
 
   const navigation = useMemo(
     () => [
-      { name: "Dashboard", href: "/home", icon: HomeIcon, visible: true },
+      { name: "Dashboard", href: "/dashboard", icon: HomeIcon, visible: true },
       {
         name: "Administration",
         href: "/administration",
         icon: WrenchScrewdriverIcon,
-        visible: authUser?.isActive || false, // Check for admin claim
+        visible: true, // authUser?.isActive || false, // Check for admin claim
       },
       {
         name: "Operations",
@@ -39,7 +38,7 @@ export default function Sidebar() {
         visible: true,
       },
     ],
-    [authUser?.isActive],
+    [],
   );
 
   return (

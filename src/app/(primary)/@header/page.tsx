@@ -28,7 +28,7 @@ export default function Header() {
   return (
     <>
       <div className="p-4 w-full flex flex-row items-center gap-2 bg-primary">
-        <Link href="/home" className="flex h-10 w-full">
+        <Link href="/dashboard" className="flex h-10 w-full">
           <Image
             src="/images/logo.svg"
             alt="company logo image"

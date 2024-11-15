@@ -48,9 +48,10 @@ export default function SignIn() {
           },
           { merge: true },
         );
+        router.push("/dashboard");
+      } else {
+        router.push("/account");
       }
-
-      router.push("/home");
     }
   };
 
