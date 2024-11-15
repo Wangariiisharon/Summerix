@@ -10,7 +10,8 @@ import {
 import {
   ArrowLeftEndOnRectangleIcon,
   ChevronDownIcon,
-} from "@heroicons/react/24/solid";
+  UserCircleIcon,
+} from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { fbAuth } from "@/firebase/configs";
@@ -19,7 +20,7 @@ import Link from "next/link";
 import useCurrentClient from "@/hooks/useCurrentClient";
 
 export default function Header() {
-  const { appCheck, authUser, isAuthenticated } = useAuthContext();
+  const { authUser } = useAuthContext();
   const { client: currentClient } = useCurrentClient();
   const router = useRouter();
 
@@ -41,11 +42,11 @@ export default function Header() {
             <i className="fa fa-bell fa-lg" aria-hidden="true"></i>
           </button>
 
-          {currentClient && (
+          {authUser && (
             <Menu as="div" className="relative flex-shrink-0">
               <MenuButton className="p-2 inline-flex items-center gap-2 rounded-md focus:outline-none text-white">
                 <span className="sr-only">Open user menu</span>
-                {currentClient.photoURL && (
+                {currentClient && currentClient.photoURL && (
                   <Image
                     src={currentClient.photoURL}
                     alt={`${currentClient.displayName} image`}
@@ -54,6 +55,7 @@ export default function Header() {
                     height={50}
                   />
                 )}
+                {!currentClient && <UserCircleIcon className="h-10 w-10" />}
                 <ChevronDownIcon className="size-4 fill-white/60" />
               </MenuButton>
               <Transition
@@ -70,7 +72,7 @@ export default function Header() {
                 >
                   <MenuItem>
                     <div className="mt-5 px-3 flex items-center gap-3 text-sm">
-                      {currentClient.photoURL && (
+                      {currentClient && currentClient.photoURL && (
                         <Image
                           src={currentClient.photoURL}
                           alt={`${currentClient.displayName} image`}
@@ -79,9 +81,10 @@ export default function Header() {
                           height={20}
                         />
                       )}
+                      {!currentClient && <UserCircleIcon className="h-10 w-10 text-primary" />}
                       <div className="font-medium">
-                        <p className="">{currentClient.displayName}</p>
-                        <p className="text-xs">{currentClient.email}</p>
+                        <p className="">{currentClient?.displayName || 'UNKNOWN'}</p>
+                        <p className="text-xs">{currentClient?.email}</p>
                       </div>
                     </div>
                   </MenuItem>
@@ -94,7 +97,7 @@ export default function Header() {
                         await fbAuth.signOut();
                         router.push("/auth/sign-in");
                       }}
-                      className="w-full btn border-red-500 text-red-500 hover:border-red-600 hover:text-red-600 rounded"
+                      className="w-full btn btn-outline-danger rounded"
                     >
                       <div className="flex items-center justify-center gap-2">
                         <ArrowLeftEndOnRectangleIcon className="h-5 w-5" />

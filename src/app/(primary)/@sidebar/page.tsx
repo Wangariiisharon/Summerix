@@ -14,7 +14,7 @@ import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 
 export default function Sidebar() {
-  const { userClaims } = useAuthContext();
+  const { authUser } = useAuthContext();
   const pathname = usePathname();
 
   const navigation = useMemo(
@@ -24,7 +24,7 @@ export default function Sidebar() {
         name: "Administration",
         href: "/administration",
         icon: WrenchScrewdriverIcon,
-        visible: userClaims?.admin || false, // Check for admin claim
+        visible: authUser?.isActive || false, // Check for admin claim
       },
       {
         name: "Operations",
@@ -39,7 +39,7 @@ export default function Sidebar() {
         visible: true,
       },
     ],
-    [userClaims]
+    [authUser?.isActive]
   );
 
   return (

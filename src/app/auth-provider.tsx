@@ -46,8 +46,6 @@ export const AuthContextProvider = ({ children }: Props) => {
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
   const [appCheck, setAppCheck] = useState<AppCheck | null>(null);
 
-  const router = useRouter();
-
   useEffect(() => {
     setIsAuthLoading(true);
 
