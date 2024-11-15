@@ -23,7 +23,7 @@ export default function Sidebar() {
         name: "Administration",
         href: "/administration",
         icon: WrenchScrewdriverIcon,
-        visible: true, // authUser?.isActive || false, // Check for admin claim
+        visible: true, // authUser?.isOwner || authUser?.isAdmin || false,
       },
       {
         name: "Operations",
