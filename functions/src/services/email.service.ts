@@ -1,9 +1,9 @@
-import { auth } from "firebase-admin";
-import { isProdEnv } from "./utils.service";
-import { UserRecord } from "firebase-admin/auth";
+import { auth } from 'firebase-admin';
+import { isProdEnv } from './utils.service';
+import { UserRecord } from 'firebase-admin/auth';
 
 export const getWebAppBaseUrl = () => {
-  return isProdEnv() ? "https://truckmate.com" : "https://dev.truckmate.com";
+  return isProdEnv() ? 'https://truckmate.com' : 'https://dev.truckmate.com';
 };
 
 export const getExistingAccountEmailBody = (user: UserRecord) => {
@@ -18,10 +18,7 @@ export const getExistingAccountEmailBody = (user: UserRecord) => {
   return body;
 };
 
-export const getNewAccountEmailBody = async (
-  user: UserRecord,
-  email: string,
-) => {
+export const getNewAccountEmailBody = async (user: UserRecord, email: string) => {
   const resetPasswordLink = await auth().generatePasswordResetLink(email, {
     url: `${getWebAppBaseUrl()}/auth/forgot-password`,
   });

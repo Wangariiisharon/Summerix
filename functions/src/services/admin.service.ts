@@ -1,7 +1,7 @@
-import { firestore, auth } from "firebase-admin";
-import { logger } from "firebase-functions/v1";
-import { ADMIN } from "../models/admin";
-import Constants from "../Constants";
+import { firestore, auth } from 'firebase-admin';
+import { logger } from 'firebase-functions/v1';
+import { ADMIN } from '../models/admin';
+import Constants from '../Constants';
 
 // GETTERS
 
@@ -22,11 +22,11 @@ export const doUpdateAuthClaims = async (authId: string, admin: ADMIN) => {
       isActive: admin.rolesMap.isActive || false,
       isAdmin: admin.rolesMap.isAdmin || false,
       isOwner: admin.rolesMap.isOwner || false,
-      companyId: admin.companyId || "",
+      companyId: admin.companyId || '',
       roles: admin.roles || [],
     });
   } catch (error) {
-    logger.error("doUpdateAuthClaims error:", error);
+    logger.error('doUpdateAuthClaims error:', error);
   }
 };
 
@@ -37,10 +37,10 @@ export const doRemoveAuthRoles = async (authId: string) => {
       isAdmin: false,
       isHost: false,
       isOwner: false,
-      staffType: "",
+      staffType: '',
       roles: [],
     });
   } catch (error) {
-    logger.error("ADMIN update error ", error);
+    logger.error('ADMIN update error ', error);
   }
 };

@@ -1,8 +1,4 @@
-import {
-  DocumentData,
-  DocumentReference,
-  QueryDocumentSnapshot,
-} from "firebase-admin/firestore";
+import { DocumentData, DocumentReference, QueryDocumentSnapshot } from 'firebase-admin/firestore';
 
 export interface ADMIN {
   docId: string;
@@ -40,7 +36,7 @@ export interface ADMIN {
 }
 
 export const ADMIN_ROLES = {
-  canManageAdmins: "canManageAdmins",
-  canManageClients: "canManageClients",
-  canManageVehicles: "canManageVehicles",
+  canManageAdmins: 'canManageAdmins',
+  canManageClients: 'canManageClients',
+  canManageVehicles: 'canManageVehicles',
 };

@@ -1,10 +1,7 @@
-import { auth } from "firebase-admin";
-import { logger } from "firebase-functions/v1";
-import { ADMIN } from "../models/admin";
-import {
-  getExistingAccountEmailBody,
-  getNewAccountEmailBody,
-} from "./email.service";
+import { auth } from 'firebase-admin';
+import { logger } from 'firebase-functions/v1';
+import { ADMIN } from '../models/admin';
+import { getExistingAccountEmailBody, getNewAccountEmailBody } from './email.service';
 
 export const getFirebaseUser = async (
   admin: ADMIN,
@@ -20,14 +17,14 @@ export const getFirebaseUser = async (
       userRecord = await auth().getUserByPhoneNumber(admin.phoneNumber);
     }
   } catch (error: any) {
-    logger.warn("getFirebaseUser > error:", error);
-    if (error.code === "auth/user-not-found") {
+    logger.warn('getFirebaseUser > error:', error);
+    if (error.code === 'auth/user-not-found') {
       try {
         // search firebase auth users by email
         userRecord = await auth().getUserByEmail(admin.email);
       } catch (error2: any) {
-        logger.warn("getFirebaseUser > error2:", error2);
-        if (error2.code === "auth/user-not-found") {
+        logger.warn('getFirebaseUser > error2:', error2);
+        if (error2.code === 'auth/user-not-found') {
           try {
             const authDetails: auth.CreateRequest = email
               ? {
@@ -44,7 +41,7 @@ export const getFirebaseUser = async (
             userRecord = await auth().createUser(authDetails);
             isNewAccount = true;
           } catch (error3) {
-            logger.error("getFirebaseUser error3:", error3);
+            logger.error('getFirebaseUser error3:', error3);
           }
         }
       }
@@ -56,7 +53,7 @@ export const getFirebaseUser = async (
     if (isNewAccount) {
       emailBody = await getNewAccountEmailBody(userRecord, admin.email);
     }
-    logger.debug("sendNewAccountEmail > emailBody:", emailBody);
+    logger.debug('sendNewAccountEmail > emailBody:', emailBody);
 
     // await sendNewAccountEmail({
     //   subject: 'Welcome to TruckMate',
@@ -73,6 +70,6 @@ export const removeUserAuth = async (uid: string) => {
   try {
     await auth().deleteUser(uid);
   } catch (error) {
-    logger.error("USER AUTH DELETION ERROR", uid);
+    logger.error('USER AUTH DELETION ERROR', uid);
   }
 };
