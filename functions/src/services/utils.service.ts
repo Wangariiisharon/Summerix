@@ -1,10 +1,10 @@
 export const isProdEnv = () => {
   const projectId = process.env.GCLOUD_PROJECT;
-  return projectId === 'fortliving-dev';
+  return projectId === "fortliving-dev";
 };
 
 export const toNormalCase = (fieldName: string) => {
-  return fieldName.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => {
+  return fieldName.replace(/([A-Z])/g, " $1").replace(/^./, (str) => {
     return str.toUpperCase();
   });
 };

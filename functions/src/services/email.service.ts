@@ -18,7 +18,10 @@ export const getExistingAccountEmailBody = (user: UserRecord) => {
   return body;
 };
 
-export const getNewAccountEmailBody = async (user: UserRecord, email: string) => {
+export const getNewAccountEmailBody = async (
+  user: UserRecord,
+  email: string,
+) => {
   const resetPasswordLink = await auth().generatePasswordResetLink(email, {
     url: `${getWebAppBaseUrl()}/auth/forgot-password`,
   });
