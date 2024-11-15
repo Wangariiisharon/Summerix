@@ -1,8 +1,8 @@
 import {
-  type DocumentData,
+  DocumentData,
   DocumentReference,
   QueryDocumentSnapshot,
-} from "firebase/firestore";
+} from "firebase-admin/firestore";
 
 export interface ADMIN {
   docId: string;
