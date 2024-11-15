@@ -41,7 +41,7 @@ export default function Home() {
 
     let q = query(
       collection(fbDb, Constants.fbVehicles),
-      where("companyId", "==", authUser.companyId)
+      where("companyId", "==", authUser.companyId),
       // where("timestamp", ">=", Timestamp.fromDate(startDate)),
       // where("timestamp", "<=", Timestamp.fromDate(endDate))
     );
@@ -54,28 +54,28 @@ export default function Home() {
       query(q, where("availability_status", "==", "Available")),
       {
         docsCount: count(),
-      }
+      },
     );
 
     const snapshot2 = await getAggregateFromServer(
       query(q, where("availability_status", "==", "On Route")),
       {
         docsCount: count(),
-      }
+      },
     );
 
     const snapshot3 = await getAggregateFromServer(
       query(q, where("availability_status", "==", "Out Of Service")),
       {
         docsCount: count(),
-      }
+      },
     );
 
     const snapshot4 = await getAggregateFromServer(
       query(q, where("availability_status", "==", "Under Maintenance")),
       {
         docsCount: count(),
-      }
+      },
     );
 
     setVehicleStats({
@@ -92,7 +92,7 @@ export default function Home() {
 
     let q = query(
       collection(fbDb, Constants.fbTrips),
-      where("companyId", "==", authUser.companyId)
+      where("companyId", "==", authUser.companyId),
       // where("timestamp", ">=", Timestamp.fromDate(startDate)),
       // where("timestamp", "<=", Timestamp.fromDate(endDate))
     );
@@ -105,21 +105,21 @@ export default function Home() {
       query(q, where("trip_status", "==", "Booked")),
       {
         docsCount: count(),
-      }
+      },
     );
 
     const snapshot2 = await getAggregateFromServer(
       query(q, where("trip_status", "==", "Done")),
       {
         docsCount: count(),
-      }
+      },
     );
 
     const snapshot3 = await getAggregateFromServer(
       query(q, where("trip_status", "==", "Cancelled")),
       {
         docsCount: count(),
-      }
+      },
     );
 
     setTripStats({

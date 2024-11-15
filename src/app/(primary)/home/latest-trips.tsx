@@ -29,7 +29,7 @@ export default function LatestTrips() {
       collection(fbDb, Constants.fbTrips),
       where("companyId", "==", authUser.companyId),
       orderBy("timestamp", "desc"),
-      limit(5)
+      limit(5),
     );
 
     const unsubscribe = onSnapshot(q, async (snapshot) => {
@@ -41,7 +41,7 @@ export default function LatestTrips() {
         },
         (error: any) => {
           console.error("onSnapshot > error:", error);
-        }
+        },
       );
       setTrips(results);
     });
@@ -90,7 +90,7 @@ export default function LatestTrips() {
                       <td className="td">
                         {trip.dateCreated &&
                           moment(trip.dateCreated.toDate()).format(
-                            Constants.dateTimeFormat
+                            Constants.dateTimeFormat,
                           )}
                       </td>
                     </tr>

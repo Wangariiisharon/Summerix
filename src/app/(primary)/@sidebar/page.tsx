@@ -39,7 +39,7 @@ export default function Sidebar() {
         visible: true,
       },
     ],
-    [authUser?.isActive]
+    [authUser?.isActive],
   );
 
   return (

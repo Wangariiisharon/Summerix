@@ -35,7 +35,7 @@ export const getCanManageRole = (authUser: AUTH_USER | null, role: string) => {
 
 export const doLoginApiCall = async (
   idToken: string,
-  appCheck: AppCheck | null
+  appCheck: AppCheck | null,
 ) => {
   const headers: Record<string, string> = {
     Authorization: `Bearer ${idToken}`,

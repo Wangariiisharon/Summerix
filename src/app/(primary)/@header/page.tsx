@@ -82,16 +82,20 @@ export default function Header() {
                           height={20}
                         />
                       )}
-                      {!currentClient && <UserCircleIcon className="h-10 w-10 text-primary" />}
+                      {!currentClient && (
+                        <UserCircleIcon className="h-10 w-10 text-primary" />
+                      )}
                       <div className="font-medium">
-                        <p className="">{currentClient?.displayName || 'UNKNOWN'}</p>
+                        <p className="">
+                          {currentClient?.displayName || "UNKNOWN"}
+                        </p>
                         <p className="text-xs">{currentClient?.email}</p>
                       </div>
                     </div>
                   </MenuItem>
 
                   <div className="my-3 h-px bg-white/5" />
-                  
+
                   <MenuItem>
                     <button
                       onClick={async () => {

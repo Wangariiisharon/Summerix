@@ -5,11 +5,11 @@ import Constants from "@/Constants";
 import { fbAuth, fbDb } from "@/firebase/configs";
 import { doLoginApiCall } from "@/services/auth";
 import {
-  AuthProvider,
+  type AuthProvider,
   GoogleAuthProvider,
   signInWithEmailAndPassword,
   signInWithPopup,
-  UserCredential,
+  type UserCredential,
 } from "firebase/auth";
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { Field, Form, Formik } from "formik";
@@ -17,12 +17,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import * as Yup from 'yup';
+import * as Yup from "yup";
 
 const EmailAuthSchema = () => {
   return Yup.object().shape({
-    email: Yup.string().required('Email address is required.'),
-    password: Yup.string().required('Password is required.'),
+    email: Yup.string().required("Email address is required."),
+    password: Yup.string().required("Password is required."),
   });
 };
 
@@ -46,11 +46,11 @@ export default function SignIn() {
             lastLoginDate: serverTimestamp(),
             lastUpdated: serverTimestamp(),
           },
-          { merge: true }
+          { merge: true },
         );
       }
 
-      router.push('/home');
+      router.push("/home");
     }
   };
 
@@ -61,7 +61,7 @@ export default function SignIn() {
       const credential = await signInWithEmailAndPassword(
         fbAuth,
         formValues.email,
-        formValues.password
+        formValues.password,
       );
       await onSignInCallback(credential);
     } catch (error: any) {
