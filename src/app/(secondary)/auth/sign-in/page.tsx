@@ -113,6 +113,7 @@ export default function SignIn() {
                 <Field
                   type="password"
                   name="password"
+                  autoComplete="current-password"
                   placeholder="Enter password"
                   className="form-input"
                 />
