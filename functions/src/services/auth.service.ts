@@ -9,7 +9,7 @@ import {
 export const getFirebaseUser = async (
   admin: ADMIN,
   uid?: string, // provided firebase uid
-  email?: boolean // no phone auth
+  email?: boolean, // no phone auth
 ): Promise<any> => {
   let userRecord = null;
   let isNewAccount = false;
