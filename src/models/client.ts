@@ -1,8 +1,4 @@
-import {
-  type DocumentData,
-  DocumentReference,
-  QueryDocumentSnapshot,
-} from "firebase/firestore";
+import { type DocumentData, DocumentReference, QueryDocumentSnapshot } from 'firebase/firestore';
 
 export interface CLIENT {
   docId: string;

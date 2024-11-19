@@ -1,8 +1,9 @@
 import { DocumentData, DocumentReference, QueryDocumentSnapshot } from 'firebase-admin/firestore';
+import { COMPANY_DETAILS } from './company';
 
 export interface ADMIN {
   docId: string;
-  companyId: string;
+  // companyId: string;
 
   firstName: string;
   lastName: string;
@@ -12,6 +13,7 @@ export interface ADMIN {
   phoneNumber: string;
   idNumber: string;
   photoURL: string;
+  company: COMPANY_DETAILS;
 
   roles: Array<string>;
   rolesMap: {
@@ -35,8 +37,10 @@ export interface ADMIN {
   updatedBy: { email: string; authId: string };
 }
 
-export const ADMIN_ROLES = {
-  canManageAdmins: 'canManageAdmins',
-  canManageClients: 'canManageClients',
-  canManageVehicles: 'canManageVehicles',
-};
+export interface ADMIN_DETAILS {
+  docId: string;
+  email: string;
+  displayName: string;
+  phoneNumber: string;
+  companyId: string;
+}

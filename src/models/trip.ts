@@ -1,27 +1,26 @@
-import {
-  type DocumentData,
-  DocumentReference,
-  QueryDocumentSnapshot,
-} from "firebase/firestore";
-import { CLIENT_DETAILS } from "./client";
+import { type DocumentData, DocumentReference, QueryDocumentSnapshot } from 'firebase/firestore';
+import { CLIENT_DETAILS } from './client';
+import { COMPANY_DETAILS } from './company';
+import { DRIVER_DETAILS } from './driver';
 
 export interface TRIP {
   docId: string;
   status: string;
   distance: string;
 
-  company: any; // COMPANY_DETAILS
-  client: CLIENT_DETAILS;
-  vehicle: string;
+  company: COMPANY_DETAILS;
+  client: CLIENT_DETAILS; // requested by
+  driver: DRIVER_DETAILS;
+  vehicle: string; // VEHICLE_DETAILS
 
   addedBy: {
-    docI: string;
+    docId: string;
     name: string;
     email: string;
     phonenumber: string;
   };
   requestedBy: {
-    docI: string;
+    docId: string;
     name: string;
     email: string;
     phonenumber: string;
