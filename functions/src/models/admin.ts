@@ -3,7 +3,6 @@ import { COMPANY_DETAILS } from './company';
 
 export interface ADMIN {
   docId: string;
-  companyId: string;
 
   firstName: string;
   lastName: string;
@@ -42,5 +41,4 @@ export interface ADMIN_DETAILS {
   email: string;
   displayName: string;
   phoneNumber: string;
-  companyId: string;
 }

@@ -31,12 +31,11 @@ export const OnAdminUpdated = runWith({
       }
 
       if (
-        prevAdmin.companyId !== admin.companyId ||
         prevAdmin.rolesMap !== admin.rolesMap ||
         prevAdmin.roles !== admin.roles
       ) {
         logger.debug('update auth claims:', {
-          companyId: admin.companyId,
+          companyId: admin.rolesMap.companyId,
           rolesMap: admin.rolesMap,
           roles: admin.roles,
         });

@@ -31,5 +31,4 @@ export interface CLIENT_DETAILS {
   email: string;
   displayName: string;
   phoneNumber: string;
-  companyId: string;
 }

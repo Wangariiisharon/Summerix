@@ -26,7 +26,6 @@ export interface VEHICLE_DETAILS {
   docId: string;
   name: string;
   regNumber: string;
-  companyId: string;
 }
 
 export enum VEHICLE_STATUS {
