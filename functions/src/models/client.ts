@@ -1,3 +1,5 @@
+import { COMPANY_DETAILS } from './company';
+
 export interface CLIENT {
   docId: string;
 
@@ -10,6 +12,7 @@ export interface CLIENT {
   idNumber: string;
   currency: string;
   photoURL: string;
+  company: COMPANY_DETAILS;
 
   lowerCase: {
     firstName: string;
@@ -26,7 +29,7 @@ export interface CLIENT {
 export interface CLIENT_DETAILS {
   docId: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  displayName: string;
   phoneNumber: string;
+  companyId: string;
 }

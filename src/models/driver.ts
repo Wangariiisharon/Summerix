@@ -1,8 +1,4 @@
-import {
-  type DocumentData,
-  DocumentReference,
-  QueryDocumentSnapshot,
-} from 'firebase-admin/firestore';
+import { type DocumentData, DocumentReference, QueryDocumentSnapshot } from 'firebase/firestore';
 import { COMPANY_DETAILS } from './company';
 
 export interface DRIVER {

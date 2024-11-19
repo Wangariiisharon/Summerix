@@ -1,4 +1,4 @@
-import { type User, type UserInfo } from "firebase/auth";
+import { type User, type UserInfo } from 'firebase/auth';
 
 type Claims = {
   roles: string[];
