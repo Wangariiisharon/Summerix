@@ -11,9 +11,22 @@
   ],
   "plugins": ["import", "prettier"],
   "rules": {
+    "indent": 0,
     "quotes": ["error", "single"],
     "semi": ["error", "always"],
     "prettier/prettier": "error",
+    "no-use-before-define": "error",
     "react/react-in-jsx-scope": 0
+    // "import/no-unused-modules": [
+    //   1,
+    //   {
+    //     "unusedExports": true,
+    //     "ignoreExports": [
+    //       // "./app/global-error.tsx",
+    //       // "./src/app/api/**/route.ts",
+    //       "./src/**/*.tsx"
+    //     ]
+    //   }
+    // ]
   }
 }
