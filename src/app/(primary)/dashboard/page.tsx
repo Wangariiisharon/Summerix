@@ -11,6 +11,8 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { TruckIcon } from '@heroicons/react/24/solid';
 import Constants from '@/Constants';
 import LatestTrips from './latest-trips';
+import { VEHICLE_STATUS } from '@/models/vehicle';
+import { TRIP_STATUS } from '@/models/trip';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -35,7 +37,7 @@ export default function Home() {
 
     let q = query(
       collection(fbDb, Constants.fbVehicles),
-      where('companyId', '==', authUser.companyId),
+      where('company.docId', '==', authUser.companyId),
       // where("timestamp", ">=", Timestamp.fromDate(startDate)),
       // where("timestamp", "<=", Timestamp.fromDate(endDate))
     );
@@ -45,28 +47,28 @@ export default function Home() {
     });
 
     const snapshot1 = await getAggregateFromServer(
-      query(q, where('availability_status', '==', 'Available')),
+      query(q, where('status', '==', VEHICLE_STATUS.available)),
       {
         docsCount: count(),
       },
     );
 
     const snapshot2 = await getAggregateFromServer(
-      query(q, where('availability_status', '==', 'On Route')),
+      query(q, where('status', '==', VEHICLE_STATUS.onRoute)),
       {
         docsCount: count(),
       },
     );
 
     const snapshot3 = await getAggregateFromServer(
-      query(q, where('availability_status', '==', 'Out Of Service')),
+      query(q, where('status', '==', VEHICLE_STATUS.outOfService)),
       {
         docsCount: count(),
       },
     );
 
     const snapshot4 = await getAggregateFromServer(
-      query(q, where('availability_status', '==', 'Under Maintenance')),
+      query(q, where('status', '==', VEHICLE_STATUS.underMaintenance)),
       {
         docsCount: count(),
       },
@@ -86,7 +88,7 @@ export default function Home() {
 
     let q = query(
       collection(fbDb, Constants.fbTrips),
-      where('companyId', '==', authUser.companyId),
+      where('company.docId', '==', authUser.companyId),
       // where("timestamp", ">=", Timestamp.fromDate(startDate)),
       // where("timestamp", "<=", Timestamp.fromDate(endDate))
     );
@@ -95,16 +97,22 @@ export default function Home() {
       docsCount: count(),
     });
 
-    const snapshot1 = await getAggregateFromServer(query(q, where('trip_status', '==', 'Booked')), {
-      docsCount: count(),
-    });
+    const snapshot1 = await getAggregateFromServer(
+      query(q, where('status', '==', TRIP_STATUS.booked)),
+      {
+        docsCount: count(),
+      },
+    );
 
-    const snapshot2 = await getAggregateFromServer(query(q, where('trip_status', '==', 'Done')), {
-      docsCount: count(),
-    });
+    const snapshot2 = await getAggregateFromServer(
+      query(q, where('status', '==', TRIP_STATUS.completed)),
+      {
+        docsCount: count(),
+      },
+    );
 
     const snapshot3 = await getAggregateFromServer(
-      query(q, where('trip_status', '==', 'Cancelled')),
+      query(q, where('status', '==', TRIP_STATUS.cancelled)),
       {
         docsCount: count(),
       },

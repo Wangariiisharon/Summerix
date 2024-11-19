@@ -3,7 +3,7 @@ import { COMPANY_DETAILS } from './company';
 
 export interface ADMIN {
   docId: string;
-  // companyId: string;
+  companyId: string;
 
   firstName: string;
   lastName: string;

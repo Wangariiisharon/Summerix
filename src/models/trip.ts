@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { type DocumentData, DocumentReference, QueryDocumentSnapshot } from 'firebase/firestore';
 import { CLIENT_DETAILS } from './client';
 import { COMPANY_DETAILS } from './company';
@@ -55,4 +56,11 @@ export interface TRIP {
 
   dateCreated: any;
   lastUpdated: any;
+}
+
+export enum TRIP_STATUS {
+  booked = 'booked',
+  processing = 'processing',
+  completed = 'completed',
+  cancelled = 'cancelled',
 }
