@@ -30,10 +30,7 @@ export const OnAdminUpdated = runWith({
         });
       }
 
-      if (
-        prevAdmin.rolesMap !== admin.rolesMap ||
-        prevAdmin.roles !== admin.roles
-      ) {
+      if (prevAdmin.rolesMap !== admin.rolesMap || prevAdmin.roles !== admin.roles) {
         logger.debug('update auth claims:', {
           companyId: admin.rolesMap.companyId,
           rolesMap: admin.rolesMap,
