@@ -1,28 +1,28 @@
-import Constants from "@/Constants";
-import "@/app/globals.css";
+import Constants from '@/Constants';
+import '@/app/globals.css';
 
-import { Outfit } from "next/font/google";
-import { GoogleAnalytics } from "@next/third-parties/google";
-import { ReactNode } from "react";
-import { Toaster } from "react-hot-toast";
-import { AuthContextProvider } from "./auth-provider";
+import { Outfit } from 'next/font/google';
+import { GoogleAnalytics } from '@next/third-parties/google';
+import { ReactNode } from 'react';
+import { Toaster } from 'react-hot-toast';
+import { AuthContextProvider } from './auth-provider';
 
-const font = Outfit({ subsets: ["latin"] });
+const font = Outfit({ subsets: ['latin'] });
 
 export const metadata = {
   title: {
-    template: "%s | TruckMate",
-    default: "TruckMate Platform",
+    template: '%s | TruckMate',
+    default: 'TruckMate Platform',
   },
   description: Constants.description,
-  metadataBase: new URL("https://www.truckmate.io"),
+  metadataBase: new URL('https://www.truckmate.io'),
   openGraph: {
-    images: ["/images/cover.png"],
+    images: ['/images/cover.png'],
   },
   twitter: {
-    card: "summary",
-    creator: "@TruckMate",
-    images: ["/images/cover.png"],
+    card: 'summary',
+    creator: '@TruckMate',
+    images: ['/images/cover.png'],
   },
 };
 
@@ -40,9 +40,7 @@ export default function RootLayout({ children }: Props) {
         />
       </head>
       <body>
-        <GoogleAnalytics
-          gaId={`${process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID}`}
-        />
+        <GoogleAnalytics gaId={`${process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID}`} />
 
         <AuthContextProvider>{children}</AuthContextProvider>
 

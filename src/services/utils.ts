@@ -1,15 +1,13 @@
-import { fbStorage } from "@/firebase/configs";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { getIn } from "formik";
+import { fbStorage } from '@/firebase/configs';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { getIn } from 'formik';
 
 export function classNames(...classes: Array<string>) {
-  return classes.filter(Boolean).join(" ");
+  return classes.filter(Boolean).join(' ');
 }
 
 export const getInputStyle = (errors: any, fieldName: string | string[]) => {
-  return getIn(errors, fieldName)
-    ? "form-input border-red-500 text-red-500"
-    : "form-input";
+  return getIn(errors, fieldName) ? 'form-input border-red-500 text-red-500' : 'form-input';
 };
 
 export const doUploadImage = async (file: File, folder: string) => {

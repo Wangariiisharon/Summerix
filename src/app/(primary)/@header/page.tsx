@@ -1,24 +1,18 @@
-"use client";
+'use client';
 
-import {
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-  Transition,
-} from "@headlessui/react";
+import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
 import {
   ArrowLeftEndOnRectangleIcon,
   ChevronDownIcon,
   UserCircleIcon,
-} from "@heroicons/react/24/outline";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { fbAuth } from "@/firebase/configs";
-import { useAuthContext } from "../../auth-provider";
-import Link from "next/link";
-import useCurrentClient from "@/hooks/useCurrentClient";
-import { doLogoutApiCall } from "@/services/auth";
+} from '@heroicons/react/24/outline';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { fbAuth } from '@/firebase/configs';
+import { useAuthContext } from '../../auth-provider';
+import Link from 'next/link';
+import useCurrentClient from '@/hooks/useCurrentClient';
+import { doLogoutApiCall } from '@/services/auth';
 
 export default function Header() {
   const { appCheck, authUser } = useAuthContext();
@@ -27,7 +21,7 @@ export default function Header() {
 
   return (
     <>
-      <div className="p-4 w-full flex flex-row items-center gap-2 bg-primary">
+      <div className="flex w-full flex-row items-center gap-2 bg-primary p-4">
         <Link href="/dashboard" className="flex h-10 w-full">
           <Image
             src="/images/logo.svg"
@@ -45,7 +39,7 @@ export default function Header() {
 
           {authUser && (
             <Menu as="div" className="relative flex-shrink-0">
-              <MenuButton className="p-2 inline-flex items-center gap-2 rounded-md focus:outline-none text-white">
+              <MenuButton className="inline-flex items-center gap-2 rounded-md p-2 text-white focus:outline-none">
                 <span className="sr-only">Open user menu</span>
                 {currentClient && currentClient.photoURL && (
                   <Image
@@ -69,10 +63,10 @@ export default function Header() {
               >
                 <MenuItems
                   anchor="bottom end"
-                  className="p-3 w-fit min-w-60 origin-top-right rounded-b border border-primary bg-white focus:outline-none"
+                  className="w-fit min-w-60 origin-top-right rounded-b border border-primary bg-white p-3 focus:outline-none"
                 >
                   <MenuItem>
-                    <div className="mt-5 px-3 flex items-center gap-3 text-sm">
+                    <div className="mt-5 flex items-center gap-3 px-3 text-sm">
                       {currentClient && currentClient.photoURL && (
                         <Image
                           src={currentClient.photoURL}
@@ -82,13 +76,9 @@ export default function Header() {
                           height={20}
                         />
                       )}
-                      {!currentClient && (
-                        <UserCircleIcon className="h-10 w-10 text-primary" />
-                      )}
+                      {!currentClient && <UserCircleIcon className="h-10 w-10 text-primary" />}
                       <div className="font-medium">
-                        <p className="">
-                          {currentClient?.displayName || "UNKNOWN"}
-                        </p>
+                        <p className="">{currentClient?.displayName || 'UNKNOWN'}</p>
                         <p className="text-xs">{currentClient?.email}</p>
                       </div>
                     </div>
@@ -101,9 +91,9 @@ export default function Header() {
                       onClick={async () => {
                         await fbAuth.signOut();
                         await doLogoutApiCall(appCheck);
-                        router.push("/auth/sign-in");
+                        router.push('/auth/sign-in');
                       }}
-                      className="w-full btn btn-outline-danger rounded"
+                      className="btn btn-outline-danger w-full rounded"
                     >
                       <div className="flex items-center justify-center gap-2">
                         <ArrowLeftEndOnRectangleIcon className="h-5 w-5" />

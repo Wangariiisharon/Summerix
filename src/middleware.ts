@@ -1,19 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
-import {
-  authMiddleware,
-  redirectToHome,
-  redirectToLogin,
-  Tokens,
-} from "next-firebase-auth-edge";
-import { filterStandardClaims } from "next-firebase-auth-edge/lib/auth/claims";
-import { clientConfig, serverConfig } from "./config";
-import { AUTH_USER } from "./models/auth-user";
+import { NextRequest, NextResponse } from 'next/server';
+import { authMiddleware, redirectToHome, redirectToLogin, Tokens } from 'next-firebase-auth-edge';
+import { filterStandardClaims } from 'next-firebase-auth-edge/lib/auth/claims';
+import { clientConfig, serverConfig } from './config';
+import { AUTH_USER } from './models/auth-user';
 
-const publicRoutes = [
-  "/auth/sign-in",
-  "/auth/register",
-  "/auth/forgot-password",
-];
+const publicRoutes = ['/auth/sign-in', '/auth/register', '/auth/forgot-password'];
 
 const toUser = ({ decodedToken }: Tokens): AUTH_USER => {
   const {
@@ -40,27 +31,27 @@ const toUser = ({ decodedToken }: Tokens): AUTH_USER => {
     providerId: signInProvider,
 
     customClaims: claims,
-    companyId: (claims.companyId as string) || "",
-    isActive: (claims["isActive"] as boolean) || false,
-    isAdmin: (claims["isAdmin"] as boolean) || false,
-    isOwner: (claims["isOwner"] as boolean) || false,
+    companyId: (claims.companyId as string) || '',
+    isActive: (claims['isActive'] as boolean) || false,
+    isAdmin: (claims['isAdmin'] as boolean) || false,
+    isOwner: (claims['isOwner'] as boolean) || false,
     roles: (claims.roles as string[]) || [],
   } as AUTH_USER;
 };
 
 const adminACL = [
-  { routes: ["/admin/staff"], role: "canManageAdmins" },
-  { routes: ["/admin/clients"], role: "canManageClients" },
-  { routes: ["/admin/vehicles"], role: "canManageVehicles" },
+  { routes: ['/admin/staff'], role: 'canManageAdmins' },
+  { routes: ['/admin/clients'], role: 'canManageClients' },
+  { routes: ['/admin/vehicles'], role: 'canManageVehicles' },
 ];
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
-  console.debug("middleware > pathname:", pathname);
+  console.debug('middleware > pathname:', pathname);
 
   return authMiddleware(req, {
-    loginPath: "/api/login",
-    logoutPath: "/api/logout",
+    loginPath: '/api/login',
+    logoutPath: '/api/logout',
     apiKey: clientConfig.apiKey,
     cookieName: serverConfig.cookieName,
     cookieSignatureKeys: serverConfig.cookieSignatureKeys,
@@ -68,7 +59,7 @@ export async function middleware(req: NextRequest) {
     serviceAccount: serverConfig.serviceAccount,
     handleValidToken: async (tokens, headers) => {
       const authUser = toUser(tokens);
-      console.debug("handleValidToken > authUser:", {
+      console.debug('handleValidToken > authUser:', {
         uid: authUser.uid,
         email: authUser.email,
         companyId: authUser.companyId,
@@ -83,7 +74,7 @@ export async function middleware(req: NextRequest) {
       }
 
       if (authUser.isOwner) {
-        console.debug("middleware > isOwner access:", { url: req.url });
+        console.debug('middleware > isOwner access:', { url: req.url });
         return NextResponse.next({
           request: {
             headers,
@@ -91,26 +82,23 @@ export async function middleware(req: NextRequest) {
         });
       }
 
-      if (!authUser.isAdmin && ["/admin"].includes(pathname)) {
-        console.debug("middleware > isAdmin redirect:", { url: req.url });
-        return NextResponse.redirect(new URL("/auth/forbidden", req.url));
+      if (!authUser.isAdmin && ['/admin'].includes(pathname)) {
+        console.debug('middleware > isAdmin redirect:', { url: req.url });
+        return NextResponse.redirect(new URL('/auth/forbidden', req.url));
       }
 
       // add role-based /admin access control
       for (const acl of adminACL) {
         // console.debug('adminACL > acl:', acl, pathname);
 
-        if (
-          acl.routes.includes(pathname) &&
-          !authUser.roles.includes(acl.role)
-        ) {
-          console.debug("middleware > admin roles redirect:", {
+        if (acl.routes.includes(pathname) && !authUser.roles.includes(acl.role)) {
+          console.debug('middleware > admin roles redirect:', {
             acl,
             isOwner: authUser.isOwner,
             roles: authUser.roles,
             url: req.url,
           });
-          return NextResponse.redirect(new URL("/auth/forbidden", req.url));
+          return NextResponse.redirect(new URL('/auth/forbidden', req.url));
         }
       }
 
@@ -121,25 +109,25 @@ export async function middleware(req: NextRequest) {
       });
     },
     handleInvalidToken: async (reason) => {
-      console.debug("Missing or malformed credentials", { reason });
+      console.debug('Missing or malformed credentials', { reason });
       // return NextResponse.next({ request: req });
 
       return redirectToLogin(req, {
         publicPaths: publicRoutes,
-        path: "/auth/sign-in",
+        path: '/auth/sign-in',
       });
     },
     handleError: async (error) => {
-      console.error("Unhandled authentication error", { error });
+      console.error('Unhandled authentication error', { error });
 
       return redirectToLogin(req, {
         publicPaths: publicRoutes,
-        path: "//auth/sign-in",
+        path: '//auth/sign-in',
       });
     },
   });
 }
 
 export const config = {
-  matcher: ["/", "/((?!_next|api|.*\\.).*)", "/api/login", "/api/logout"],
+  matcher: ['/', '/((?!_next|api|.*\\.).*)', '/api/login', '/api/logout'],
 };

@@ -1,22 +1,16 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import StatsCard from "./stats-card";
-import { useCallback, useEffect, useState } from "react";
-import {
-  collection,
-  count,
-  getAggregateFromServer,
-  query,
-  where,
-} from "firebase/firestore";
-import { fbDb } from "@/firebase/configs";
-import { useAuthContext } from "@/app/auth-provider";
-import { Doughnut } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import { TruckIcon } from "@heroicons/react/24/solid";
-import Constants from "@/Constants";
-import LatestTrips from "./latest-trips";
+import Link from 'next/link';
+import StatsCard from './stats-card';
+import { useCallback, useEffect, useState } from 'react';
+import { collection, count, getAggregateFromServer, query, where } from 'firebase/firestore';
+import { fbDb } from '@/firebase/configs';
+import { useAuthContext } from '@/app/auth-provider';
+import { Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { TruckIcon } from '@heroicons/react/24/solid';
+import Constants from '@/Constants';
+import LatestTrips from './latest-trips';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -41,7 +35,7 @@ export default function Home() {
 
     let q = query(
       collection(fbDb, Constants.fbVehicles),
-      where("companyId", "==", authUser.companyId),
+      where('companyId', '==', authUser.companyId),
       // where("timestamp", ">=", Timestamp.fromDate(startDate)),
       // where("timestamp", "<=", Timestamp.fromDate(endDate))
     );
@@ -51,28 +45,28 @@ export default function Home() {
     });
 
     const snapshot1 = await getAggregateFromServer(
-      query(q, where("availability_status", "==", "Available")),
+      query(q, where('availability_status', '==', 'Available')),
       {
         docsCount: count(),
       },
     );
 
     const snapshot2 = await getAggregateFromServer(
-      query(q, where("availability_status", "==", "On Route")),
+      query(q, where('availability_status', '==', 'On Route')),
       {
         docsCount: count(),
       },
     );
 
     const snapshot3 = await getAggregateFromServer(
-      query(q, where("availability_status", "==", "Out Of Service")),
+      query(q, where('availability_status', '==', 'Out Of Service')),
       {
         docsCount: count(),
       },
     );
 
     const snapshot4 = await getAggregateFromServer(
-      query(q, where("availability_status", "==", "Under Maintenance")),
+      query(q, where('availability_status', '==', 'Under Maintenance')),
       {
         docsCount: count(),
       },
@@ -92,7 +86,7 @@ export default function Home() {
 
     let q = query(
       collection(fbDb, Constants.fbTrips),
-      where("companyId", "==", authUser.companyId),
+      where('companyId', '==', authUser.companyId),
       // where("timestamp", ">=", Timestamp.fromDate(startDate)),
       // where("timestamp", "<=", Timestamp.fromDate(endDate))
     );
@@ -101,22 +95,16 @@ export default function Home() {
       docsCount: count(),
     });
 
-    const snapshot1 = await getAggregateFromServer(
-      query(q, where("trip_status", "==", "Booked")),
-      {
-        docsCount: count(),
-      },
-    );
+    const snapshot1 = await getAggregateFromServer(query(q, where('trip_status', '==', 'Booked')), {
+      docsCount: count(),
+    });
 
-    const snapshot2 = await getAggregateFromServer(
-      query(q, where("trip_status", "==", "Done")),
-      {
-        docsCount: count(),
-      },
-    );
+    const snapshot2 = await getAggregateFromServer(query(q, where('trip_status', '==', 'Done')), {
+      docsCount: count(),
+    });
 
     const snapshot3 = await getAggregateFromServer(
-      query(q, where("trip_status", "==", "Cancelled")),
+      query(q, where('trip_status', '==', 'Cancelled')),
       {
         docsCount: count(),
       },
@@ -137,11 +125,11 @@ export default function Home() {
 
   return (
     <main className="">
-      <div className="p-6 bg-white">
-        <h2 className="font-semibold text-xl">Analytics</h2>
+      <div className="bg-white p-6">
+        <h2 className="text-xl font-semibold">Analytics</h2>
       </div>
 
-      <section className="mt-5 grid-1-2-4 gap-5">
+      <section className="grid-1-2-4 mt-5 gap-5">
         <StatsCard
           label="Total Income"
           value="335K"
@@ -172,8 +160,8 @@ export default function Home() {
         </StatsCard>
       </section>
 
-      <section className="mt-5 grid-1-2 gap-5">
-        <div className="p-4 bg-white rounded">
+      <section className="grid-1-2 mt-5 gap-5">
+        <div className="rounded bg-white p-4">
           <div className="flex items-center justify-between gap-5">
             <h3 className="text-lg">Vehicles Overview</h3>
             <Link
@@ -183,55 +171,49 @@ export default function Home() {
               View All
             </Link>
           </div>
-          <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 items-center gap-5">
+          <div className="mt-5 grid grid-cols-1 items-center gap-5 sm:grid-cols-2">
             <div className="">
               <Doughnut
                 data={{
                   datasets: [
                     {
-                      label: "Available",
-                      data: [
-                        vehicleStats.available,
-                        vehicleStats.total - vehicleStats.available,
-                      ],
-                      backgroundColor: ["#4FD1C5", "#E9ECEF"],
+                      label: 'Available',
+                      data: [vehicleStats.available, vehicleStats.total - vehicleStats.available],
+                      backgroundColor: ['#4FD1C5', '#E9ECEF'],
                       borderWidth: 2,
                     },
                     {
-                      label: "On Route",
-                      data: [
-                        vehicleStats.onRoute,
-                        vehicleStats.total - vehicleStats.onRoute,
-                      ],
-                      backgroundColor: ["#065AD8", "#E9ECEF"],
+                      label: 'On Route',
+                      data: [vehicleStats.onRoute, vehicleStats.total - vehicleStats.onRoute],
+                      backgroundColor: ['#065AD8', '#E9ECEF'],
                       borderWidth: 1,
                     },
                     {
-                      label: "Under Maintenance",
+                      label: 'Under Maintenance',
                       data: [
                         vehicleStats.underMaintenance,
                         vehicleStats.total - vehicleStats.underMaintenance,
                       ],
-                      backgroundColor: ["#FFC107", "#E9ECEF"],
+                      backgroundColor: ['#FFC107', '#E9ECEF'],
                       borderWidth: 1,
                     },
                     {
-                      label: "Out of service",
+                      label: 'Out of service',
                       data: [
                         vehicleStats.outOfService,
                         vehicleStats.total - vehicleStats.outOfService,
                       ],
-                      backgroundColor: ["#C80815", "#E9ECEF"],
+                      backgroundColor: ['#C80815', '#E9ECEF'],
                       borderWidth: 1,
                     },
                   ],
                 }}
                 options={{
                   responsive: true,
-                  cutout: "60%",
+                  cutout: '60%',
                   animation: {
                     animateScale: true,
-                    easing: "easeInBack",
+                    easing: 'easeInBack',
                     delay: 500,
                   },
                 }}
@@ -243,33 +225,30 @@ export default function Home() {
               <div className="mt-5 grid gap-1">
                 {[
                   {
-                    name: "Available",
+                    name: 'Available',
                     value: vehicleStats.available,
-                    classNames: "bg-[#4FD1C5]/20 text-[#4FD1C5]",
+                    classNames: 'bg-[#4FD1C5]/20 text-[#4FD1C5]',
                   },
                   {
-                    name: "On Route",
+                    name: 'On Route',
                     value: vehicleStats.onRoute,
-                    classNames: "bg-[#065AD8]/20 text-[#065AD8]",
+                    classNames: 'bg-[#065AD8]/20 text-[#065AD8]',
                   },
                   {
-                    name: "Under Maintenance",
+                    name: 'Under Maintenance',
                     value: vehicleStats.underMaintenance,
-                    classNames: "bg-[#FFC107]/20 text-[#FFC107]",
+                    classNames: 'bg-[#FFC107]/20 text-[#FFC107]',
                   },
                   {
-                    name: "Out Of Service",
+                    name: 'Out Of Service',
                     value: vehicleStats.outOfService,
-                    classNames: "bg-[#C80815]/20 text-[#C80815]",
+                    classNames: 'bg-[#C80815]/20 text-[#C80815]',
                   },
                 ].map(({ name, value, classNames }) => {
                   return (
-                    <div
-                      key={name}
-                      className="flex items-center justify-between gap-5"
-                    >
+                    <div key={name} className="flex items-center justify-between gap-5">
                       <div className="flex items-center gap-5">
-                        <div className={`p-2 rounded ${classNames}`}>
+                        <div className={`rounded p-2 ${classNames}`}>
                           <TruckIcon className="h-5 w-5" />
                         </div>
                         <p className="text-gray-500">{name}</p>
@@ -283,56 +262,44 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="p-4 bg-white rounded">
+        <div className="rounded bg-white p-4">
           <div className="flex items-center justify-between gap-5">
             <h3 className="text-lg">Trips Overview</h3>
-            <Link
-              href="/operations/trips"
-              className="btn btn-outline border-[#C0D7FA] font-light"
-            >
+            <Link href="/operations/trips" className="btn btn-outline border-[#C0D7FA] font-light">
               View All
             </Link>
           </div>
-          <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 items-center gap-5">
+          <div className="mt-5 grid grid-cols-1 items-center gap-5 sm:grid-cols-2">
             <div className="">
               <Doughnut
                 data={{
                   datasets: [
                     {
-                      label: "Booked",
-                      data: [
-                        tripStats.booked,
-                        tripStats.total - tripStats.booked,
-                      ],
-                      backgroundColor: ["#065AD8", "#E9ECEF"],
+                      label: 'Booked',
+                      data: [tripStats.booked, tripStats.total - tripStats.booked],
+                      backgroundColor: ['#065AD8', '#E9ECEF'],
                       borderWidth: 2,
                     },
                     {
-                      label: "Completed",
-                      data: [
-                        tripStats.completed,
-                        tripStats.total - tripStats.completed,
-                      ],
-                      backgroundColor: ["#4FD1C5", "#E9ECEF"],
+                      label: 'Completed',
+                      data: [tripStats.completed, tripStats.total - tripStats.completed],
+                      backgroundColor: ['#4FD1C5', '#E9ECEF'],
                       borderWidth: 2,
                     },
                     {
-                      label: "Cancelled",
-                      data: [
-                        tripStats.cancelled,
-                        tripStats.total - tripStats.cancelled,
-                      ],
-                      backgroundColor: ["#C80815", "#E9ECEF"],
+                      label: 'Cancelled',
+                      data: [tripStats.cancelled, tripStats.total - tripStats.cancelled],
+                      backgroundColor: ['#C80815', '#E9ECEF'],
                       borderWidth: 2,
                     },
                   ],
                 }}
                 options={{
                   responsive: true,
-                  cutout: "60%",
+                  cutout: '60%',
                   animation: {
                     animateScale: true,
-                    easing: "easeInBack",
+                    easing: 'easeInBack',
                     delay: 500,
                   },
                 }}
@@ -344,28 +311,25 @@ export default function Home() {
               <div className="mt-5 grid gap-1">
                 {[
                   {
-                    name: "Booked",
+                    name: 'Booked',
                     value: tripStats.booked,
-                    classNames: "bg-[#065AD8]/20 text-[#065AD8]",
+                    classNames: 'bg-[#065AD8]/20 text-[#065AD8]',
                   },
                   {
-                    name: "Completed",
+                    name: 'Completed',
                     value: tripStats.completed,
-                    classNames: "bg-[#4FD1C5]/20 text-[#4FD1C5]",
+                    classNames: 'bg-[#4FD1C5]/20 text-[#4FD1C5]',
                   },
                   {
-                    name: "Cancelled",
+                    name: 'Cancelled',
                     value: tripStats.cancelled,
-                    classNames: "bg-[#C80815]/20 text-[#C80815]",
+                    classNames: 'bg-[#C80815]/20 text-[#C80815]',
                   },
                 ].map(({ name, value, classNames }) => {
                   return (
-                    <div
-                      key={name}
-                      className="flex items-center justify-between gap-5"
-                    >
+                    <div key={name} className="flex items-center justify-between gap-5">
                       <div className="flex items-center gap-5">
-                        <div className={`p-2 rounded ${classNames}`}>
+                        <div className={`rounded p-2 ${classNames}`}>
                           <TruckIcon className="h-5 w-5" />
                         </div>
                         <p className="text-gray-500">{name}</p>
