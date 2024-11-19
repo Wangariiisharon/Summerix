@@ -42,7 +42,6 @@ const AccountSchema = () => {
 export default function AccountPage() {
   const [processing, setProcessing] = useState(false);
   const { authUser } = useAuthContext();
-  console.debug('authUser:', authUser);
   const router = useRouter();
 
   const doSaveAccount = async (formValues: any) => {
@@ -59,6 +58,7 @@ export default function AccountPage() {
           docRef,
           {
             email: formValues.email.trim(),
+            phoneNumber: formValues.phoneNumber.trim(),
             firstName: formValues.firstName.trim(),
             lastName: formValues.lastName.trim(),
             displayName: formValues.displayName.trim(),
@@ -85,6 +85,7 @@ export default function AccountPage() {
         enableReinitialize={true}
         initialValues={{
           email: `${authUser?.email || ''}`,
+          phoneNumber: `${authUser?.phoneNumber || ''}`,
           firstName: '',
           lastName: '',
           displayName: '',
@@ -127,6 +128,17 @@ export default function AccountPage() {
                   className="form-input"
                 />
                 <ErrorMessage name="email" component="span" className="form-error" />
+              </label>
+              <label className="block">
+                <label className="form-label">Phone Number</label>
+                <Field
+                  type="tel"
+                  name="phoneNumber"
+                  disabled={authUser?.phoneNumber === values.phoneNumber}
+                  placeholder="Your phone number"
+                  className="form-input"
+                />
+                <ErrorMessage name="phoneNumber" component="span" className="form-error" />
               </label>
             </div>
 
