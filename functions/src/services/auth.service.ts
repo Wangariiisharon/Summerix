@@ -2,9 +2,10 @@ import { auth } from 'firebase-admin';
 import { logger } from 'firebase-functions/v1';
 import { ADMIN } from '../models/admin';
 import { getExistingAccountEmailBody, getNewAccountEmailBody } from './email.service';
+import { CLIENT } from '../models/client';
 
 export const getFirebaseUser = async (
-  admin: ADMIN,
+  fUser: ADMIN | CLIENT,
   uid?: string, // provided firebase uid
   email?: boolean, // no phone auth
 ): Promise<any> => {
@@ -12,29 +13,29 @@ export const getFirebaseUser = async (
   let isNewAccount = false;
 
   try {
-    if (!email) {
-      // search firebase auth users by phone number
-      userRecord = await auth().getUserByPhoneNumber(admin.phoneNumber);
+    if (fUser.docId) {
+      // search firebase auth users by uid
+      userRecord = await auth().getUser(fUser.docId);
     }
   } catch (error: any) {
     logger.warn('getFirebaseUser > error:', error);
     if (error.code === 'auth/user-not-found') {
       try {
         // search firebase auth users by email
-        userRecord = await auth().getUserByEmail(admin.email);
+        userRecord = await auth().getUserByEmail(fUser.email);
       } catch (error2: any) {
         logger.warn('getFirebaseUser > error2:', error2);
         if (error2.code === 'auth/user-not-found') {
           try {
             const authDetails: auth.CreateRequest = email
               ? {
-                  displayName: admin.displayName,
-                  email: admin.email,
+                  displayName: fUser.displayName,
+                  email: fUser.email,
                 }
               : {
-                  displayName: admin.displayName,
-                  phoneNumber: admin.phoneNumber,
-                  email: admin.email,
+                  displayName: fUser.displayName,
+                  phoneNumber: fUser.phoneNumber,
+                  email: fUser.email,
                 };
 
             if (uid) authDetails.uid = uid;
@@ -51,7 +52,7 @@ export const getFirebaseUser = async (
   if (userRecord && userRecord.uid) {
     let emailBody = getExistingAccountEmailBody(userRecord);
     if (isNewAccount) {
-      emailBody = await getNewAccountEmailBody(userRecord, admin.email);
+      emailBody = await getNewAccountEmailBody(userRecord, fUser.email);
     }
     logger.debug('sendNewAccountEmail > emailBody:', emailBody);
 
