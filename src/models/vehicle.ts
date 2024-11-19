@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { type DocumentData, DocumentReference, QueryDocumentSnapshot } from 'firebase/firestore';
 import { COMPANY_DETAILS } from './company';
 
@@ -26,4 +27,11 @@ export interface VEHICLE_DETAILS {
   name: string;
   regNumber: string;
   companyId: string;
+}
+
+export enum VEHICLE_STATUS {
+  available = 'available',
+  onRoute = 'on-route',
+  outOfService = 'out-of-service',
+  underMaintenance = 'under-maintenance',
 }

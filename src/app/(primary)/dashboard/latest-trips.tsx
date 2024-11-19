@@ -20,7 +20,7 @@ export default function LatestTrips() {
 
     const q = query(
       collection(fbDb, Constants.fbTrips),
-      where('companyId', '==', authUser.companyId),
+      where('company.docId', '==', authUser.companyId),
       orderBy('timestamp', 'desc'),
       limit(5),
     );
