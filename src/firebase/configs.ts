@@ -1,18 +1,18 @@
-import { clientConfig } from "@/config";
-import { initializeApp, getApps } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { clientConfig } from '@/config';
+import { initializeApp, getApps } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 
 const apps = getApps();
 
 if (!apps.length || apps.length === 0) {
-  console.debug("do initialize firebase...");
+  console.debug('do initialize firebase...');
 
   try {
     initializeApp(clientConfig);
   } catch (error) {
-    console.error("FIREBASE INIT ERROR:::", error);
+    console.error('FIREBASE INIT ERROR:::', error);
   }
 }
 

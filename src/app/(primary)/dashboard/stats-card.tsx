@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode } from 'react';
 
 type Props = {
   label: string;
@@ -7,23 +7,16 @@ type Props = {
   classNames?: string;
 };
 
-export default function StatsCard({
-  label,
-  value,
-  classNames,
-  children,
-}: Props) {
+export default function StatsCard({ label, value, classNames, children }: Props) {
   return (
-    <div className={`${classNames || "bg-white border-b-4"}`}>
-      <div className="p-4 flex items-center justify-between gap-5">
+    <div className={`${classNames || 'border-b-4 bg-white'}`}>
+      <div className="flex items-center justify-between gap-5 p-4">
         <div className="grid gap-2">
           <div className="text-2xl font-bold text-gray-600">{value}</div>
-          <div className="text-gray-400 text-sm">{label}</div>
+          <div className="text-sm text-gray-400">{label}</div>
         </div>
-        <div className="p-3 rounded-full bg-teal-100 text-teal-500 text-md">
-          <div className="flex items-center justify-center h-8 w-8">
-            {children}
-          </div>
+        <div className="text-md rounded-full bg-teal-100 p-3 text-teal-500">
+          <div className="flex h-8 w-8 items-center justify-center">{children}</div>
         </div>
       </div>
     </div>

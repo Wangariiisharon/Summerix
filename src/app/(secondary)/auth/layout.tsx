@@ -1,12 +1,12 @@
-import Constants from "@/Constants";
-import { Metadata } from "next";
-import Image from "next/image";
-import { ReactNode } from "react";
+import Constants from '@/Constants';
+import { Metadata } from 'next';
+import Image from 'next/image';
+import { ReactNode } from 'react';
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | TruckMate",
-    default: "Auth",
+    template: '%s | TruckMate',
+    default: 'Auth',
   },
   description: Constants.description,
 };
@@ -17,8 +17,8 @@ type Props = {
 
 export default function Layout({ children }: Props) {
   return (
-    <main className="flex flex-row w-full h-full min-h-screen">
-      <div className="w-3/5 hidden lg:block">
+    <main className="flex h-full min-h-screen w-full flex-row">
+      <div className="hidden w-3/5 lg:block">
         <div className="flex h-screen w-full">
           <Image
             src="/login-bg.png"
@@ -30,8 +30,8 @@ export default function Layout({ children }: Props) {
           />
         </div>
       </div>
-      <div className="w-full lg:w-2/5 m-auto max-w-sm grid">
-        <div className="mt-10 p-4 flex flex-col">
+      <div className="m-auto grid w-full max-w-sm lg:w-2/5">
+        <div className="mt-10 flex flex-col p-4">
           <header className="flex justify-center">
             <Image
               src="/logo-black.png"
@@ -44,7 +44,7 @@ export default function Layout({ children }: Props) {
 
           {children}
 
-          <footer className="mt-10 text-center text-gray-400 text-xs">
+          <footer className="mt-10 text-center text-xs text-gray-400">
             <p className="">&copy; {new Date().getFullYear()} TruckMate</p>
           </footer>
         </div>

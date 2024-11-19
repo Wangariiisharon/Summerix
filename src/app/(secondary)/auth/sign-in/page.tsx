@@ -1,28 +1,28 @@
-"use client";
+'use client';
 
-import { useAuthContext } from "@/app/auth-provider";
-import Constants from "@/Constants";
-import { fbAuth, fbDb } from "@/firebase/configs";
-import { doLoginApiCall } from "@/services/auth";
+import { useAuthContext } from '@/app/auth-provider';
+import Constants from '@/Constants';
+import { fbAuth, fbDb } from '@/firebase/configs';
+import { doLoginApiCall } from '@/services/auth';
 import {
   type AuthProvider,
   GoogleAuthProvider,
   signInWithEmailAndPassword,
   signInWithPopup,
   type UserCredential,
-} from "firebase/auth";
-import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
-import { Field, Form, Formik } from "formik";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
-import * as Yup from "yup";
+} from 'firebase/auth';
+import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { Field, Form, Formik } from 'formik';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
+import * as Yup from 'yup';
 
 const EmailAuthSchema = () => {
   return Yup.object().shape({
-    email: Yup.string().required("Email address is required."),
-    password: Yup.string().required("Password is required."),
+    email: Yup.string().required('Email address is required.'),
+    password: Yup.string().required('Password is required.'),
   });
 };
 
@@ -31,7 +31,7 @@ export default function SignIn() {
   const router = useRouter();
 
   const onSignInCallback = async (credential: UserCredential) => {
-    console.debug("onSignInCallback > credential:", credential);
+    console.debug('onSignInCallback > credential:', credential);
 
     if (credential && credential.user) {
       const idToken = await credential.user.getIdToken();
@@ -48,15 +48,15 @@ export default function SignIn() {
           },
           { merge: true },
         );
-        router.push("/dashboard");
+        router.push('/dashboard');
       } else {
-        router.push("/account");
+        router.push('/account');
       }
     }
   };
 
   const doSignInWithEmailAndPassword = async (formValues: any) => {
-    console.debug("doSignInWithEmailAndPassword > formValues:", formValues);
+    console.debug('doSignInWithEmailAndPassword > formValues:', formValues);
 
     try {
       const credential = await signInWithEmailAndPassword(
@@ -66,11 +66,11 @@ export default function SignIn() {
       );
       await onSignInCallback(credential);
     } catch (error: any) {
-      console.error("doSignInWithEmailAndPassword error:", error);
-      if (error.code === "auth/invalid-credential") {
-        toast.error("Please enter valid email & password.");
+      console.error('doSignInWithEmailAndPassword error:', error);
+      if (error.code === 'auth/invalid-credential') {
+        toast.error('Please enter valid email & password.');
       } else {
-        toast.error("Auth signin failed. Please try again.");
+        toast.error('Auth signin failed. Please try again.');
       }
     }
   };
@@ -80,8 +80,8 @@ export default function SignIn() {
       const credential = await signInWithPopup(fbAuth, provider);
       await onSignInCallback(credential);
     } catch (error) {
-      console.error("doSignInWithPopup error:", error);
-      toast.error("Auth signin failed. Please try again.");
+      console.error('doSignInWithPopup error:', error);
+      toast.error('Auth signin failed. Please try again.');
     }
   };
 
@@ -89,17 +89,17 @@ export default function SignIn() {
     <main className="">
       <Formik
         initialValues={{
-          email: "",
-          password: "",
+          email: '',
+          password: '',
         }}
         validationSchema={EmailAuthSchema()}
         onSubmit={(values) => doSignInWithEmailAndPassword(values)}
       >
         {({ isValid }) => (
           <Form className="mt-6">
-            <h2 className="font-bold text-center">Log in to your account</h2>
+            <h2 className="text-center font-bold">Log in to your account</h2>
 
-            <div className="my-5 p-4 grid gap-5 shadow-sm">
+            <div className="my-5 grid gap-5 p-4 shadow-sm">
               <label className="block">
                 <label className="form-label">Email address</label>
                 <Field
@@ -121,33 +121,26 @@ export default function SignIn() {
               </label>
             </div>
 
-            <div className="w-full px-4 flex justify-end text-xs">
-              <Link
-                className="text-primary hover:underline"
-                href="/auth/forgot-password"
-              >
+            <div className="flex w-full justify-end px-4 text-xs">
+              <Link className="text-primary hover:underline" href="/auth/forgot-password">
                 Forgot Password?
               </Link>
             </div>
 
             <div className="mt-5 grid gap-5">
-              <button
-                type="submit"
-                className="w-full btn btn-primary px-5"
-                disabled={!isValid}
-              >
+              <button type="submit" className="btn btn-primary w-full px-5" disabled={!isValid}>
                 Continue
               </button>
               <p className="text-center">Or</p>
               <button
                 type="button"
-                className="w-full btn-google items-center"
+                className="btn-google w-full items-center"
                 onClick={async () => {
                   const provider = new GoogleAuthProvider();
                   await doSignInWithPopup(provider);
                 }}
               >
-                <div className="w-full p-1 flex items-center justify-center gap-2">
+                <div className="flex w-full items-center justify-center gap-2 p-1">
                   <Image
                     src="/google.png"
                     className="h-5 w-5"
@@ -161,10 +154,7 @@ export default function SignIn() {
 
               <p className="flex justify-center gap-1 text-sm">
                 <span>Don`t have an account?</span>
-                <Link
-                  href="/auth/register"
-                  className="text-primary hover:underline"
-                >
+                <Link href="/auth/register" className="text-primary hover:underline">
                   Register
                 </Link>
               </p>

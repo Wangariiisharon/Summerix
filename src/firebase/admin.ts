@@ -1,9 +1,9 @@
-import { apps, auth, credential, firestore } from "firebase-admin";
-import { initializeApp } from "firebase-admin/app";
-import { getStorage } from "firebase-admin/storage";
+import { apps, auth, credential, firestore } from 'firebase-admin';
+import { initializeApp } from 'firebase-admin/app';
+import { getStorage } from 'firebase-admin/storage';
 
 if (!apps.length) {
-  console.debug("do initialize firebase admin...");
+  console.debug('do initialize firebase admin...');
 
   try {
     initializeApp({
@@ -15,7 +15,7 @@ if (!apps.length) {
       storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
     });
   } catch (error) {
-    console.error("FIREBASE ADMIN INIT ERROR:::", error);
+    console.error('FIREBASE ADMIN INIT ERROR:::', error);
   }
 }
 

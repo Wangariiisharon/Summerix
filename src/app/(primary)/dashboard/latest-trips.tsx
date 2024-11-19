@@ -1,21 +1,14 @@
-"use client";
+'use client';
 
-import { useAuthContext } from "@/app/auth-provider";
-import Constants from "@/Constants";
-import { fbDb } from "@/firebase/configs";
-import { TRIP } from "@/models/trip";
-import {
-  collection,
-  limit,
-  onSnapshot,
-  orderBy,
-  query,
-  where,
-} from "firebase/firestore";
-import moment from "moment-timezone";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { useAuthContext } from '@/app/auth-provider';
+import Constants from '@/Constants';
+import { fbDb } from '@/firebase/configs';
+import { TRIP } from '@/models/trip';
+import { collection, limit, onSnapshot, orderBy, query, where } from 'firebase/firestore';
+import moment from 'moment-timezone';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 
 export default function LatestTrips() {
   const [trips, setTrips] = useState<TRIP[]>([]);
@@ -27,8 +20,8 @@ export default function LatestTrips() {
 
     const q = query(
       collection(fbDb, Constants.fbTrips),
-      where("companyId", "==", authUser.companyId),
-      orderBy("timestamp", "desc"),
+      where('companyId', '==', authUser.companyId),
+      orderBy('timestamp', 'desc'),
       limit(5),
     );
 
@@ -40,7 +33,7 @@ export default function LatestTrips() {
           return data;
         },
         (error: any) => {
-          console.error("onSnapshot > error:", error);
+          console.error('onSnapshot > error:', error);
         },
       );
       setTrips(results);
@@ -53,10 +46,7 @@ export default function LatestTrips() {
       <main className="bg-white p-4">
         <div className="flex items-center justify-between gap-5">
           <h3 className="text-lg">Latest Trips</h3>
-          <Link
-            href="/trips"
-            className="btn btn-outline border-[#C0D7FA] font-light"
-          >
+          <Link href="/trips" className="btn btn-outline border-[#C0D7FA] font-light">
             View All
           </Link>
         </div>
@@ -89,9 +79,7 @@ export default function LatestTrips() {
                       <td className="td">{trip.status}</td>
                       <td className="td">
                         {trip.dateCreated &&
-                          moment(trip.dateCreated.toDate()).format(
-                            Constants.dateTimeFormat,
-                          )}
+                          moment(trip.dateCreated.toDate()).format(Constants.dateTimeFormat)}
                       </td>
                     </tr>
                   );

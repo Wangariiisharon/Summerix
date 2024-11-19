@@ -1,4 +1,4 @@
-import Header from "./page";
+import Header from './page';
 
 export default function Default() {
   return (

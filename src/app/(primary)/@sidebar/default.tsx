@@ -1,4 +1,4 @@
-import Sidebar from "./page";
+import Sidebar from './page';
 
 export default function Default() {
   return (

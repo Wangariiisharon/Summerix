@@ -1,29 +1,29 @@
-"use client";
+'use client';
 
-import * as Yup from "yup";
-import { fbAuth, fbDb } from "@/firebase/configs";
-import { doc, serverTimestamp, setDoc } from "firebase/firestore";
-import { ErrorMessage, Field, Form, Formik } from "formik";
-import Link from "next/link";
-import { useState } from "react";
-import toast from "react-hot-toast";
-import { getClientByEmail } from "@/services/client";
-import Constants from "@/Constants";
-import { useRouter } from "next/navigation";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import * as Yup from 'yup';
+import { fbAuth, fbDb } from '@/firebase/configs';
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { ErrorMessage, Field, Form, Formik } from 'formik';
+import Link from 'next/link';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
+import { getClientByEmail } from '@/services/client';
+import Constants from '@/Constants';
+import { useRouter } from 'next/navigation';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 const SignUpSchema = () => {
   return Yup.object().shape({
-    firstName: Yup.string().trim().required("First name is required."),
-    lastName: Yup.string().trim().required("Last name is required."),
+    firstName: Yup.string().trim().required('First name is required.'),
+    lastName: Yup.string().trim().required('Last name is required.'),
     email: Yup.string()
       .trim()
-      .required("Email is required.")
-      .email("Enter a valid email address.")
+      .required('Email is required.')
+      .email('Enter a valid email address.')
       .test({
         exclusive: true,
-        name: "client-email",
-        message: "Email is already in use.",
+        name: 'client-email',
+        message: 'Email is already in use.',
         test: async function (value: any) {
           if (!value) return true;
 
@@ -37,10 +37,10 @@ const SignUpSchema = () => {
           return snapshot.empty;
         },
       }),
-    password: Yup.string().required("Password is required."),
+    password: Yup.string().required('Password is required.'),
     password2: Yup.string()
-      .required("Confirm password is required.")
-      .oneOf([Yup.ref("password")], "Passwords do not match."),
+      .required('Confirm password is required.')
+      .oneOf([Yup.ref('password')], 'Passwords do not match.'),
   });
 };
 
@@ -49,7 +49,7 @@ export default function RegisterPage() {
   const router = useRouter();
 
   const doSignUpWithEmailAndPassword = async (formValues: any) => {
-    console.debug("doSignUpWithEmailAndPassword > formValues:", formValues);
+    console.debug('doSignUpWithEmailAndPassword > formValues:', formValues);
 
     try {
       setProcessing(true);
@@ -77,12 +77,12 @@ export default function RegisterPage() {
           },
           { merge: true },
         );
-        toast.success("Account created successfully.");
-        router.push("/");
+        toast.success('Account created successfully.');
+        router.push('/');
       }
     } catch (error) {
-      console.error("doSignUpWithEmailAndPassword error:", error);
-      toast.error("Create account failed. Please try again.");
+      console.error('doSignUpWithEmailAndPassword error:', error);
+      toast.error('Create account failed. Please try again.');
     } finally {
       setProcessing(false);
     }
@@ -93,21 +93,21 @@ export default function RegisterPage() {
       <Formik
         enableReinitialize={true}
         initialValues={{
-          email: "",
-          password: "",
-          password2: "",
-          firstName: "",
-          lastName: "",
-          displayName: "",
+          email: '',
+          password: '',
+          password2: '',
+          firstName: '',
+          lastName: '',
+          displayName: '',
         }}
         validationSchema={SignUpSchema()}
         onSubmit={(values) => doSignUpWithEmailAndPassword(values)}
       >
         {({ isValid }) => (
           <Form className="mt-6">
-            <h2 className="font-bold text-center">New account setup</h2>
+            <h2 className="text-center font-bold">New account setup</h2>
 
-            <div className="mt-5 p-4 grid gap-5 shadow-sm">
+            <div className="mt-5 grid gap-5 p-4 shadow-sm">
               <label className="block">
                 <label className="form-label">First Name</label>
                 <Field
@@ -116,11 +116,7 @@ export default function RegisterPage() {
                   placeholder="Your first name"
                   className="form-input"
                 />
-                <ErrorMessage
-                  name="firstName"
-                  component="span"
-                  className="form-error"
-                />
+                <ErrorMessage name="firstName" component="span" className="form-error" />
               </label>
               <label className="block">
                 <label className="form-label">Last Name</label>
@@ -130,11 +126,7 @@ export default function RegisterPage() {
                   placeholder="Your last name"
                   className="form-input"
                 />
-                <ErrorMessage
-                  name="lastName"
-                  component="span"
-                  className="form-error"
-                />
+                <ErrorMessage name="lastName" component="span" className="form-error" />
               </label>
               <label className="block">
                 <label className="form-label">Email Address</label>
@@ -144,11 +136,7 @@ export default function RegisterPage() {
                   placeholder="Your email address"
                   className="form-input"
                 />
-                <ErrorMessage
-                  name="email"
-                  component="span"
-                  className="form-error"
-                />
+                <ErrorMessage name="email" component="span" className="form-error" />
               </label>
               <label className="block">
                 <label className="form-label">Password</label>
@@ -158,11 +146,7 @@ export default function RegisterPage() {
                   placeholder="Enter your password"
                   className="form-input"
                 />
-                <ErrorMessage
-                  name="password"
-                  component="span"
-                  className="form-error"
-                />
+                <ErrorMessage name="password" component="span" className="form-error" />
               </label>
               <label className="block">
                 <label className="form-label">Confirm Password</label>
@@ -172,15 +156,11 @@ export default function RegisterPage() {
                   placeholder="Confirm your password"
                   className="form-input"
                 />
-                <ErrorMessage
-                  name="password2"
-                  component="span"
-                  className="form-error"
-                />
+                <ErrorMessage name="password2" component="span" className="form-error" />
               </label>
             </div>
 
-            <div className="mt-5 w-full grid gap-5 justify-items-center">
+            <div className="mt-5 grid w-full justify-items-center gap-5">
               <button
                 type="submit"
                 disabled={!isValid || processing}
@@ -188,10 +168,7 @@ export default function RegisterPage() {
               >
                 Sign Up <i className="fa-solid fa-arrow-right"></i>
               </button>
-              <Link
-                href="/auth/sign-in"
-                className="text-primary text-xs hover:underline"
-              >
+              <Link href="/auth/sign-in" className="text-xs text-primary hover:underline">
                 Already have an account?
               </Link>
             </div>

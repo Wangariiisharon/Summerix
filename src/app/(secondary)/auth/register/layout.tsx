@@ -1,7 +1,7 @@
-import { ReactNode } from "react";
+import { ReactNode } from 'react';
 
 export const metadata = {
-  title: "Register",
+  title: 'Register',
 };
 
 type Props = {

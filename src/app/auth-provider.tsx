@@ -1,21 +1,15 @@
-"use client";
+'use client';
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import firebaseApp, { fbAuth } from "@/firebase/configs";
-import { AUTH_USER } from "@/models/auth-user";
-import { getAuthUser } from "@/services/auth";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import firebaseApp, { fbAuth } from '@/firebase/configs';
+import { AUTH_USER } from '@/models/auth-user';
+import { getAuthUser } from '@/services/auth';
 import {
   type AppCheck,
   initializeAppCheck,
   ReCaptchaEnterpriseProvider,
-} from "@firebase/app-check";
+} from '@firebase/app-check';
 
 interface AuthContextType {
   appCheck: AppCheck | null;
@@ -49,7 +43,7 @@ export const AuthContextProvider = ({ children }: Props) => {
     setIsAuthLoading(true);
 
     const unsubscribe = onAuthStateChanged(fbAuth, async (fUser) => {
-      console.debug("onAuthStateChanged > fUser:", fUser);
+      console.debug('onAuthStateChanged > fUser:', fUser);
 
       if (fUser) {
         const authUser = await getAuthUser(fUser);
@@ -65,17 +59,14 @@ export const AuthContextProvider = ({ children }: Props) => {
 
   useEffect(() => {
     if (process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_KEY) {
-      if (process.env.NODE_ENV !== "production") {
+      if (process.env.NODE_ENV !== 'production') {
         Object.assign(window, {
-          FIREBASE_APPCHECK_DEBUG_TOKEN:
-            process.env.NEXT_PUBLIC_APP_CHECK_DEBUG_TOKEN,
+          FIREBASE_APPCHECK_DEBUG_TOKEN: process.env.NEXT_PUBLIC_APP_CHECK_DEBUG_TOKEN,
         });
       }
 
       const results = initializeAppCheck(firebaseApp, {
-        provider: new ReCaptchaEnterpriseProvider(
-          process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_KEY!,
-        ),
+        provider: new ReCaptchaEnterpriseProvider(process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_KEY!),
         isTokenAutoRefreshEnabled: true,
       });
       setAppCheck(results);
