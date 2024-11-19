@@ -1,4 +1,4 @@
-import Constants from "./Constants";
+import Constants from './Constants';
 
 export const serverConfig = {
   cookieName: Constants.authCookieName,
@@ -7,16 +7,16 @@ export const serverConfig = {
     process.env.AUTH_COOKIE_SIGNATURE_KEY_PREVIOUS!,
   ],
   cookieSerializeOptions: {
-    path: "/",
+    path: '/',
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax" as const,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax' as const,
     maxAge: 12 * 60 * 60 * 24,
   },
   serviceAccount: {
     projectId: process.env.FIREBASE_PROJECT_ID!,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/gm, "\n")!,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/gm, '\n')!,
   },
 };
 
