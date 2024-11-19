@@ -1,10 +1,13 @@
 'use client';
 
 import { useAuthContext } from '@/app/auth-provider';
+import useCurrentCompany from '@/hooks/useCurrentCompany';
 import Link from 'next/link';
 
-export default function Home() {
+export default function Administration() {
   const { authUser } = useAuthContext();
+  const { company } = useCurrentCompany();
+  console.debug('company:', company);
 
   return (
     <main className="">
