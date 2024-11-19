@@ -1,0 +1,26 @@
+import {
+  type DocumentData,
+  DocumentReference,
+  QueryDocumentSnapshot,
+} from 'firebase-admin/firestore';
+
+export interface COMPANY {
+  docId: string;
+
+  name: string;
+  description: string;
+  phoneNumber: string;
+  country: string;
+  timezone: string;
+  currency: string;
+  photoURL: string;
+  location: string;
+
+  docRef: DocumentReference<DocumentData, DocumentData>;
+  doc: QueryDocumentSnapshot<DocumentData, DocumentData>;
+
+  dateCreated: any;
+  lastUpdated: any;
+  createdBy: { email: string; authId: string };
+  updatedBy: { email: string; authId: string };
+}
