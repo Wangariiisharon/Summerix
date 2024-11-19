@@ -91,6 +91,14 @@ export default function Company() {
         {
           ...formValues,
 
+          createdBy: {
+            authId: authUser.uid,
+            email: authUser.email,
+          },
+          updatedBy: {
+            authId: authUser.uid,
+            email: authUser.email,
+          },
           dateCreated: serverTimestamp(),
           lastUpdated: serverTimestamp(),
         },
