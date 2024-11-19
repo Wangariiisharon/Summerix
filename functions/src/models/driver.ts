@@ -35,5 +35,4 @@ export interface DRIVER_DETAILS {
   email: string;
   phoneNumber: string;
   displayName: string;
-  companyId: string;
 }

@@ -19,10 +19,10 @@ export const getIsAdmin = async (userId: string) => {
 export const doUpdateAuthClaims = async (authId: string, admin: ADMIN) => {
   try {
     await auth().setCustomUserClaims(authId, {
+      companyId: admin.rolesMap.companyId || '',
       isActive: admin.rolesMap.isActive || false,
       isAdmin: admin.rolesMap.isAdmin || false,
       isOwner: admin.rolesMap.isOwner || false,
-      companyId: admin.companyId || '',
       roles: admin.roles || [],
     });
   } catch (error) {
