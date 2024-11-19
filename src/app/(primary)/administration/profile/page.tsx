@@ -5,7 +5,7 @@ import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
 import { getCompanyByEmail, getCompanyByName, getCompanyByPhoneNumber } from '@/services/company';
-import { doc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -88,18 +88,15 @@ export default function Company() {
       setProcessing(true);
 
       const docRef = doc(fbDb, Constants.fbCompanies, company.docId);
-      await updateDoc(
-        docRef,
-        {
-          ...formValues,
+      await updateDoc(docRef, {
+        ...formValues,
 
-          updatedBy: {
-            authId: authUser.uid,
-            email: authUser.email,
-          },
-          lastUpdated: serverTimestamp(),
+        updatedBy: {
+          authId: authUser.uid,
+          email: authUser.email,
         },
-      );
+        lastUpdated: serverTimestamp(),
+      });
       toast.success('Account saved successfully.');
       router.push('/administration');
     } catch (error) {
