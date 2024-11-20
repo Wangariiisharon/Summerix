@@ -28,7 +28,7 @@
   /* FORMS */
 
   .form-label {
-    @apply block mb-1 text-gray-600 text-xs;
+    @apply block mb-1 text-gray-600 text-sm;
   }
 
   .form-hint {

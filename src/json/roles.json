@@ -1,0 +1,57 @@
+{
+  "staffTypes": [
+    {
+      "value": "admin",
+      "name": "Admin"
+    },
+    {
+      "value": "director",
+      "name": "Director"
+    },
+    {
+      "value": "salesRep",
+      "name": "Sales Rep"
+    },
+    {
+      "value": "customerRef",
+      "name": "Customer Rep"
+    }
+  ],
+  "staffRoles": [
+    {
+      "value": "canManageAdmins",
+      "name": "Can manage admins",
+      "description": ""
+    },
+    {
+      "value": "canManageClients",
+      "name": "Can manage clients",
+      "description": ""
+    },
+    {
+      "value": "canManageVehicles",
+      "name": "Can manage vehicles",
+      "description": ""
+    },
+    {
+      "value": "canManageTrips",
+      "name": "Can manage trips",
+      "description": ""
+    },
+    {
+      "value": "canManagePayments",
+      "name": "Can manage payments",
+      "description": ""
+    },
+    {
+      "value": "canManageDrivers",
+      "name": "Can manage drivers",
+      "description": ""
+    },
+    {
+      "value": "canManageSuppliers",
+      "name": "Can manage suppliers",
+      "description": ""
+    }
+  ]
+}
