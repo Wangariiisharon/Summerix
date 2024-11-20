@@ -258,18 +258,18 @@ export default function User({ params }: Props) {
                   <label className="font-medium">Settings</label>
                 </div>
                 <div className="grid gap-5">
-                  <div className="flex items-center gap-5">
+                  <label className="flex items-center gap-5">
                     <Field type="checkbox" name="rolesMap.isActive" className="form-checkbox" />
-                    <label className="form-label">Is Active</label>
-                  </div>
-                  <div className="flex items-center gap-5">
+                    <span className="form-label">Is Active</span>
+                  </label>
+                  <label className="flex items-center gap-5">
                     <Field type="checkbox" name="rolesMap.isAdmin" className="form-checkbox" />
-                    <label className="form-label">Is Company Admin</label>
-                  </div>
-                  <div className="flex items-center gap-5">
+                    <span className="form-label">Is Company Admin</span>
+                  </label>
+                  <label className="flex items-center gap-5">
                     <Field type="checkbox" name="rolesMap.isOwner" className="form-checkbox" />
-                    <label className="form-label">Is Company Owner</label>
-                  </div>
+                    <span className="form-label">Is Company Owner</span>
+                  </label>
                 </div>
               </div>
 
