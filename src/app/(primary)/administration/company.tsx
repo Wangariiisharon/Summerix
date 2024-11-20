@@ -33,7 +33,7 @@ export default function CompanyView() {
         </div>
       </div>
 
-      <div className="mt-10 flex items-center gap-5">
+      <div className="mt-10 flex items-center gap-5 overflow-auto">
         {[
           { name: 'Overview', link: '' },
           { name: 'Profile', link: 'profile' },
@@ -42,7 +42,7 @@ export default function CompanyView() {
           { name: 'Integration', link: 'integration' },
         ].map(({ name, link }) => {
           const isActive =
-            (pathName.endsWith(link) && name !== 'Overview') ||
+            (pathName.startsWith(`/administration/${link}`) && name !== 'Overview') ||
             (pathName === '/administration' && name === 'Overview');
 
           return (
