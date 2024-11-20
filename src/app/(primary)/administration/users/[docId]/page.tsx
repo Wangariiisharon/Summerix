@@ -140,7 +140,7 @@ export default function User({ params }: Props) {
     }
   };
 
-  if (!company) return;
+  if (!company) return <></>;
 
   return (
     <main className="">

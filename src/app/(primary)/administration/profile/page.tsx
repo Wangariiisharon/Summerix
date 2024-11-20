@@ -108,7 +108,7 @@ export default function Profile() {
     }
   };
 
-  if (!company) return;
+  if (!company) return <></>;
 
   return (
     <main className="">

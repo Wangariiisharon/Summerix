@@ -11,7 +11,7 @@ export default function CompanyView() {
   const { company } = useCurrentCompany();
   const pathName = usePathname();
 
-  if (!company) return;
+  if (!company) return <></>;
 
   return (
     <Suspense fallback="Loading...">
