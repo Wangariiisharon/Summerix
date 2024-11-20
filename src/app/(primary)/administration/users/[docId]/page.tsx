@@ -1,14 +1,265 @@
 'use client';
 
-export default function User() {
+import { useAuthContext } from '@/app/auth-provider';
+import Constants from '@/Constants';
+import { fbDb } from '@/firebase/configs';
+import { ADMIN } from '@/models/admin';
+import AdminRoles from '@/json/roles.json';
+import { getAdminByEmail, getAdminByPhoneNumber } from '@/services/admin';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { ErrorMessage, Field, Form, Formik } from 'formik';
+import Link from 'next/link';
+// import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import * as Yup from 'yup';
+
+const AdminSchema = (docId: string) => {
+  return Yup.object().shape({
+    firstName: Yup.string().required('First name is required.'),
+    lastName: Yup.string().required('First name is required.'),
+    email: Yup.string()
+      .trim()
+      .required('Email is required.')
+      .email('Enter a valid email address.')
+      .test({
+        exclusive: true,
+        name: 'admin-email',
+        message: 'Email is already in use.',
+        test: async function (value: any) {
+          if (!value) return true;
+
+          const snapshot = await getAdminByEmail(value);
+          if (!snapshot.empty) {
+            const doc = snapshot.docs[0];
+            return doc.id?.trim() === docId;
+          }
+
+          return snapshot.empty;
+        },
+      }),
+    phoneNumber: Yup.string()
+      .trim()
+      .required('Phone number is required.')
+      .matches(Constants.phoneRegExp, 'Phone number is not valid.')
+      .test({
+        exclusive: true,
+        name: 'admin-phone',
+        message: 'Phone number is already in use as admin.',
+        test: async function (value: any) {
+          if (!value) return true;
+
+          const snapshot = await getAdminByPhoneNumber(value);
+          if (!snapshot.empty) {
+            const doc = snapshot.docs[0];
+            return doc.id?.trim() === docId;
+          }
+
+          return snapshot.empty;
+        },
+      }),
+  });
+};
+
+type Props = {
+  params: { docId: string };
+};
+
+export default function User({ params }: Props) {
+  const [admin, setAdmin] = useState<ADMIN>();
+  const { authUser } = useAuthContext();
+  // const router = useRouter();
+  const { docId } = params;
+
+  useEffect(() => {
+    if (docId && docId !== 'new') {
+      const docRef = doc(fbDb, Constants.fbAdmins, docId);
+      const unsubscribe = onSnapshot(
+        docRef,
+        async (snapshot) => {
+          const data = snapshot.data() as ADMIN;
+          data.photoURL =
+            data.photoURL || `https://ui-avatars.com/api/?name=${data.displayName}&size=300`;
+          data.docId = snapshot.id;
+          setAdmin(data);
+        },
+        (error) => {
+          console.error('onSnapshot > error:', error);
+        },
+      );
+
+      return () => unsubscribe();
+    }
+  }, [docId]);
+
+  const doSave = async (formValues: any) => {
+    console.debug('doSave > formValues:', formValues);
+  };
+
   return (
     <main className="">
-      <h2 className="font-bold">User Details</h2>
-      <p className="mt-5">
-        Lorem ipsum dolor sit amet consectetur, adipisicing elit. Animi eos neque laborum corporis
-        dolore molestias. Modi unde in magnam neque corporis nam, rerum, optio aspernatur ipsam
-        minima ad accusamus recusandae!
-      </p>
+      <h2 className="font-bold">User</h2>
+      <Formik
+        enableReinitialize={true}
+        initialValues={{
+          email: admin?.email || '',
+          phoneNumber: admin?.phoneNumber || '',
+          firstName: admin?.firstName || '',
+          lastName: admin?.lastName || '',
+          idNumber: admin?.idNumber || '',
+          rolesMap: admin?.rolesMap || {
+            isActive: false,
+            isAdmin: false,
+            isOwner: false,
+          },
+          roles: admin?.roles || [],
+          updatedBy: {
+            authId: authUser?.uid,
+            email: authUser?.email,
+          },
+        }}
+        validationSchema={AdminSchema(docId)}
+        onSubmit={(values) => doSave(values)}
+      >
+        {({ isValid }) => (
+          <Form className="mt-6">
+            {/* <h2 className="text-center font-bold">Account setup</h2> */}
+
+            <div className="mt-5 grid gap-5 p-4 shadow-sm">
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">First Name</label>
+                </div>
+                <div className="">
+                  <Field
+                    type="text"
+                    name="firstName"
+                    className="form-input"
+                    placeholder="First Name"
+                  />
+                  <ErrorMessage name="firstName" component="span" className="form-error" />
+                </div>
+              </label>
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Last Name</label>
+                </div>
+                <div className="">
+                  <Field
+                    type="text"
+                    name="lastName"
+                    className="form-input"
+                    placeholder="Last Name"
+                  />
+                  <ErrorMessage name="lastName" component="span" className="form-error" />
+                </div>
+              </label>
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Email Address</label>
+                </div>
+                <div className="">
+                  <Field
+                    type="email"
+                    name="email"
+                    className="form-input"
+                    placeholder="Email Address"
+                  />
+                  <ErrorMessage name="email" component="span" className="form-error" />
+                </div>
+              </label>
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Phone Number</label>
+                </div>
+                <div className="">
+                  <Field
+                    type="tel"
+                    name="phoneNumber"
+                    className="form-input"
+                    placeholder="Phone Number"
+                  />
+                  <ErrorMessage name="phoneNumber" component="span" className="form-error" />
+                </div>
+              </label>
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">ID Number</label>
+                </div>
+                <div className="">
+                  <Field
+                    type="number"
+                    name="idNumber"
+                    className="form-input"
+                    placeholder="ID Number"
+                  />
+                  <ErrorMessage name="idNumber" component="span" className="form-error" />
+                </div>
+              </label>
+
+              <hr className="my-3" />
+
+              <div className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Settings</label>
+                </div>
+                <div className="grid gap-5">
+                  <div className="flex items-center gap-5">
+                    <Field type="checkbox" name="rolesMap.isActive" className="form-checkbox" />
+                    <label className="form-label">Is Active</label>
+                  </div>
+                  <div className="flex items-center gap-5">
+                    <Field type="checkbox" name="rolesMap.isAdmin" className="form-checkbox" />
+                    <label className="form-label">Is Company Admin</label>
+                  </div>
+                  <div className="flex items-center gap-5">
+                    <Field type="checkbox" name="rolesMap.isOwner" className="form-checkbox" />
+                    <label className="form-label">Is Company Owner</label>
+                  </div>
+                </div>
+              </div>
+
+              <hr className="my-3" />
+
+              <div className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Roles</label>
+                </div>
+                <div className="grid-1-2 col-span-2 gap-3">
+                  {AdminRoles.staffRoles.map(({ name, value }) => {
+                    return (
+                      <label key={value} className="flex items-center gap-5">
+                        <Field
+                          type="checkbox"
+                          name="roles"
+                          value={value}
+                          className="form-checkbox"
+                        />
+                        <span className="form-label">{name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid-1-3 mt-10 gap-5">
+              <p className=""></p>
+              <div className="flex justify-end gap-5">
+                <Link href="/administration" className="btn btn-outline">
+                  Cancel
+                </Link>
+                <button
+                  type="submit"
+                  disabled={!isValid || !authUser}
+                  className="btn btn-secondary"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </Form>
+        )}
+      </Formik>
     </main>
   );
 }
