@@ -2,6 +2,7 @@
 
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react';
 import {
+  BriefcaseIcon,
   ChartBarIcon,
   DocumentChartBarIcon,
   HomeIcon,
@@ -11,34 +12,46 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid';
 import { usePathname } from 'next/navigation';
 import { useMemo } from 'react';
 import Link from 'next/link';
+import { useAuthContext } from '@/app/auth-provider';
 
 export default function Sidebar() {
-  // const { authUser } = useAuthContext();
+  const { authUser } = useAuthContext();
   const pathname = usePathname();
 
   const navigation = useMemo(
     () => [
-      { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, visible: true },
+      {
+        name: 'Dashboard',
+        href: '/dashboard',
+        icon: HomeIcon,
+        visible: authUser && authUser.companyId,
+      },
       {
         name: 'Administration',
         href: '/administration',
         icon: WrenchScrewdriverIcon,
-        visible: true, // authUser?.isOwner || authUser?.isAdmin || false,
+        visible: authUser?.isOwner || authUser?.isAdmin || false,
       },
       {
         name: 'Operations',
         href: '/operations',
         icon: ChartBarIcon,
-        visible: true,
+        visible: authUser && authUser.companyId,
       },
       {
         name: 'Reports',
         href: '/reports',
         icon: DocumentChartBarIcon,
-        visible: true,
+        visible: authUser && authUser.companyId,
+      },
+      {
+        name: 'Add Company',
+        href: '/company',
+        icon: BriefcaseIcon,
+        visible: authUser && !authUser.companyId,
       },
     ],
-    [],
+    [authUser],
   );
 
   return (

@@ -1,22 +1,19 @@
 'use client';
 
 import { useAuthContext } from '@/app/auth-provider';
-import useCurrentCompany from '@/hooks/useCurrentCompany';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 
 export default function Administration() {
   const { authUser } = useAuthContext();
-  const { company } = useCurrentCompany();
-  const pathName = usePathname();
-  const router = useRouter();
+  // const { company } = useCurrentCompany();
+  // const pathName = usePathname();
+  // const router = useRouter();
 
-  useEffect(() => {
-    if (company && pathName === '/administration') {
-      router.push('/administration/profile');
-    }
-  }, [company, pathName, router]);
+  // useEffect(() => {
+  //   if (company && pathName === '/administration') {
+  //     router.push('/administration/profile');
+  //   }
+  // }, [company, pathName, router]);
 
   return (
     <main className="">

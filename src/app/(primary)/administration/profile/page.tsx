@@ -7,6 +7,7 @@ import useCurrentCompany from '@/hooks/useCurrentCompany';
 import { getCompanyByEmail, getCompanyByName, getCompanyByPhoneNumber } from '@/services/company';
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -220,13 +221,18 @@ export default function Company() {
 
             <div className="grid-1-3 mt-5 gap-5">
               <p className=""></p>
-              <button
-                type="submit"
-                disabled={!isValid || !authUser || processing}
-                className="btn btn-primary w-full"
-              >
-                Save Company
-              </button>
+              <div className="flex justify-end gap-5">
+                <Link href="/administration" className="btn btn-outline">
+                  Cancel
+                </Link>
+                <button
+                  type="submit"
+                  disabled={!isValid || !authUser || processing}
+                  className="btn btn-secondary"
+                >
+                  Save Company
+                </button>
+              </div>
             </div>
           </Form>
         )}
