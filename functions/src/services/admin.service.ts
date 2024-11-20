@@ -33,11 +33,10 @@ export const doUpdateAuthClaims = async (authId: string, admin: ADMIN) => {
 export const doRemoveAuthRoles = async (authId: string) => {
   try {
     await auth().setCustomUserClaims(authId, {
+      companyId: '',
       isActive: false,
       isAdmin: false,
-      isHost: false,
       isOwner: false,
-      staffType: '',
       roles: [],
     });
   } catch (error) {
