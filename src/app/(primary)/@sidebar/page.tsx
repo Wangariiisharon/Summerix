@@ -69,7 +69,7 @@ export default function Sidebar() {
                 {navigation
                   .filter((i) => i.visible)
                   .map(({ name, href, icon: ItemIcon }, index) => {
-                    const isActive = pathname === href;
+                    const isActive = pathname.startsWith(href);
 
                     return (
                       <Link key={index} href={href}>
@@ -102,7 +102,7 @@ export default function Sidebar() {
         {navigation
           .filter((i) => i.visible)
           .map(({ name, href, icon: ItemIcon }, index) => {
-            const isActive = pathname === href;
+            const isActive = pathname.startsWith(href);
 
             return (
               <Link key={index} href={href}>
