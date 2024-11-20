@@ -39,11 +39,11 @@ const toUser = ({ decodedToken }: Tokens): AUTH_USER => {
   } as AUTH_USER;
 };
 
-const adminACL = [
-  { routes: ['/admin/staff'], role: 'canManageAdmins' },
-  { routes: ['/admin/clients'], role: 'canManageClients' },
-  { routes: ['/admin/vehicles'], role: 'canManageVehicles' },
-];
+// const adminACL = [
+//   { routes: ['/administration/users'], role: 'canManageAdmins' },
+//   { routes: ['/administration/clients'], role: 'canManageClients' },
+//   { routes: ['/administration/vehicles'], role: 'canManageVehicles' },
+// ];
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
@@ -82,25 +82,25 @@ export async function middleware(req: NextRequest) {
         });
       }
 
-      if (!authUser.isAdmin && ['/admin'].includes(pathname)) {
+      if (!authUser.isAdmin && ['/administration'].includes(pathname)) {
         console.debug('middleware > isAdmin redirect:', { url: req.url });
         return NextResponse.redirect(new URL('/auth/forbidden', req.url));
       }
 
       // add role-based /admin access control
-      for (const acl of adminACL) {
-        // console.debug('adminACL > acl:', acl, pathname);
+      // for (const acl of adminACL) {
+      //   // console.debug('adminACL > acl:', acl, pathname);
 
-        if (acl.routes.includes(pathname) && !authUser.roles.includes(acl.role)) {
-          console.debug('middleware > admin roles redirect:', {
-            acl,
-            isOwner: authUser.isOwner,
-            roles: authUser.roles,
-            url: req.url,
-          });
-          return NextResponse.redirect(new URL('/auth/forbidden', req.url));
-        }
-      }
+      //   if (acl.routes.includes(pathname) && !authUser.roles.includes(acl.role)) {
+      //     console.debug('middleware > admin roles redirect:', {
+      //       acl,
+      //       isOwner: authUser.isOwner,
+      //       roles: authUser.roles,
+      //       url: req.url,
+      //     });
+      //     return NextResponse.redirect(new URL('/auth/forbidden', req.url));
+      //   }
+      // }
 
       return NextResponse.next({
         request: {
