@@ -34,6 +34,14 @@ export const OnCompanyCreated = runWith({
               lastName: client.lastName,
               displayName: client.displayName || '',
 
+              company: {
+                docId: company.docId,
+                name: company.name || '',
+                email: company.email || '',
+                phoneNumber: company.phoneNumber || '',
+                regNumber: company.regNumber || '',
+              },
+
               photoURL: client.photoURL || '',
               roles: [
                 'canManageAdmins',
