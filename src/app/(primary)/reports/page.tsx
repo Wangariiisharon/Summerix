@@ -1,6 +1,6 @@
 'use client';
 
-export default function Home() {
+export default function Reports() {
   return (
     <main className="">
       <h2 className="font-bold">Reports</h2>
