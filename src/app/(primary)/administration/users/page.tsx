@@ -3,7 +3,7 @@
 import { PlusIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
-export default function Home() {
+export default function Users() {
   return (
     <main className="">
       <section className="flex justify-between gap-5">

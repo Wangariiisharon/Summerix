@@ -1,6 +1,6 @@
 'use client';
 
-export default function Home() {
+export default function Integration() {
   return (
     <main className="">
       <h2 className="font-bold">Integration</h2>

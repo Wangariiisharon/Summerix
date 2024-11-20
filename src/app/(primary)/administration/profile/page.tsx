@@ -75,7 +75,7 @@ const CompanySchema = (docId?: string) => {
   });
 };
 
-export default function Company() {
+export default function Profile() {
   const [processing, setProcessing] = useState(false);
   const { company } = useCurrentCompany();
   const { authUser } = useAuthContext();
