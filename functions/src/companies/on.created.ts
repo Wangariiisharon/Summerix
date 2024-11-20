@@ -51,7 +51,7 @@ export const OnCompanyCreated = runWith({
                 'canManageDrivers',
               ],
               rolesMap: {
-                companyId: authUser.uid,
+                companyId: company.docId,
                 isActive: true,
                 isAdmin: true,
                 isOwner: true,

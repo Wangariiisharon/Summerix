@@ -161,6 +161,7 @@ export default function User({ params }: Props) {
             regNumber: company.regNumber || '',
           },
           rolesMap: admin?.rolesMap || {
+            companyId: company.docId,
             isActive: false,
             isAdmin: false,
             isOwner: false,
