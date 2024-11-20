@@ -1,6 +1,7 @@
 'use client';
 
 import useCurrentCompany from '@/hooks/useCurrentCompany';
+import { CameraIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -25,23 +26,30 @@ export default function CompanyView() {
         <div className="grid gap-1">
           <h2 className="font-semibold">{company.name}</h2>
           <p className="text-gray-500">{company.description}</p>
-          <button className="btn btn-primary mt-5 px-8">Upload New Photo</button>
+          <button className="btn btn-flex btn-secondary mt-5 px-8">
+            <CameraIcon className="h-5 w-5" />
+            <p>Upload New Photo</p>
+          </button>
         </div>
       </div>
 
       <div className="mt-10 flex items-center gap-5">
         {[
-          { name: 'Company Profile', link: 'profile' },
+          { name: 'Overview', link: '' },
+          { name: 'Profile', link: 'profile' },
           { name: 'Users', link: 'users' },
           { name: 'Departments', link: 'departments' },
           { name: 'Integration', link: 'integration' },
         ].map(({ name, link }) => {
+          const isActive =
+            (pathName.endsWith(link) && name !== 'Overview') ||
+            (pathName === '/administration' && name === 'Overview');
+
           return (
             <Link
               key={link}
               href={`/administration/${link}`}
-              className={`px-4 py-2 text-sm capitalize hover:bg-gray-200
-                ${pathName.endsWith(link) && 'bg-gray-200 text-primary'}`}
+              className={`px-4 py-2 text-sm capitalize hover:bg-gray-200 ${isActive && 'bg-gray-200 text-primary'}`}
             >
               {name}
             </Link>

@@ -102,7 +102,7 @@
   /* BUTTONS */
 
   .btn {
-    @apply p-2 text-sm font-semibold rounded outline-none border transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50;
+    @apply py-2 px-4 text-sm font-semibold rounded outline-none border transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .btn-accent {
@@ -114,15 +114,11 @@
   }
 
   .btn-secondary {
-    @apply text-black bg-secondary border-secondary hover:opacity-80;
+    @apply text-white bg-secondary border-secondary hover:opacity-80;
   }
 
   .btn-outline {
-    @apply text-gray-700 border-primary hover:text-primary hover:border-primary;
-  }
-
-  .btn-outline-accent {
-    @apply text-gray-700 border-accent hover:text-accent hover:border-accent;
+    @apply text-gray-700 border-gray-300 hover:text-primary hover:border-primary;
   }
 
   .btn-outline-danger {
