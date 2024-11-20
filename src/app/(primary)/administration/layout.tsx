@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import CompanyView from './company';
+import CompanyNav from './nav';
 
 export const metadata = {
   title: {
@@ -15,7 +15,7 @@ type Props = {
 export default function Layout({ children }: Props) {
   return (
     <main className="p-4">
-      <CompanyView />
+      <CompanyNav />
       <div className="mt-5">{children}</div>
     </main>
   );

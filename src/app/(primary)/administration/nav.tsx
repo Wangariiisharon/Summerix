@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Suspense } from 'react';
 
-export default function CompanyView() {
+export default function CompanyNav() {
   const { company } = useCurrentCompany();
   const pathName = usePathname();
 
