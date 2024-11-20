@@ -49,6 +49,23 @@ service cloud.firestore {
       }
     }
     
+    match /vehicles/{document=**} {
+    	allow read: if isAuthenticated();
+      
+      match /{docId} {
+        allow create: if isAuthenticated() 
+          && incomingData().company != null
+          && incomingData().regNumber != null
+          && incomingData().name != null
+          && incomingData().make != null
+          && incomingData().model != null
+          && incomingData().status != null;
+        allow update: if isOwner(existingData().company.docId)
+        	|| (isAdmin(existingData().company.docId) 
+          	&& hasRole('canManageVehicles'));
+      }
+    }
+    
     match /trips/{document=**} {
     	allow read: if isAuthenticated();
       
@@ -57,7 +74,9 @@ service cloud.firestore {
           && incomingData().company != null
           && incomingData().client != null
           && incomingData().driver != null;
-        allow update: if isAuthUid(docId) || isOwner(existingData().company.docId);
+        allow update: if isOwner(existingData().company.docId)
+        	|| (isAdmin(existingData().company.docId) 
+          	&& hasRole('canManageTrips'));
       }
     }
     

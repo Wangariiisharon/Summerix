@@ -1,17 +1,26 @@
 'use client';
 
+import * as Yup from 'yup';
 import { useAuthContext } from '@/app/auth-provider';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { ADMIN } from '@/models/admin';
 import AdminRoles from '@/json/roles.json';
 import { getAdminByEmail, getAdminByPhoneNumber } from '@/services/admin';
-import { doc, onSnapshot } from 'firebase/firestore';
+import {
+  addDoc,
+  collection,
+  doc,
+  onSnapshot,
+  serverTimestamp,
+  updateDoc,
+} from 'firebase/firestore';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import Link from 'next/link';
-// import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import * as Yup from 'yup';
+import toast from 'react-hot-toast';
+import useCurrentCompany from '@/hooks/useCurrentCompany';
 
 const AdminSchema = (docId: string) => {
   return Yup.object().shape({
@@ -67,7 +76,8 @@ type Props = {
 export default function User({ params }: Props) {
   const [admin, setAdmin] = useState<ADMIN>();
   const { authUser } = useAuthContext();
-  // const router = useRouter();
+  const { company } = useCurrentCompany();
+  const router = useRouter();
   const { docId } = params;
 
   useEffect(() => {
@@ -93,7 +103,44 @@ export default function User({ params }: Props) {
 
   const doSave = async (formValues: any) => {
     console.debug('doSave > formValues:', formValues);
+    if (!(authUser?.isAdmin || authUser?.isOwner)) {
+      toast.error('You are not authorised to manage users.');
+      return;
+    }
+
+    try {
+      if (docId === 'new') {
+        const colRef = collection(fbDb, Constants.fbAdmins);
+        await addDoc(colRef, {
+          ...formValues,
+          email: formValues.email.trim(),
+          phoneNumber: formValues.phoneNumber.trim(),
+          firstName: formValues.firstName.trim(),
+          lastName: formValues.lastName.trim(),
+          createdBy: {
+            authId: authUser.uid,
+            email: authUser.email,
+          },
+          dateCreated: serverTimestamp(),
+          lastUpdated: serverTimestamp(),
+        });
+        toast.success('New user added successfully.');
+      } else {
+        const docRef = doc(fbDb, Constants.fbAdmins, docId);
+        await updateDoc(docRef, {
+          ...formValues,
+          lastUpdated: serverTimestamp(),
+        });
+        toast.success('User updated successfully.');
+      }
+
+      router.push('/administration/users');
+    } catch (error) {
+      console.error('save user error:', error);
+    }
   };
+
+  if (!company) return;
 
   return (
     <main className="">
@@ -106,6 +153,13 @@ export default function User({ params }: Props) {
           firstName: admin?.firstName || '',
           lastName: admin?.lastName || '',
           idNumber: admin?.idNumber || '',
+          company: {
+            docId: company.docId,
+            name: company.name || '',
+            email: company.email || '',
+            phoneNumber: company.phoneNumber || '',
+            regNumber: company.regNumber || '',
+          },
           rolesMap: admin?.rolesMap || {
             isActive: false,
             isAdmin: false,
@@ -163,6 +217,7 @@ export default function User({ params }: Props) {
                     name="email"
                     className="form-input"
                     placeholder="Email Address"
+                    disabled={docId !== 'new'}
                   />
                   <ErrorMessage name="email" component="span" className="form-error" />
                 </div>
