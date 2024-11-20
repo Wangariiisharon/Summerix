@@ -97,7 +97,7 @@ export default function User({ params }: Props) {
 
   return (
     <main className="">
-      <h2 className="font-bold">User</h2>
+      <h2 className="font-bold">Admin User</h2>
       <Formik
         enableReinitialize={true}
         initialValues={{

@@ -1,7 +1,6 @@
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { ADMIN } from '@/models/admin';
-import { CLIENT } from '@/models/client';
 import { PARAMS_MAP } from '@/models/params-map';
 import {
   collection,
@@ -17,22 +16,27 @@ import {
 import { useEffect, useState } from 'react';
 
 interface Props {
-  client: CLIENT | null;
+  companyId: string;
+  docId: string | null;
   params?: PARAMS_MAP;
 }
 
-function useAdmins({ client, params }: Props) {
+function useAdmins({ companyId, docId, params }: Props) {
   const [admins, setAdmins] = useState<ADMIN[]>([]);
   const [count, setCount] = useState<number>(0);
 
   useEffect(() => {
-    // console.debug('useAdmins > details:', { client, params });
+    // console.debug('useAdmins > details:', { docId, params });
 
     const constraints = [];
     const colRef = collection(fbDb, Constants.fbAdmins);
 
-    if (client && client.docId) {
-      constraints.push(where(documentId(), '==', client.docId));
+    if (docId && docId !== '') {
+      constraints.push(where(documentId(), '==', docId));
+    }
+
+    if (companyId && companyId !== '') {
+      constraints.push(where('company.docId', '==', companyId));
     }
 
     getCountFromServer(query(colRef, ...constraints)).then((countSnap) => {
@@ -73,7 +77,7 @@ function useAdmins({ client, params }: Props) {
     );
 
     return () => unsubscribe();
-  }, [client, params]);
+  }, [companyId, docId, params]);
 
   return {
     admins,
