@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 
 export const metadata = {
-  title: 'Profile',
+  title: 'Users',
 };
 
 type Props = {

@@ -56,6 +56,8 @@ export default function CompanyView() {
           );
         })}
       </div>
+
+      <hr className="my-3" />
     </Suspense>
   );
 }

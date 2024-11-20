@@ -2,7 +2,10 @@ import { ReactNode } from 'react';
 import CompanyView from './company';
 
 export const metadata = {
-  title: 'Administration',
+  title: {
+    template: '%s | TruckMate Administration',
+    default: 'Administration',
+  },
 };
 
 type Props = {
