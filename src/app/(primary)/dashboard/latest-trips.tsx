@@ -46,7 +46,7 @@ export default function LatestTrips() {
       <main className="bg-white p-4">
         <div className="flex items-center justify-between gap-5">
           <h3 className="text-lg">Latest Trips</h3>
-          <Link href="/trips" className="btn btn-outline border-[#C0D7FA] font-light">
+          <Link href="/operations/trips" className="btn btn-outline border-[#C0D7FA] font-light">
             View All
           </Link>
         </div>
@@ -69,7 +69,7 @@ export default function LatestTrips() {
                   return (
                     <tr
                       key={trip.docId}
-                      onClick={() => router.push(`/trips/${trip.docId}`)}
+                      onClick={() => router.push(`/operations/trips/${trip.docId}`)}
                       className="tr-body cursor-pointer"
                     >
                       <td className="td">{trip.vehicle}</td>
