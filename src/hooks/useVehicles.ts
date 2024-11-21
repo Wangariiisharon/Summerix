@@ -2,6 +2,7 @@ import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { PARAMS_MAP } from '@/models/params-map';
 import { VEHICLE } from '@/models/vehicle';
+import { getAvatarPhoto } from '@/services/utils';
 import {
   collection,
   documentId,
@@ -60,7 +61,7 @@ function useVehicles({ companyId, docId, params }: Props) {
           const data = doc.data() as VEHICLE;
           data.doc = doc; // QueryDocumentSnapshot
           data.docId = doc.id;
-          data.photoURL = data.photoURL || `https://ui-avatars.com/api/?name=${data.name}&size=300`;
+          data.photoURL = data.photoURL || getAvatarPhoto(data.name);
 
           return data;
         });

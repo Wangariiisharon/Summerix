@@ -2,6 +2,7 @@ import { useAuthContext } from '@/app/auth-provider';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { COMPANY } from '@/models/company';
+import { getAvatarPhoto } from '@/services/utils';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
@@ -26,8 +27,7 @@ function useCurrentCompany() {
             data.docRef = snapshot.ref;
             data.docId = snapshot.id;
             data.currency = data.currency || 'KES';
-            data.photoURL =
-              data.photoURL || `https://ui-avatars.com/api/?name=${data.name}&size=300`;
+            data.photoURL = data.photoURL || getAvatarPhoto(data.name);
 
             setCompany(data);
           } else {

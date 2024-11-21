@@ -2,6 +2,7 @@ import { useAuthContext } from '@/app/auth-provider';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { CLIENT } from '@/models/client';
+import { getAvatarPhoto } from '@/services/utils';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
@@ -28,9 +29,8 @@ function useCurrentClient() {
             data.firstName = data.firstName || '';
             data.lastName = data.lastName || '';
             data.displayName = `${data.firstName} ${data.lastName}`;
+            data.photoURL = data.photoURL || getAvatarPhoto(data.displayName);
             data.currency = data.currency || 'KES';
-            data.photoURL =
-              data.photoURL || `https://ui-avatars.com/api/?name=${data.displayName}&size=300`;
 
             setClient(data);
           } else {
