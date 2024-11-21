@@ -142,7 +142,7 @@ export default function SignIn() {
               >
                 <div className="flex w-full items-center justify-center gap-2 p-1">
                   <Image
-                    src="/google.png"
+                    src="/images/google.png"
                     className="h-5 w-5"
                     alt="Google signin logo"
                     height={100}

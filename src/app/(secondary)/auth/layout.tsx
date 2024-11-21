@@ -21,7 +21,7 @@ export default function Layout({ children }: Props) {
       <div className="hidden w-3/5 lg:block">
         <div className="flex h-screen w-full">
           <Image
-            src="/login-bg.png"
+            src="/images/login-bg.png"
             alt="login background image"
             className="h-full w-full"
             priority={true}
@@ -34,7 +34,7 @@ export default function Layout({ children }: Props) {
         <div className="mt-10 flex flex-col p-4">
           <header className="flex justify-center">
             <Image
-              src="/logo-black.png"
+              src="/images/logo-black.png"
               alt="company logo image"
               className="h-auto w-auto"
               width={200}
