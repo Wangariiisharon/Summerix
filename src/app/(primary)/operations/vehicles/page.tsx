@@ -4,6 +4,7 @@ import { useAuthContext } from '@/app/auth-provider';
 import RemotePagination from '@/components/remote-pagination';
 import Constants from '@/Constants';
 import useVehicles from '@/hooks/useVehicles';
+import Vehicles from '@/json/vehicles.json';
 import { PARAMS_MAP } from '@/models/params-map';
 import { VEHICLE } from '@/models/vehicle';
 import { PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
@@ -13,7 +14,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-export default function Vehicles() {
+export default function VehiclesPage() {
   const { authUser } = useAuthContext();
   const [params, setParams] = useState<PARAMS_MAP>({
     max: Constants.defaultPageSize,
@@ -28,16 +29,17 @@ export default function Vehicles() {
   const cursors = useRef<Map<number, DocumentSnapshot>>(new Map());
   const [max, setMax] = useState(Constants.defaultPageSize);
   const [currentPage, setCurrentPage] = useState(0);
+  const [status, setStatus] = useState<string>('');
 
   useEffect(() => {
     setParams({
       orderBy: 'lastUpdated',
       direction: 'desc',
       max: max,
-
+      status: status,
       cursor: cursors.current.get(currentPage),
     });
-  }, [currentPage, max]);
+  }, [currentPage, max, status]);
 
   const onPageChanged = useCallback(
     (nextPage: number) => {
@@ -69,6 +71,27 @@ export default function Vehicles() {
 
       <hr className="my-5" />
 
+      <label className="block">
+        <label className="form-label">Filter by status</label>
+        <select
+          name="status"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          className="form-select w-fit"
+        >
+          <option value="" disabled>
+            Select...
+          </option>
+          {Vehicles.statusList.map(({ name, value }) => {
+            return (
+              <option key={value} value={value}>
+                {name}
+              </option>
+            );
+          })}
+        </select>
+      </label>
+
       <div className="table-wrapper">
         <div className="table-scroll text-sm">
           <table className="my-table">
@@ -77,7 +100,7 @@ export default function Vehicles() {
                 <th className="th"></th>
                 <th className="th text-left">Name</th>
                 <th className="th table-cell-sm">Reg. Number</th>
-                <th className="th table-cell-xl">Status</th>
+                <th className="th table-cell-md">Status</th>
                 <th className="th table-cell-xl">Last Modified</th>
                 <th className="th">Actions</th>
               </tr>
@@ -100,15 +123,21 @@ export default function Vehicles() {
                     </td>
                     <td className="td text-left">
                       <p>{vehicle.name}</p>
-                      <div className="mt-1">
-                        <p className="block sm:hidden">{vehicle.make}</p>
-                        <p className="block lg:hidden">{vehicle.model}</p>
+                      <div className="mt-1 grid gap-2">
+                        <p className="block sm:hidden">{vehicle.regNumber}</p>
+                        <div className="block md:hidden">
+                          <p className={`w-fit rounded-full px-4 py-2 status-${vehicle.status}`}>
+                            {vehicle.status}
+                          </p>
+                        </div>
                       </div>
                     </td>
                     <td className="td table-cell-sm">{vehicle.regNumber}</td>
-                    <td className="td table-cell-xl">
+                    <td className="td table-cell-md">
                       <div className="flex justify-center">
-                        <p className="w-fit rounded-full bg-gray-300 px-4 py-2">{vehicle.status}</p>
+                        <p className={`w-fit rounded-full px-4 py-2 status-${vehicle.status}`}>
+                          {vehicle.status}
+                        </p>
                       </div>
                     </td>
                     <td className="td table-cell-xl">

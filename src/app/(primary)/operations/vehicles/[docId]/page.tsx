@@ -227,7 +227,12 @@ export default function Vehicle({ params }: Props) {
                   <label className="font-medium">Status</label>
                 </div>
                 <div className="">
-                  <Field as="select" name="status" placeholder="Status" className="form-select">
+                  <Field
+                    as="select"
+                    name="status"
+                    placeholder="Status"
+                    className="form-select w-fit"
+                  >
                     <option value="" disabled>
                       Select...
                     </option>
