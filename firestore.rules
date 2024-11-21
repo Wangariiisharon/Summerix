@@ -15,10 +15,7 @@ service cloud.firestore {
           && incomingData().phoneNumber != null
           && incomingData().firstName != null
           && incomingData().lastName != null;
-        allow update: if isAuthUid(docId) 
-        	|| isOwner(existingData().company.docId)
-        	|| (isAdmin(existingData().company.docId) 
-          	&& hasRole('canManageClients'));
+        allow update: if isAuthUid(docId);
       }
     }
     
@@ -30,8 +27,8 @@ service cloud.firestore {
           && incomingData().name != null
           && incomingData().email != null
           && incomingData().phoneNumber != null;
-        allow update: if isAuthUid(docId) 
-        	|| isOwner(existingData().company.docId);
+        allow update: if (isCompanyId(incomingData().company.docId) 
+        	&& (isAuthUid(docId) || isOwner()));
       }
     }
     
@@ -39,17 +36,15 @@ service cloud.firestore {
     	allow read: if isAuthenticated();
       
       match /{docId} {
-        allow create: if (isOwner(incomingData().company.docId) 
-        	|| (isAdmin(incomingData().company.docId) && hasRole('canManageAdmins')))
+        allow create: if (isCompanyId(incomingData().company.docId) 
+        	&& (isOwner() || (isAdmin() && hasRole('canManageAdmins'))))
           && incomingData().company != null
           && incomingData().email != null
           && incomingData().phoneNumber != null
           && incomingData().firstName != null
           && incomingData().lastName != null;
-        allow update: if isAuthUid(docId) 
-        	|| isOwner(existingData().company.docId)
-        	|| (isAdmin(existingData().company.docId) 
-          	&& hasRole('canManageAdmins'));
+        allow update: if isCompanyId(existingData().company.docId)
+        	&& (isOwner() || (isAdmin() && hasRole('canManageAdmins')));
       }
     }
     
@@ -57,17 +52,16 @@ service cloud.firestore {
     	allow read: if isAuthenticated();
       
       match /{docId} {
-        allow create: if (isOwner(incomingData().company.docId) 
-        	|| (isAdmin(incomingData().company.docId) && hasRole('canManageVehicles')))
+        allow create: if (isCompanyId(incomingData().company.docId) 
+        	&& (isOwner() || (isAdmin() && hasRole('canManageVehicles'))))
           && incomingData().company != null
           && incomingData().regNumber != null
           && incomingData().name != null
           && incomingData().make != null
           && incomingData().model != null
           && incomingData().status != null;
-        allow update: if isOwner(existingData().company.docId)
-        	|| (isAdmin(existingData().company.docId) 
-          	&& hasRole('canManageVehicles'));
+        allow update: if isCompanyId(existingData().company.docId)
+        	&& (isOwner() || (isAdmin() && hasRole('canManageVehicles')));
       }
     }
     
@@ -75,14 +69,13 @@ service cloud.firestore {
     	allow read: if isAuthenticated();
       
       match /{docId} {
-        allow create: if (isOwner(incomingData().company.docId) 
-        	|| (isAdmin(incomingData().company.docId) && hasRole('canManageTrips'))) 
+        allow create: if (isCompanyId(incomingData().company.docId) 
+        	&& (isOwner() || (isAdmin() && hasRole('canManageTrips')))) 
           && incomingData().company != null
           && incomingData().client != null
           && incomingData().driver != null;
-        allow update: if isOwner(existingData().company.docId)
-        	|| (isAdmin(existingData().company.docId) 
-          	&& hasRole('canManageTrips'));
+        allow update: if isCompanyId(existingData().company.docId)
+        	&& (isOwner() || (isAdmin() && hasRole('canManageTrips')));
       }
     }
     
@@ -96,16 +89,16 @@ service cloud.firestore {
       return request.auth.uid == uid;
     }
     
+    function isAdmin() {
+      return request.auth.token.isAdmin;
+    }
+    
+    function isOwner() {
+      return request.auth.token.isOwner;
+    }
+    
     function isCompanyId(companyId) {
       return request.auth.token.companyId == companyId;
-    }
-    
-    function isAdmin(companyId) {
-      return request.auth.token.isAdmin && isCompanyId(companyId);
-    }
-    
-    function isOwner(companyId) {
-      return request.auth.token.isOwner && isCompanyId(companyId);
     }
     
     function hasRole(role) {
