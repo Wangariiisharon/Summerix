@@ -21,6 +21,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
+import { getAvatarPhoto } from '@/services/utils';
 
 const AdminSchema = (docId: string) => {
   return Yup.object().shape({
@@ -87,8 +88,8 @@ export default function User({ params }: Props) {
         docRef,
         async (snapshot) => {
           const data = snapshot.data() as ADMIN;
-          data.photoURL =
-            data.photoURL || `https://ui-avatars.com/api/?name=${data.displayName}&size=300`;
+          data.displayName = data.displayName || '';
+          data.photoURL = data.photoURL || getAvatarPhoto(data.displayName);
           data.docId = snapshot.id;
           setAdmin(data);
         },

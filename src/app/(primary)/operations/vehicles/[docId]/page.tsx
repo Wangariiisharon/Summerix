@@ -21,6 +21,7 @@ import toast from 'react-hot-toast';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
 import { getVehicleByName, getVehicleByRegNumber } from '@/services/vehicle';
 import Vehicles from '@/json/vehicles.json';
+import { getAvatarPhoto } from '@/services/utils';
 
 const VehicleSchema = (companyId: string, docId: string) => {
   return Yup.object().shape({
@@ -86,7 +87,7 @@ export default function Vehicle({ params }: Props) {
         docRef,
         async (snapshot) => {
           const data = snapshot.data() as VEHICLE;
-          data.photoURL = data.photoURL || `https://ui-avatars.com/api/?name=${data.name}&size=300`;
+          data.photoURL = data.photoURL || getAvatarPhoto(data.name);
           data.docId = snapshot.id;
           setVehicle(data);
         },
