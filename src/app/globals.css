@@ -122,6 +122,10 @@
     @apply text-gray-700 border-gray-300 hover:text-primary hover:border-primary;
   }
 
+  .btn-outline-secondary {
+    @apply border-secondary text-secondary hover:opacity-70 disabled:opacity-40;
+  }
+
   .btn-outline-danger {
     @apply border-danger text-danger hover:opacity-70 disabled:opacity-40;
   }

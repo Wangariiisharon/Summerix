@@ -15,6 +15,7 @@ export default function OperationsNav() {
           { name: 'Trips', link: 'trips' },
           { name: 'Vehicles', link: 'vehicles' },
           { name: 'Drivers', link: 'drivers' },
+          { name: 'Maintenance', link: 'maintenance' },
           { name: 'Suppliers', link: 'suppliers' },
         ].map(({ name, link }) => {
           const isActive =
