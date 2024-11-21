@@ -1,0 +1,20 @@
+{
+  "statusList": [
+    {
+      "value": "available",
+      "name": "Available"
+    },
+    {
+      "value": "on-route",
+      "name": "On Route"
+    },
+    {
+      "value": "out-of-service",
+      "name": "Out of Service"
+    },
+    {
+      "value": "under-maintenance",
+      "name": "Under Maintenance"
+    }
+  ]
+}
