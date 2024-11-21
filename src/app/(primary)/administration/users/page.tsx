@@ -59,9 +59,11 @@ export default function Users() {
           <h2 className="font-bold">Users</h2>
           <p className="text-gray-500">Manage your teams & user permissions.</p>
         </div>
-        <Link href="/administration/users/new" className="btn btn-secondary btn-flex">
-          <PlusIcon className="h-4 w-4" />
-          <p>Add User</p>
+        <Link href="/administration/users/new">
+          <div className="btn btn-flex btn-secondary">
+            <PlusIcon className="h-5 w-5" />
+            <p>Add User</p>
+          </div>
         </Link>
       </section>
 
