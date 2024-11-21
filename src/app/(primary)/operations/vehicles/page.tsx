@@ -7,7 +7,7 @@ import useVehicles from '@/hooks/useVehicles';
 import Vehicles from '@/json/vehicles.json';
 import { PARAMS_MAP } from '@/models/params-map';
 import { VEHICLE } from '@/models/vehicle';
-import { PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { PencilSquareIcon, PlusIcon, UserPlusIcon } from '@heroicons/react/24/outline';
 import { DocumentSnapshot } from 'firebase/firestore';
 import moment from 'moment-timezone';
 import Image from 'next/image';
@@ -61,12 +61,21 @@ export default function VehiclesPage() {
           <h2 className="font-bold">Vehicles</h2>
           <p className="text-gray-500">Manage company vehicles.</p>
         </div>
-        <Link href="/operations/vehicles/new">
-          <div className="btn btn-flex btn-secondary">
-            <PlusIcon className="h-5 w-5" />
-            <p>Add Vehicle</p>
-          </div>
-        </Link>
+
+        <div className="flex flex-wrap items-center gap-5">
+          <button onClick={() => console.debug('do allocate vehicle...')}>
+            <div className="btn btn-outline-secondary btn-flex">
+              <UserPlusIcon className="h-5 w-5" />
+              <p>Allocate Vehicle</p>
+            </div>
+          </button>
+          <Link href="/operations/vehicles/new">
+            <div className="btn btn-flex btn-secondary">
+              <PlusIcon className="h-5 w-5" />
+              <p>Add Vehicle</p>
+            </div>
+          </Link>
+        </div>
       </section>
 
       <hr className="my-5" />
