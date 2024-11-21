@@ -40,6 +40,10 @@ function useVehicles({ companyId, docId, params }: Props) {
       constraints.push(where('company.docId', '==', companyId));
     }
 
+    if (params && params.status && params.status !== '') {
+      constraints.push(where('status', '==', params.status));
+    }
+
     getCountFromServer(query(colRef, ...constraints)).then((countSnap) => {
       // console.debug('useVehicles > countSnap:', countSnap.data().count);
       setCount(countSnap.data().count);

@@ -36,6 +36,7 @@
   }
 
   .form-input,
+  .form-select,
   .form-textarea {
     @apply w-full mx-auto p-2 rounded-md outline-none border border-gray-300 focus:border-blue-600 text-xs text-gray-900 focus:bg-white disabled:opacity-50 invalid:border-red-500 invalid:text-red-600
 		focus:invalid:border-red-500 focus:invalid:ring-red-500;
@@ -140,4 +141,19 @@
   }
 
   /* OTHERS */
+  .status-pending, .status-booked, .status-under-maintenance {
+    @apply rounded-xl px-4 py-2 bg-[#ff8f00]/10 text-[#ff8f00];
+  }
+
+  .status-processing, .status-on-route {
+    @apply rounded-xl px-4 py-2 bg-primary/10 text-primary;
+  }
+
+  .status-approved, .status-completed, .status-available {
+    @apply rounded-xl px-4 py-2 bg-[#00897b]/10 text-[#00897b];
+  }
+
+  .status-cancelled, .status-rejected, .status-out-of-service {
+    @apply rounded-xl px-4 py-2 bg-[#990000]/10 text-[#990000];
+  }
 }
