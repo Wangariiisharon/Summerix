@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { type DocumentData, DocumentReference, QueryDocumentSnapshot } from 'firebase/firestore';
 import { COMPANY_DETAILS } from './company';
+import { DRIVER_DETAILS } from './driver';
 
 export interface VEHICLE {
   docId: string;
@@ -14,6 +15,7 @@ export interface VEHICLE {
   photoURL: string;
   isArchived: boolean;
   company: COMPANY_DETAILS;
+  driver: DRIVER_DETAILS | null;
 
   type: string;
   cargo: {
@@ -36,6 +38,7 @@ export interface VEHICLE_DETAILS {
   docId: string;
   name: string;
   regNumber: string;
+  photoURL: string;
 }
 
 export enum VEHICLE_STATUS {

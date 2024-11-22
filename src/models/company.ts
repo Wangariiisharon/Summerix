@@ -29,4 +29,5 @@ export interface COMPANY_DETAILS {
   email: string;
   phoneNumber: string;
   regNumber: string;
+  photoURL: string;
 }
