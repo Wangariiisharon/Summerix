@@ -2,9 +2,7 @@
 
 import * as Yup from 'yup';
 import { useAuthContext } from '@/app/auth-provider';
-import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
-import { ADMIN } from '@/models/admin';
 import {
   addDoc,
   collection,
@@ -18,9 +16,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import Constants from '@/Constants';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
-import { getAvatarPhoto } from '@/services/utils';
+import { DRIVER } from '@/models/driver';
 import { getDriverByEmail, getDriverByPhoneNumber } from '@/services/driver';
+import { getAvatarPhoto } from '@/services/utils';
 
 const DriverSchema = (companyId: string, docId: string) => {
   return Yup.object().shape({
@@ -74,7 +74,7 @@ type Props = {
 };
 
 export default function Driver({ params }: Props) {
-  const [admin, setAdmin] = useState<ADMIN>();
+  const [driver, setDriver] = useState<DRIVER>();
   const { authUser } = useAuthContext();
   const { company } = useCurrentCompany();
   const router = useRouter();
@@ -86,11 +86,11 @@ export default function Driver({ params }: Props) {
       const unsubscribe = onSnapshot(
         docRef,
         async (snapshot) => {
-          const data = snapshot.data() as ADMIN;
+          const data = snapshot.data() as DRIVER;
           data.displayName = data.displayName || '';
           data.photoURL = data.photoURL || getAvatarPhoto(data.displayName);
           data.docId = snapshot.id;
-          setAdmin(data);
+          setDriver(data);
         },
         (error) => {
           console.error('onSnapshot > error:', error);
@@ -148,18 +148,19 @@ export default function Driver({ params }: Props) {
       <Formik
         enableReinitialize={true}
         initialValues={{
-          email: admin?.email || '',
-          phoneNumber: admin?.phoneNumber || '',
-          firstName: admin?.firstName || '',
-          lastName: admin?.lastName || '',
-          idNumber: admin?.idNumber || '',
-          company: {
+          email: driver?.email || '',
+          phoneNumber: driver?.phoneNumber || '',
+          firstName: driver?.firstName || '',
+          lastName: driver?.lastName || '',
+          idNumber: driver?.idNumber || '',
+          company: driver?.company || {
             docId: company.docId,
             name: company.name || '',
             email: company.email || '',
             phoneNumber: company.phoneNumber || '',
             regNumber: company.regNumber || '',
           },
+          vehicle: driver?.vehicle || null,
           updatedBy: {
             authId: authUser?.uid,
             email: authUser?.email,
