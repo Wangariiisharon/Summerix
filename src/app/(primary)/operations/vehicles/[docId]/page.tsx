@@ -22,6 +22,8 @@ import useCurrentCompany from '@/hooks/useCurrentCompany';
 import { getVehicleByName, getVehicleByRegNumber } from '@/services/vehicle';
 import Vehicles from '@/json/vehicles.json';
 import { getAvatarPhoto } from '@/services/utils';
+import DriverAllocation from './driver';
+import Image from 'next/image';
 
 const VehicleSchema = (companyId: string, docId: string) => {
   return Yup.object().shape({
@@ -151,14 +153,14 @@ export default function Vehicle({ params }: Props) {
           model: vehicle?.model || '',
           yom: vehicle?.yom || '',
           status: vehicle?.status || '',
-
-          company: {
+          company: vehicle?.company || {
             docId: company.docId,
             name: company.name || '',
             email: company.email || '',
             phoneNumber: company.phoneNumber || '',
             regNumber: company.regNumber || '',
           },
+          driver: vehicle?.driver || null,
           updatedBy: {
             authId: authUser?.uid,
             email: authUser?.email,
@@ -247,6 +249,40 @@ export default function Vehicle({ params }: Props) {
                   <ErrorMessage name="yom" component="span" className="form-error" />
                 </div>
               </label>
+
+              {vehicle && (
+                <>
+                  <hr className="my-3" />
+
+                  <div className="grid-1-3">
+                    <div className="text-sm">
+                      <label className="font-medium">Driver Allocation</label>
+                    </div>
+                    <div className="grid-1-2 col-span-2 gap-3">
+                      {vehicle.driver && (
+                        <div className="flex items-center gap-3">
+                          <Image
+                            src={vehicle.driver.photoURL}
+                            alt={vehicle.driver.displayName}
+                            className="size-20 shrink-0 rounded-full"
+                            width={100}
+                            height={100}
+                          />
+                          <div className="grid gap-0.5">
+                            <p className="">{vehicle.driver.displayName}</p>
+                            <div className="form-label">
+                              <p>{vehicle.driver.email}</p>
+                              <p>{vehicle.driver.phoneNumber}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {/* <p>{vehicle.driver?.displayName || 'N/A'}</p> */}
+                      <DriverAllocation vehicle={vehicle} />
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="grid-1-3 mt-10 gap-5">
