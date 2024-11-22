@@ -15,6 +15,16 @@ export interface VEHICLE {
   isArchived: boolean;
   company: COMPANY_DETAILS;
 
+  type: string;
+  cargo: {
+    capacity: number;
+    type: string;
+  };
+  ownership: {
+    status: string;
+    entity: string;
+  };
+
   doc: QueryDocumentSnapshot<DocumentData, DocumentData>;
   docRef: DocumentReference<DocumentData, DocumentData>;
 
