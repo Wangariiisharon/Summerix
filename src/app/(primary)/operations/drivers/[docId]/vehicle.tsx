@@ -85,7 +85,7 @@ export default function VehicleAllocation({ driver }: Props) {
       snapshot.docs.map((myDoc) => {
         const docRef = doc(fbDb, Constants.fbVehicles, myDoc.id);
         batch.update(docRef, {
-          vehicle: null,
+          driver: null,
           updatedBy: {
             authId: authUser.uid,
             email: authUser.email,
@@ -240,7 +240,7 @@ export default function VehicleAllocation({ driver }: Props) {
           </button>
           <button
             onClick={() => doConfirmAllocation()}
-            disabled={processing || !selected}
+            disabled={processing || !selected || selected === driver.vehicle}
             className="btn btn-secondary"
           >
             Confirm Allocation

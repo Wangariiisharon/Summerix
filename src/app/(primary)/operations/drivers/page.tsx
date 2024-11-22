@@ -78,6 +78,7 @@ export default function Drivers() {
                 <th className="th text-left">Name</th>
                 <th className="th table-cell-sm">Email Address</th>
                 <th className="th table-cell-xl">Phone Number</th>
+                <th className="th table-cell-md">Vehicle</th>
                 <th className="th table-cell-xl">Last Modified</th>
                 <th className="th">Actions</th>
               </tr>
@@ -100,13 +101,14 @@ export default function Drivers() {
                     </td>
                     <td className="td text-left">
                       <p>{driver.displayName}</p>
-                      <div className="mt-1">
+                      <div className="mt-1 text-xs">
                         <p className="block sm:hidden">{driver.email}</p>
-                        <p className="block lg:hidden">{driver.phoneNumber}</p>
+                        <p className="block md:hidden">{driver.vehicle?.name}</p>
                       </div>
                     </td>
                     <td className="td table-cell-sm">{driver.email}</td>
                     <td className="td table-cell-xl">{driver.phoneNumber}</td>
+                    <td className="td table-cell-md">{driver.vehicle?.name || 'N/A'}</td>
                     <td className="td table-cell-xl">
                       {driver.lastUpdated &&
                         moment(driver.lastUpdated.toDate()).format(Constants.dateTimeFormat)}
