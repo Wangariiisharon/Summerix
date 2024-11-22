@@ -254,7 +254,7 @@ export default function Vehicle({ params }: Props) {
                 <>
                   <hr className="my-3" />
 
-                  <div className="grid-1-3">
+                  <div className="grid-1-3 gap-5">
                     <div className="text-sm">
                       <label className="font-medium">Driver Allocation</label>
                     </div>
@@ -277,7 +277,6 @@ export default function Vehicle({ params }: Props) {
                           </div>
                         </div>
                       )}
-                      {/* <p>{vehicle.driver?.displayName || 'N/A'}</p> */}
                       <DriverAllocation vehicle={vehicle} />
                     </div>
                   </div>
