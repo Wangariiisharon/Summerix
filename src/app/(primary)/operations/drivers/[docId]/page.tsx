@@ -21,6 +21,8 @@ import useCurrentCompany from '@/hooks/useCurrentCompany';
 import { DRIVER } from '@/models/driver';
 import { getDriverByEmail, getDriverByPhoneNumber } from '@/services/driver';
 import { getAvatarPhoto } from '@/services/utils';
+import Image from 'next/image';
+import VehicleAllocation from './vehicle';
 
 const DriverSchema = (companyId: string, docId: string) => {
   return Yup.object().shape({
@@ -109,6 +111,8 @@ export default function Driver({ params }: Props) {
     }
 
     try {
+      formValues.displayName = `${formValues.firstName.trim()} ${formValues.lastName.trim()}`;
+
       if (docId === 'new') {
         const colRef = collection(fbDb, Constants.fbDrivers);
         await addDoc(colRef, {
@@ -245,6 +249,38 @@ export default function Driver({ params }: Props) {
                   <ErrorMessage name="idNumber" component="span" className="form-error" />
                 </div>
               </label>
+
+              {driver && (
+                <>
+                  <hr className="my-3" />
+
+                  <div className="grid-1-3 gap-5">
+                    <div className="text-sm">
+                      <label className="font-medium">Vehicle Allocation</label>
+                    </div>
+                    <div className="grid-1-2 col-span-2 gap-3">
+                      {driver.vehicle && (
+                        <div className="flex items-center gap-3">
+                          <Image
+                            src={driver.vehicle.photoURL}
+                            alt={driver.vehicle.name}
+                            className="size-20 shrink-0 rounded-full"
+                            width={100}
+                            height={100}
+                          />
+                          <div className="grid gap-0.5">
+                            <p className="">{driver.vehicle.name}</p>
+                            <div className="form-label">
+                              <p>{driver.vehicle.regNumber}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      <VehicleAllocation driver={driver} />
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="grid-1-3 mt-10 gap-5">

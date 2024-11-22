@@ -110,6 +110,8 @@ export default function User({ params }: Props) {
     }
 
     try {
+      formValues.displayName = `${formValues.firstName.trim()} ${formValues.lastName.trim()}`;
+      
       if (docId === 'new') {
         const colRef = collection(fbDb, Constants.fbAdmins);
         await addDoc(colRef, {
