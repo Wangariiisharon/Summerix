@@ -23,7 +23,7 @@ export const getVehicleByRegNumber = (companyId: string, regNumber: string) => {
   return getDocs(queryRef);
 };
 
-export const getDriverVehicles = (driver: DRIVER ) => {
+export const getDriverVehicles = (driver: DRIVER) => {
   const colRef = collection(fbDb, Constants.fbVehicles);
   const queryRef = query(
     colRef,

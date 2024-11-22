@@ -4,9 +4,8 @@ import { useAuthContext } from '@/app/auth-provider';
 import DialogLayout from '@/components/dialog-layout';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
-import { DRIVER, DRIVER_DETAILS } from '@/models/driver';
+import { DRIVER } from '@/models/driver';
 import { VEHICLE, VEHICLE_DETAILS } from '@/models/vehicle';
-import { getVehicleDrivers } from '@/services/driver';
 import { getAvatarPhoto } from '@/services/utils';
 import { getDriverVehicles } from '@/services/vehicle';
 import {
