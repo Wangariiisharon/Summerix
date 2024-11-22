@@ -109,6 +109,7 @@ export default function VehiclesPage() {
                 <th className="th"></th>
                 <th className="th text-left">Name</th>
                 <th className="th table-cell-sm">Reg. Number</th>
+                <th className="th table-cell-md">Driver</th>
                 <th className="th table-cell-md">Status</th>
                 <th className="th table-cell-xl">Last Modified</th>
                 <th className="th">Actions</th>
@@ -142,6 +143,7 @@ export default function VehiclesPage() {
                       </div>
                     </td>
                     <td className="td table-cell-sm">{vehicle.regNumber}</td>
+                    <td className="td table-cell-md">{vehicle.driver?.displayName || 'N/A'}</td>
                     <td className="td table-cell-md">
                       <div className="flex justify-center">
                         <p className={`w-fit rounded-full px-4 py-2 status-${vehicle.status}`}>

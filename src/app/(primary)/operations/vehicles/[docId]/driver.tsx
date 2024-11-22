@@ -237,7 +237,7 @@ export default function DriverAllocation({ vehicle }: Props) {
           </button>
           <button
             onClick={() => doConfirmAllocation()}
-            disabled={processing || !selected}
+            disabled={processing || !selected || selected === vehicle.driver}
             className="btn btn-secondary"
           >
             Confirm Allocation
