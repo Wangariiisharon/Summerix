@@ -1,5 +1,6 @@
 import { type DocumentData, DocumentReference, QueryDocumentSnapshot } from 'firebase/firestore';
 import { COMPANY_DETAILS } from './company';
+import { VEHICLE_DETAILS } from './vehicle';
 
 export interface DRIVER {
   docId: string;
@@ -13,6 +14,7 @@ export interface DRIVER {
   idNumber: string;
   photoURL: string;
   company: COMPANY_DETAILS;
+  vehicle: VEHICLE_DETAILS | null;
 
   lowerCase: {
     firstName: string;
@@ -31,4 +33,5 @@ export interface DRIVER_DETAILS {
   email: string;
   phoneNumber: string;
   displayName: string;
+  photoURL: string;
 }

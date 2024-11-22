@@ -144,6 +144,26 @@
       disabled:opacity-50 shadow hover:shadow-lg;
   }
 
+
+  /* DIALOGS */
+  .dialog-panel-wrapper {
+    @apply flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0;
+  }
+
+  .dialog-panel {
+    @apply p-4 transform overflow-hidden rounded-xl bg-white text-left 
+      shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 border;
+  }
+
+  .dialog-title-wrapper {
+    @apply mx-auto flex w-full rounded items-center justify-center;
+  }
+
+  .dialog-title {
+    @apply font-semibold leading-6 text-center uppercase;
+  }
+
+
   /* OTHERS */
   .status-pending, .status-booked, .status-under-maintenance {
     @apply rounded-xl px-4 py-2 bg-[#ff8f00]/10 text-[#ff8f00];

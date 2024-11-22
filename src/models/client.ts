@@ -31,4 +31,5 @@ export interface CLIENT_DETAILS {
   firstName: string;
   lastName: string;
   phoneNumber: string;
+  photoURL: string;
 }

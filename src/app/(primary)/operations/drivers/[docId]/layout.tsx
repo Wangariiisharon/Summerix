@@ -1,10 +1,7 @@
 import { ReactNode } from 'react';
 
 export const metadata = {
-  title: {
-    template: '%s | TruckMate Drivers',
-    default: 'Drivers',
-  },
+  title: 'Driver',
 };
 
 type Props = {
@@ -12,5 +9,5 @@ type Props = {
 };
 
 export default function Layout({ children }: Props) {
-  return <main className="">{children}</main>;
+  return <main className="p-4">{children}</main>;
 }
