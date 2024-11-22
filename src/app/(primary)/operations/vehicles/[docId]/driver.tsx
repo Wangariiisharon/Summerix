@@ -15,7 +15,7 @@ import {
   ListboxOption,
   ListboxOptions,
 } from '@headlessui/react';
-import { CheckIcon, ChevronUpDownIcon, UserPlusIcon } from '@heroicons/react/24/outline';
+import { CheckIcon, ChevronUpDownIcon, PlusIcon, UserPlusIcon } from '@heroicons/react/24/outline';
 import {
   collection,
   doc,
@@ -26,6 +26,7 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -225,6 +226,15 @@ export default function DriverAllocation({ vehicle }: Props) {
                       </span>
                     </ListboxOption>
                   ))}
+
+                  {drivers.length === 0 && (
+                    <Link href="/operations/drivers/new">
+                      <div className="btn btn-flex btn-secondary m-2">
+                        <PlusIcon className="h-5 w-5" />
+                        <p>Add New Driver</p>
+                      </div>
+                    </Link>
+                  )}
                 </ListboxOptions>
               </div>
             </Listbox>
