@@ -59,7 +59,7 @@ export default function Drivers() {
           <h2 className="font-bold">Drivers</h2>
           <p className="text-gray-500">Manage company drivers.</p>
         </div>
-        <Link href="/administration/drivers/new">
+        <Link href="/operations/drivers/new">
           <div className="btn btn-flex btn-secondary">
             <PlusIcon className="h-5 w-5" />
             <p>Add Driver</p>
@@ -113,7 +113,7 @@ export default function Drivers() {
                     </td>
                     <td className="td">
                       <div className="td-actions">
-                        <Link href={`/administration/users/${driver.docId}`}>
+                        <Link href={`/operations/drivers/${driver.docId}`}>
                           <PencilSquareIcon className="h-5 w-5 text-primary hover:text-secondary" />
                         </Link>
                       </div>
