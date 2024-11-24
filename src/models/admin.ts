@@ -12,6 +12,7 @@ export interface ADMIN {
   phoneNumber: string;
   idNumber: string;
   photoURL: string;
+  department: string;
   company: COMPANY_DETAILS;
 
   roles: Array<string>;
