@@ -111,9 +111,9 @@ export default function Users() {
   };
   const filteredAdmins = admins.filter((admin: ADMIN) =>
     filter === 'Active'
-      ? !admin.rolesMap.isActive
+      ? admin.rolesMap.isActive
       : filter === 'Inactive'
-        ? admin.rolesMap.isActive
+        ? !admin.rolesMap.isActive
         : true,
   );
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -163,7 +163,7 @@ export default function Users() {
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value as 'All' | 'Active' | 'Inactive')}
-              className="statusbar h-10"
+              className="h-10 cursor-pointer rounded-md border border-gray-300 px-4 text-gray-700"
             >
               <option value="All">All</option>
               <option value="Active">Active</option>
