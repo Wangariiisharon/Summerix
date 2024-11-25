@@ -1,52 +1,29 @@
 'use client';
-
-import { useAuthContext } from '@/app/auth-provider';
 import RemotePagination from '@/components/remote-pagination';
 import Constants from '@/Constants';
-import useAdmins from '@/hooks/useAdmins';
+
 import { ADMIN } from '@/models/admin';
-import { PARAMS_MAP } from '@/models/params-map';
-import { PlusIcon } from '@heroicons/react/24/outline';
 import { deleteDoc, doc, DocumentSnapshot, updateDoc } from 'firebase/firestore';
 
 import Link from 'next/link';
 import SearchBar from '@/components/searchbar';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import { fbDb } from '@/firebase/configs';
-
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 
-export default function Users() {
-  const { authUser } = useAuthContext();
-  const [params, setParams] = useState<PARAMS_MAP>({
-    max: Constants.defaultPageSize,
-    orderBy: 'lastUpdated',
-    direction: 'desc',
-  });
-  const { count, admins } = useAdmins({
-    companyId: authUser?.companyId || 'xyz',
-    docId: null,
-    params,
-  });
+interface usersTableProps {
+  admins: ADMIN[];
+  count: number;
+}
+export default function UsersTable({ admins, count }: usersTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
-
   const cursors = useRef<Map<number, DocumentSnapshot>>(new Map());
   const [max, setMax] = useState(Constants.defaultPageSize);
   const [currentPage, setCurrentPage] = useState(0);
   const [selectAll, setSelectAll] = useState(false);
   const [selectedAdmins, setSelectedAdmins] = useState<ADMIN[]>([]);
   const [filter, setFilter] = useState<'Active' | 'Inactive' | 'All'>('All');
-
-  useEffect(() => {
-    setParams({
-      orderBy: 'lastUpdated',
-      direction: 'desc',
-      max: max,
-
-      cursor: cursors.current.get(currentPage),
-    });
-  }, [currentPage, max]);
 
   const onPageChanged = useCallback(
     (nextPage: number) => {
@@ -79,7 +56,6 @@ export default function Users() {
   };
   const deleteUser = async (docId: any) => {
     try {
-      // Delete the user from Firestore
       await deleteDoc(doc(fbDb, 'fbAdmins', docId));
     } catch (error) {
       console.error('Error deleting user: ', error);
@@ -123,22 +99,8 @@ export default function Users() {
     // const isStatusTrue = admin.status === true || admin.status === "true";
     return nameMatch;
   });
-
   return (
-    <main className="text-sm">
-      <section className="flex flex-col justify-between gap-5 sm:flex-row">
-        <div className="">
-          <h2 className="font-bold">Users</h2>
-          <p className="text-gray-500">Manage your teams & user permissions.</p>
-        </div>
-        <Link href="/administration/users/new">
-          <div className="btn btn-flex btn-secondary">
-            <PlusIcon className="h-5 w-5" />
-            <p>Add User</p>
-          </div>
-        </Link>
-      </section>
-
+    <div>
       <hr className="my-5" />
       <div className="overflow-x-auto rounded-lg bg-gray-100 shadow-md">
         <div className="flex flex-row">
@@ -288,6 +250,6 @@ export default function Users() {
           />
         </div>
       </div>
-    </main>
+    </div>
   );
 }
