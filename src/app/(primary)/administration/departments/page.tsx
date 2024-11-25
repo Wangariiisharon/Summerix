@@ -155,15 +155,13 @@ export default function Departments() {
               value={searchQuery}
               onChange={handleSearchChange}
               className="h-10" // Match the height
-
-              // className="h-6"
             />
           </div>
           <div className="px-6 py-3">
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value as 'All' | 'Active' | 'Inactive')}
-              className="statusbar h-10"
+              className="h-10 cursor-pointer rounded-md border border-gray-300 px-4 text-gray-700"
             >
               <option value="All">All</option>
               <option value="Active">Active</option>

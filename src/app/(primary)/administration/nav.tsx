@@ -40,7 +40,7 @@ export default function CompanyNav() {
 
       <div className="mt-10 flex items-center gap-5 overflow-auto">
         {[
-          { name: 'Overview', link: '' },
+          // { name: 'Overview', link: '' },
           { name: 'Profile', link: 'profile' },
           { name: 'Users', link: 'users' },
           { name: 'Departments', link: 'departments' },
