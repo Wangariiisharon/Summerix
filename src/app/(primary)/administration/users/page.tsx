@@ -61,17 +61,7 @@ export default function Users() {
     },
     [admins],
   );
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-  };
 
-  const fetchedAdmins: ADMIN[] = (admins || []).filter((admin: DocumentData): admin is ADMIN => {
-    const fullName = `${admin.firstname} ${admin.lastname}`.toLowerCase();
-    const nameMatch = fullName.includes(searchQuery.toLowerCase());
-    // const isStatusTrue = admin.status === true || admin.status === "true";
-    return nameMatch;
-  });
   const handleCheckboxChange = (admin: ADMIN) => {
     const isAdminSelected = selectedAdmins.includes(admin);
     if (isAdminSelected) {
@@ -91,7 +81,7 @@ export default function Users() {
   const deleteUser = async (docId: any) => {
     try {
       // Delete the user from Firestore
-      await deleteDoc(doc(fbDb, 'admins', docId));
+      await deleteDoc(doc(fbDb, 'fbAdmins', docId));
 
       // Update the state to reflect the change
       const updatedAdmins = fetchedAdmins.filter((admin) => admin.docId !== docId);
@@ -125,6 +115,19 @@ export default function Users() {
       : filter === 'Inactive'
         ? admin.rolesMap.isActive
         : true,
+  );
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+  };
+
+  const fetchedAdmins: ADMIN[] = (filteredAdmins || []).filter(
+    (admin: DocumentData): admin is ADMIN => {
+      const fullName = `${admin.firstname} ${admin.lastname}`.toLowerCase();
+      const nameMatch = fullName.includes(searchQuery.toLowerCase());
+      // const isStatusTrue = admin.status === true || admin.status === "true";
+      return nameMatch;
+    },
   );
 
   return (
@@ -160,7 +163,7 @@ export default function Users() {
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value as 'All' | 'Active' | 'Inactive')}
-              className="searchbar h-10"
+              className="statusbar h-10"
             >
               <option value="All">All</option>
               <option value="Active">Active</option>
