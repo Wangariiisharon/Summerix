@@ -1,17 +1,12 @@
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { PERMISSION } from '@/models/permissions';
-import { PARAMS_MAP } from '@/models/params-map';
-import { getAvatarPhoto } from '@/services/utils';
 import {
   collection,
   documentId,
   getCountFromServer,
-  limit,
   onSnapshot,
-  orderBy,
   query,
-  startAfter,
   where,
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
@@ -19,16 +14,13 @@ import { useEffect, useState } from 'react';
 interface Props {
   companyId: string;
   docId: string | null;
-  params?: PARAMS_MAP;
 }
 
-function usePermissions({ companyId, docId, params }: Props) {
+function usePermissions({ companyId, docId }: Props) {
   const [permissions, setPermissions] = useState<PERMISSION[]>([]);
   const [count, setCount] = useState<number>(0);
 
   useEffect(() => {
-    // console.debug('useAdmins > details:', { docId, params });
-
     const constraints = [];
     const colRef = collection(fbDb, Constants.fbPermissions);
 

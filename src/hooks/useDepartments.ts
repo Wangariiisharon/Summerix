@@ -2,7 +2,6 @@ import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { DEPARTMENT } from '@/models/department';
 import { PARAMS_MAP } from '@/models/params-map';
-import { getAvatarPhoto } from '@/services/utils';
 import {
   collection,
   documentId,

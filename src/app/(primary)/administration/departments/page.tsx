@@ -3,19 +3,17 @@
 import { useAuthContext } from '@/app/auth-provider';
 import RemotePagination from '@/components/remote-pagination';
 import Constants from '@/Constants';
-import useAdmins from '@/hooks/useAdmins';
 import { DEPARTMENT } from '@/models/department';
 import { PARAMS_MAP } from '@/models/params-map';
-import { PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
-import { deleteDoc, doc, DocumentData, DocumentSnapshot, updateDoc } from 'firebase/firestore';
-import moment from 'moment-timezone';
-import Image from 'next/image';
+import { PlusIcon } from '@heroicons/react/24/outline';
+import { deleteDoc, doc, DocumentSnapshot, updateDoc } from 'firebase/firestore';
+
 import Link from 'next/link';
 import SearchBar from '@/components/searchbar';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import { fbDb } from '@/firebase/configs';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import useDepartments from '@/hooks/useDepartments';
 
@@ -62,18 +60,7 @@ export default function Departments() {
     },
     [departments],
   );
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-  };
 
-  const fetchedDepartments: DEPARTMENT[] = (departments || []).filter(
-    (admin: DocumentData): admin is DEPARTMENT => {
-      const fullName = `${admin.name}`.toLowerCase();
-      const nameMatch = fullName.includes(searchQuery.toLowerCase());
-      return nameMatch;
-    },
-  );
   const handleSelectAllChange = () => {
     if (selectAll) {
       setSelectedDepartmets([]);
@@ -90,6 +77,18 @@ export default function Departments() {
         ? department.rolesMap.isActive
         : true,
   );
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+  };
+
+  const fetchedDepartments: DEPARTMENT[] = (filteredDepartments || []).filter(
+    (department: DEPARTMENT): department is DEPARTMENT => {
+      const fullName = `${department.name}`.toLowerCase();
+      const nameMatch = fullName.includes(searchQuery.toLowerCase());
+      return nameMatch;
+    },
+  );
   const handleCheckboxChange = (department: DEPARTMENT) => {
     const isDepartmentSelected = selectedDepartmets.includes(department);
     if (isDepartmentSelected) {
@@ -102,10 +101,6 @@ export default function Departments() {
   const deleteUser = async (docId: any) => {
     try {
       await deleteDoc(doc(fbDb, 'fbDepartments', docId));
-
-      const updatedDepartments = fetchedDepartments.filter(
-        (department) => department.docId !== docId,
-      );
     } catch (error) {
       console.error('Error deleting Department: ', error);
     }
@@ -185,7 +180,7 @@ export default function Departments() {
               </thead>
 
               <tbody className="text-gray-700">
-                {filteredDepartments.map((department: DEPARTMENT) => {
+                {fetchedDepartments.map((department: DEPARTMENT) => {
                   return (
                     <tr key={department.docId} className="tr-body">
                       <td className="px-6 py-3">
