@@ -4,36 +4,53 @@ import { useAuthContext } from '@/app/auth-provider';
 import DialogLayout from '@/components/dialog-layout';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
-import { ADMIN } from '@/models/admin';
+import { DRIVER } from '@/models/driver';
+import { getDriverVehicles } from '@/services/vehicle';
 import { DialogTitle } from '@headlessui/react';
 import { TrashIcon } from '@heroicons/react/24/outline';
-import { deleteDoc, doc } from 'firebase/firestore';
+import { doc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 type Props = {
-  admin: ADMIN;
+  driver: DRIVER;
 };
 
-export default function DeleteAdminButton({ admin }: Props) {
+export default function DeleteDriverButton({ driver }: Props) {
   const { authUser } = useAuthContext();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [processing, setProcessing] = useState<boolean>(false);
 
   const doDelete = async () => {
-    console.debug('doDelete > docId:', admin.docId);
+    console.debug('doDelete > docId:', driver.docId);
     if (!(authUser?.isAdmin || authUser?.isOwner)) {
-      toast.error('You are not authorised to manage users.');
+      toast.error('You are not authorised to manage drivers.');
       return;
     }
 
     try {
       setProcessing(true);
 
-      const docRef = doc(fbDb, Constants.fbAdmins, admin.docId);
-      await deleteDoc(docRef);
+      const batch = writeBatch(fbDb);
+      const snapshot = await getDriverVehicles(driver);
+      snapshot.docs.map((myDoc) => {
+        const docRef = doc(fbDb, Constants.fbVehicles, myDoc.id);
+        batch.update(docRef, {
+          driver: null,
+          updatedBy: {
+            authId: authUser.uid,
+            email: authUser.email,
+          },
+          lastUpdated: serverTimestamp(),
+        });
+      });
 
-      toast.success('Admin user deleted successfully.');
+      const docRef = doc(fbDb, Constants.fbDrivers, driver.docId);
+      batch.delete(docRef);
+
+      await batch.commit();
+
+      toast.success('Driver deleted successfully.');
     } catch (error) {
       console.error('doDelete error:', error);
     } finally {
@@ -54,21 +71,21 @@ export default function DeleteAdminButton({ admin }: Props) {
         classNames="dialog-panel max-w-md"
       >
         <DialogTitle as="h3" className="dialog-title text-sm">
-          Confirm Delete Admin User?
+          Confirm Delete Vehicle?
         </DialogTitle>
 
         <div className="mt-10 grid items-center gap-3">
           <div className="flex items-center justify-between gap-5">
             <label className="form-label">Display Name:</label>
-            <p>{admin.displayName}</p>
+            <p>{driver.displayName}</p>
           </div>
           <div className="flex items-center justify-between gap-5">
             <label className="form-label">Email Address:</label>
-            <p>{admin.email}</p>
+            <p>{driver.email}</p>
           </div>
           <div className="flex items-center justify-between gap-5">
             <label className="form-label">Phone Number:</label>
-            <p>{admin.phoneNumber}</p>
+            <p>{driver.phoneNumber}</p>
           </div>
         </div>
 

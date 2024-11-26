@@ -12,6 +12,7 @@ import moment from 'moment';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import DeleteDriverButton from './button-delete';
 
 export default function Drivers() {
   const { authUser } = useAuthContext();
@@ -80,7 +81,7 @@ export default function Drivers() {
                 <th className="th table-cell-xl">Phone Number</th>
                 <th className="th table-cell-md">Vehicle</th>
                 <th className="th table-cell-xl">Last Modified</th>
-                <th className="th">Actions</th>
+                <th className="th text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -108,16 +109,27 @@ export default function Drivers() {
                     </td>
                     <td className="td table-cell-sm">{driver.email}</td>
                     <td className="td table-cell-xl">{driver.phoneNumber}</td>
-                    <td className="td table-cell-md">{driver.vehicle?.name || 'N/A'}</td>
+                    <td className="td table-cell-md">
+                      {driver.vehicle && (
+                        <Link
+                          href={`/operations/vehicles/${driver.vehicle.docId}`}
+                          className="text-primary hover:text-secondary"
+                        >
+                          {driver.vehicle.name}
+                        </Link>
+                      )}
+                      {!driver.vehicle && 'N/A'}
+                    </td>
                     <td className="td table-cell-xl">
                       {driver.lastUpdated &&
                         moment(driver.lastUpdated.toDate()).format(Constants.dateTimeFormat)}
                     </td>
                     <td className="td">
-                      <div className="td-actions">
+                      <div className="td-actions justify-start">
                         <Link href={`/operations/drivers/${driver.docId}`}>
-                          <PencilSquareIcon className="h-5 w-5 text-primary hover:text-secondary" />
+                          <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
                         </Link>
+                        <DeleteDriverButton driver={driver} />
                       </div>
                     </td>
                   </tr>

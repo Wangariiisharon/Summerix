@@ -140,7 +140,17 @@ export default function VehiclesPage() {
                       </div>
                     </td>
                     <td className="td table-cell-sm">{vehicle.regNumber}</td>
-                    <td className="td table-cell-md">{vehicle.driver?.displayName || 'N/A'}</td>
+                    <td className="td table-cell-md">
+                      {vehicle.driver && (
+                        <Link
+                          href={`/operations/drivers/${vehicle.driver.docId}`}
+                          className="text-primary hover:text-secondary"
+                        >
+                          {vehicle.driver.displayName}
+                        </Link>
+                      )}
+                      {!vehicle.driver && 'N/A'}
+                    </td>
                     <td className="td table-cell-md">
                       <div className="flex justify-center">
                         <p className={`w-fit rounded-full px-4 py-2 status-${vehicle.status}`}>
@@ -155,7 +165,7 @@ export default function VehiclesPage() {
                     <td className="td">
                       <div className="td-actions justify-start">
                         <Link href={`/operations/vehicles/${vehicle.docId}`}>
-                          <PencilSquareIcon className="h-5 w-5 text-primary hover:text-secondary" />
+                          <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
                         </Link>
                         <DeleteVehicleButton vehicle={vehicle} />
                       </div>

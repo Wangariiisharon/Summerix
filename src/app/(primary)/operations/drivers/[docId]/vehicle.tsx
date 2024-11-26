@@ -160,7 +160,7 @@ export default function VehicleAllocation({ driver }: Props) {
           <h3 className="font-medium">Driver</h3>
           <div className="grid gap-2">
             <div className="flex items-center justify-between gap-5">
-              <label className="form-label">Full Name:</label>
+              <label className="form-label">Display Name:</label>
               <p>{driver.displayName}</p>
             </div>
             <div className="flex items-center justify-between gap-5">
