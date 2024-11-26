@@ -218,7 +218,7 @@ export default function Departments() {
                       </td>
                       <td className="px-6 py-3">
                         <span className="rounded-full bg-[#f7d4d6] px-3 py-1 text-sm text-[#c91010]">
-                          {department.lastUpdated}
+                          {/* {department.lastUpdated} */}
                         </span>
                       </td>
                       <td className="px-6 py-3">
