@@ -36,7 +36,6 @@ export default function LatestTrips() {
           console.error('onSnapshot > error:', error);
         },
       );
-      console.debug('results', results)
       setTrips(results);
     });
     return () => unsubscribe();
