@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuthContext } from '@/app/auth-provider';
 import DialogLayout from '@/components/dialog-layout';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
@@ -15,10 +16,17 @@ type Props = {
 };
 
 export default function DeleteAdminButton({ admin }: Props) {
+  const { authUser } = useAuthContext();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [processing, setProcessing] = useState<boolean>(false);
 
   const doDelete = async () => {
+    console.debug('doDelete > docId:', admin.docId);
+    if (!(authUser?.isAdmin || authUser?.isOwner)) {
+      toast.error('You are not authorised to manage users.');
+      return;
+    }
+
     try {
       setProcessing(true);
 
@@ -67,7 +75,11 @@ export default function DeleteAdminButton({ admin }: Props) {
           <button onClick={() => setIsOpen(false)} className="btn btn-outline-danger">
             Cancel
           </button>
-          <button onClick={() => doDelete()} disabled={processing} className="btn btn-danger">
+          <button
+            onClick={() => doDelete()}
+            disabled={processing || !authUser}
+            className="btn btn-danger"
+          >
             Confirm Delete
           </button>
         </div>
