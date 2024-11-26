@@ -3,15 +3,15 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "firebasestorage.googleapis.com",
-        pathname: "/v0/b/truck-it-bf0b2.appspot.com/o/**",
-        port: "",
+        protocol: 'https',
+        hostname: 'firebasestorage.googleapis.com',
+        pathname: '/v0/b/truck-it-bf0b2.appspot.com/o/**',
+        port: '',
       },
       {
-        protocol: "https",
-        hostname: "ui-avatars.com",
-        port: "",
+        protocol: 'https',
+        hostname: 'ui-avatars.com',
+        port: '',
       },
     ],
   },
@@ -19,8 +19,8 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: "/",
-        destination: "/dashboard",
+        source: '/',
+        destination: '/dashboard',
         permanent: true,
       },
     ];

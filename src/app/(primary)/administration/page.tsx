@@ -5,15 +5,6 @@ import Link from 'next/link';
 
 export default function Administration() {
   const { authUser } = useAuthContext();
-  // const { company } = useCurrentCompany();
-  // const pathName = usePathname();
-  // const router = useRouter();
-
-  // useEffect(() => {
-  //   if (company && pathName === '/administration') {
-  //     router.push('/administration/profile');
-  //   }
-  // }, [company, pathName, router]);
 
   return (
     <main className="">
