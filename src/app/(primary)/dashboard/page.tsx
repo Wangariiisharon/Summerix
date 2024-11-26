@@ -21,6 +21,7 @@ export default function Home() {
   const [tripStats, setTripStats] = useState({
     total: 0,
     booked: 0,
+    active: 0,
     completed: 0,
     cancelled: 0,
   });
@@ -105,13 +106,20 @@ export default function Home() {
     );
 
     const snapshot2 = await getAggregateFromServer(
-      query(q, where('status', '==', TRIP_STATUS.completed)),
+      query(q, where('status', '==', TRIP_STATUS.active)),
       {
         docsCount: count(),
       },
     );
 
     const snapshot3 = await getAggregateFromServer(
+      query(q, where('status', '==', TRIP_STATUS.completed)),
+      {
+        docsCount: count(),
+      },
+    );
+
+    const snapshot4 = await getAggregateFromServer(
       query(q, where('status', '==', TRIP_STATUS.cancelled)),
       {
         docsCount: count(),
@@ -121,8 +129,9 @@ export default function Home() {
     setTripStats({
       total: snapshot.data().docsCount,
       booked: snapshot1.data().docsCount,
-      completed: snapshot2.data().docsCount,
-      cancelled: snapshot3.data().docsCount,
+      active: snapshot2.data().docsCount,
+      completed: snapshot3.data().docsCount,
+      cancelled: snapshot4.data().docsCount,
     });
   }, [authUser]);
 
@@ -289,6 +298,12 @@ export default function Home() {
                       borderWidth: 2,
                     },
                     {
+                      label: 'Active',
+                      data: [tripStats.active, tripStats.total - tripStats.active],
+                      backgroundColor: ['#FFC107', '#E9ECEF'],
+                      borderWidth: 2,
+                    },
+                    {
                       label: 'Completed',
                       data: [tripStats.completed, tripStats.total - tripStats.completed],
                       backgroundColor: ['#4FD1C5', '#E9ECEF'],
@@ -322,6 +337,11 @@ export default function Home() {
                     name: 'Booked',
                     value: tripStats.booked,
                     classNames: 'bg-[#065AD8]/20 text-[#065AD8]',
+                  },
+                  {
+                    name: 'Active',
+                    value: tripStats.active,
+                    classNames: 'bg-[#FFC107]/20 text-[#FFC107]',
                   },
                   {
                     name: 'Completed',

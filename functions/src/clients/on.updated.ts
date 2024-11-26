@@ -1,6 +1,7 @@
 import { logger, runWith } from 'firebase-functions/v1';
 import { CLIENT } from '../models/client';
 import Constants from '../Constants';
+import { firestore } from 'firebase-admin';
 
 export const OnClientUpdated = runWith({
   maxInstances: 10,
@@ -13,7 +14,19 @@ export const OnClientUpdated = runWith({
     logger.log('OnClientUpdated > details:', { client, prevClient });
 
     try {
-      // TODO: implement this
+      if (prevClient.firstName !== client.firstName || prevClient.lastName !== client.lastName) {
+        client.displayName = `${client.firstName} ${client.lastName}`;
+        logger.debug('OnClientUpdated > displayName:', client.displayName);
+
+        await snapshot.after.ref.update({
+          displayName: client.displayName,
+          lowerCase: {
+            firstName: client.firstName.toLocaleLowerCase(),
+            lastName: client.lastName.toLocaleLowerCase(),
+          },
+          lastUpdated: firestore.FieldValue.serverTimestamp(),
+        });
+      }
     } catch (error) {
       logger.error('OnClientUpdated error:::', error);
     }

@@ -1,0 +1,20 @@
+{
+  "statusList": [
+    {
+      "value": "booked",
+      "name": "Booked"
+    },
+    {
+      "value": "active",
+      "name": "Active"
+    },
+    {
+      "value": "completed",
+      "name": "Completed"
+    },
+    {
+      "value": "cancelled",
+      "name": "Cancelled"
+    }
+  ]
+}
