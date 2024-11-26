@@ -1,10 +1,11 @@
-/* eslint-disable no-unused-vars */
-import { type DocumentData, DocumentReference, QueryDocumentSnapshot } from 'firebase/firestore';
+import {
+  type DocumentData,
+  DocumentReference,
+  QueryDocumentSnapshot,
+} from 'firebase-admin/firestore';
 import { CLIENT_DETAILS } from './client';
 import { COMPANY_DETAILS } from './company';
 import { DRIVER_DETAILS } from './driver';
-import { VEHICLE_DETAILS } from './vehicle';
-import { ADDRESS } from './address';
 
 export interface TRIP {
   docId: string;
@@ -14,9 +15,26 @@ export interface TRIP {
   company: COMPANY_DETAILS;
   client: CLIENT_DETAILS; // requested by
   driver: DRIVER_DETAILS;
-  vehicle: VEHICLE_DETAILS;
-  from: ADDRESS; // pick-up location details
-  to: ADDRESS; // drop-off location details
+  vehicle: string; // VEHICLE_DETAILS
+
+  addedBy: {
+    docId: string;
+    name: string;
+    email: string;
+    phonenumber: string;
+  };
+  requestedBy: {
+    docId: string;
+    name: string;
+    email: string;
+    phonenumber: string;
+  };
+
+  from: any; // pick-up location details
+  to: any; // drop-off location details
+
+  started: any; // start details e.g. time
+  ended: any; // end details e.g. time
   cargo: any; // cargo details e.g. size, type, quantity
   documents: {
     interChange: string;
@@ -39,26 +57,6 @@ export interface TRIP {
   doc: QueryDocumentSnapshot<DocumentData, DocumentData>;
   docRef: DocumentReference<DocumentData, DocumentData>;
 
-  createdBy: {
-    authId: string;
-    email: string;
-    displayName: string;
-  };
-  updatedBy: {
-    authId: string;
-    email: string;
-    displayName: string;
-  };
-
-  startedAt: any; // start details e.g. time
-  endedAt: any; // end details e.g. time
   dateCreated: any;
   lastUpdated: any;
-}
-
-export enum TRIP_STATUS {
-  booked = 'booked',
-  active = 'active',
-  completed = 'completed',
-  cancelled = 'cancelled',
 }

@@ -21,7 +21,7 @@ export default function LatestTrips() {
     const q = query(
       collection(fbDb, Constants.fbTrips),
       where('company.docId', '==', authUser.companyId),
-      orderBy('timestamp', 'desc'),
+      orderBy('lastUpdated', 'desc'),
       limit(5),
     );
 
@@ -61,7 +61,7 @@ export default function LatestTrips() {
                   <th className="th table-cell-sm">To</th>
                   <th className="th table-cell-md">Distance</th>
                   <th className="th">Status</th>
-                  <th className="th">Timestamp</th>
+                  <th className="th">Last Modified</th>
                 </tr>
               </thead>
               <tbody>
@@ -72,10 +72,10 @@ export default function LatestTrips() {
                       onClick={() => router.push(`/operations/trips/${trip.docId}`)}
                       className="tr-body cursor-pointer"
                     >
-                      <td className="td">{trip.vehicle}</td>
+                      <td className="td">{trip.vehicle.regNumber}</td>
                       <td className="td table-cell-sm">{trip.from.location}</td>
                       <td className="td table-cell-sm">{trip.to.location}</td>
-                      <td className="td table-cell-md">{trip.distance}</td>
+                      <td className="td table-cell-md">{trip.distance || 'N/A'}</td>
                       <td className="td">{trip.status}</td>
                       <td className="td">
                         {trip.dateCreated &&
