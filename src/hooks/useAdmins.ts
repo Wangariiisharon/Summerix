@@ -20,14 +20,15 @@ interface Props {
   companyId: string;
   docId: string | null;
   params?: PARAMS_MAP;
+  isActive?: string;
 }
 
-function useAdmins({ companyId, docId, params }: Props) {
+function useAdmins({ companyId, docId, params, isActive }: Props) {
   const [admins, setAdmins] = useState<ADMIN[]>([]);
   const [count, setCount] = useState<number>(0);
 
   useEffect(() => {
-    // console.debug('useAdmins > details:', { docId, params });
+    // console.debug('useAdmins > details:', { docId, params, isActive });
 
     const constraints = [];
     const colRef = collection(fbDb, Constants.fbAdmins);
@@ -38,6 +39,10 @@ function useAdmins({ companyId, docId, params }: Props) {
 
     if (companyId && companyId !== '') {
       constraints.push(where('company.docId', '==', companyId));
+    }
+
+    if (isActive && isActive !== '') {
+      constraints.push(where('rolesMap.isActive', '==', isActive === 'active'));
     }
 
     getCountFromServer(query(colRef, ...constraints)).then((countSnap) => {
@@ -77,7 +82,7 @@ function useAdmins({ companyId, docId, params }: Props) {
     );
 
     return () => unsubscribe();
-  }, [companyId, docId, params]);
+  }, [companyId, docId, isActive, params]);
 
   return {
     admins,

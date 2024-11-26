@@ -6,8 +6,7 @@ import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { ADMIN } from '@/models/admin';
 import { DialogTitle } from '@headlessui/react';
-import { TrashIcon } from '@heroicons/react/24/outline';
-import { deleteDoc, doc } from 'firebase/firestore';
+import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -15,13 +14,13 @@ type Props = {
   admin: ADMIN;
 };
 
-export default function DeleteAdminButton({ admin }: Props) {
+export default function ToggleAdminButton({ admin }: Props) {
   const { authUser } = useAuthContext();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [processing, setProcessing] = useState<boolean>(false);
 
-  const doDelete = async () => {
-    console.debug('doDelete > docId:', admin.docId);
+  const doToggle = async () => {
+    console.debug('doToggle > docId:', admin.docId);
     if (!(authUser?.isAdmin || authUser?.isOwner)) {
       toast.error('You are not authorised to manage users.');
       return;
@@ -31,11 +30,18 @@ export default function DeleteAdminButton({ admin }: Props) {
       setProcessing(true);
 
       const docRef = doc(fbDb, Constants.fbAdmins, admin.docId);
-      await deleteDoc(docRef);
+      await updateDoc(docRef, {
+        'rolesMap.isActive': !admin.rolesMap.isActive,
+        updatedBy: {
+          authId: authUser.uid,
+          email: authUser.email,
+        },
+        lastUpdated: serverTimestamp(),
+      });
 
-      toast.success('Admin user deleted successfully.');
+      toast.success('Admin user updated successfully.');
     } catch (error) {
-      console.error('doDelete error:', error);
+      console.error('doToggle error:', error);
     } finally {
       setProcessing(false);
       setIsOpen(false);
@@ -44,8 +50,11 @@ export default function DeleteAdminButton({ admin }: Props) {
 
   return (
     <>
-      <button onClick={() => setIsOpen(true)}>
-        <TrashIcon className="h-5 w-5 text-danger hover:opacity-50" />
+      <button
+        onClick={() => setIsOpen(true)}
+        className={`rounded px-4 py-2 hover:opacity-50 ${admin.rolesMap.isActive ? 'bg-danger/20 text-red-700' : 'bg-secondary/20 text-teal-700'}`}
+      >
+        {admin.rolesMap.isActive ? 'Archive' : 'Unarchive'}
       </button>
 
       <DialogLayout
@@ -54,7 +63,7 @@ export default function DeleteAdminButton({ admin }: Props) {
         classNames="dialog-panel max-w-md"
       >
         <DialogTitle as="h3" className="dialog-title text-sm">
-          Confirm Delete Admin User?
+          Confirm {admin.rolesMap.isActive ? 'Archive' : 'Unarchive'} Admin User?
         </DialogTitle>
 
         <div className="mt-10 grid items-center gap-3">
@@ -77,11 +86,12 @@ export default function DeleteAdminButton({ admin }: Props) {
             Cancel
           </button>
           <button
-            onClick={() => doDelete()}
+            onClick={() => doToggle()}
             disabled={processing || !authUser}
-            className="btn btn-danger"
+            className={`btn ${admin.rolesMap.isActive ? 'btn-danger' : 'btn-secondary'}`}
+            // className="btn btn-danger"
           >
-            Confirm Delete
+            Confirm {admin.rolesMap.isActive ? 'Archive' : 'Unarchive'}
           </button>
         </div>
       </DialogLayout>
