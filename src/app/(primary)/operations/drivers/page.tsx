@@ -108,7 +108,17 @@ export default function Drivers() {
                     </td>
                     <td className="td table-cell-sm">{driver.email}</td>
                     <td className="td table-cell-xl">{driver.phoneNumber}</td>
-                    <td className="td table-cell-md">{driver.vehicle?.name || 'N/A'}</td>
+                    <td className="td table-cell-md">
+                      {driver.vehicle && (
+                        <Link
+                          href={`/operations/vehicles/${driver.vehicle.docId}`}
+                          className="text-primary hover:text-secondary"
+                        >
+                          {driver.vehicle.name}
+                        </Link>
+                      )}
+                      {!driver.vehicle && 'N/A'}
+                    </td>
                     <td className="td table-cell-xl">
                       {driver.lastUpdated &&
                         moment(driver.lastUpdated.toDate()).format(Constants.dateTimeFormat)}
@@ -116,7 +126,7 @@ export default function Drivers() {
                     <td className="td">
                       <div className="td-actions">
                         <Link href={`/operations/drivers/${driver.docId}`}>
-                          <PencilSquareIcon className="h-5 w-5 text-primary hover:text-secondary" />
+                          <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
                         </Link>
                       </div>
                     </td>
