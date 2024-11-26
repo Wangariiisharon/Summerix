@@ -12,6 +12,7 @@ import moment from 'moment-timezone';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import DeleteAdminButton from './button-delete';
 
 export default function Users() {
   const { authUser } = useAuthContext();
@@ -122,8 +123,9 @@ export default function Users() {
                     <td className="td">
                       <div className="td-actions">
                         <Link href={`/administration/users/${admin.docId}`}>
-                          <PencilSquareIcon className="h-5 w-5 text-primary hover:text-secondary" />
+                          <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
                         </Link>
+                        <DeleteAdminButton admin={admin} />
                       </div>
                     </td>
                   </tr>
