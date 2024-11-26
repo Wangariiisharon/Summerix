@@ -13,6 +13,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import DeleteAdminButton from './button-delete';
+import ToggleAdminButton from './button-toggle';
 
 export default function Users() {
   const { authUser } = useAuthContext();
@@ -98,7 +99,7 @@ export default function Users() {
                 <th className="th table-cell-sm">Email Address</th>
                 <th className="th table-cell-xl">Status</th>
                 <th className="th table-cell-xl">Last Modified</th>
-                <th className="th">Actions</th>
+                <th className="th text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -106,11 +107,11 @@ export default function Users() {
                 return (
                   <tr key={admin.docId} className="tr-body">
                     <td className="td text-center">
-                      <div className="h-auto w-auto overflow-hidden rounded-xl">
+                      <div className="h-auto w-16 overflow-hidden rounded-xl">
                         <Image
                           src={admin.photoURL}
                           alt={`${admin.displayName} image`}
-                          className="h-16 w-16 rounded-xl object-cover"
+                          className="rounded-xl object-cover"
                           height={50}
                           width={50}
                           priority
@@ -139,11 +140,12 @@ export default function Users() {
                         moment(admin.lastUpdated.toDate()).format(Constants.dateTimeFormat)}
                     </td>
                     <td className="td">
-                      <div className="td-actions">
+                      <div className="td-actions justify-start">
                         <Link href={`/administration/users/${admin.docId}`}>
                           <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
                         </Link>
                         <DeleteAdminButton admin={admin} />
+                        <ToggleAdminButton admin={admin} />
                       </div>
                     </td>
                   </tr>
