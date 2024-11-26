@@ -58,7 +58,7 @@ export interface TRIP {
 
 export enum TRIP_STATUS {
   booked = 'booked',
-  processing = 'processing',
+  active = 'active',
   completed = 'completed',
   cancelled = 'cancelled',
 }

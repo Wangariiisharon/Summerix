@@ -1,10 +1,7 @@
 export interface ADDRESS {
   country: string;
-  county: string;
-  town: string;
   location: string;
-  physicalAddress: string;
-  geolocation: {
+  cordinates?: {
     longitude: number | null;
     latitude: number | null;
   };
