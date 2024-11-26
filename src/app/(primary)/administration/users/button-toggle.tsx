@@ -68,7 +68,7 @@ export default function ToggleAdminButton({ admin }: Props) {
 
         <div className="mt-10 grid items-center gap-3">
           <div className="flex items-center justify-between gap-5">
-            <label className="form-label">Full Name:</label>
+            <label className="form-label">Display Name:</label>
             <p>{admin.displayName}</p>
           </div>
           <div className="flex items-center justify-between gap-5">

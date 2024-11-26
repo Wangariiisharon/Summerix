@@ -12,6 +12,7 @@ import moment from 'moment';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import DeleteDriverButton from './button-delete';
 
 export default function Drivers() {
   const { authUser } = useAuthContext();
@@ -80,7 +81,7 @@ export default function Drivers() {
                 <th className="th table-cell-xl">Phone Number</th>
                 <th className="th table-cell-md">Vehicle</th>
                 <th className="th table-cell-xl">Last Modified</th>
-                <th className="th">Actions</th>
+                <th className="th text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -124,10 +125,11 @@ export default function Drivers() {
                         moment(driver.lastUpdated.toDate()).format(Constants.dateTimeFormat)}
                     </td>
                     <td className="td">
-                      <div className="td-actions">
+                      <div className="td-actions justify-start">
                         <Link href={`/operations/drivers/${driver.docId}`}>
                           <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
                         </Link>
+                        <DeleteDriverButton driver={driver} />
                       </div>
                     </td>
                   </tr>
