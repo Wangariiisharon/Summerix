@@ -4,7 +4,6 @@ import { useAuthContext } from '@/app/auth-provider';
 import DialogLayout from '@/components/dialog-layout';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
-import { DRIVER } from '@/models/driver';
 import { TRIP } from '@/models/trip';
 import { DialogTitle } from '@headlessui/react';
 import { TrashIcon } from '@heroicons/react/24/outline';

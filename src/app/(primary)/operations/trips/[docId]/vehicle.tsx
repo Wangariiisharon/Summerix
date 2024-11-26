@@ -123,7 +123,6 @@ export default function TripVehicle({ companyId, setFieldValue, trip }: Props) {
                       <p className="font-medium">{vehicle.name}</p>
                       <p className="text-xs">{vehicle.regNumber}</p>
                     </div>
-                    
                   </div>
 
                   <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-primary group-data-[focus]:text-white [.group:not([data-selected])_&]:hidden">
