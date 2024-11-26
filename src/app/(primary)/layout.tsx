@@ -19,7 +19,7 @@ export default function PrimaryLayout({ children, header, sidebar }: Props) {
           <div className="mt-5 flex w-full flex-col items-center xl:w-1/6">
             <div className="fixed w-full xl:w-fit xl:p-4">{sidebar}</div>
           </div>
-          <div className="mt-16 min-h-screen w-full bg-gray-100 xl:mt-5 xl:w-5/6">{children}</div>
+          <div className="mt-10 min-h-screen w-full bg-gray-100 sm:mt-5 xl:w-5/6">{children}</div>
         </div>
       </div>
 
