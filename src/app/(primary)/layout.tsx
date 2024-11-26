@@ -27,7 +27,7 @@ export default function PrimaryLayout({ children, header, sidebar }: Props) {
 
       <div className="hidden">
         <div className="status-pending status-booked status-under-maintenance"></div>
-        <div className="status-processing status-on-route"></div>
+        <div className="status-active status-on-route"></div>
         <div className="status-approved status-completed status-available"></div>
         <div className="status-cancelled status-rejected status-out-of-service"></div>
       </div>
