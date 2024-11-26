@@ -16,7 +16,7 @@ import { useAuthContext } from '@/app/auth-provider';
 
 export default function Sidebar() {
   const { authUser } = useAuthContext();
-  const pathname = usePathname();
+  const pathName = usePathname();
 
   const navigation = useMemo(
     () => [
@@ -31,12 +31,27 @@ export default function Sidebar() {
         href: '/administration',
         icon: WrenchScrewdriverIcon,
         visible: authUser?.isOwner || authUser?.isAdmin || false,
+        children: [
+          { name: 'Overview', link: '' },
+          { name: 'Profile', link: 'profile' },
+          { name: 'Users', link: 'users' },
+          { name: 'Departments', link: 'departments' },
+          { name: 'Integration', link: 'integration' },
+        ],
       },
       {
         name: 'Operations',
         href: '/operations',
         icon: ChartBarIcon,
         visible: authUser && authUser.companyId,
+        children: [
+          { name: 'Overview', link: '' },
+          { name: 'Trips', link: 'trips' },
+          { name: 'Vehicles', link: 'vehicles' },
+          { name: 'Drivers', link: 'drivers' },
+          { name: 'Maintenance', link: 'maintenance' },
+          { name: 'Suppliers', link: 'suppliers' },
+        ],
       },
       {
         name: 'Reports',
@@ -82,7 +97,7 @@ export default function Sidebar() {
                 {navigation
                   .filter((i) => i.visible)
                   .map(({ name, href, icon: ItemIcon }, index) => {
-                    const isActive = pathname.startsWith(href);
+                    const isActive = pathName.startsWith(href);
 
                     return (
                       <Link key={index} href={href}>
@@ -111,34 +126,59 @@ export default function Sidebar() {
         )}
       </Popover>
 
-      <ul className="hidden flex-col lg:flex">
+      <div className="hidden flex-col lg:flex">
         {navigation
           .filter((i) => i.visible)
-          .map(({ name, href, icon: ItemIcon }, index) => {
-            const isActive = pathname.startsWith(href);
+          .map(({ name, href, icon: ItemIcon, children }, index) => {
+            const isActive = pathName.startsWith(href);
 
             return (
-              <Link key={index} href={href}>
-                <li
-                  className={`flex cursor-pointer justify-center border-r-4 hover:bg-blue-100 ${
-                    isActive ? 'border-blue-500 bg-blue-100' : 'border-transparent'
-                  }`}
-                >
-                  <div className="flex w-full items-center justify-start px-4">
-                    <ItemIcon
-                      className={`h-7 w-7 ${isActive ? 'text-blue-500' : 'text-gray-500'}`}
-                    />
-                    <span
-                      className={`p-4 font-medium ${isActive ? 'text-primary' : 'text-gray-700'}`}
+              <div key={`${href}-${index}`}>
+                <>
+                  <Link href={href}>
+                    <div
+                      className={`flex cursor-pointer justify-center border-r-4 hover:bg-blue-100 ${
+                        isActive ? 'border-blue-500 bg-blue-100' : 'border-transparent'
+                      }`}
                     >
-                      {name}
-                    </span>
-                  </div>
-                </li>
-              </Link>
+                      <div className="flex w-full items-center justify-start px-4">
+                        <ItemIcon
+                          className={`h-7 w-7 ${isActive ? 'text-blue-500' : 'text-gray-500'}`}
+                        />
+                        <span
+                          className={`p-4 font-medium ${isActive ? 'text-primary' : 'text-gray-700'}`}
+                        >
+                          {name}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+
+                  {isActive && children && (
+                    <div className="grid gap-2 p-4">
+                      {children.map((item) => {
+                        const isActive =
+                          (pathName.startsWith(`${href}/${item.link}`) &&
+                            item.name !== 'Overview') ||
+                          (pathName === `${href}` && item.name === 'Overview');
+
+                        return (
+                          <Link
+                            key={`${href}-${index}-${item.link}`}
+                            href={`${href}/${item.link}`}
+                            className={`px-4 py-2 text-sm capitalize hover:bg-gray-200 ${isActive && 'bg-[#F9F9FB] text-[#256DDC]'}`}
+                          >
+                            {item.name}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              </div>
             );
           })}
-      </ul>
+      </div>
     </>
   );
 }
