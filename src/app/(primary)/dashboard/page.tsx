@@ -294,13 +294,13 @@ export default function Home() {
                     {
                       label: 'Booked',
                       data: [tripStats.booked, tripStats.total - tripStats.booked],
-                      backgroundColor: ['#065AD8', '#E9ECEF'],
+                      backgroundColor: ['#FFC107', '#E9ECEF'],
                       borderWidth: 2,
                     },
                     {
                       label: 'Active',
                       data: [tripStats.active, tripStats.total - tripStats.active],
-                      backgroundColor: ['#FFC107', '#E9ECEF'],
+                      backgroundColor: ['#065AD8', '#E9ECEF'],
                       borderWidth: 2,
                     },
                     {
@@ -336,12 +336,12 @@ export default function Home() {
                   {
                     name: 'Booked',
                     value: tripStats.booked,
-                    classNames: 'bg-[#065AD8]/20 text-[#065AD8]',
+                    classNames: 'bg-[#FFC107]/20 text-[#FFC107]',
                   },
                   {
                     name: 'Active',
                     value: tripStats.active,
-                    classNames: 'bg-[#FFC107]/20 text-[#FFC107]',
+                    classNames: 'bg-[#065AD8]/20 text-[#065AD8]',
                   },
                   {
                     name: 'Completed',
