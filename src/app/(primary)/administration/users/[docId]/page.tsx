@@ -156,7 +156,7 @@ export default function User({ params }: Props) {
           firstName: admin?.firstName || '',
           lastName: admin?.lastName || '',
           idNumber: admin?.idNumber || '',
-          company: {
+          company: admin?.company || {
             docId: company.docId,
             name: company.name || '',
             email: company.email || '',

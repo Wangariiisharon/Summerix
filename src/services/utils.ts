@@ -14,9 +14,10 @@ export const getInputStyle = (errors: any, fieldName: string | string[]) => {
   return getIn(errors, fieldName) ? 'form-input border-red-500 text-red-500' : 'form-input';
 };
 
-export const doUploadImage = async (file: File, folder: string) => {
-  const storageRef = ref(fbStorage, `${folder}/${file.name}`);
-  const snapshot = await uploadBytes(storageRef, file);
+export const doUploadImage = async (data: File | Blob, folder: string, fileName: string) => {
+  console.debug('doUploadImage > params:', { data, folder, fileName });
+  const storageRef = ref(fbStorage, `${folder}/${fileName}`);
+  const snapshot = await uploadBytes(storageRef, data);
   const downloadUrl = await getDownloadURL(snapshot.ref);
   return downloadUrl;
 };
