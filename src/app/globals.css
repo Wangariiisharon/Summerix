@@ -121,6 +121,10 @@
     @apply border-secondary bg-secondary text-white hover:opacity-80;
   }
 
+  .btn-danger {
+    @apply border-danger bg-danger text-white hover:opacity-80;
+  }
+
   .btn-outline {
     @apply border-gray-300 text-gray-700 hover:border-primary hover:text-primary;
   }
