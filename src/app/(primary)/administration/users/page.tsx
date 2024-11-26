@@ -63,31 +63,30 @@ export default function Users() {
           <h2 className="font-bold">Admin Users</h2>
           <p className="text-gray-500">Manage your teams & user permissions.</p>
         </div>
-        <Link href="/administration/users/new">
-          <div className="btn btn-flex btn-secondary">
-            <PlusIcon className="h-5 w-5" />
-            <p>Add User</p>
-          </div>
-        </Link>
+
+        <div className="flex flex-wrap items-center gap-5">
+          <label className="block">
+            <select
+              name="status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="form-select w-24 border-secondary py-2.5"
+            >
+              <option value="">All</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </label>
+          <Link href="/administration/users/new">
+            <div className="btn btn-flex btn-secondary">
+              <PlusIcon className="h-5 w-5" />
+              <p>Add User</p>
+            </div>
+          </Link>
+        </div>
       </section>
 
       <hr className="my-5" />
-
-      <section className="flex flex-col justify-between gap-5 sm:flex-row">
-        <label className="block">
-          <label className="form-label">Filter by status</label>
-          <select
-            name="status"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="form-select w-24"
-          >
-            <option value="">All</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </label>
-      </section>
 
       <div className="table-wrapper">
         <div className="table-scroll text-sm">
