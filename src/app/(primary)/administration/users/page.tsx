@@ -13,9 +13,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import DeleteAdminButton from './button-delete';
+import ToggleAdminButton from './button-toggle';
 
 export default function Users() {
   const { authUser } = useAuthContext();
+  const [status, setStatus] = useState<string>('');
   const [params, setParams] = useState<PARAMS_MAP>({
     max: Constants.defaultPageSize,
     orderBy: 'lastUpdated',
@@ -23,6 +25,7 @@ export default function Users() {
   });
   const { count, admins } = useAdmins({
     companyId: authUser?.companyId || 'xyz',
+    isActive: status || '',
     docId: null,
     params,
   });
@@ -57,7 +60,7 @@ export default function Users() {
     <main className="">
       <section className="flex flex-col justify-between gap-5 sm:flex-row">
         <div className="">
-          <h2 className="font-bold">Users</h2>
+          <h2 className="font-bold">Admin Users</h2>
           <p className="text-gray-500">Manage your teams & user permissions.</p>
         </div>
         <Link href="/administration/users/new">
@@ -70,6 +73,22 @@ export default function Users() {
 
       <hr className="my-5" />
 
+      <section className="flex flex-col justify-between gap-5 sm:flex-row">
+        <label className="block">
+          <label className="form-label">Filter by status</label>
+          <select
+            name="status"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="form-select w-24"
+          >
+            <option value="">All</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </label>
+      </section>
+
       <div className="table-wrapper">
         <div className="table-scroll text-sm">
           <table className="my-table">
@@ -80,7 +99,7 @@ export default function Users() {
                 <th className="th table-cell-sm">Email Address</th>
                 <th className="th table-cell-xl">Status</th>
                 <th className="th table-cell-xl">Last Modified</th>
-                <th className="th">Actions</th>
+                <th className="th text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -88,11 +107,11 @@ export default function Users() {
                 return (
                   <tr key={admin.docId} className="tr-body">
                     <td className="td text-center">
-                      <div className="h-auto w-auto overflow-hidden rounded-xl">
+                      <div className="h-auto w-16 overflow-hidden rounded-xl">
                         <Image
                           src={admin.photoURL}
                           alt={`${admin.displayName} image`}
-                          className="h-16 w-16 rounded-xl object-cover"
+                          className="rounded-xl object-cover"
                           height={50}
                           width={50}
                           priority
@@ -121,11 +140,12 @@ export default function Users() {
                         moment(admin.lastUpdated.toDate()).format(Constants.dateTimeFormat)}
                     </td>
                     <td className="td">
-                      <div className="td-actions">
+                      <div className="td-actions justify-start">
                         <Link href={`/administration/users/${admin.docId}`}>
                           <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
                         </Link>
                         <DeleteAdminButton admin={admin} />
+                        <ToggleAdminButton admin={admin} />
                       </div>
                     </td>
                   </tr>
