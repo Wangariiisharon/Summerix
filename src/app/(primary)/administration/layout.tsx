@@ -14,7 +14,7 @@ type Props = {
 
 export default function Layout({ children }: Props) {
   return (
-    <main className="p-4">
+    <main className="bg-white p-4">
       <CompanyNav />
       <div className="mt-5">{children}</div>
     </main>

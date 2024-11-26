@@ -1,31 +1,16 @@
 import { type DocumentData, DocumentReference, QueryDocumentSnapshot } from 'firebase/firestore';
 import { COMPANY_DETAILS } from './company';
 
-export interface ADMIN {
+export interface DEPARTMENT {
   docId: string;
-
-  firstName: string;
-  lastName: string;
-  displayName?: string;
-
-  email: string;
-  phoneNumber: string;
-  idNumber: string;
-  photoURL: string;
-  department: string;
+  name: string;
+  members: number;
   company: COMPANY_DETAILS;
 
   roles: Array<string>;
   rolesMap: {
     companyId: string;
     isActive: boolean;
-    isAdmin: boolean;
-    isOwner: boolean;
-  };
-
-  lowerCase: {
-    firstName: string;
-    lastName: string;
   };
 
   docRef: DocumentReference<DocumentData, DocumentData>;
@@ -36,9 +21,3 @@ export interface ADMIN {
   createdBy: { email: string; authId: string };
   updatedBy: { email: string; authId: string };
 }
-
-export const ADMIN_ROLES = {
-  canManageAdmins: 'canManageAdmins',
-  canManageClients: 'canManageClients',
-  canManageVehicles: 'canManageVehicles',
-};

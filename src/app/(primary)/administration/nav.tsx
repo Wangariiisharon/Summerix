@@ -26,16 +26,21 @@ export default function CompanyNav() {
         <div className="grid gap-1">
           <h2 className="font-semibold">{company.name}</h2>
           <p className="text-gray-500">{company.description}</p>
-          <button className="btn btn-flex btn-secondary mt-5 px-8">
-            <CameraIcon className="h-5 w-5" />
-            <p>Upload New Photo</p>
-          </button>
+          <div className="flex flex-row">
+            <button className="btn btn-flex btn-secondary mt-5 px-8">
+              <CameraIcon className="h-5 w-5" />
+              <p>Upload New Photo</p>
+            </button>
+            <button className="btn btn-flex btn-secondary ml-[15px] mt-5 border border-gray-300 bg-[#F8F8F8] px-8 text-gray-700">
+              <p>Reset</p>
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="mt-10 flex items-center gap-5 overflow-auto">
         {[
-          { name: 'Overview', link: '' },
+          // { name: 'Overview', link: '' },
           { name: 'Profile', link: 'profile' },
           { name: 'Users', link: 'users' },
           { name: 'Departments', link: 'departments' },
@@ -49,7 +54,7 @@ export default function CompanyNav() {
             <Link
               key={link}
               href={`/administration/${link}`}
-              className={`px-4 py-2 text-sm capitalize hover:bg-gray-200 ${isActive && 'bg-gray-200 text-primary'}`}
+              className={`px-4 py-2 text-sm capitalize hover:bg-gray-200 ${isActive && 'bg-[#F9F9FB] text-[#256DDC]'}`}
             >
               {name}
             </Link>
