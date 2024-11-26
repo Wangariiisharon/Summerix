@@ -9,7 +9,7 @@ import { PARAMS_MAP } from '@/models/params-map';
 import { VEHICLE } from '@/models/vehicle';
 import { PencilSquareIcon, PlusIcon, UserPlusIcon } from '@heroicons/react/24/outline';
 import { DocumentSnapshot } from 'firebase/firestore';
-import moment from 'moment-timezone';
+import moment from 'moment';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';

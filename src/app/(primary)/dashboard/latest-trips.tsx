@@ -5,7 +5,7 @@ import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { TRIP } from '@/models/trip';
 import { collection, limit, onSnapshot, orderBy, query, where } from 'firebase/firestore';
-import moment from 'moment-timezone';
+import moment from 'moment';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
