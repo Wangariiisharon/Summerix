@@ -16,6 +16,7 @@ import DeleteAdminButton from './button-delete';
 
 export default function Users() {
   const { authUser } = useAuthContext();
+  const [status, setStatus] = useState<string>('');
   const [params, setParams] = useState<PARAMS_MAP>({
     max: Constants.defaultPageSize,
     orderBy: 'lastUpdated',
@@ -23,6 +24,7 @@ export default function Users() {
   });
   const { count, admins } = useAdmins({
     companyId: authUser?.companyId || 'xyz',
+    isActive: status || '',
     docId: null,
     params,
   });
@@ -57,7 +59,7 @@ export default function Users() {
     <main className="">
       <section className="flex flex-col justify-between gap-5 sm:flex-row">
         <div className="">
-          <h2 className="font-bold">Users</h2>
+          <h2 className="font-bold">Admin Users</h2>
           <p className="text-gray-500">Manage your teams & user permissions.</p>
         </div>
         <Link href="/administration/users/new">
@@ -69,6 +71,20 @@ export default function Users() {
       </section>
 
       <hr className="my-5" />
+
+      <label className="block">
+        <label className="form-label">Filter by status</label>
+        <select
+          name="status"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          className="form-select w-24"
+        >
+          <option value="all">All</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </label>
 
       <div className="table-wrapper">
         <div className="table-scroll text-sm">
