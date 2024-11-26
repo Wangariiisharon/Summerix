@@ -21,6 +21,7 @@ import useCurrentCompany from '@/hooks/useCurrentCompany';
 import Trips from '@/json/trips.json';
 import { TRIP, TRIP_STATUS } from '@/models/trip';
 import TripVehicle from './vehicle';
+import Image from 'next/image';
 
 const TripSchema = () => {
   return Yup.object().shape({
@@ -169,6 +170,34 @@ export default function Vehicle({ params }: Props) {
                   trip={trip}
                 />
               </label>
+              {trip && trip.driver && (
+                <div className="grid-1-3 gap-5">
+                  <div className="text-sm">
+                    <label className="font-medium">Driver</label>
+                  </div>
+                  <div className="grid-1-2 col-span-2 gap-3">
+                    {trip.driver && (
+                      <div className="flex items-center gap-3">
+                        <Image
+                          src={trip.driver.photoURL}
+                          alt={trip.driver.displayName}
+                          className="size-20 shrink-0 rounded-full"
+                          width={100}
+                          height={100}
+                        />
+                        <div className="grid gap-0.5">
+                          <p className="">{trip.driver.displayName}</p>
+                          <div className="form-label">
+                            <p>{trip.driver.email}</p>
+                            <p>{trip.driver.phoneNumber}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <label className="grid-1-3">
                 <div className="text-sm">
                   <label className="font-medium">Status</label>

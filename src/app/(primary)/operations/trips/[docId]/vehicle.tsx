@@ -81,7 +81,7 @@ export default function TripVehicle({ companyId, setFieldValue, trip }: Props) {
                   <Image
                     src={selected.photoURL}
                     alt={selected.name}
-                    className="size-5 shrink-0 rounded-full"
+                    className="size-10 shrink-0 rounded-full"
                     width={100}
                     height={100}
                   />
@@ -91,7 +91,10 @@ export default function TripVehicle({ companyId, setFieldValue, trip }: Props) {
                     <TruckIcon className="h-3 w-3" />
                   </div>
                 )}
-                <p className="block truncate">{selected?.name}</p>
+                <div className="block truncate">
+                  <p className="font-medium">{selected?.name}</p>
+                  <p className="text-xs">{selected?.regNumber}</p>
+                </div>
               </div>
               <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
                 <ChevronUpDownIcon aria-hidden="true" className="size-5 text-gray-400" />
@@ -112,13 +115,14 @@ export default function TripVehicle({ companyId, setFieldValue, trip }: Props) {
                     <Image
                       src={vehicle.photoURL}
                       alt={vehicle.name}
-                      className="size-5 shrink-0 rounded-full"
+                      className="size-10 shrink-0 rounded-full"
                       width={100}
                       height={100}
                     />
-                    <p className="block truncate font-normal group-data-[selected]:font-semibold">
-                      {vehicle.name}
-                    </p>
+                    <div className="block truncate group-data-[selected]:font-semibold">
+                      <p className="font-medium">{vehicle.name}</p>
+                      <p className="text-xs">{vehicle.regNumber}</p>
+                    </div>
                   </div>
 
                   <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-primary group-data-[focus]:text-white [.group:not([data-selected])_&]:hidden">
