@@ -63,10 +63,27 @@ export default function VehiclesPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-5">
+          <label className="block">
+            <select
+              name="status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="form-select w-36 border-secondary py-2.5"
+            >
+              <option value="">All</option>
+              {Vehicles.statusList.map(({ name, value }) => {
+                return (
+                  <option key={value} value={value}>
+                    {name}
+                  </option>
+                );
+              })}
+            </select>
+          </label>
           <button onClick={() => console.debug('do allocate vehicle...')}>
             <div className="btn btn-outline-secondary btn-flex">
               <UserPlusIcon className="h-5 w-5" />
-              <p>Allocate Vehicle</p>
+              <p>Allocate Vehicles</p>
             </div>
           </button>
           <Link href="/operations/vehicles/new">
@@ -79,27 +96,6 @@ export default function VehiclesPage() {
       </section>
 
       <hr className="my-5" />
-
-      <label className="block">
-        <label className="form-label">Filter by status</label>
-        <select
-          name="status"
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="form-select w-fit"
-        >
-          <option value="" disabled>
-            Select...
-          </option>
-          {Vehicles.statusList.map(({ name, value }) => {
-            return (
-              <option key={value} value={value}>
-                {name}
-              </option>
-            );
-          })}
-        </select>
-      </label>
 
       <div className="table-wrapper">
         <div className="table-scroll text-sm">
