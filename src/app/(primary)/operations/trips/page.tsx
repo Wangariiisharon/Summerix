@@ -12,6 +12,7 @@ import { DocumentSnapshot } from 'firebase/firestore';
 import moment from 'moment';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import DeleteTripButton from './button-delete';
 
 export default function TripsPage() {
   const { authUser } = useAuthContext();
@@ -138,7 +139,7 @@ export default function TripsPage() {
                         <Link href={`/operations/trips/${trip.docId}`}>
                           <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
                         </Link>
-                        {/* <DeleteVehicleButton vehicle={vehicle} /> */}
+                        <DeleteTripButton trip={trip} />
                       </div>
                     </td>
                   </tr>

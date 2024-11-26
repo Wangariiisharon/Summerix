@@ -173,7 +173,7 @@
     @apply rounded-xl bg-[#ff8f00]/10 px-4 py-2 text-[#ff8f00];
   }
 
-  .status-processing,
+  .status-active,
   .status-on-route {
     @apply rounded-xl bg-primary/10 px-4 py-2 text-primary;
   }
