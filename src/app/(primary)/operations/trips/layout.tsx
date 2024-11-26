@@ -1,7 +1,10 @@
 import { ReactNode } from 'react';
 
 export const metadata = {
-  title: 'Trips',
+  title: {
+    template: '%s | TruckMate Trips',
+    default: 'Trips',
+  },
 };
 
 type Props = {
