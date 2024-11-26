@@ -1,81 +1,22 @@
 'use client';
 
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react';
-import {
-  BriefcaseIcon,
-  ChartBarIcon,
-  DocumentChartBarIcon,
-  HomeIcon,
-  WrenchScrewdriverIcon,
-} from '@heroicons/react/24/outline';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid';
 import { usePathname } from 'next/navigation';
-import { useMemo } from 'react';
 import Link from 'next/link';
-import { useAuthContext } from '@/app/auth-provider';
+import useNavLinks from '@/hooks/useNavLinks';
 
 export default function Sidebar() {
-  const { authUser } = useAuthContext();
+  const navigation = useNavLinks();
   const pathName = usePathname();
-
-  const navigation = useMemo(
-    () => [
-      {
-        name: 'Dashboard',
-        href: '/dashboard',
-        icon: HomeIcon,
-        visible: authUser && authUser.companyId,
-      },
-      {
-        name: 'Administration',
-        href: '/administration',
-        icon: WrenchScrewdriverIcon,
-        visible: authUser?.isOwner || authUser?.isAdmin || false,
-        children: [
-          { name: 'Overview', link: '' },
-          { name: 'Profile', link: 'profile' },
-          { name: 'Users', link: 'users' },
-          { name: 'Departments', link: 'departments' },
-          { name: 'Integration', link: 'integration' },
-        ],
-      },
-      {
-        name: 'Operations',
-        href: '/operations',
-        icon: ChartBarIcon,
-        visible: authUser && authUser.companyId,
-        children: [
-          { name: 'Overview', link: '' },
-          { name: 'Trips', link: 'trips' },
-          { name: 'Vehicles', link: 'vehicles' },
-          { name: 'Drivers', link: 'drivers' },
-          { name: 'Maintenance', link: 'maintenance' },
-          { name: 'Suppliers', link: 'suppliers' },
-        ],
-      },
-      {
-        name: 'Reports',
-        href: '/reports',
-        icon: DocumentChartBarIcon,
-        visible: authUser && authUser.companyId,
-      },
-      {
-        name: 'Add Company',
-        href: '/company',
-        icon: BriefcaseIcon,
-        visible: authUser && !authUser.companyId,
-      },
-    ],
-    [authUser],
-  );
 
   return (
     <>
       <Popover as="header" className="w-full" aria-label="Header">
         {({ open }) => (
           <>
-            <div className="z-20 -mt-7 flex w-auto bg-primary p-4 lg:hidden">
-              <div className="flex w-full justify-end">
+            <div className="z-20 -mt-2 flex w-auto bg-primary p-4 xl:hidden">
+              <div className="flex w-full justify-end text-white">
                 <PopoverButton aria-label="Open menu" className="btn">
                   <span className="sr-only">Open menu</span>
                   {open ? (
@@ -89,7 +30,7 @@ export default function Sidebar() {
 
             <PopoverPanel
               as="nav"
-              className="absolute top-10 z-20 block lg:hidden"
+              className="absolute top-10 z-20 block xl:hidden"
               aria-label="Site mobile navigation"
               anchor="bottom"
             >
@@ -126,7 +67,7 @@ export default function Sidebar() {
         )}
       </Popover>
 
-      <div className="hidden flex-col lg:flex">
+      <div className="hidden flex-col xl:flex">
         {navigation
           .filter((i) => i.visible)
           .map(({ name, href, icon: ItemIcon, children }, index) => {
