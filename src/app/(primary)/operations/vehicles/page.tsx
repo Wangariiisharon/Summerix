@@ -13,6 +13,7 @@ import moment from 'moment';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import DeleteVehicleButton from './button-delete';
 
 export default function VehiclesPage() {
   const { authUser } = useAuthContext();
@@ -63,10 +64,27 @@ export default function VehiclesPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-5">
+          <label className="block">
+            <select
+              name="status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="form-select w-36 border-secondary py-2.5"
+            >
+              <option value="">All</option>
+              {Vehicles.statusList.map(({ name, value }) => {
+                return (
+                  <option key={value} value={value}>
+                    {name}
+                  </option>
+                );
+              })}
+            </select>
+          </label>
           <button onClick={() => console.debug('do allocate vehicle...')}>
             <div className="btn btn-outline-secondary btn-flex">
               <UserPlusIcon className="h-5 w-5" />
-              <p>Allocate Vehicle</p>
+              <p>Allocate Vehicles</p>
             </div>
           </button>
           <Link href="/operations/vehicles/new">
@@ -80,27 +98,6 @@ export default function VehiclesPage() {
 
       <hr className="my-5" />
 
-      <label className="block">
-        <label className="form-label">Filter by status</label>
-        <select
-          name="status"
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="form-select w-fit"
-        >
-          <option value="" disabled>
-            Select...
-          </option>
-          {Vehicles.statusList.map(({ name, value }) => {
-            return (
-              <option key={value} value={value}>
-                {name}
-              </option>
-            );
-          })}
-        </select>
-      </label>
-
       <div className="table-wrapper">
         <div className="table-scroll text-sm">
           <table className="my-table">
@@ -112,7 +109,7 @@ export default function VehiclesPage() {
                 <th className="th table-cell-md">Driver</th>
                 <th className="th table-cell-md">Status</th>
                 <th className="th table-cell-xl">Last Modified</th>
-                <th className="th">Actions</th>
+                <th className="th text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -156,10 +153,11 @@ export default function VehiclesPage() {
                         moment(vehicle.lastUpdated.toDate()).format(Constants.dateTimeFormat)}
                     </td>
                     <td className="td">
-                      <div className="td-actions">
+                      <div className="td-actions justify-start">
                         <Link href={`/operations/vehicles/${vehicle.docId}`}>
                           <PencilSquareIcon className="h-5 w-5 text-primary hover:text-secondary" />
                         </Link>
+                        <DeleteVehicleButton vehicle={vehicle} />
                       </div>
                     </td>
                   </tr>
