@@ -103,7 +103,11 @@ export default function UploadPhotoButton({ company }: Props) {
               <div className="mt-10 flex w-full justify-end gap-5">
                 <p className=""></p>
                 <div className="flex justify-end gap-5">
-                  <button onClick={() => setIsOpen(false)} className="btn btn-outline-danger">
+                  <button
+                    type="button"
+                    onClick={() => setIsOpen(false)}
+                    className="btn btn-outline-danger"
+                  >
                     Cancel
                   </button>
                   <button
