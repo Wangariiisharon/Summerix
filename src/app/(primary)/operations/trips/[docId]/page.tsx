@@ -22,7 +22,7 @@ import Trips from '@/json/trips.json';
 import { TRIP, TRIP_STATUS } from '@/models/trip';
 import TripVehicle from './vehicle';
 
-const TripSchema = (companyId: string, docId: string) => {
+const TripSchema = () => {
   return Yup.object().shape({
     from: Yup.object().shape({
       location: Yup.string().required('From location is required.'),
@@ -125,7 +125,7 @@ export default function Vehicle({ params }: Props) {
           to: trip?.to || {
             country: '',
             location: '',
-          },          
+          },
           driver: trip?.driver || null,
           vehicle: trip?.vehicle || null,
           updatedBy: {
@@ -133,12 +133,12 @@ export default function Vehicle({ params }: Props) {
             email: authUser?.email,
           },
         }}
-        validationSchema={TripSchema(authUser?.companyId || 'xyz', docId)}
+        validationSchema={TripSchema()}
         onSubmit={(values) => doSave(values)}
       >
         {({ isValid, setFieldValue }) => (
           <Form className="mt-6">
-            {/* <h2 className="text-center font-bold">Account setup</h2> */}
+            {/* <h2 className="text-center font-bold"></h2> */}
 
             <div className="mt-5 grid gap-5 p-4 shadow-sm">
               <label className="grid-1-3">

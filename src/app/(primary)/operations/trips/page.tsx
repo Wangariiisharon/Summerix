@@ -1,18 +1,19 @@
 'use client';
 
-import { useAuthContext } from "@/app/auth-provider";
-import RemotePagination from "@/components/remote-pagination";
-import Constants from "@/Constants";
-import useTrips from "@/hooks/useTrips";
-import { PARAMS_MAP } from "@/models/params-map";
-import { TRIP } from "@/models/trip";
-import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
-import { DocumentSnapshot } from "firebase/firestore";
-import moment from "moment";
-import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useAuthContext } from '@/app/auth-provider';
+import RemotePagination from '@/components/remote-pagination';
+import Constants from '@/Constants';
+import useTrips from '@/hooks/useTrips';
+import Trips from '@/json/trips.json';
+import { PARAMS_MAP } from '@/models/params-map';
+import { TRIP } from '@/models/trip';
+import { PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { DocumentSnapshot } from 'firebase/firestore';
+import moment from 'moment';
+import Link from 'next/link';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-export default function Trips() {
+export default function TripsPage() {
   const { authUser } = useAuthContext();
   const [params, setParams] = useState<PARAMS_MAP>({
     max: Constants.defaultPageSize,
@@ -61,7 +62,7 @@ export default function Trips() {
         </div>
 
         <div className="flex flex-wrap items-center gap-5">
-          {/* <label className="block">
+          <label className="block">
             <select
               name="status"
               value={status}
@@ -77,7 +78,7 @@ export default function Trips() {
                 );
               })}
             </select>
-          </label> */}
+          </label>
           <Link href="/operations/trips/new">
             <div className="btn btn-flex btn-secondary">
               <PlusIcon className="h-5 w-5" />
