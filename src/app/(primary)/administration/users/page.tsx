@@ -72,19 +72,21 @@ export default function Users() {
 
       <hr className="my-5" />
 
-      <label className="block">
-        <label className="form-label">Filter by status</label>
-        <select
-          name="status"
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="form-select w-24"
-        >
-          <option value="all">All</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-      </label>
+      <section className="flex flex-col justify-between gap-5 sm:flex-row">
+        <label className="block">
+          <label className="form-label">Filter by status</label>
+          <select
+            name="status"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="form-select w-24"
+          >
+            <option value="">All</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </label>
+      </section>
 
       <div className="table-wrapper">
         <div className="table-scroll text-sm">
