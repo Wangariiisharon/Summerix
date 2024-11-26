@@ -18,7 +18,7 @@ export const OnAdminUpdated = runWith({
     try {
       if (prevAdmin.firstName !== admin.firstName || prevAdmin.lastName !== admin.lastName) {
         admin.displayName = `${admin.firstName} ${admin.lastName}`;
-        logger.debug('OnHostUpdated > displayName:', admin.displayName);
+        logger.debug('OnAdminUpdated > displayName:', admin.displayName);
 
         await snapshot.after.ref.update({
           displayName: admin.displayName,
