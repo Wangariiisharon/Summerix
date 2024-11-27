@@ -98,6 +98,7 @@ export default function TripsPage() {
               <tr className="tr-header">
                 <th className="th">From</th>
                 <th className="th">To</th>
+                <th className="th table-cell-lg">Distance</th>
                 <th className="th table-cell-sm">Vehicle</th>
                 <th className="th table-cell-md">Driver</th>
                 <th className="th table-cell-md">Status</th>
@@ -111,6 +112,7 @@ export default function TripsPage() {
                   <tr key={trip.docId} className="tr-body">
                     <td className="td max-w-40">{trip.from?.location}</td>
                     <td className="td max-w-40">{trip.to?.location}</td>
+                    <td className="td table-cell-lg">{trip.distance?.text || 'N/A'}</td>
                     <td className="td table-cell-sm">{trip.vehicle?.regNumber}</td>
                     <td className="td table-cell-md">
                       {trip.driver && (
