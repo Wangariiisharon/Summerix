@@ -5,11 +5,11 @@ import { COMPANY_DETAILS } from './company';
 import { DRIVER_DETAILS } from './driver';
 import { VEHICLE_DETAILS } from './vehicle';
 import { ADDRESS } from './address';
+import { DOCUMENT } from './document';
 
 export interface TRIP {
   docId: string;
   status: string;
-  distance: string;
 
   company: COMPANY_DETAILS;
   client: CLIENT_DETAILS; // requested by
@@ -18,9 +18,19 @@ export interface TRIP {
   from: ADDRESS; // pick-up location details
   to: ADDRESS; // drop-off location details
   cargo: any; // cargo details e.g. size, type, quantity
-  documents: {
-    interChange: string;
-    t1Form: string;
+  documents?: DOCUMENT[];
+  // documents: {
+  //   interChange: string;
+  //   t1Form: string;
+  // };
+
+  distance: {
+    text: string;
+    value: number;
+  };
+  duration: {
+    text: string;
+    value: number;
   };
 
   payments: {
