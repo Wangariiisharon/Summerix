@@ -75,7 +75,7 @@ export default function LatestTrips() {
                       <td className="td">{trip.vehicle.regNumber}</td>
                       <td className="td table-cell-sm max-w-40">{trip.from.location}</td>
                       <td className="td table-cell-sm max-w-40">{trip.to.location}</td>
-                      <td className="td table-cell-md">{trip.distance || 'N/A'}</td>
+                      <td className="td table-cell-md">{trip.distance?.text || 'N/A'}</td>
                       <td className="td">{trip.status}</td>
                       <td className="td">
                         {trip.dateCreated &&
