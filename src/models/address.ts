@@ -1,8 +1,7 @@
+import { GeoPoint } from 'firebase/firestore';
+
 export interface ADDRESS {
-  country: string;
+  country?: string;
   location: string;
-  cordinates?: {
-    longitude: number | null;
-    latitude: number | null;
-  };
+  cordinates: GeoPoint;
 }

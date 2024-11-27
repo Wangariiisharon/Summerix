@@ -14,6 +14,7 @@
     "@headlessui/react": "^2.0.4",
     "@heroicons/react": "^2.0.18",
     "@next/third-parties": "14",
+    "@react-google-maps/api": "^2.20.3",
     "axios": "^1.7.2",
     "chart.js": "^4.4.2",
     "country-list-js": "^3.1.8",
