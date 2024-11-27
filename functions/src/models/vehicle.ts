@@ -5,6 +5,7 @@ import {
 } from 'firebase-admin/firestore';
 import { COMPANY_DETAILS } from './company';
 import { DRIVER_DETAILS } from './driver';
+import { DOCUMENT } from './document';
 
 export interface VEHICLE {
   docId: string;
@@ -19,6 +20,7 @@ export interface VEHICLE {
   isArchived: boolean;
   company: COMPANY_DETAILS;
   driver: DRIVER_DETAILS | null;
+  documents?: DOCUMENT[];
 
   type: string;
   cargo: {
