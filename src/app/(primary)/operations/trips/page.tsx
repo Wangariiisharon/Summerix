@@ -58,7 +58,7 @@ export default function TripsPage() {
     <main className="">
       <section className="flex flex-col justify-between gap-5 sm:flex-row">
         <div className="">
-          <h2 className="font-bold">Vehicles</h2>
+          <h2 className="font-bold">Trips</h2>
           <p className="text-gray-500">Manage company trips.</p>
         </div>
 
