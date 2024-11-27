@@ -4,6 +4,7 @@ import {
   QueryDocumentSnapshot,
 } from 'firebase-admin/firestore';
 import { COMPANY_DETAILS } from './company';
+import { DOCUMENT } from './document';
 
 export interface DRIVER {
   docId: string;
@@ -17,6 +18,7 @@ export interface DRIVER {
   idNumber: string;
   photoURL: string;
   company: COMPANY_DETAILS;
+  documents?: DOCUMENT[];
 
   lowerCase: {
     firstName: string;
