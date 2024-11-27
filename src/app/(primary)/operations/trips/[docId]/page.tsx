@@ -8,6 +8,7 @@ import {
   addDoc,
   collection,
   doc,
+  GeoPoint,
   onSnapshot,
   serverTimestamp,
   updateDoc,
@@ -20,6 +21,7 @@ import toast from 'react-hot-toast';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
 import Trips from '@/json/trips.json';
 import { TRIP, TRIP_STATUS } from '@/models/trip';
+import TripAddressInput from './address-input';
 import TripVehicle from './vehicle';
 import Image from 'next/image';
 
@@ -120,11 +122,11 @@ export default function Vehicle({ params }: Props) {
             regNumber: company.regNumber || '',
           },
           from: trip?.from || {
-            country: '',
+            cordinates: new GeoPoint(0, 0),
             location: '',
           },
           to: trip?.to || {
-            country: '',
+            cordinates: new GeoPoint(0, 0),
             location: '',
           },
           driver: trip?.driver || null,
@@ -137,7 +139,7 @@ export default function Vehicle({ params }: Props) {
         validationSchema={TripSchema()}
         onSubmit={(values) => doSave(values)}
       >
-        {({ isValid, setFieldValue }) => (
+        {({ isValid, setFieldValue, values }) => (
           <Form className="mt-6">
             {/* <h2 className="text-center font-bold"></h2> */}
 
@@ -146,19 +148,21 @@ export default function Vehicle({ params }: Props) {
                 <div className="text-sm">
                   <label className="font-medium">From</label>
                 </div>
-                <div className="">
-                  <Field type="text" name="from.location" className="form-input" />
-                  <ErrorMessage name="from.location" component="span" className="form-error" />
-                </div>
+                <TripAddressInput
+                  address="from"
+                  locationValue={values.from.location}
+                  setFieldValue={setFieldValue}
+                />
               </label>
               <label className="grid-1-3">
                 <div className="text-sm">
                   <label className="font-medium">To</label>
                 </div>
-                <div className="">
-                  <Field type="text" name="to.location" className="form-input" />
-                  <ErrorMessage name="to.location" component="span" className="form-error" />
-                </div>
+                <TripAddressInput
+                  address="to"
+                  locationValue={values.to.location}
+                  setFieldValue={setFieldValue}
+                />
               </label>
               <label className="grid-1-3">
                 <div className="text-sm">
