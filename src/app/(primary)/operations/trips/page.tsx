@@ -109,8 +109,8 @@ export default function TripsPage() {
               {trips.map((trip: TRIP) => {
                 return (
                   <tr key={trip.docId} className="tr-body">
-                    <td className="td">{trip.from?.location}</td>
-                    <td className="td">{trip.to?.location}</td>
+                    <td className="td max-w-40">{trip.from?.location}</td>
+                    <td className="td max-w-40">{trip.to?.location}</td>
                     <td className="td table-cell-sm">{trip.vehicle?.regNumber}</td>
                     <td className="td table-cell-md">
                       {trip.driver && (
