@@ -128,7 +128,7 @@ export default function Vehicle({ params }: Props) {
   if (!company) return <></>;
 
   return (
-    <main className="bg-white p-4 -mx-4 rounded">
+    <main className="-mx-4 rounded bg-white p-4">
       <h2 className="font-bold">Trip</h2>
       <Formik
         enableReinitialize={true}

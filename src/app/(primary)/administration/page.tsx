@@ -6,7 +6,7 @@ export default function Administration() {
   // const { authUser } = useAuthContext();
 
   return (
-    <main className="bg-white p-4 -mx-4 rounded">
+    <main className="-mx-4 rounded bg-white p-4">
       <h2 className="font-bold">Overview</h2>
       <p className="mt-5">
         Lorem ipsum dolor sit amet consectetur, adipisicing elit. Animi eos neque laborum corporis

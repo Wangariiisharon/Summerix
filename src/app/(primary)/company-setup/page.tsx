@@ -119,7 +119,7 @@ export default function Company() {
   };
 
   return (
-    <main className="bg-white p-4 -mx-4 rounded">
+    <main className="-mx-4 rounded bg-white p-4">
       <h2 className="font-bold">Setup a company profile</h2>
       <Formik
         enableReinitialize={true}

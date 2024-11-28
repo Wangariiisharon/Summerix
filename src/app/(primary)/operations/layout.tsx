@@ -16,9 +16,9 @@ export default function Layout({ children }: Props) {
   return (
     <main className="p-2">
       <div className="w-full bg-white p-4">
-        <h1 className="font-semibold text-xl">Operations</h1>
+        <h1 className="text-xl font-semibold">Operations</h1>
 
-        <hr className="my-3 -mx-4" />
+        <hr className="-mx-4 my-3" />
 
         <OperationsNav />
       </div>
