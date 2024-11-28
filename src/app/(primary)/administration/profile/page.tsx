@@ -9,7 +9,6 @@ import { getCountries, getTimezones } from '@/services/utils';
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import * as Yup from 'yup';
@@ -73,6 +72,9 @@ const CompanySchema = (docId?: string) => {
           return snapshot.empty;
         },
       }),
+    country: Yup.string().trim().required('Country is required.'),
+    timezone: Yup.string().trim().required('Timezone is required.'),
+    currency: Yup.string().trim().required('Currency is required.'),
   });
 };
 
@@ -80,10 +82,9 @@ export default function Profile() {
   const [processing, setProcessing] = useState(false);
   const { company } = useCurrentCompany();
   const { authUser } = useAuthContext();
-  const router = useRouter();
 
-  const doSaveCompany = async (formValues: any) => {
-    console.debug('doSaveCompany > formValues:', formValues);
+  const doSave = async (formValues: any) => {
+    console.debug('doSave > formValues:', formValues);
     if (!authUser || !authUser.user || !company) return;
 
     try {
@@ -100,9 +101,8 @@ export default function Profile() {
         lastUpdated: serverTimestamp(),
       });
       toast.success('Account saved successfully.');
-      router.push('/administration');
     } catch (error) {
-      console.error('doSaveCompany error:', error);
+      console.error('doSave error:', error);
       toast.error('Save account failed. Please try again.');
     } finally {
       setProcessing(false);
@@ -126,7 +126,7 @@ export default function Profile() {
           currency: company.currency || '',
         }}
         validationSchema={CompanySchema(company?.docId)}
-        onSubmit={(values) => doSaveCompany(values)}
+        onSubmit={(values) => doSave(values)}
       >
         {({ isValid }) => (
           <Form className="mt-6">

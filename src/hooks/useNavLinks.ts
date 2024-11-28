@@ -54,7 +54,7 @@ function useNavLinks() {
       },
       {
         name: 'Add Company',
-        href: '/company',
+        href: '/company-setup',
         icon: BriefcaseIcon,
         visible: authUser && !authUser.companyId,
       },
