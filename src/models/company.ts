@@ -17,7 +17,6 @@ export interface COMPANY {
   currencyList: {
     code: string;
     name: string;
-    isPrimary: boolean;
   }[];
 
   docRef: DocumentReference<DocumentData, DocumentData>;

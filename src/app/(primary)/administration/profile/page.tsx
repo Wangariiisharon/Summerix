@@ -13,8 +13,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import AddCurrencyButton from './button-add-currency';
-import { PencilSquareIcon } from '@heroicons/react/24/outline';
 import DeleteCurrencyButton from './button-delete-currency';
+import EditCurrencyButton from './button-edit-currency copy';
 
 const CompanySchema = (docId?: string) => {
   return Yup.object().shape({
@@ -126,6 +126,7 @@ export default function Profile() {
           phoneNumber: company?.phoneNumber || '',
           country: company.country || '',
           timezone: company.timezone || '',
+          currency: company.currency || '',
           currencyList: company.currencyList || [],
         }}
         validationSchema={CompanySchema(company?.docId)}
@@ -245,6 +246,8 @@ export default function Profile() {
                 </div>
                 <div className="grid gap-2">
                   {values.currencyList.map((currency) => {
+                    const isPrimary = currency.code === values.currency;
+
                     return (
                       <div
                         key={currency.code}
@@ -254,11 +257,13 @@ export default function Profile() {
                           <p className="text-sm">{currency.name}</p>
                           <div className="flex items-center gap-5">
                             <p className="font-semibold text-gray-600">{currency.code}</p>
-                            <span className="status-approved rounded-full text-xs">Primary</span>
+                            {isPrimary && (
+                              <span className="status-approved rounded-full text-xs">Primary</span>
+                            )}
                           </div>
                         </div>
                         <div className="flex gap-3">
-                          <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
+                          <EditCurrencyButton company={company} currency={currency} />
                           <DeleteCurrencyButton company={company} currency={currency} />
                         </div>
                       </div>
