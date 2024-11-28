@@ -4,36 +4,46 @@ import { useAuthContext } from '@/app/auth-provider';
 import DialogLayout from '@/components/dialog-layout';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
-import { COMPANY } from '@/models/company';
+import { DRIVER } from '@/models/driver';
 import { doUploadImage } from '@/services/utils';
 import { DialogTitle } from '@headlessui/react';
-import { CameraIcon } from '@heroicons/react/24/outline';
-import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { PlusCircleIcon } from '@heroicons/react/24/outline';
+import { arrayUnion, doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
+import * as Yup from 'yup';
 
-type Props = {
-  company: COMPANY;
+const DocumentSchema = () => {
+  return Yup.object().shape({
+    fileName: Yup.string().trim().required('File name is required.'),
+    downloadURL: Yup.string().trim().required('Download URL is required.'),
+    status: Yup.string().trim().required('Status is required.'),
+  });
 };
 
-export default function UploadPhotoButton({ company }: Props) {
-  const { authUser } = useAuthContext();
+type Props = {
+  driver: DRIVER;
+};
+
+export default function AddDocumentButton({ driver }: Props) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [processing, setProcessing] = useState<boolean>(false);
+  const { authUser } = useAuthContext();
 
   const doSave = async (formValues: any) => {
     console.debug('doSave > formValues:', formValues);
     if (!(authUser?.isAdmin || authUser?.isOwner)) {
-      toast.error('You are not authorised to manage company.');
+      toast.error('You are not authorised to manage drivers.');
       return;
     }
 
     try {
       setProcessing(true);
-      const docRef = doc(fbDb, Constants.fbCompanies, company.docId);
+
+      const docRef = doc(fbDb, Constants.fbDrivers, driver.docId);
       await updateDoc(docRef, {
-        ...formValues,
+        documents: arrayUnion(formValues),
 
         updatedBy: {
           authId: authUser.uid,
@@ -41,7 +51,7 @@ export default function UploadPhotoButton({ company }: Props) {
         },
         lastUpdated: serverTimestamp(),
       });
-      toast.success('Company photo updated successfully.');
+      toast.success('Document added successfully.');
       setIsOpen(false);
     } catch (error) {
       console.error('doSave error:', error);
@@ -54,11 +64,12 @@ export default function UploadPhotoButton({ company }: Props) {
   return (
     <>
       <button
+        type="button"
         onClick={() => setIsOpen(true)}
-        className="btn btn-flex btn-secondary mt-5 w-fit px-8"
+        className="btn btn-flex btn-outline-primary w-fit px-8"
       >
-        <CameraIcon className="h-5 w-5" />
-        <p>Upload New Photo</p>
+        <PlusCircleIcon className="h-5 w-5" />
+        <p>Add Document</p>
       </button>
 
       <DialogLayout
@@ -67,47 +78,70 @@ export default function UploadPhotoButton({ company }: Props) {
         classNames="dialog-panel max-w-md"
       >
         <DialogTitle as="h3" className="dialog-title text-sm">
-          Upload Company Photo
+          Add another document
         </DialogTitle>
 
         <Formik
           enableReinitialize={true}
           initialValues={{
-            photoURL: company.photoURL || '',
-            updatedBy: {
-              authId: authUser?.uid,
-              email: authUser?.email,
-            },
+            fileName: '',
+            downloadURL: '',
+            status: '',
           }}
+          validationSchema={DocumentSchema()}
           onSubmit={(values) => doSave(values)}
         >
-          {({ isValid, setFieldValue, values }) => (
+          {({ isValid, setFieldValue }) => (
             <Form className="">
               <div className="mt-5 grid gap-5">
                 <label className="block">
-                  <label className="form-label">Company Photo</label>
-                  <Field name="photoURL">
+                  <label className="form-label">File Name</label>
+                  <Field type="text" name="fileName" className="form-input" />
+                  <ErrorMessage name="fileName" component="span" className="form-error" />
+                </label>
+                <label className="block">
+                  <label className="form-label">File upload (Download URL)</label>
+                  <Field name="downloadURL">
                     {() => (
                       <input
                         type="file"
-                        accept="image/*"
+                        // accept="image/*"
                         onChange={async (event) => {
                           const file = event.currentTarget?.files?.[0];
-                          if (file && authUser) {
+                          if (file && driver.docId) {
                             const downloadUrl = await doUploadImage(
                               file,
-                              `companies/${authUser.uid}`,
-                              'company-photo',
+                              `drivers/${driver.docId}`,
+                              file.name,
                             );
-                            setFieldValue('photoURL', downloadUrl);
-                            toast.success('Image uploaded successfully.');
+                            setFieldValue('downloadURL', downloadUrl);
+                            toast.success('File uploaded successfully.');
                           }
                         }}
                         className="form-input"
                       />
                     )}
                   </Field>
-                  <ErrorMessage name="photoURL" component="span" className="form-error" />
+                  <ErrorMessage name="downloadURL" component="span" className="form-error" />
+                </label>
+                <label className="block">
+                  <label className="form-label">Status</label>
+                  <Field as="select" name="status" className="form-select">
+                    <option value="" disabled>
+                      Select status...
+                    </option>
+                    {[
+                      { name: 'Active', value: 'active' },
+                      { name: 'Expired', value: 'expired' },
+                    ].map(({ name, value }) => {
+                      return (
+                        <option key={value} value={value}>
+                          {name}
+                        </option>
+                      );
+                    })}
+                  </Field>
+                  <ErrorMessage name="status" component="span" className="form-error" />
                 </label>
               </div>
 
@@ -123,9 +157,7 @@ export default function UploadPhotoButton({ company }: Props) {
                   </button>
                   <button
                     type="submit"
-                    disabled={
-                      !isValid || !authUser || processing || company.photoURL === values.photoURL
-                    }
+                    disabled={!authUser || !isValid || processing}
                     className="btn btn-secondary"
                   >
                     Save

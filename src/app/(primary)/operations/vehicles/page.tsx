@@ -7,7 +7,7 @@ import useVehicles from '@/hooks/useVehicles';
 import Vehicles from '@/json/vehicles.json';
 import { PARAMS_MAP } from '@/models/params-map';
 import { VEHICLE } from '@/models/vehicle';
-import { PencilSquareIcon, PlusIcon, UserPlusIcon } from '@heroicons/react/24/outline';
+import { DocumentArrowDownIcon, PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { DocumentSnapshot } from 'firebase/firestore';
 import moment from 'moment';
 import Image from 'next/image';
@@ -81,18 +81,25 @@ export default function VehiclesPage() {
               })}
             </select>
           </label>
-          <button onClick={() => console.debug('do allocate vehicle...')}>
+          {/* <button onClick={() => console.debug('do allocate vehicle...')}>
             <div className="btn btn-outline-secondary btn-flex">
               <UserPlusIcon className="h-5 w-5" />
               <p>Allocate Vehicles</p>
             </div>
-          </button>
+          </button> */}
           <Link href="/operations/vehicles/new">
             <div className="btn btn-flex btn-secondary">
               <PlusIcon className="h-5 w-5" />
               <p>Add Vehicle</p>
             </div>
           </Link>
+          <button
+            onClick={() => console.debug('do export vehicles...')}
+            className="btn btn-flex btn-outline-secondary"
+          >
+            <DocumentArrowDownIcon className="h-5 w-5" />
+            <p>Export</p>
+          </button>
         </div>
       </section>
 

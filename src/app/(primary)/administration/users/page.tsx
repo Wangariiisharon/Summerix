@@ -6,7 +6,7 @@ import Constants from '@/Constants';
 import useAdmins from '@/hooks/useAdmins';
 import { ADMIN } from '@/models/admin';
 import { PARAMS_MAP } from '@/models/params-map';
-import { PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { DocumentArrowDownIcon, PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { DocumentSnapshot } from 'firebase/firestore';
 import moment from 'moment';
 import Image from 'next/image';
@@ -83,6 +83,13 @@ export default function Users() {
               <p>Add User</p>
             </div>
           </Link>
+          <button
+            onClick={() => console.debug('do export users...')}
+            className="btn btn-flex btn-outline-secondary"
+          >
+            <DocumentArrowDownIcon className="h-5 w-5" />
+            <p>Export</p>
+          </button>
         </div>
       </section>
 
