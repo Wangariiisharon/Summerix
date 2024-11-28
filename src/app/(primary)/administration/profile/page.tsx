@@ -5,7 +5,7 @@ import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
 import { getCompanyByEmail, getCompanyByName, getCompanyByPhoneNumber } from '@/services/company';
-import { getCountries, getTimezones } from '@/services/utils';
+import { getCountries, getCurrencies, getTimezones } from '@/services/utils';
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import Link from 'next/link';
@@ -235,12 +235,22 @@ export default function Profile() {
                   <label className="font-medium">Currency</label>
                 </div>
                 <div className="">
-                  <Field type="text" name="currency" className="form-input" />
+                  <Field as="select" name="currency" className="form-select">
+                    <option value="" disabled>
+                      Select currency...
+                    </option>
+                    {getCurrencies().map(({ name, value }) => {
+                      return (
+                        <option key={value} value={value}>
+                          {name}
+                        </option>
+                      );
+                    })}
+                  </Field>
                   <ErrorMessage name="currency" component="span" className="form-error" />
                 </div>
               </label>
             </div>
-            {/* <p>errors: {JSON.stringify(errors)}</p> */}
 
             <div className="grid-1-3 mt-5 gap-5">
               <p className=""></p>
