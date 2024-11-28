@@ -50,7 +50,7 @@ export default function AddCurrencyButton({ company }: Props) {
         },
         lastUpdated: serverTimestamp(),
       });
-      toast.success('Company photo updated successfully.');
+      toast.success('Currency added successfully.');
       setIsOpen(false);
     } catch (error) {
       console.error('doSave error:', error);

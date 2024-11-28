@@ -13,7 +13,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import AddCurrencyButton from './button-add-currency';
-import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PencilSquareIcon } from '@heroicons/react/24/outline';
+import DeleteCurrencyButton from './button-delete-currency';
 
 const CompanySchema = (docId?: string) => {
   return Yup.object().shape({
@@ -258,7 +259,7 @@ export default function Profile() {
                         </div>
                         <div className="flex gap-3">
                           <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
-                          <TrashIcon className="h-5 w-5 text-danger hover:opacity-50" />
+                          <DeleteCurrencyButton company={company} currency={currency} />
                         </div>
                       </div>
                     );

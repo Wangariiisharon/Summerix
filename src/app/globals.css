@@ -167,7 +167,7 @@
   }
 
   .dialog-title {
-    @apply text-center font-semibold uppercase leading-6;
+    @apply text-center font-semibold leading-6;
   }
 
   /* OTHERS */
