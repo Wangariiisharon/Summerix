@@ -1,5 +1,10 @@
 /* eslint-disable no-unused-vars */
-import { type DocumentData, DocumentReference, QueryDocumentSnapshot } from 'firebase/firestore';
+import {
+  type DocumentData,
+  DocumentReference,
+  QueryDocumentSnapshot,
+  Timestamp,
+} from 'firebase/firestore';
 import { CLIENT_DETAILS } from './client';
 import { COMPANY_DETAILS } from './company';
 import { DRIVER_DETAILS } from './driver';
@@ -60,10 +65,15 @@ export interface TRIP {
     displayName: string;
   };
 
-  startedAt: any; // start details e.g. time
-  endedAt: any; // end details e.g. time
-  dateCreated: any;
-  lastUpdated: any;
+  schedule: {
+    startAt: Timestamp;
+    endAt: Timestamp;
+  };
+
+  startedAt: Timestamp; // start details e.g. time
+  endedAt: Timestamp; // end details e.g. time
+  dateCreated: Timestamp;
+  lastUpdated: Timestamp;
 }
 
 export enum TRIP_STATUS {
