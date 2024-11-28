@@ -1,6 +1,8 @@
 import { fbStorage } from '@/firebase/configs';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import countryList from 'country-list-js';
 import { getIn } from 'formik';
+import moment from 'moment-timezone';
 
 export function classNames(...classes: Array<string>) {
   return classes.filter(Boolean).join(' ');
@@ -20,4 +22,28 @@ export const doUploadImage = async (data: File | Blob, folder: string, fileName:
   const snapshot = await uploadBytes(storageRef, data);
   const downloadUrl = await getDownloadURL(snapshot.ref);
   return downloadUrl;
+};
+
+export const getTimezones = () => {
+  return moment.tz.names().map((tz) => {
+    const offset = moment.tz(tz).utcOffset() / 60;
+    const offsetString = offset >= 0 ? `GMT+${offset}` : `GMT${offset}`;
+    return {
+      name: `${tz} (${offsetString})`,
+      offsetString: offsetString,
+      value: tz.toLowerCase(),
+    };
+  });
+};
+
+export const getCountries = () => {
+  return countryList
+    .names()
+    .sort((a, b) => a.localeCompare(b))
+    .map((country) => {
+      return {
+        name: country,
+        value: country.toLowerCase(),
+      };
+    });
 };
