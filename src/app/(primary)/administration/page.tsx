@@ -1,10 +1,9 @@
 'use client';
 
-import { useAuthContext } from '@/app/auth-provider';
-import Link from 'next/link';
+// import { useAuthContext } from '@/app/auth-provider';
 
 export default function Administration() {
-  const { authUser } = useAuthContext();
+  // const { authUser } = useAuthContext();
 
   return (
     <main className="">
@@ -14,14 +13,6 @@ export default function Administration() {
         dolore molestias. Modi unde in magnam neque corporis nam, rerum, optio aspernatur ipsam
         minima ad accusamus recusandae!
       </p>
-
-      <section className="mt-10">
-        {authUser && !authUser.companyId && (
-          <Link href="/administration/company" className="btn btn-primary">
-            Add New Company
-          </Link>
-        )}
-      </section>
     </main>
   );
 }
