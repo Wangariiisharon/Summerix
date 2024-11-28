@@ -23,6 +23,8 @@ import { getDriverByEmail, getDriverByPhoneNumber } from '@/services/driver';
 import { getAvatarPhoto } from '@/services/utils';
 import Image from 'next/image';
 import VehicleAllocation from './vehicle';
+import AddDocumentButton from './button-add-document';
+import { DocumentIcon, EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 const DriverSchema = (companyId: string, docId: string) => {
   return Yup.object().shape({
@@ -165,6 +167,7 @@ export default function Driver({ params }: Props) {
             regNumber: company.regNumber || '',
           },
           vehicle: driver?.vehicle || null,
+          documents: driver?.documents || [],
           updatedBy: {
             authId: authUser?.uid,
             email: authUser?.email,
@@ -173,7 +176,7 @@ export default function Driver({ params }: Props) {
         validationSchema={DriverSchema(authUser?.companyId || 'xyz', docId)}
         onSubmit={(values) => doSave(values)}
       >
-        {({ isValid }) => (
+        {({ isValid, values }) => (
           <Form className="mt-6">
             {/* <h2 className="text-center font-bold">Account setup</h2> */}
 
@@ -252,6 +255,48 @@ export default function Driver({ params }: Props) {
 
               {driver && (
                 <>
+                  <hr className="my-3" />
+
+                  <div className="grid-1-3 gap-5">
+                    <div className="text-sm">
+                      <label className="font-medium">Documents</label>
+                    </div>
+                    <div className="grid gap-3">
+                      {values.documents.map((document, i) => {
+                        return (
+                          <div
+                            key={`${document.downloadURL}-${i}`}
+                            className="flex items-center justify-between gap-5 rounded bg-gray-100 px-4 py-2"
+                          >
+                            <div className="flex items-center gap-4">
+                              <DocumentIcon className="h-12 w-12" />
+                              <div className="grid gap-0.5">
+                                <p className="">{document.fileName}</p>
+                                <Link
+                                  href={document.downloadURL}
+                                  className="flex items-center gap-2 text-xs text-primary hover:opacity-50"
+                                  target="_blank"
+                                >
+                                  <EyeIcon className="h-4 w-4" /> View File
+                                </Link>
+                              </div>
+                            </div>
+
+                            <TrashIcon className="h-5 w-5 text-danger hover:opacity-50" />
+                          </div>
+                        );
+                      })}
+
+                      {values.documents.length === 0 && (
+                        <p className="text-gray-400">No items to display.</p>
+                      )}
+                    </div>
+
+                    <div className="">
+                      <AddDocumentButton driver={driver} />
+                    </div>
+                  </div>
+
                   <hr className="my-3" />
 
                   <div className="grid-1-3 gap-5">
