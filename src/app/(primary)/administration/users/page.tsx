@@ -57,7 +57,7 @@ export default function Users() {
   );
 
   return (
-    <main className="">
+    <main className="-mx-4 rounded bg-white p-4">
       <section className="flex flex-col justify-between gap-5 sm:flex-row">
         <div className="">
           <h2 className="font-bold">Admin Users</h2>

@@ -26,15 +26,13 @@ export default function OperationsNav() {
             <Link
               key={link}
               href={`/operations/${link}`}
-              className={`px-4 py-2 text-sm capitalize hover:bg-gray-200 ${isActive && 'bg-gray-200 text-primary'}`}
+              className={`px-4 py-2 text-sm capitalize hover:bg-primary/10 ${isActive && 'bg-primary/10 text-primary'}`}
             >
               {name}
             </Link>
           );
         })}
       </div>
-
-      <hr className="my-3" />
     </Suspense>
   );
 }

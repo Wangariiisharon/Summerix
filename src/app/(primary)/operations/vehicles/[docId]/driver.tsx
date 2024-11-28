@@ -151,7 +151,7 @@ export default function DriverAllocation({ vehicle }: Props) {
       <DialogLayout
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        classNames="dialog-panel max-w-xl min-h-96"
+        classNames="dialog-panel max-w-lg min-h-96"
       >
         <DialogTitle as="h3" className="dialog-title text-sm">
           Vehicle Driver Allocation

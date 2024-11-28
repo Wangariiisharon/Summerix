@@ -15,7 +15,7 @@ export default function PrimaryLayout({ children, header, sidebar }: Props) {
       </div>
 
       <div className="mt-20 min-h-screen w-full">
-        <div className="relative flex flex-col items-start justify-center gap-4 self-start xl:flex-row">
+        <div className="relative flex flex-col items-start justify-center self-start xl:flex-row">
           <div className="mt-5 flex w-full flex-col items-center xl:w-1/6">
             <div className="fixed w-full xl:w-fit xl:p-4">{sidebar}</div>
           </div>
