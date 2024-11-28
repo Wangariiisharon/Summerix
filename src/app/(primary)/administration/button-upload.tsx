@@ -82,28 +82,30 @@ export default function UploadPhotoButton({ company }: Props) {
           onSubmit={(values) => doSave(values)}
         >
           {({ isValid, setFieldValue, values }) => (
-            <Form className="mt-6">
-              <label className="block">
-                <label className="form-label">Company Photo</label>
-                <Field name="photoURL">
-                  {() => (
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={async (event) => {
-                        const file = event.currentTarget?.files?.[0];
-                        if (file && authUser) {
-                          const downloadUrl = await doUploadImage(file, 'company/', authUser.uid);
-                          setFieldValue('photoURL', downloadUrl);
-                          toast.success('Image uploaded successfully.');
-                        }
-                      }}
-                      className="form-input"
-                    />
-                  )}
-                </Field>
-                <ErrorMessage name="photoURL" component="span" className="form-error" />
-              </label>
+            <Form className="">
+              <div className="mt-5 grid gap-5">
+                <label className="block">
+                  <label className="form-label">Company Photo</label>
+                  <Field name="photoURL">
+                    {() => (
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (event) => {
+                          const file = event.currentTarget?.files?.[0];
+                          if (file && authUser) {
+                            const downloadUrl = await doUploadImage(file, 'company/', authUser.uid);
+                            setFieldValue('photoURL', downloadUrl);
+                            toast.success('Image uploaded successfully.');
+                          }
+                        }}
+                        className="form-input"
+                      />
+                    )}
+                  </Field>
+                  <ErrorMessage name="photoURL" component="span" className="form-error" />
+                </label>
+              </div>
 
               <div className="mt-10 flex w-full justify-end gap-5">
                 <p className=""></p>
