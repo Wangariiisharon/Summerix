@@ -129,6 +129,10 @@
     @apply border-gray-300 text-gray-700 hover:border-primary hover:text-primary;
   }
 
+  .btn-outline-primary {
+    @apply border-primary text-primary hover:opacity-70 disabled:opacity-40;
+  }
+
   .btn-outline-secondary {
     @apply border-secondary text-secondary hover:opacity-70 disabled:opacity-40;
   }
@@ -163,7 +167,7 @@
   }
 
   .dialog-title {
-    @apply text-center font-semibold uppercase leading-6;
+    @apply text-center font-semibold leading-6;
   }
 
   /* OTHERS */
