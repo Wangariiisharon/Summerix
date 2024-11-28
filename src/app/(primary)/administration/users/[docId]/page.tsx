@@ -146,7 +146,7 @@ export default function User({ params }: Props) {
   if (!company) return <></>;
 
   return (
-    <main className="">
+    <main className="bg-white p-4 -mx-4 rounded">
       <h2 className="font-bold">Admin User</h2>
       <Formik
         enableReinitialize={true}
@@ -182,7 +182,7 @@ export default function User({ params }: Props) {
           <Form className="mt-6">
             {/* <h2 className="text-center font-bold">Account setup</h2> */}
 
-            <div className="mt-5 grid gap-5 p-4 shadow-sm">
+            <div className="mt-5 grid gap-5 p-4">
               <label className="grid-1-3">
                 <div className="text-sm">
                   <label className="font-medium">First Name</label>
