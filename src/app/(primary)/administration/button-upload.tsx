@@ -94,7 +94,11 @@ export default function UploadPhotoButton({ company }: Props) {
                         onChange={async (event) => {
                           const file = event.currentTarget?.files?.[0];
                           if (file && authUser) {
-                            const downloadUrl = await doUploadImage(file, 'company/', authUser.uid);
+                            const downloadUrl = await doUploadImage(
+                              file,
+                              `companies/${authUser.uid}`,
+                              'company-photo',
+                            );
                             setFieldValue('photoURL', downloadUrl);
                             toast.success('Image uploaded successfully.');
                           }
