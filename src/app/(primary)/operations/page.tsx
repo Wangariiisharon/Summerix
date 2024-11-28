@@ -2,7 +2,7 @@
 
 export default function Operations() {
   return (
-    <main className="">
+    <main className="bg-white p-4 -mx-4 rounded">
       <h2 className="font-bold">Overview</h2>
       <p className="mt-5">
         Lorem ipsum dolor sit amet consectetur, adipisicing elit. Animi eos neque laborum corporis

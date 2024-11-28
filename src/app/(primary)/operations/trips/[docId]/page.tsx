@@ -128,7 +128,7 @@ export default function Vehicle({ params }: Props) {
   if (!company) return <></>;
 
   return (
-    <main className="">
+    <main className="bg-white p-4 -mx-4 rounded">
       <h2 className="font-bold">Trip</h2>
       <Formik
         enableReinitialize={true}
@@ -176,7 +176,7 @@ export default function Vehicle({ params }: Props) {
           <Form className="mt-6">
             {/* <h2 className="text-center font-bold"></h2> */}
 
-            <div className="mt-5 grid gap-5 p-4 shadow-sm">
+            <div className="mt-5 grid gap-5 p-4">
               <label className="grid-1-3">
                 <div className="text-sm">
                   <label className="font-medium">From</label>

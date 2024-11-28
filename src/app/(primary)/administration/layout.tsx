@@ -19,7 +19,7 @@ export default function Layout({ children }: Props) {
         <CompanyNav />
       </div>
 
-      <div className="mt-5 p-4">{children}</div>
+      <div className="p-4">{children}</div>
     </main>
   );
 }
