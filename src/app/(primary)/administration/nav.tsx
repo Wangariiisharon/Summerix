@@ -46,15 +46,13 @@ export default function CompanyNav() {
             <Link
               key={link}
               href={`/administration/${link}`}
-              className={`px-4 py-2 text-sm capitalize hover:bg-gray-200 ${isActive && 'bg-[#F9F9FB] text-[#256DDC]'}`}
+              className={`px-4 py-2 text-sm capitalize hover:bg-primary/10 ${isActive && 'bg-primary/10 text-primary'}`}
             >
               {name}
             </Link>
           );
         })}
       </div>
-
-      <hr className="my-3" />
     </Suspense>
   );
 }
