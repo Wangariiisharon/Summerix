@@ -7,7 +7,7 @@ import useTrips from '@/hooks/useTrips';
 import Trips from '@/json/trips.json';
 import { PARAMS_MAP } from '@/models/params-map';
 import { TRIP } from '@/models/trip';
-import { PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { DocumentArrowDownIcon, PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { DocumentSnapshot } from 'firebase/firestore';
 import moment from 'moment';
 import Link from 'next/link';
@@ -86,6 +86,13 @@ export default function TripsPage() {
               <p>Add Trip</p>
             </div>
           </Link>
+          <button
+            onClick={() => console.debug('do export trips...')}
+            className="btn btn-flex btn-outline-secondary"
+          >
+            <DocumentArrowDownIcon className="h-5 w-5" />
+            <p>Export</p>
+          </button>
         </div>
       </section>
 

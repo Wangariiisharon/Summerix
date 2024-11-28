@@ -3,7 +3,7 @@ const Constants = {
   imageURL: '',
 
   phoneRegExp: /\+\d{12}$/,
-  defaultPageSize: 20,
+  defaultPageSize: 25,
   dateFormat: 'MMMM DD, YYYY',
   dateTimeFormat: 'DD/MM/YYYY HH:mm',
   dateInputFormat: 'YYYY-MM-DDThh:mm',

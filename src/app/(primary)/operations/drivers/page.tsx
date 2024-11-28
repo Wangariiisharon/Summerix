@@ -6,7 +6,7 @@ import Constants from '@/Constants';
 import useDrivers from '@/hooks/useDrivers';
 import { DRIVER } from '@/models/driver';
 import { PARAMS_MAP } from '@/models/params-map';
-import { PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { DocumentArrowDownIcon, PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { DocumentSnapshot } from 'firebase/firestore';
 import moment from 'moment';
 import Image from 'next/image';
@@ -60,12 +60,22 @@ export default function Drivers() {
           <h2 className="font-bold">Drivers</h2>
           <p className="text-gray-500">Manage company drivers.</p>
         </div>
-        <Link href="/operations/drivers/new">
-          <div className="btn btn-flex btn-secondary">
-            <PlusIcon className="h-5 w-5" />
-            <p>Add Driver</p>
-          </div>
-        </Link>
+
+        <div className="flex flex-wrap items-center gap-5">
+          <Link href="/operations/drivers/new">
+            <div className="btn btn-flex btn-secondary">
+              <PlusIcon className="h-5 w-5" />
+              <p>Add Driver</p>
+            </div>
+          </Link>
+          <button
+            onClick={() => console.debug('do export drivers...')}
+            className="btn btn-flex btn-outline-secondary"
+          >
+            <DocumentArrowDownIcon className="h-5 w-5" />
+            <p>Export</p>
+          </button>
+        </div>
       </section>
 
       <hr className="my-5" />
