@@ -7,7 +7,7 @@ export default function Administration() {
 
   return (
     <main className="">
-      <h2 className="font-bold">Administration</h2>
+      <h2 className="font-bold">Overview</h2>
       <p className="mt-5">
         Lorem ipsum dolor sit amet consectetur, adipisicing elit. Animi eos neque laborum corporis
         dolore molestias. Modi unde in magnam neque corporis nam, rerum, optio aspernatur ipsam
