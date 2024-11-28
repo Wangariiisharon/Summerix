@@ -52,7 +52,7 @@ export const getCurrencies = () => {
   return CurrencyCodes.data
     .map((data) => {
       return {
-        name: `${data.currency} (${data.code})`,
+        name: data.currency,
         value: data.code,
       };
     })

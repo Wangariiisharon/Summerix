@@ -1,17 +1,19 @@
 'use client';
 
+import * as Yup from 'yup';
 import { useAuthContext } from '@/app/auth-provider';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
 import { getCompanyByEmail, getCompanyByName, getCompanyByPhoneNumber } from '@/services/company';
-import { getCountries, getCurrencies, getTimezones } from '@/services/utils';
+import { getCountries, getTimezones } from '@/services/utils';
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import Link from 'next/link';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import * as Yup from 'yup';
+import AddCurrencyButton from './button-add-currency';
+import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 const CompanySchema = (docId?: string) => {
   return Yup.object().shape({
@@ -123,18 +125,18 @@ export default function Profile() {
           phoneNumber: company?.phoneNumber || '',
           country: company.country || '',
           timezone: company.timezone || '',
-          currency: company.currency || '',
+          currencyList: company.currencyList || [],
         }}
         validationSchema={CompanySchema(company?.docId)}
         onSubmit={(values) => doSave(values)}
       >
-        {({ isValid }) => (
+        {({ isValid, values }) => (
           <Form className="mt-6">
-            {/* <h2 className="text-center font-bold">Account setup</h2> */}
+            {/* <h2 className="text-center font-bold"></h2> */}
 
-            <div className="mt-5 grid gap-5 p-4 shadow-sm">
-              <label className="grid-1-3">
-                <div className="text-sm">
+            <div className="mt-5 grid gap-6 p-4 shadow-sm">
+              <label className="grid-1-3 gap-5">
+                <div className="flex flex-col gap-1 text-sm">
                   <label className="font-medium">Public profile</label>
                   <p className="text-gray-500">This will be displayed on your profile</p>
                 </div>
@@ -148,9 +150,10 @@ export default function Profile() {
                   <ErrorMessage name="name" component="span" className="form-error" />
                 </div>
               </label>
-              <label className="grid-1-3">
-                <div className="text-sm">
+              <label className="grid-1-3 gap-5">
+                <div className="grid text-sm">
                   <label className="font-medium">Description</label>
+                  <p className="text-gray-500">A short description of the company</p>
                 </div>
                 <div className="">
                   <Field
@@ -162,9 +165,10 @@ export default function Profile() {
                   <ErrorMessage name="description" component="span" className="form-error" />
                 </div>
               </label>
-              <label className="grid-1-3">
-                <div className="text-sm">
+              <label className="grid-1-3 gap-5">
+                <div className="flex flex-col gap-1 text-sm">
                   <label className="font-medium">Email address</label>
+                  <p className="text-gray-500">Add your company email</p>
                 </div>
                 <div className="">
                   <Field
@@ -176,9 +180,10 @@ export default function Profile() {
                   <ErrorMessage name="email" component="span" className="form-error" />
                 </div>
               </label>
-              <label className="grid-1-3">
-                <div className="text-sm">
+              <label className="grid-1-3 gap-5">
+                <div className="flex flex-col gap-1 text-sm">
                   <label className="font-medium">Phone number</label>
+                  <p className="text-gray-500">Add your company phone number</p>
                 </div>
                 <div className="">
                   <Field
@@ -190,9 +195,10 @@ export default function Profile() {
                   <ErrorMessage name="phoneNumber" component="span" className="form-error" />
                 </div>
               </label>
-              <label className="grid-1-3">
-                <div className="text-sm">
+              <label className="grid-1-3 gap-5">
+                <div className="flex flex-col gap-1 text-sm">
                   <label className="font-medium">Country</label>
+                  <p className="text-gray-500">Select your country</p>
                 </div>
                 <div className="">
                   <Field as="select" name="country" className="form-select">
@@ -210,9 +216,10 @@ export default function Profile() {
                   <ErrorMessage name="country" component="span" className="form-error" />
                 </div>
               </label>
-              <label className="grid-1-3">
-                <div className="text-sm">
+              <label className="grid-1-3 gap-5">
+                <div className="flex flex-col gap-1 text-sm">
                   <label className="font-medium">Timezone</label>
+                  <p className="text-gray-500">Select your timezone</p>
                 </div>
                 <div className="">
                   <Field as="select" name="timezone" className="form-select">
@@ -230,29 +237,40 @@ export default function Profile() {
                   <ErrorMessage name="timezone" component="span" className="form-error" />
                 </div>
               </label>
-              <label className="grid-1-3">
-                <div className="text-sm">
-                  <label className="font-medium">Currency</label>
+              <label className="grid-1-3 gap-5">
+                <div className="flex flex-col gap-1 text-sm">
+                  <label className="font-medium">Currencies</label>
+                  <p className="text-gray-500">Add your currencies</p>
+                </div>
+                <div className="grid gap-2">
+                  {values.currencyList.map((currency) => {
+                    return (
+                      <div
+                        key={currency.code}
+                        className="flex items-center justify-between gap-5 rounded bg-gray-100 px-4 py-2"
+                      >
+                        <div className="grid gap-2">
+                          <p className="text-sm">{currency.name}</p>
+                          <div className="flex items-center gap-5">
+                            <p className="font-semibold text-gray-600">{currency.code}</p>
+                            <span className="status-approved rounded-full text-xs">Primary</span>
+                          </div>
+                        </div>
+                        <div className="flex gap-3">
+                          <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
+                          <TrashIcon className="h-5 w-5 text-danger hover:opacity-50" />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
                 <div className="">
-                  <Field as="select" name="currency" className="form-select">
-                    <option value="" disabled>
-                      Select currency...
-                    </option>
-                    {getCurrencies().map(({ name, value }) => {
-                      return (
-                        <option key={value} value={value}>
-                          {name}
-                        </option>
-                      );
-                    })}
-                  </Field>
-                  <ErrorMessage name="currency" component="span" className="form-error" />
+                  <AddCurrencyButton company={company} />
                 </div>
               </label>
             </div>
 
-            <div className="grid-1-3 mt-5 gap-5">
+            <div className="grid-1-3 mt-5 items-center gap-5">
               <p className=""></p>
               <div className="flex justify-end gap-5">
                 <Link href="/administration" className="btn btn-outline">

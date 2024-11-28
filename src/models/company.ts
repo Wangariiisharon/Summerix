@@ -10,9 +10,15 @@ export interface COMPANY {
   description: string;
   country: string;
   timezone: string;
-  currency: string;
   photoURL: string;
   location: string;
+
+  currency: string;
+  currencyList: {
+    code: string;
+    name: string;
+    isPrimary: boolean;
+  }[];
 
   docRef: DocumentReference<DocumentData, DocumentData>;
   doc: QueryDocumentSnapshot<DocumentData, DocumentData>;
