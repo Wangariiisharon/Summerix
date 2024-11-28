@@ -5,10 +5,10 @@ import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
 import { getCompanyByEmail, getCompanyByName, getCompanyByPhoneNumber } from '@/services/company';
+import { getCountries, getTimezones } from '@/services/utils';
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import * as Yup from 'yup';
@@ -72,6 +72,9 @@ const CompanySchema = (docId?: string) => {
           return snapshot.empty;
         },
       }),
+    country: Yup.string().trim().required('Country is required.'),
+    timezone: Yup.string().trim().required('Timezone is required.'),
+    currency: Yup.string().trim().required('Currency is required.'),
   });
 };
 
@@ -79,10 +82,9 @@ export default function Profile() {
   const [processing, setProcessing] = useState(false);
   const { company } = useCurrentCompany();
   const { authUser } = useAuthContext();
-  const router = useRouter();
 
-  const doSaveCompany = async (formValues: any) => {
-    console.debug('doSaveCompany > formValues:', formValues);
+  const doSave = async (formValues: any) => {
+    console.debug('doSave > formValues:', formValues);
     if (!authUser || !authUser.user || !company) return;
 
     try {
@@ -99,9 +101,8 @@ export default function Profile() {
         lastUpdated: serverTimestamp(),
       });
       toast.success('Account saved successfully.');
-      router.push('/administration');
     } catch (error) {
-      console.error('doSaveCompany error:', error);
+      console.error('doSave error:', error);
       toast.error('Save account failed. Please try again.');
     } finally {
       setProcessing(false);
@@ -125,7 +126,7 @@ export default function Profile() {
           currency: company.currency || '',
         }}
         validationSchema={CompanySchema(company?.docId)}
-        onSubmit={(values) => doSaveCompany(values)}
+        onSubmit={(values) => doSave(values)}
       >
         {({ isValid }) => (
           <Form className="mt-6">
@@ -194,7 +195,18 @@ export default function Profile() {
                   <label className="font-medium">Country</label>
                 </div>
                 <div className="">
-                  <Field type="text" name="country" className="form-input" />
+                  <Field as="select" name="country" className="form-select">
+                    <option value="" disabled>
+                      Select country...
+                    </option>
+                    {getCountries().map(({ name, value }) => {
+                      return (
+                        <option key={value} value={value}>
+                          {name}
+                        </option>
+                      );
+                    })}
+                  </Field>
                   <ErrorMessage name="country" component="span" className="form-error" />
                 </div>
               </label>
@@ -203,7 +215,18 @@ export default function Profile() {
                   <label className="font-medium">Timezone</label>
                 </div>
                 <div className="">
-                  <Field type="text" name="timezone" className="form-input" />
+                  <Field as="select" name="timezone" className="form-select">
+                    <option value="" disabled>
+                      Select timezone...
+                    </option>
+                    {getTimezones().map(({ name, value }) => {
+                      return (
+                        <option key={value} value={value}>
+                          {name}
+                        </option>
+                      );
+                    })}
+                  </Field>
                   <ErrorMessage name="timezone" component="span" className="form-error" />
                 </div>
               </label>

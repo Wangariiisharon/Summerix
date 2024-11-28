@@ -4,6 +4,7 @@ import { useAuthContext } from '@/app/auth-provider';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { getCompanyByEmail, getCompanyByName, getCompanyByPhoneNumber } from '@/services/company';
+import { getCountries, getTimezones } from '@/services/utils';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { useRouter } from 'next/navigation';
@@ -70,6 +71,9 @@ const CompanySchema = (docId?: string) => {
           return snapshot.empty;
         },
       }),
+    country: Yup.string().trim().required('Country is required.'),
+    timezone: Yup.string().trim().required('Timezone is required.'),
+    currency: Yup.string().trim().required('Currency is required.'),
   });
 };
 
@@ -78,8 +82,8 @@ export default function Company() {
   const { authUser } = useAuthContext();
   const router = useRouter();
 
-  const doSaveCompany = async (formValues: any) => {
-    console.debug('doSaveCompany > formValues:', formValues);
+  const doSave = async (formValues: any) => {
+    console.debug('doSave > formValues:', formValues);
     if (!authUser || !authUser.user) return;
 
     try {
@@ -107,7 +111,7 @@ export default function Company() {
       toast.success('Account saved successfully.');
       router.push('/administration');
     } catch (error) {
-      console.error('doSaveCompany error:', error);
+      console.error('doSave error:', error);
       toast.error('Save account failed. Please try again.');
     } finally {
       setProcessing(false);
@@ -129,7 +133,7 @@ export default function Company() {
           currency: '',
         }}
         validationSchema={CompanySchema(authUser?.uid)}
-        onSubmit={(values) => doSaveCompany(values)}
+        onSubmit={(values) => doSave(values)}
       >
         {({ isValid }) => (
           <Form className="mt-6">
@@ -198,7 +202,18 @@ export default function Company() {
                   <label className="font-medium">Country</label>
                 </div>
                 <div className="">
-                  <Field type="text" name="country" className="form-input" />
+                  <Field as="select" name="country" className="form-select">
+                    <option value="" disabled>
+                      Select country...
+                    </option>
+                    {getCountries().map(({ name, value }) => {
+                      return (
+                        <option key={value} value={value}>
+                          {name}
+                        </option>
+                      );
+                    })}
+                  </Field>
                   <ErrorMessage name="country" component="span" className="form-error" />
                 </div>
               </label>
@@ -207,7 +222,18 @@ export default function Company() {
                   <label className="font-medium">Timezone</label>
                 </div>
                 <div className="">
-                  <Field type="text" name="timezone" className="form-input" />
+                  <Field as="select" name="timezone" className="form-select">
+                    <option value="" disabled>
+                      Select timezone...
+                    </option>
+                    {getTimezones().map(({ name, value }) => {
+                      return (
+                        <option key={value} value={value}>
+                          {name}
+                        </option>
+                      );
+                    })}
+                  </Field>
                   <ErrorMessage name="timezone" component="span" className="form-error" />
                 </div>
               </label>
