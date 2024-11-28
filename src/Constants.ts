@@ -6,6 +6,7 @@ const Constants = {
   defaultPageSize: 20,
   dateFormat: 'MMMM DD, YYYY',
   dateTimeFormat: 'DD/MM/YYYY HH:mm',
+  dateInputFormat: 'YYYY-MM-DDThh:mm',
   authCookieName: 'truck-mate-token',
 
   // firebase collections
