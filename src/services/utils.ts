@@ -49,10 +49,12 @@ export const getCountries = () => {
 };
 
 export const getCurrencies = () => {
-  return CurrencyCodes.data.map((data) => {
-    return {
-      name: `${data.currency} (${data.code})`,
-      value: data.code,
-    };
-  }).sort((a, b) => a.name.localeCompare(b.name));
+  return CurrencyCodes.data
+    .map((data) => {
+      return {
+        name: `${data.currency} (${data.code})`,
+        value: data.code,
+      };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
 };
