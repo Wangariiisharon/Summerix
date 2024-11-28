@@ -57,7 +57,7 @@ export default function DeleteTripButton({ trip }: Props) {
           Confirm Delete Trip?
         </DialogTitle>
 
-        <div className="mt-10 grid items-center gap-3">
+        <div className="mt-5 grid items-center gap-3">
           <div className="flex items-center justify-between gap-5">
             <label className="form-label">From:</label>
             <p>{trip.from.location}</p>

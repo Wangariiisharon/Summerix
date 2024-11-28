@@ -74,7 +74,7 @@ export default function DeleteVehicleButton({ vehicle }: Props) {
           Confirm Delete Vehicle?
         </DialogTitle>
 
-        <div className="mt-10 grid items-center gap-3">
+        <div className="mt-5 grid items-center gap-3">
           <div className="flex items-center justify-between gap-5">
             <label className="form-label">Name:</label>
             <p>{vehicle.name}</p>
