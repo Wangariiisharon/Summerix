@@ -26,7 +26,8 @@ function useCurrentCompany() {
             const data = snapshot.data() as COMPANY;
             data.docRef = snapshot.ref;
             data.docId = snapshot.id;
-            data.currency = data.currency || 'KES';
+            data.currency = data.currency || '';
+            data.currencyList = data.currencyList || [];
             data.photoURL = data.photoURL || getAvatarPhoto(data.name);
 
             setCompany(data);

@@ -105,7 +105,6 @@ export default function AddCurrencyButton({ company }: Props) {
                           value={JSON.stringify({
                             name: currency.name,
                             code: currency.value,
-                            isPrimary: false,
                           })}
                         >
                           {currency.name} ({currency.value})

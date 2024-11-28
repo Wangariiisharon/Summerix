@@ -6,8 +6,8 @@ import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { COMPANY } from '@/models/company';
 import { DialogTitle } from '@headlessui/react';
-import { TrashIcon } from '@heroicons/react/24/outline';
-import { arrayRemove, doc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { PencilSquareIcon } from '@heroicons/react/24/outline';
+import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -16,15 +16,15 @@ type Props = {
   currency: any;
 };
 
-export default function DeleteCurrencyButton({ company, currency }: Props) {
+export default function EditCurrencyButton({ company, currency }: Props) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [processing, setProcessing] = useState<boolean>(false);
   const { authUser } = useAuthContext();
 
   const isPrimary = currency.code === company.currency;
 
-  const doRemove = async () => {
-    console.debug('doRemove > currency:', currency);
+  const doSave = async () => {
+    console.debug('doSave > currency:', currency);
     if (!(authUser?.isAdmin || authUser?.isOwner)) {
       toast.error('You are not authorised to manage company.');
       return;
@@ -35,8 +35,7 @@ export default function DeleteCurrencyButton({ company, currency }: Props) {
 
       const docRef = doc(fbDb, Constants.fbCompanies, company.docId);
       await updateDoc(docRef, {
-        currencyList: arrayRemove(currency),
-        currency: isPrimary ? '' : company.currency,
+        currency: currency.code,
 
         updatedBy: {
           authId: authUser.uid,
@@ -44,7 +43,7 @@ export default function DeleteCurrencyButton({ company, currency }: Props) {
         },
         lastUpdated: serverTimestamp(),
       });
-      toast.success('Currency removed successfully.');
+      toast.success('Currency updated successfully.');
       setIsOpen(false);
     } catch (error) {
       console.error('doSave error:', error);
@@ -57,7 +56,7 @@ export default function DeleteCurrencyButton({ company, currency }: Props) {
   return (
     <>
       <button type="button" onClick={() => setIsOpen(true)}>
-        <TrashIcon className="h-5 w-5 text-danger hover:opacity-50" />
+        <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
       </button>
 
       <DialogLayout
@@ -66,7 +65,7 @@ export default function DeleteCurrencyButton({ company, currency }: Props) {
         classNames="dialog-panel max-w-md"
       >
         <DialogTitle as="h3" className="dialog-title text-sm">
-          Remove currency entry?
+          Set as primary currency?
         </DialogTitle>
 
         <div className="mt-10 grid items-center gap-3">
@@ -85,11 +84,11 @@ export default function DeleteCurrencyButton({ company, currency }: Props) {
             Cancel
           </button>
           <button
-            onClick={() => doRemove()}
-            disabled={processing || !authUser}
-            className="btn btn-danger"
+            onClick={() => doSave()}
+            disabled={!authUser || isPrimary || processing}
+            className="btn btn-primary"
           >
-            Confirm Remove
+            Confirm Save
           </button>
         </div>
       </DialogLayout>
