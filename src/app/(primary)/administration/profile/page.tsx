@@ -5,6 +5,7 @@ import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
 import { getCompanyByEmail, getCompanyByName, getCompanyByPhoneNumber } from '@/services/company';
+import { getCountries, getTimezones } from '@/services/utils';
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import Link from 'next/link';
@@ -194,7 +195,18 @@ export default function Profile() {
                   <label className="font-medium">Country</label>
                 </div>
                 <div className="">
-                  <Field type="text" name="country" className="form-input" />
+                  <Field as="select" name="country" className="form-select">
+                    <option value="" disabled>
+                      Select country...
+                    </option>
+                    {getCountries().map(({ name, value }) => {
+                      return (
+                        <option key={value} value={value}>
+                          {name}
+                        </option>
+                      );
+                    })}
+                  </Field>
                   <ErrorMessage name="country" component="span" className="form-error" />
                 </div>
               </label>
@@ -203,7 +215,18 @@ export default function Profile() {
                   <label className="font-medium">Timezone</label>
                 </div>
                 <div className="">
-                  <Field type="text" name="timezone" className="form-input" />
+                  <Field as="select" name="timezone" className="form-select">
+                    <option value="" disabled>
+                      Select timezone...
+                    </option>
+                    {getTimezones().map(({ name, value }) => {
+                      return (
+                        <option key={value} value={value}>
+                          {name}
+                        </option>
+                      );
+                    })}
+                  </Field>
                   <ErrorMessage name="timezone" component="span" className="form-error" />
                 </div>
               </label>
