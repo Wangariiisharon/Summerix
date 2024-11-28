@@ -71,10 +71,10 @@ export default function DeleteDriverButton({ driver }: Props) {
         classNames="dialog-panel max-w-md"
       >
         <DialogTitle as="h3" className="dialog-title text-sm">
-          Confirm Delete Vehicle?
+          Confirm Delete Driver?
         </DialogTitle>
 
-        <div className="mt-10 grid items-center gap-3">
+        <div className="mt-5 grid items-center gap-3">
           <div className="flex items-center justify-between gap-5">
             <label className="form-label">Display Name:</label>
             <p>{driver.displayName}</p>

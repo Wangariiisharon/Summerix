@@ -66,7 +66,7 @@ export default function ToggleAdminButton({ admin }: Props) {
           Confirm {admin.rolesMap.isActive ? 'Archive' : 'Unarchive'} Admin User?
         </DialogTitle>
 
-        <div className="mt-10 grid items-center gap-3">
+        <div className="mt-5 grid items-center gap-3">
           <div className="flex items-center justify-between gap-5">
             <label className="form-label">Display Name:</label>
             <p>{admin.displayName}</p>
