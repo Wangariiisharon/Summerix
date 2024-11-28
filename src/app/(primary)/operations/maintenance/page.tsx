@@ -2,7 +2,7 @@
 
 export default function Maintenance() {
   return (
-    <main className="">
+    <main className="-mx-4 rounded bg-white p-4">
       <h2 className="font-bold">Maintenance</h2>
       <p className="mt-5">
         Lorem ipsum dolor sit amet consectetur, adipisicing elit. Animi eos neque laborum corporis

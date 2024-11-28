@@ -115,7 +115,7 @@ export default function Profile() {
   if (!company) return <></>;
 
   return (
-    <main className="">
+    <main className="-mx-4 rounded bg-white p-4">
       <h2 className="font-bold">Company profile</h2>
       <Formik
         enableReinitialize={true}

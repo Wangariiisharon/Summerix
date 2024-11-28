@@ -119,7 +119,7 @@ export default function Company() {
   };
 
   return (
-    <main className="">
+    <main className="-mx-4 rounded bg-white p-4">
       <h2 className="font-bold">Setup a company profile</h2>
       <Formik
         enableReinitialize={true}
@@ -139,7 +139,7 @@ export default function Company() {
           <Form className="mt-6">
             {/* <h2 className="text-center font-bold">Account setup</h2> */}
 
-            <div className="mt-5 grid gap-5 p-4 shadow-sm">
+            <div className="mt-5 grid gap-5 p-4">
               <label className="grid-1-3">
                 <div className="text-sm">
                   <label className="font-medium">Public profile</label>
