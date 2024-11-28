@@ -24,6 +24,7 @@ import { TRIP, TRIP_STATUS } from '@/models/trip';
 import TripAddressInput from './address-input';
 import TripVehicle from './vehicle';
 import Image from 'next/image';
+import moment from 'moment';
 
 const TripSchema = () => {
   return Yup.object().shape({
@@ -35,6 +36,20 @@ const TripSchema = () => {
     }),
     vehicle: Yup.object().shape({
       regNumber: Yup.string().required('Vehicle reg. number is required.'),
+    }),
+    schedule: Yup.object().shape({
+      startAt: Yup.date()
+        .required('Start time is required.')
+        .test('dates-test-1', 'Cannot be before today.', (value) => {
+          const testDate = moment().startOf('day').toDate();
+          return value ? moment(value, 'MM/DD/YYYY').toDate() >= testDate : true;
+        }),
+      endAt: Yup.date()
+        .required('End time is required.')
+        .test('dates-test-2', 'Should be after start time.', (value, context) => {
+          const testDate = moment(context.parent.startAt, 'MM/DD/YYYY').toDate();
+          return value ? moment(value, 'MM/DD/YYYY').toDate() >= testDate : true;
+        }),
     }),
     status: Yup.string().required('Status is required.'),
   });
@@ -78,6 +93,11 @@ export default function Vehicle({ params }: Props) {
     }
 
     try {
+      if (formValues.schedule) {
+        formValues.schedule.startAt = moment(formValues.schedule.startAt).toDate();
+        formValues.schedule.endAt = moment(formValues.schedule.endAt).toDate();
+      }
+
       if (docId === 'new') {
         const colRef = collection(fbDb, Constants.fbTrips);
         await addDoc(colRef, {
@@ -131,6 +151,19 @@ export default function Vehicle({ params }: Props) {
           },
           driver: trip?.driver || null,
           vehicle: trip?.vehicle || null,
+          schedule: trip?.schedule
+            ? {
+                startAt: trip.schedule.startAt
+                  ? moment(trip.schedule.startAt.toDate()).format(Constants.dateInputFormat)
+                  : '',
+                endAt: trip.schedule.endAt
+                  ? moment(trip.schedule.endAt.toDate()).format(Constants.dateInputFormat)
+                  : '',
+              }
+            : {
+                startAt: '',
+                endAt: '',
+              },
           updatedBy: {
             authId: authUser?.uid,
             email: authUser?.email,
@@ -164,6 +197,9 @@ export default function Vehicle({ params }: Props) {
                   setFieldValue={setFieldValue}
                 />
               </label>
+
+              <hr className="my-3" />
+
               <label className="grid-1-3">
                 <div className="text-sm">
                   <label className="font-medium">Vehicle</label>
@@ -202,6 +238,26 @@ export default function Vehicle({ params }: Props) {
                 </div>
               )}
 
+              <hr className="my-3" />
+
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Start Time</label>
+                </div>
+                <div className="block">
+                  <Field type="datetime-local" name="schedule.startAt" className="form-input" />
+                  <ErrorMessage name="schedule.startAt" component="span" className="form-error" />
+                </div>
+              </label>
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">End Time</label>
+                </div>
+                <div className="block">
+                  <Field type="datetime-local" name="schedule.endAt" className="form-input" />
+                  <ErrorMessage name="schedule.endAt" component="span" className="form-error" />
+                </div>
+              </label>
               <label className="grid-1-3">
                 <div className="text-sm">
                   <label className="font-medium">Status</label>
