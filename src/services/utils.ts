@@ -1,6 +1,7 @@
 import { fbStorage } from '@/firebase/configs';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import countryList from 'country-list-js';
+import CountryList from 'country-list-js';
+import CurrencyCodes from 'currency-codes';
 import { getIn } from 'formik';
 import moment from 'moment-timezone';
 
@@ -37,8 +38,7 @@ export const getTimezones = () => {
 };
 
 export const getCountries = () => {
-  return countryList
-    .names()
+  return CountryList.names()
     .sort((a, b) => a.localeCompare(b))
     .map((country) => {
       return {
@@ -46,4 +46,15 @@ export const getCountries = () => {
         value: country.toLowerCase(),
       };
     });
+};
+
+export const getCurrencies = () => {
+  return CurrencyCodes.data
+    .map((data) => {
+      return {
+        name: `${data.currency} (${data.code})`,
+        value: data.code,
+      };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
 };
