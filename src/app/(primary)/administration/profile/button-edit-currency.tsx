@@ -68,7 +68,7 @@ export default function EditCurrencyButton({ company, currency }: Props) {
           Set as primary currency?
         </DialogTitle>
 
-        <div className="mt-10 grid items-center gap-3">
+        <div className="mt-5 grid items-center gap-3">
           <div className="flex items-center justify-between gap-5">
             <label className="form-label">Name:</label>
             <p>{currency.name}</p>
@@ -77,6 +77,11 @@ export default function EditCurrencyButton({ company, currency }: Props) {
             <label className="form-label">Code:</label>
             <p>{currency.code}</p>
           </div>
+          {isPrimary && (
+            <div className="flex items-center justify-end gap-5">
+              <p className="status-approved rounded-full text-xs">Primary</p>
+            </div>
+          )}
         </div>
 
         <div className="mt-10 flex w-full justify-end gap-5">
