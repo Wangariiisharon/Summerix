@@ -24,7 +24,8 @@ import { getAvatarPhoto } from '@/services/utils';
 import Image from 'next/image';
 import VehicleAllocation from './vehicle';
 import AddDocumentButton from './button-add-document';
-import { DocumentIcon, EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { DocumentIcon, EyeIcon } from '@heroicons/react/24/outline';
+import DeleteDocumentButton from './button-delete-document';
 
 const DriverSchema = (companyId: string, docId: string) => {
   return Yup.object().shape({
@@ -282,7 +283,7 @@ export default function Driver({ params }: Props) {
                               </div>
                             </div>
 
-                            <TrashIcon className="h-5 w-5 text-danger hover:opacity-50" />
+                            <DeleteDocumentButton document={document} driver={driver} />
                           </div>
                         );
                       })}
