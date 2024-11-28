@@ -5,22 +5,29 @@ import DialogLayout from '@/components/dialog-layout';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { COMPANY } from '@/models/company';
-import { doUploadImage } from '@/services/utils';
+import { getCurrencies } from '@/services/utils';
 import { DialogTitle } from '@headlessui/react';
-import { CameraIcon } from '@heroicons/react/24/outline';
-import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { PlusCircleIcon } from '@heroicons/react/24/outline';
+import { arrayUnion, doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
+import * as Yup from 'yup';
+
+const CurrencySchema = () => {
+  return Yup.object().shape({
+    currency: Yup.string().trim().required('Currency is required.'),
+  });
+};
 
 type Props = {
   company: COMPANY;
 };
 
-export default function UploadPhotoButton({ company }: Props) {
-  const { authUser } = useAuthContext();
+export default function AddCurrencyButton({ company }: Props) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [processing, setProcessing] = useState<boolean>(false);
+  const { authUser } = useAuthContext();
 
   const doSave = async (formValues: any) => {
     console.debug('doSave > formValues:', formValues);
@@ -31,9 +38,11 @@ export default function UploadPhotoButton({ company }: Props) {
 
     try {
       setProcessing(true);
+
+      const currency = JSON.parse(formValues.currency);
       const docRef = doc(fbDb, Constants.fbCompanies, company.docId);
       await updateDoc(docRef, {
-        ...formValues,
+        currencyList: arrayUnion(currency),
 
         updatedBy: {
           authId: authUser.uid,
@@ -41,7 +50,7 @@ export default function UploadPhotoButton({ company }: Props) {
         },
         lastUpdated: serverTimestamp(),
       });
-      toast.success('Company photo updated successfully.');
+      toast.success('Currency added successfully.');
       setIsOpen(false);
     } catch (error) {
       console.error('doSave error:', error);
@@ -54,11 +63,12 @@ export default function UploadPhotoButton({ company }: Props) {
   return (
     <>
       <button
+        type="button"
         onClick={() => setIsOpen(true)}
-        className="btn btn-flex btn-secondary mt-5 w-fit px-8"
+        className="btn btn-flex btn-outline-primary w-fit px-8"
       >
-        <CameraIcon className="h-5 w-5" />
-        <p>Upload New Photo</p>
+        <PlusCircleIcon className="h-5 w-5" />
+        <p>Add Currency</p>
       </button>
 
       <DialogLayout
@@ -67,43 +77,44 @@ export default function UploadPhotoButton({ company }: Props) {
         classNames="dialog-panel max-w-md"
       >
         <DialogTitle as="h3" className="dialog-title text-sm">
-          Upload Company Photo
+          Add another currency
         </DialogTitle>
 
         <Formik
           enableReinitialize={true}
           initialValues={{
-            photoURL: company.photoURL || '',
-            updatedBy: {
-              authId: authUser?.uid,
-              email: authUser?.email,
-            },
+            currency: '',
           }}
+          validationSchema={CurrencySchema()}
           onSubmit={(values) => doSave(values)}
         >
-          {({ isValid, setFieldValue, values }) => (
+          {({ isValid, submitForm }) => (
             <Form className="mt-6">
-              <label className="block">
-                <label className="form-label">Company Photo</label>
-                <Field name="photoURL">
-                  {() => (
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={async (event) => {
-                        const file = event.currentTarget?.files?.[0];
-                        if (file && authUser) {
-                          const downloadUrl = await doUploadImage(file, 'company/', authUser.uid);
-                          setFieldValue('photoURL', downloadUrl);
-                          toast.success('Image uploaded successfully.');
-                        }
-                      }}
-                      className="form-input"
-                    />
-                  )}
-                </Field>
-                <ErrorMessage name="photoURL" component="span" className="form-error" />
-              </label>
+              {/* <h2 className="text-center font-bold"></h2> */}
+
+              <div className="mt-5 grid gap-5 p-4">
+                <div className="">
+                  <Field as="select" name="currency" className="form-select">
+                    <option value="" disabled>
+                      Select currency...
+                    </option>
+                    {getCurrencies().map((currency) => {
+                      return (
+                        <option
+                          key={currency.value}
+                          value={JSON.stringify({
+                            name: currency.name,
+                            code: currency.value,
+                          })}
+                        >
+                          {currency.name} ({currency.value})
+                        </option>
+                      );
+                    })}
+                  </Field>
+                  <ErrorMessage name="currency" component="span" className="form-error" />
+                </div>
+              </div>
 
               <div className="mt-10 flex w-full justify-end gap-5">
                 <p className=""></p>
@@ -116,10 +127,9 @@ export default function UploadPhotoButton({ company }: Props) {
                     Cancel
                   </button>
                   <button
-                    type="submit"
-                    disabled={
-                      !isValid || !authUser || processing || company.photoURL === values.photoURL
-                    }
+                    type="button"
+                    onClick={() => submitForm()}
+                    disabled={!authUser || !isValid || processing}
                     className="btn btn-secondary"
                   >
                     Save
