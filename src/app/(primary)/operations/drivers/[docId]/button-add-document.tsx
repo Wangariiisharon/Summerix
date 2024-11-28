@@ -100,7 +100,7 @@ export default function AddDocumentButton({ driver }: Props) {
                   <ErrorMessage name="fileName" component="span" className="form-error" />
                 </label>
                 <label className="block">
-                  <label className="form-label">Download URL</label>
+                  <label className="form-label">File upload (Download URL)</label>
                   <Field name="downloadURL">
                     {() => (
                       <input
@@ -109,7 +109,11 @@ export default function AddDocumentButton({ driver }: Props) {
                         onChange={async (event) => {
                           const file = event.currentTarget?.files?.[0];
                           if (file && driver.docId) {
-                            const downloadUrl = await doUploadImage(file, 'drivers/', driver.docId);
+                            const downloadUrl = await doUploadImage(
+                              file,
+                              `drivers/${driver.docId}`,
+                              file.name,
+                            );
                             setFieldValue('downloadURL', downloadUrl);
                             toast.success('File uploaded successfully.');
                           }
@@ -122,7 +126,21 @@ export default function AddDocumentButton({ driver }: Props) {
                 </label>
                 <label className="block">
                   <label className="form-label">Status</label>
-                  <Field type="text" name="status" className="form-input" placeholder="File Name" />
+                  <Field as="select" name="status" className="form-select">
+                    <option value="" disabled>
+                      Select status...
+                    </option>
+                    {[
+                      { name: 'Active', value: 'active' },
+                      { name: 'Expired', value: 'expired' },
+                    ].map(({ name, value }) => {
+                      return (
+                        <option key={value} value={value}>
+                          {name}
+                        </option>
+                      );
+                    })}
+                  </Field>
                   <ErrorMessage name="status" component="span" className="form-error" />
                 </label>
               </div>
