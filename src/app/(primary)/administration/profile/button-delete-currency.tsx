@@ -63,13 +63,13 @@ export default function DeleteCurrencyButton({ company, currency }: Props) {
       <DialogLayout
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        classNames="dialog-panel max-w-md"
+        classNames="dialog-panel max-w-sm"
       >
         <DialogTitle as="h3" className="dialog-title text-sm">
           Remove currency entry?
         </DialogTitle>
 
-        <div className="mt-10 grid items-center gap-3">
+        <div className="mt-5 grid items-center gap-3">
           <div className="flex items-center justify-between gap-5">
             <label className="form-label">Name:</label>
             <p>{currency.name}</p>

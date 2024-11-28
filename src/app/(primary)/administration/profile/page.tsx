@@ -14,7 +14,7 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import AddCurrencyButton from './button-add-currency';
 import DeleteCurrencyButton from './button-delete-currency';
-import EditCurrencyButton from './button-edit-currency copy';
+import EditCurrencyButton from './button-edit-currency';
 
 const CompanySchema = (docId?: string) => {
   return Yup.object().shape({

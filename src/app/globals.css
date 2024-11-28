@@ -106,7 +106,7 @@
   /* BUTTONS */
 
   .btn {
-    @apply rounded border px-4 py-2 text-sm font-semibold outline-none transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50;
+    @apply rounded border px-6 py-2 text-sm outline-none transition duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .btn-accent {
@@ -155,19 +155,15 @@
 
   /* DIALOGS */
   .dialog-panel-wrapper {
-    @apply flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0;
+    @apply flex min-h-full items-end justify-center text-center sm:items-center;
   }
 
   .dialog-panel {
     @apply transform overflow-hidden rounded-xl border bg-white p-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6;
   }
 
-  .dialog-title-wrapper {
-    @apply mx-auto flex w-full items-center justify-center rounded;
-  }
-
   .dialog-title {
-    @apply text-center font-semibold leading-6;
+    @apply -mx-4 border-b p-4 pt-0 text-left font-semibold;
   }
 
   /* OTHERS */

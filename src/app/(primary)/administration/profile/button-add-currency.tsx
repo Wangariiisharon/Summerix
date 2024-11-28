@@ -89,11 +89,10 @@ export default function AddCurrencyButton({ company }: Props) {
           onSubmit={(values) => doSave(values)}
         >
           {({ isValid, submitForm }) => (
-            <Form className="mt-6">
-              {/* <h2 className="text-center font-bold"></h2> */}
-
-              <div className="mt-5 grid gap-5 p-4">
-                <div className="">
+            <Form className="">
+              <div className="mt-5 grid gap-5">
+                <label className="block">
+                  <label className="form-label">Currency</label>
                   <Field as="select" name="currency" className="form-select">
                     <option value="" disabled>
                       Select currency...
@@ -113,7 +112,7 @@ export default function AddCurrencyButton({ company }: Props) {
                     })}
                   </Field>
                   <ErrorMessage name="currency" component="span" className="form-error" />
-                </div>
+                </label>
               </div>
 
               <div className="mt-10 flex w-full justify-end gap-5">
