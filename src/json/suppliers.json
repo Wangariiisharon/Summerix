@@ -1,0 +1,22 @@
+{
+  "typeOfSupplies": [
+    {
+      "value": "fuel",
+      "name": "Fuel Provider"
+    },
+    {
+      "value": "parts",
+      "name": "Parts Provider"
+    }
+  ],
+  "paymentTerms": [
+    {
+      "value": "next-30-days",
+      "name": "Next 30 days"
+    },
+    {
+      "value": "due-on-receipt",
+      "name": "Due on receipt"
+    }
+  ]
+}
