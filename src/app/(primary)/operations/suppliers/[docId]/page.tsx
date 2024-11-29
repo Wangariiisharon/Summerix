@@ -19,7 +19,7 @@ import toast from 'react-hot-toast';
 import Constants from '@/Constants';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
 import { SUPPLIER } from '@/models/supplier';
-import { DocumentIcon, EyeIcon } from '@heroicons/react/24/outline';
+import { DocumentIcon, EyeIcon, PlusCircleIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { getSupplierByEmail, getSupplierByName } from '@/services/supplier';
 import Suppliers from '@/json/suppliers.json';
 import AddDocumentButton from './button-add-document';
@@ -159,7 +159,7 @@ export default function Supplier({ params }: Props) {
             phoneNumber: company.phoneNumber || '',
             regNumber: company.regNumber || '',
           },
-          contacts: supplier?.contacts || [],
+          contacts: supplier?.contacts || [{ name: '', phoneNumber: '' }],
           documents: supplier?.documents || [],
           typeOfSupplies: supplier?.typeOfSupplies || '',
           paymentTerms: supplier?.paymentTerms || '',
@@ -174,7 +174,7 @@ export default function Supplier({ params }: Props) {
         validationSchema={SupplierSchema(authUser?.companyId || 'xyz', docId)}
         onSubmit={(values) => doSave(values)}
       >
-        {({ isValid, values }) => (
+        {({ isValid, values, setFieldValue }) => (
           <Form className="">
             <div className="mt-5 grid gap-5 p-4">
               <label className="grid-1-3 gap-5">
@@ -205,6 +205,90 @@ export default function Supplier({ params }: Props) {
                   <ErrorMessage name="email" component="span" className="form-error" />
                 </div>
               </label>
+
+              <div className="grid-1-3 gap-5">
+                <div className="text-sm">
+                  <label className="font-medium">Contacts</label>
+                </div>
+                <div className="grid gap-3">
+                  {values.contacts.map((contact, i) => {
+                    return (
+                      <div
+                        key={`supplier-contact-${i}`}
+                        className="flex items-center justify-between gap-5 rounded bg-gray-100 px-4 py-2"
+                      >
+                        <div className="flex gap-3">
+                          <label className="block">
+                            <label className="form-label">Name</label>
+                            <div className="">
+                              <Field
+                                type="text"
+                                name={`contacts[${i}].name`}
+                                className="form-input"
+                                placeholder="Name"
+                              />
+                              <ErrorMessage
+                                name={`contacts[${i}].name`}
+                                component="span"
+                                className="form-error"
+                              />
+                            </div>
+                          </label>
+                          <label className="block">
+                            <label className="form-label">Phone Number</label>
+                            <div className="">
+                              <Field
+                                type="text"
+                                name={`contacts[${i}].phoneNumber`}
+                                className="form-input"
+                                placeholder="Phone Number"
+                              />
+                              <ErrorMessage
+                                name={`contacts[${i}].phoneNumber`}
+                                component="span"
+                                className="form-error"
+                              />
+                            </div>
+                          </label>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const contacts = values.contacts;
+                            contacts.splice(i, 1);
+                            setFieldValue('contacts', [...new Set(contacts)]);
+                          }}
+                        >
+                          <TrashIcon className="h-5 w-5 text-danger hover:opacity-50" />
+                        </button>
+                      </div>
+                    );
+                  })}
+
+                  {values.contacts.length === 0 && (
+                    <p className="text-gray-400">No items to display.</p>
+                  )}
+                </div>
+
+                <div className="">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const contacts = values.contacts;
+                      contacts.push({ name: '', phoneNumber: '' });
+                      setFieldValue('contacts', [...new Set(contacts)]);
+                    }}
+                    className="btn btn-flex btn-outline-primary w-fit px-8"
+                  >
+                    <PlusCircleIcon className="h-5 w-5" />
+                    <p>Add Contact</p>
+                  </button>
+                </div>
+              </div>
+
+              <hr className="my-3" />
+
               <label className="grid-1-3 gap-5">
                 <div className="flex flex-col gap-1 text-sm">
                   <label className="font-medium">Type of Supplies</label>
