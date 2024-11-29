@@ -2,10 +2,8 @@
 
 import { useAuthContext } from '@/app/auth-provider';
 import Constants from '@/Constants';
-import { DEPARTMENT } from '@/models/department';
 import { PARAMS_MAP } from '@/models/params-map';
 import { PlusIcon } from '@heroicons/react/24/outline';
-import Link from 'next/link';
 import React, { useState } from 'react';
 import useDepartments from '@/hooks/useDepartments';
 import DepartmentsTble from './departmentsTable';
@@ -19,8 +17,6 @@ import { fbDb } from '@/firebase/configs';
 export default function Departments() {
   const { authUser } = useAuthContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [open, setOpen] = useState(false);
   const { company } = useCurrentCompany();
 
   const [params, setParams] = useState<PARAMS_MAP>({
@@ -98,7 +94,7 @@ export default function Departments() {
                 handleSubmit(values);
               }}
             >
-              {({ values, setFieldValue, isSubmitting }) => (
+              {({ values, isSubmitting }) => (
                 <Form>
                   <div className="">
                     <div className="flex w-full justify-between">
