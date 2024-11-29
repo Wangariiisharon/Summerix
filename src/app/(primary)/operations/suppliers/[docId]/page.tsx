@@ -22,6 +22,8 @@ import { SUPPLIER } from '@/models/supplier';
 import { DocumentIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { getSupplierByEmail, getSupplierByName } from '@/services/supplier';
 import Suppliers from '@/json/suppliers.json';
+import AddDocumentButton from './button-add-document';
+import DeleteDocumentButton from './button-delete-document';
 
 const SupplierSchema = (companyId: string, docId: string) => {
   return Yup.object().shape({
@@ -199,7 +201,6 @@ export default function Supplier({ params }: Props) {
                     name="email"
                     className="form-input"
                     placeholder="Email Address"
-                    disabled={docId !== 'new'}
                   />
                   <ErrorMessage name="email" component="span" className="form-error" />
                 </div>
@@ -322,7 +323,7 @@ export default function Supplier({ params }: Props) {
                               </div>
                             </div>
 
-                            {/* <DeleteDocumentButton document={document} supplier={supplier} /> */}
+                            <DeleteDocumentButton document={document} supplier={supplier} />
                           </div>
                         );
                       })}
@@ -332,13 +333,15 @@ export default function Supplier({ params }: Props) {
                       )}
                     </div>
 
-                    {/* <div className="">
+                    <div className="">
                       <AddDocumentButton supplier={supplier} />
-                    </div> */}
+                    </div>
                   </div>
                 </>
               )}
             </div>
+
+            <hr className="my-3" />
 
             <div className="grid-1-3 mt-10 gap-5">
               <p className=""></p>
