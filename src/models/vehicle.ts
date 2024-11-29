@@ -28,6 +28,7 @@ export interface VEHICLE {
     status: string;
     entity: string;
   };
+  purchasePrice: number;
 
   doc: QueryDocumentSnapshot<DocumentData, DocumentData>;
   docRef: DocumentReference<DocumentData, DocumentData>;
