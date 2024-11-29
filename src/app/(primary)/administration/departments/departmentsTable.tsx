@@ -69,9 +69,9 @@ export default function DepartmentsTble({ departments, count }: DepartmentTableP
 
   const filteredDepartments = departments.filter((department: DEPARTMENT) =>
     filter === 'Active'
-      ? !department.rolesMap.isActive
+      ? department.rolesMap.isActive
       : filter === 'Inactive'
-        ? department.rolesMap.isActive
+        ? !department.rolesMap.isActive
         : true,
   );
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
