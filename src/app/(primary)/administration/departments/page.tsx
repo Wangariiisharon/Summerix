@@ -18,7 +18,8 @@ export default function Departments() {
   const { authUser } = useAuthContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { company } = useCurrentCompany();
-
+  // eslint-disable-next-line no-unused-vars
+  /* eslint-disable-next-line no-unused-vars */
   const [params, setParams] = useState<PARAMS_MAP>({
     max: Constants.defaultPageSize,
     orderBy: 'lastUpdated',

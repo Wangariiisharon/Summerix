@@ -21,6 +21,8 @@ interface DepartmentTableProps {
 }
 
 export default function DepartmentsTble({ departments, count }: DepartmentTableProps) {
+  // eslint-disable-next-line no-unused-vars
+  /* eslint-disable-next-line no-unused-vars */
   const [params, setParams] = useState<PARAMS_MAP>({
     max: Constants.defaultPageSize,
     orderBy: 'lastUpdated',
@@ -236,11 +238,7 @@ export default function DepartmentsTble({ departments, count }: DepartmentTableP
                           {department.rolesMap.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
-                      {/* <td className="px-6 py-3">
-                        <span className="rounded-full bg-[#f7d4d6] px-3 py-1 text-sm text-[#c91010]">
-                          {department.lastUpdated}
-                        </span>
-                      </td> */}
+
                       <td className="px-6 py-3">
                         <span className="">
                           {department.lastUpdated &&
@@ -254,14 +252,12 @@ export default function DepartmentsTble({ departments, count }: DepartmentTableP
                             className="text-blue-500 hover:text-blue-600"
                             onClick={(event) => {
                               event.stopPropagation();
-                              // handleEditClick(admin);
                             }}
                           >
                             <FaEdit />
                           </button>
                           <button
                             className="text-red-500 hover:text-red-600"
-                            // onClick={deleteUser}
                             onClick={(event) => {
                               event.stopPropagation();
                               deleteUser(department.docId);
