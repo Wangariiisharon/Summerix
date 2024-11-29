@@ -5,7 +5,7 @@ import DialogLayout from '@/components/dialog-layout';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { DOCUMENT } from '@/models/document';
-import { DRIVER } from '@/models/driver';
+import { SUPPLIER } from '@/models/supplier';
 import { DialogTitle } from '@headlessui/react';
 import { EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { arrayRemove, doc, serverTimestamp, updateDoc } from 'firebase/firestore';
@@ -14,11 +14,11 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 type Props = {
-  driver: DRIVER;
+  supplier: SUPPLIER;
   document: DOCUMENT;
 };
 
-export default function DeleteDocumentButton({ driver, document }: Props) {
+export default function DeleteDocumentButton({ supplier, document }: Props) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [processing, setProcessing] = useState<boolean>(false);
   const { authUser } = useAuthContext();
@@ -26,14 +26,14 @@ export default function DeleteDocumentButton({ driver, document }: Props) {
   const doRemove = async () => {
     console.debug('doRemove > document:', document);
     if (!(authUser?.isAdmin || authUser?.isOwner)) {
-      toast.error('You are not authorised to manage drivers.');
+      toast.error('You are not authorised to manage suppliers.');
       return;
     }
 
     try {
       setProcessing(true);
 
-      const docRef = doc(fbDb, Constants.fbDrivers, driver.docId);
+      const docRef = doc(fbDb, Constants.fbSuppliers, supplier.docId);
       await updateDoc(docRef, {
         documents: arrayRemove(document),
 
