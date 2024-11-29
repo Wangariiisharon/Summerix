@@ -3,21 +3,23 @@
 import { useAuthContext } from '@/app/auth-provider';
 import Constants from '@/Constants';
 import { PARAMS_MAP } from '@/models/params-map';
-import { PlusIcon } from '@heroicons/react/24/outline';
-import React, { useState } from 'react';
+import { DocumentArrowDownIcon, PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
+import React, { useCallback, useRef, useState } from 'react';
 import useDepartments from '@/hooks/useDepartments';
-import DepartmentsTble from './departmentsTable';
-import { NewFormModal } from '@/components/modals';
-import { Formik, Field, Form } from 'formik/dist/index';
-import toast from 'react-hot-toast';
-import useCurrentCompany from '@/hooks/useCurrentCompany';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { fbDb } from '@/firebase/configs';
+import { DocumentSnapshot } from 'firebase/firestore';
+import DeleteDeprtmentButton from './button-delete';
+import ToggleDepartmentButton from './button-toggle';
+import Image from 'next/image';
+
+import Link from 'next/link';
+import { DEPARTMENT } from '@/models/department';
+import moment from 'moment';
+import RemotePagination from '@/components/remote-pagination';
 
 export default function Departments() {
   const { authUser } = useAuthContext();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const { company } = useCurrentCompany();
+  const [status, setStatus] = useState<string>('');
+
   // eslint-disable-next-line no-unused-vars
   /* eslint-disable-next-line no-unused-vars */
   const [params, setParams] = useState<PARAMS_MAP>({
@@ -31,108 +33,128 @@ export default function Departments() {
     params,
   });
 
-  const handleSubmit = async (values: any) => {
-    console.debug('doSave > formValues:', values);
+  const cursors = useRef<Map<number, DocumentSnapshot>>(new Map());
+  const [max, setMax] = useState(Constants.defaultPageSize);
+  const [currentPage, setCurrentPage] = useState(0);
+  const onPageChanged = useCallback(
+    (nextPage: number) => {
+      setCurrentPage((page) => {
+        // first, we save the last document as page's cursor
+        cursors.current.set(page + 1, departments[departments.length - 1]?.doc);
 
-    try {
-      const colRef = collection(fbDb, Constants.fbDepartments);
-      await addDoc(colRef, {
-        ...values,
-        name: values.name,
-        members: 0,
-        company: {
-          docId: company?.docId,
-          name: company?.name,
-          email: company?.email,
-          phoneNumber: company?.phoneNumber,
-          regNumber: company?.regNumber || '',
-        },
-        rolesMap: {
-          companyId: company?.docId,
-          isActive: true,
-        },
-        createdBy: {
-          authId: authUser?.uid,
-          email: authUser?.email,
-        },
-        dateCreated: serverTimestamp(),
-        lastUpdated: serverTimestamp(),
+        // then we update the state with the next page's number
+        return nextPage;
       });
-      setIsModalOpen(false);
-      toast.success('New Departmet added successfully.');
-    } catch (error) {
-      console.error('save user error:', error);
-    }
-  };
-
-  const handleAdd = () => {
-    setIsModalOpen(true);
-  };
-
+    },
+    [departments],
+  );
   return (
-    <main className="text-sm">
+    <main className="-mx-4 rounded bg-white p-4">
       <section className="flex flex-col justify-between gap-5 sm:flex-row">
         <div className="">
-          <h2 className="font-bold">Departments</h2>
-          <p className="text-gray-500">Manage your teams & department permissions.</p>
+          <h2 className="font-bold">Admin Users</h2>
+          <p className="text-gray-500">Manage your teams & user permissions.</p>
         </div>
 
-        <button className="btn btn-flex btn-secondary" onClick={handleAdd}>
-          <PlusIcon className="h-5 w-5" />
-          Add Department
-        </button>
-      </section>
-      <DepartmentsTble departments={departments} count={count} />
-
-      {isModalOpen && (
-        <NewFormModal isOpen={isModalOpen} setOpen={setIsModalOpen} heading="Add Department">
-          <div className="p-5">
-            <Formik
-              initialValues={{
-                name: '',
-              }}
-              onSubmit={(values) => {
-                handleSubmit(values);
-              }}
+        <div className="flex flex-wrap items-center gap-5">
+          <label className="block">
+            <select
+              name="status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="form-select w-24 border-secondary py-2.5"
             >
-              {({ values, isSubmitting }) => (
-                <Form>
-                  <div className="">
-                    <div className="flex w-full justify-between">
-                      <label className="block">
-                        <label className="form-label">NAME</label>
-                        <Field
-                          type="text"
-                          name="name"
-                          value={values.name}
-                          className="form-input mt-1 block w-96 bg-gray-100"
-                        />
-                      </label>
-                    </div>
+              <option value="">All</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </label>
+          <Link href="/administration/users/new">
+            <div className="btn btn-flex btn-secondary">
+              <PlusIcon className="h-5 w-5" />
+              <p>Add User</p>
+            </div>
+          </Link>
+          <button
+            onClick={() => console.debug('do export users...')}
+            className="btn btn-flex btn-outline-secondary"
+          >
+            <DocumentArrowDownIcon className="h-5 w-5" />
+            <p>Export</p>
+          </button>
+        </div>
+      </section>
 
-                    <div className="mt-6 flex justify-end">
-                      <button
-                        type="button"
-                        className="inline-flex justify-center rounded-md border border-transparent bg-gray-300 px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-400 focus:outline-none sm:ml-3 sm:mt-0 sm:w-auto sm:text-sm"
-                        onClick={() => setIsModalOpen(false)}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-[#4FD1C5] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
-                        disabled={isSubmitting} // Disable button while submitting
-                      >
-                        + Add Department
-                      </button>
-                    </div>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </div>
-        </NewFormModal>
-      )}
+      <hr className="my-5" />
+
+      <div className="table-wrapper">
+        <div className="table-scroll text-sm">
+          <table className="my-table">
+            <thead className="sticky top-0">
+              <tr className="tr-header">
+                <th className="th"></th>
+                <th className="th text-left">Name</th>
+                <th className="th table-cell-sm">Email Address</th>
+                <th className="th table-cell-xl">Status</th>
+                <th className="th table-cell-xl">Last Modified</th>
+                <th className="th text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {departments.map((department: DEPARTMENT) => {
+                return (
+                  <tr key={department.docId} className="tr-body">
+                    <td className="td text-center">
+                      <div className="h-auto w-16 overflow-hidden rounded-xl">
+                        <Image
+                          src={department.photoURL}
+                          alt={`${department.name} image`}
+                          className="rounded-xl object-cover"
+                          height={50}
+                          width={50}
+                          priority
+                        />
+                      </div>
+                    </td>
+                    <td className="td text-left">{department.name}</td>
+                    <td className="td table-cell-xl">
+                      <div className="flex justify-center">
+                        <p
+                          className={`w-fit rounded-full px-4 py-2 ${department.rolesMap.isActive ? 'bg-secondary/20 text-teal-700' : 'bg-gray-300'}`}
+                        >
+                          {department.rolesMap.isActive ? 'Active' : 'Inactive'}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="td table-cell-xl">
+                      {department.lastUpdated &&
+                        moment(department.lastUpdated.toDate()).format(Constants.dateTimeFormat)}
+                    </td>
+                    <td className="td">
+                      <div className="td-actions justify-start">
+                        <Link href={`/administration/users/${department.docId}`}>
+                          <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
+                        </Link>
+                        <DeleteDeprtmentButton department={department} />
+                        <ToggleDepartmentButton department={department} />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div className="mx-2 my-5 mb-36">
+          <RemotePagination
+            max={max}
+            setMax={setMax}
+            itemsCount={count}
+            currentPage={currentPage}
+            pageChanged={onPageChanged}
+          />
+        </div>
+      </div>
     </main>
   );
 }
