@@ -103,7 +103,9 @@ export default function Suppliers() {
                       </div>
                     </td>
                     <td className="td table-cell-sm">{supplier.email}</td>
-                    <td className="td table-cell-xl">{supplier.contacts[0].phoneNumber}</td>
+                    <td className="td table-cell-xl">
+                      {supplier.contacts?.at(0)?.phoneNumber || 'N/A'}
+                    </td>
                     <td className="td table-cell-sm">{supplier.typeOfSupplies}</td>
                     <td className="td table-cell-xl">
                       {supplier.lastUpdated &&
