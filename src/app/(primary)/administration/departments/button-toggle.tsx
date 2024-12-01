@@ -14,7 +14,7 @@ type Props = {
   department: DEPARTMENT;
 };
 
-export default function ToggleAdminButton({ department }: Props) {
+export default function ToggleDepartmentButton({ department }: Props) {
   const { authUser } = useAuthContext();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [processing, setProcessing] = useState<boolean>(false);
@@ -29,7 +29,7 @@ export default function ToggleAdminButton({ department }: Props) {
     try {
       setProcessing(true);
 
-      const docRef = doc(fbDb, Constants.fbAdmins, department.docId);
+      const docRef = doc(fbDb, Constants.fbDepartments, department.docId);
       await updateDoc(docRef, {
         'rolesMap.isActive': !department.rolesMap.isActive,
         updatedBy: {
@@ -81,7 +81,6 @@ export default function ToggleAdminButton({ department }: Props) {
             onClick={() => doToggle()}
             disabled={processing || !authUser}
             className={`btn ${department.rolesMap.isActive ? 'btn-danger' : 'btn-secondary'}`}
-            // className="btn btn-danger"
           >
             Confirm {department.rolesMap.isActive ? 'Archive' : 'Unarchive'}
           </button>

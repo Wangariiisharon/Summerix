@@ -6,6 +6,7 @@ export interface DEPARTMENT {
   name: string;
   members: number;
   photoURL: string;
+  displayName?: string;
   company: COMPANY_DETAILS;
   roles: Array<string>;
   rolesMap: {
