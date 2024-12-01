@@ -24,7 +24,7 @@ import toast from 'react-hot-toast';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
 import { getAvatarPhoto } from '@/services/utils';
 
-const DepartmentSchema = (docId: string) => {
+const DepartmentSchema = () => {
   return Yup.object().shape({
     name: Yup.string().required(' Department name is required.'),
   });
@@ -127,7 +127,7 @@ export default function Department({ params }: Props) {
             email: authUser?.email,
           },
         }}
-        validationSchema={DepartmentSchema(docId)}
+        validationSchema={DepartmentSchema()}
         onSubmit={(values) => doSave(values)}
       >
         {({ isValid }) => (
