@@ -20,9 +20,10 @@ interface Props {
   companyId: string;
   docId: string | null;
   params?: PARAMS_MAP;
+  isActive?: string;
 }
 
-function useDepartments({ companyId, docId, params }: Props) {
+function useDepartments({ companyId, docId, params, isActive }: Props) {
   const [departments, setDepartments] = useState<DEPARTMENT[]>([]);
   const [count, setCount] = useState<number>(0);
 
@@ -38,6 +39,9 @@ function useDepartments({ companyId, docId, params }: Props) {
 
     if (companyId && companyId !== '') {
       constraints.push(where('company.docId', '==', companyId));
+    }
+    if (isActive && isActive !== '') {
+      constraints.push(where('rolesMap.isActive', '==', isActive === 'active'));
     }
 
     getCountFromServer(query(colRef, ...constraints)).then((countSnap) => {
@@ -76,7 +80,7 @@ function useDepartments({ companyId, docId, params }: Props) {
     );
 
     return () => unsubscribe();
-  }, [companyId, docId, params]);
+  }, [companyId, docId, params, isActive]);
 
   return {
     departments,

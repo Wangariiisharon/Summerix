@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import DeleteAdminButton from './button-delete';
 import ToggleAdminButton from './button-toggle';
+import json2csv from 'json2csv';
 
 export default function Users() {
   const { authUser } = useAuthContext();
@@ -56,6 +57,33 @@ export default function Users() {
     [admins],
   );
 
+  const exportFiles = () => {
+    const fields = [
+      { label: 'First Name', value: 'firstName' },
+      { label: 'Last Name', value: 'lastName' },
+      { label: 'Email', value: 'email' },
+      { label: 'Phone Number', value: 'phoneNumber' },
+      {
+        label: 'Status',
+        value: (row: ADMIN) => (row.rolesMap.isActive ? 'Active' : 'Inactive'),
+      },
+      {
+        label: 'Archive',
+        value: (row: ADMIN) => (row.rolesMap.isActive ? 'Not Archived' : 'Archived'),
+      },
+    ];
+    const opts = { fields };
+    const csv = json2csv.parse(admins, opts);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'Admins.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <main className="-mx-4 rounded bg-white p-4">
       <section className="flex flex-col justify-between gap-5 sm:flex-row">
@@ -83,10 +111,7 @@ export default function Users() {
               <p>Add User</p>
             </div>
           </Link>
-          <button
-            onClick={() => console.debug('do export users...')}
-            className="btn btn-flex btn-outline-secondary"
-          >
+          <button onClick={exportFiles} className="btn btn-flex btn-outline-secondary">
             <DocumentArrowDownIcon className="h-5 w-5" />
             <p>Export</p>
           </button>
