@@ -52,8 +52,8 @@ export default function Departments() {
     <main className="-mx-4 rounded bg-white p-4">
       <section className="flex flex-col justify-between gap-5 sm:flex-row">
         <div className="">
-          <h2 className="font-bold">Admin Users</h2>
-          <p className="text-gray-500">Manage your teams & user permissions.</p>
+          <h2 className="font-bold">Departments</h2>
+          <p className="text-gray-500">Manage your Departments & their permissions.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-5">
@@ -69,10 +69,10 @@ export default function Departments() {
               <option value="inactive">Inactive</option>
             </select>
           </label>
-          <Link href="/administration/users/new">
+          <Link href="/administration/departments/new">
             <div className="btn btn-flex btn-secondary">
               <PlusIcon className="h-5 w-5" />
-              <p>Add User</p>
+              <p>Add Department</p>
             </div>
           </Link>
           <button
@@ -94,9 +94,8 @@ export default function Departments() {
               <tr className="tr-header">
                 <th className="th"></th>
                 <th className="th text-left">Name</th>
-                <th className="th table-cell-sm">Email Address</th>
                 <th className="th table-cell-xl">Status</th>
-                <th className="th table-cell-xl">Last Modified</th>
+                <th className="th table-cell-xl">Last Updated</th>
                 <th className="th text-left">Actions</th>
               </tr>
             </thead>
