@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { DEPARTMENT } from '@/models/department';
 import moment from 'moment';
 import RemotePagination from '@/components/remote-pagination';
+import json2csv from 'json2csv';
 
 export default function Departments() {
   const { authUser } = useAuthContext();
@@ -29,6 +30,7 @@ export default function Departments() {
   });
   const { count, departments } = useDepartments({
     companyId: authUser?.companyId || 'xyz',
+    isActive: status || '',
     docId: null,
     params,
   });
@@ -48,6 +50,27 @@ export default function Departments() {
     },
     [departments],
   );
+  const exportFiles = () => {
+    const fields = [
+      { label: 'Name', value: 'name' },
+      { label: 'LastUpdated', value: 'lastUpdated' },
+      {
+        label: 'Archive',
+        value: (row: DEPARTMENT) => (row.rolesMap.isActive ? 'Not Archived' : 'Archived'),
+      },
+      { label: 'UpdatedBy', value: (row: DEPARTMENT) => row.updatedBy.email },
+    ];
+    const opts = { fields };
+    const csv = json2csv.parse(departments, opts);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'Departments.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   return (
     <main className="-mx-4 rounded bg-white p-4">
       <section className="flex flex-col justify-between gap-5 sm:flex-row">
@@ -75,10 +98,7 @@ export default function Departments() {
               <p>Add Department</p>
             </div>
           </Link>
-          <button
-            onClick={() => console.debug('do export users...')}
-            className="btn btn-flex btn-outline-secondary"
-          >
+          <button onClick={exportFiles} className="btn btn-flex btn-outline-secondary">
             <DocumentArrowDownIcon className="h-5 w-5" />
             <p>Export</p>
           </button>
