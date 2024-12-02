@@ -38,10 +38,11 @@ export default function Maintenance() {
       orderBy: 'lastUpdated',
       direction: 'desc',
       max: max,
+      status: status,
 
       cursor: cursors.current.get(currentPage),
     });
-  }, [currentPage, max]);
+  }, [currentPage, max, status]);
 
   const onPageChanged = useCallback(
     (nextPage: number) => {
@@ -128,10 +129,10 @@ export default function Maintenance() {
           <table className="my-table">
             <thead className="sticky top-0">
               <tr className="tr-header">
-                <th className="th text-left">Vehicle</th>
-                <th className="th table-cell-sm">Supplier</th>
+                <th className="th text-left">Job Card</th>
+                <th className="th table-cell-sm">Vehicle</th>
+                <th className="th table-cell-md">Supplier</th>
                 <th className="th table-cell-md">Status</th>
-                <th className="th table-cell-md">Job Card</th>
                 <th className="th table-cell-xl">Scheduled On</th>
                 <th className="th table-cell-xl">Last Modified</th>
                 <th className="th text-left">Actions</th>
@@ -141,12 +142,31 @@ export default function Maintenance() {
               {maintenance.map((maintenance: MAINTENANCE) => {
                 return (
                   <tr key={maintenance.docId} className="tr-body">
-                    <td className="td text-left">
-                      <p>{maintenance.vehicle?.regNumber}</p>
+                    <td className="td text-left">{maintenance.jobCard}</td>
+                    <td className="td table-cell-sm">
+                      {maintenance.vehicle && (
+                        <Link
+                          href={`/operations/vehicles/${maintenance.vehicle.docId}`}
+                          className="text-primary hover:text-secondary"
+                        >
+                          {maintenance.vehicle.name}
+                        </Link>
+                      )}
+                      {!maintenance.vehicle && 'N/A'}
                     </td>
-                    <td className="td table-cell-sm">{maintenance.supplier?.name}</td>
+
+                    <td className="td table-cell-xl">
+                      {maintenance.supplier && (
+                        <Link
+                          href={`/operations/suppliers/${maintenance.supplier.docId}`}
+                          className="hover:text-secondary"
+                        >
+                          {maintenance.supplier.name}
+                        </Link>
+                      )}
+                      {!maintenance.supplier && 'N/A'}
+                    </td>
                     <td className="td table-cell-xl">{maintenance.status}</td>
-                    <td className="td table-cell-xl">{maintenance.jobCard}</td>
                     <td className="td table-cell-xl">
                       {maintenance.schedule.startAt &&
                         moment(maintenance.schedule.startAt.toDate()).format(
