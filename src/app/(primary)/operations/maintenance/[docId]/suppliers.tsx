@@ -2,49 +2,41 @@
 
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
-import { TRIP } from '@/models/trip';
-import { VEHICLE, VEHICLE_DETAILS, VEHICLE_STATUS } from '@/models/vehicle';
-import { getAvatarPhoto } from '@/services/utils';
+import { MAINTENANCE } from '@/models/maintenance';
+import { SUPPLIER, SUPPLIER_DETAILS } from '@/models/supplier';
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon, PlusIcon, TruckIcon } from '@heroicons/react/24/outline';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 type Props = {
   companyId: string;
   setFieldValue: Function;
-  trip?: TRIP;
+  maintenance?: MAINTENANCE;
 };
 
-export default function TripVehicle({ companyId, setFieldValue, trip }: Props) {
-  const [selected, setSelected] = useState<VEHICLE_DETAILS | null>(trip?.vehicle || null);
-  const [vehicles, setVehicles] = useState<VEHICLE[]>([]);
+export default function MaintenanceSuppliers({ companyId, setFieldValue, maintenance }: Props) {
+  const [selected, setSelected] = useState<SUPPLIER_DETAILS | null>(maintenance?.supplier || null);
+  const [suppliers, setSuppliers] = useState<SUPPLIER[]>([]);
 
   useEffect(() => {
-    const colRef = collection(fbDb, Constants.fbVehicles);
-    const queryRef = query(
-      colRef,
-      where('company.docId', '==', companyId),
-      where('status', '==', VEHICLE_STATUS.available),
-      where('driver', '!=', null),
-    );
+    const colRef = collection(fbDb, Constants.fbSuppliers);
+    const queryRef = query(colRef, where('company.docId', '==', companyId));
 
     const unsubscribe = onSnapshot(
       queryRef,
       async (snapshot) => {
         const promises = snapshot.docs.map(async (doc) => {
-          const data = doc.data() as VEHICLE;
+          const data = doc.data() as SUPPLIER;
           data.doc = doc; // QueryDocumentSnapshot
           data.docId = doc.id;
-          data.photoURL = data.photoURL || getAvatarPhoto(data.name);
 
           return data;
         });
 
         const results = await Promise.all(promises);
-        setVehicles(results);
+        setSuppliers(results);
       },
       (error) => {
         console.error('onSnapshot > error:', error);
@@ -60,14 +52,13 @@ export default function TripVehicle({ companyId, setFieldValue, trip }: Props) {
         <Listbox
           value={selected}
           onChange={(value) => {
-            const vehicle = vehicles.find((v) => v.docId === value?.docId);
-            if (vehicle && vehicle.docId) {
-              setFieldValue('driver', vehicle.driver);
-              setFieldValue('vehicle', {
-                docId: vehicle.docId,
-                name: vehicle.name,
-                photoURL: vehicle.photoURL,
-                regNumber: vehicle.regNumber,
+            const supplier = suppliers.find((v) => v.docId === value?.docId);
+            if (supplier && supplier.docId) {
+              setFieldValue('supplier', {
+                docId: supplier.docId,
+                name: supplier.name,
+                email: supplier.email,
+                phoneNumber: supplier.contacts[0]?.phoneNumber || '',
               });
             }
 
@@ -77,15 +68,6 @@ export default function TripVehicle({ companyId, setFieldValue, trip }: Props) {
           <div className="relative mt-2 w-full">
             <ListboxButton className="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm/6">
               <div className="flex items-center gap-2">
-                {selected && (
-                  <Image
-                    src={selected.photoURL}
-                    alt={selected.name}
-                    className="size-10 shrink-0 rounded-full"
-                    width={100}
-                    height={100}
-                  />
-                )}
                 {!selected && (
                   <div className="shrink-0 rounded-full bg-gray-300 p-1">
                     <TruckIcon className="h-3 w-3" />
@@ -93,7 +75,7 @@ export default function TripVehicle({ companyId, setFieldValue, trip }: Props) {
                 )}
                 <div className="block truncate">
                   <p className="font-medium">{selected?.name}</p>
-                  <p className="text-xs">{selected?.regNumber}</p>
+                  <p className="text-xs">{selected?.phoneNumber}</p>
                 </div>
               </div>
               <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
@@ -105,23 +87,16 @@ export default function TripVehicle({ companyId, setFieldValue, trip }: Props) {
               transition
               className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none data-[closed]:data-[leave]:opacity-0 data-[leave]:transition data-[leave]:duration-100 data-[leave]:ease-in sm:text-sm"
             >
-              {vehicles.map((vehicle) => (
+              {suppliers.map((supplier) => (
                 <ListboxOption
-                  key={vehicle.docId}
-                  value={vehicle}
+                  key={supplier.docId}
+                  value={supplier}
                   className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-primary data-[focus]:text-white"
                 >
                   <div className="flex items-center gap-2">
-                    <Image
-                      src={vehicle.photoURL}
-                      alt={vehicle.name}
-                      className="size-10 shrink-0 rounded-full"
-                      width={100}
-                      height={100}
-                    />
                     <div className="block truncate group-data-[selected]:font-semibold">
-                      <p className="font-medium">{vehicle.name}</p>
-                      <p className="text-xs">{vehicle.regNumber}</p>
+                      <p className="font-medium">{supplier.name}</p>
+                      <p className="text-xs">{supplier.contacts?.[0]?.phoneNumber || ''}</p>
                     </div>
                   </div>
 
@@ -131,15 +106,15 @@ export default function TripVehicle({ companyId, setFieldValue, trip }: Props) {
                 </ListboxOption>
               ))}
 
-              {vehicles.length === 0 && (
-                <Link href="/operations/vehicles/new">
+              {suppliers.length === 0 && (
+                <Link href="/operations/suppliers/new">
                   <div className="btn btn-flex btn-secondary m-2">
                     <PlusIcon className="h-5 w-5" />
-                    <p>Add New Vehicle</p>
+                    <p>Add New Supplier</p>
                   </div>
                 </Link>
               )}
-            </ListboxOptions> 
+            </ListboxOptions>
           </div>
         </Listbox>
       </div>

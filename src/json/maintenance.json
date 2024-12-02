@@ -1,0 +1,16 @@
+{
+  "statusList": [
+    {
+      "value": "planned",
+      "name": "Planned"
+    },
+    {
+      "value": "completed",
+      "name": "Completed"
+    },
+    {
+      "value": "pending",
+      "name": "Pending"
+    }
+  ]
+}
