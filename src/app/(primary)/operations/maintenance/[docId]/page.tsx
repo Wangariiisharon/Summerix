@@ -274,7 +274,7 @@ export default function Maintenance({ params }: Props) {
                 <Link href="/operations/maintenance" className="btn btn-outline">
                   Cancel
                 </Link>
-                <button type="submit" disabled={!authUser} className="btn btn-secondary">
+                <button type="submit" disabled={isValid || !authUser} className="btn btn-secondary">
                   Save
                 </button>
               </div>
