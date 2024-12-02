@@ -3,13 +3,9 @@
 import { useAuthContext } from '@/app/auth-provider';
 import RemotePagination from '@/components/remote-pagination';
 import Constants from '@/Constants';
-import useSuppliers from '@/hooks/useSuppliers';
 import useMaintenance from '@/hooks/useMaintenance';
-
 import { PARAMS_MAP } from '@/models/params-map';
-import { SUPPLIER } from '@/models/supplier';
 import { MAINTENANCE } from '@/models/maintenance';
-
 import { DocumentArrowDownIcon, PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { DocumentSnapshot } from 'firebase/firestore';
 import moment from 'moment';
