@@ -29,9 +29,3 @@ export interface MAINTENANCE {
   createdBy: { email: string; authId: string };
   updatedBy: { email: string; authId: string };
 }
-
-export enum MAINTENANCE_STATUS {
-  pending = 'pending',
-  planned = 'planned',
-  completed = 'completed',
-}
