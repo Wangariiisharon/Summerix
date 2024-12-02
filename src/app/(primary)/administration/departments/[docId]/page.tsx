@@ -189,7 +189,7 @@ export default function Department({ params }: Props) {
                 </Link>
                 <button
                   type="submit"
-                  disabled={!isValid || !authUser}
+                  // disabled={!isValid || !authUser}
                   className="btn btn-secondary"
                 >
                   Save
