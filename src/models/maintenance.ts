@@ -11,14 +11,10 @@ import { SUPPLIER_DETAILS } from './supplier';
 export interface MAINTENANCE {
   docId: string;
   status: string; // select options
-
   company: COMPANY_DETAILS;
   vehicle: VEHICLE_DETAILS;
   supplier: SUPPLIER_DETAILS;
-  jobCards: {
-    name: string;
-    value: string;
-  }[];
+  jobCard: string;
   schedule: {
     startAt: Timestamp;
     endAt: Timestamp;
@@ -33,8 +29,9 @@ export interface MAINTENANCE {
   createdBy: { email: string; authId: string };
   updatedBy: { email: string; authId: string };
 }
+
 export enum MAINTENANCE_STATUS {
   pending = 'pending',
-  planed = 'planed',
+  planned = 'planned',
   completed = 'completed',
 }
