@@ -20,7 +20,7 @@ import toast from 'react-hot-toast';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
 import Maintenances from '@/json/maintenance.json';
 
-import { MAINTENANCE, MAINTENANCE_STATUS } from '@/models/maintenance';
+import { MAINTENANCE } from '@/models/maintenance';
 
 import MaintenanceVehicle from './vehicle';
 import MaintenanceSuppliers from './suppliers';
@@ -133,7 +133,7 @@ export default function Maintenance({ params }: Props) {
       <Formik
         enableReinitialize={true}
         initialValues={{
-          status: maintenance?.status || MAINTENANCE_STATUS.pending,
+          status: maintenance?.status || 'pending',
           company: maintenance?.company || {
             docId: company.docId,
             name: company.name || '',
