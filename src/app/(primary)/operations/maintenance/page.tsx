@@ -11,6 +11,8 @@ import { DocumentSnapshot } from 'firebase/firestore';
 import moment from 'moment';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import json2csv from 'json2csv';
+import { format } from 'date-fns';
 
 export default function Maintenance() {
   const { authUser } = useAuthContext();
@@ -41,15 +43,42 @@ export default function Maintenance() {
   const onPageChanged = useCallback(
     (nextPage: number) => {
       setCurrentPage((page) => {
-        // first, we save the last document as page's cursor
         cursors.current.set(page + 1, maintenance[maintenance.length - 1]?.doc);
-
-        // then we update the state with the next page's number
         return nextPage;
       });
     },
     [maintenance],
   );
+  const exportFiles = () => {
+    const fields = [
+      { label: 'Vehicle', value: (row: MAINTENANCE) => row.vehicle.regNumber },
+      { label: 'Supplier', value: (row: MAINTENANCE) => row.supplier.name },
+      { label: 'Status', value: 'status' },
+      { label: 'Jobcard', value: 'jobCard' },
+      {
+        label: 'Scheduled On',
+        value: (row: MAINTENANCE) =>
+          row.schedule?.startAt
+            ? format(row.schedule.startAt.toDate(), 'yyyy-MM-dd HH:mm:ss')
+            : 'N/A',
+      },
+      {
+        label: 'Last Modified',
+        value: (row: MAINTENANCE) =>
+          row.lastUpdated ? format(row.lastUpdated.toDate(), 'yyyy-MM-dd HH:mm:ss') : 'N/A',
+      },
+    ];
+    const opts = { fields };
+    const csv = json2csv.parse(maintenance, opts);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'Maintenance.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   return (
     <main className="-mx-4 rounded bg-white p-4">
       <section className="flex flex-col justify-between gap-5 sm:flex-row">
@@ -65,10 +94,7 @@ export default function Maintenance() {
               <p>Schedule Maintenance</p>
             </div>
           </Link>
-          <button
-            onClick={() => console.debug('do export drivers...')}
-            className="btn btn-flex btn-outline-secondary"
-          >
+          <button onClick={exportFiles} className="btn btn-flex btn-outline-secondary">
             <DocumentArrowDownIcon className="h-5 w-5" />
             <p>Export</p>
           </button>
@@ -84,8 +110,9 @@ export default function Maintenance() {
               <tr className="tr-header">
                 <th className="th text-left">Vehicle</th>
                 <th className="th table-cell-sm">Supplier</th>
-                <th className="th table-cell-xl">Scheduled On</th>
+                <th className="th table-cell-md">Status</th>
                 <th className="th table-cell-md">Job Card</th>
+                <th className="th table-cell-xl">Scheduled On</th>
                 <th className="th table-cell-xl">Last Modified</th>
                 <th className="th text-left">Actions</th>
               </tr>
@@ -96,9 +123,6 @@ export default function Maintenance() {
                   <tr key={supplier.docId} className="tr-body">
                     <td className="td text-left">
                       <p>{supplier.vehicle?.regNumber}</p>
-                      <div className="mt-1 text-xs">
-                        <p className="block sm:hidden">{supplier.jobCard}</p>
-                      </div>
                     </td>
                     <td className="td table-cell-sm">{supplier.supplier?.name}</td>
                     <td className="td table-cell-xl">{supplier.status}</td>

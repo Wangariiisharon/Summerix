@@ -203,8 +203,8 @@ export default function Maintenance({ params }: Props) {
                   <label className="font-medium">Jobcard</label>
                 </div>
                 <div className="">
-                  <Field type="text" name="jobcard" className="form-input" placeholder="Jobcard" />
-                  <ErrorMessage name="jobcard" component="span" className="form-error" />
+                  <Field type="text" name="jobCard" className="form-input" placeholder="Jobcard" />
+                  <ErrorMessage name="jobCard" component="span" className="form-error" />
                 </div>
               </label>
 
@@ -274,7 +274,11 @@ export default function Maintenance({ params }: Props) {
                 <Link href="/operations/maintenance" className="btn btn-outline">
                   Cancel
                 </Link>
-                <button type="submit" disabled={isValid || !authUser} className="btn btn-secondary">
+                <button
+                  type="submit"
+                  disabled={!isValid || !authUser}
+                  className="btn btn-secondary"
+                >
                   Save
                 </button>
               </div>
