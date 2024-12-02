@@ -139,7 +139,7 @@ export default function TripVehicle({ companyId, setFieldValue, trip }: Props) {
                   </div>
                 </Link>
               )}
-            </ListboxOptions> 
+            </ListboxOptions>
           </div>
         </Listbox>
       </div>

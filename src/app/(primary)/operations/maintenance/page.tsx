@@ -6,6 +6,8 @@ import Constants from '@/Constants';
 import useMaintenance from '@/hooks/useMaintenance';
 import { PARAMS_MAP } from '@/models/params-map';
 import { MAINTENANCE } from '@/models/maintenance';
+import Maintenances from '@/json/maintenance.json';
+
 import { DocumentArrowDownIcon, PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { DocumentSnapshot } from 'firebase/firestore';
 import moment from 'moment';
@@ -29,6 +31,7 @@ export default function Maintenance() {
   const cursors = useRef<Map<number, DocumentSnapshot>>(new Map());
   const [max, setMax] = useState(Constants.defaultPageSize);
   const [currentPage, setCurrentPage] = useState(0);
+  const [status, setStatus] = useState<string>('');
 
   useEffect(() => {
     setParams({
@@ -88,6 +91,23 @@ export default function Maintenance() {
         </div>
 
         <div className="flex flex-wrap items-center gap-5">
+          <label className="block">
+            <select
+              name="status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="form-select w-36 border-secondary py-2.5"
+            >
+              <option value="">All</option>
+              {Maintenances.statusList.map(({ name, value }) => {
+                return (
+                  <option key={value} value={value}>
+                    {name}
+                  </option>
+                );
+              })}
+            </select>
+          </label>
           <Link href="/operations/maintenance/new">
             <div className="btn btn-flex btn-secondary">
               <PlusIcon className="h-5 w-5" />
@@ -118,29 +138,30 @@ export default function Maintenance() {
               </tr>
             </thead>
             <tbody>
-              {maintenance.map((supplier: MAINTENANCE) => {
+              {maintenance.map((maintenance: MAINTENANCE) => {
                 return (
-                  <tr key={supplier.docId} className="tr-body">
+                  <tr key={maintenance.docId} className="tr-body">
                     <td className="td text-left">
-                      <p>{supplier.vehicle?.regNumber}</p>
+                      <p>{maintenance.vehicle?.regNumber}</p>
                     </td>
-                    <td className="td table-cell-sm">{supplier.supplier?.name}</td>
-                    <td className="td table-cell-xl">{supplier.status}</td>
-                    <td className="td table-cell-xl">{supplier.jobCard}</td>
+                    <td className="td table-cell-sm">{maintenance.supplier?.name}</td>
+                    <td className="td table-cell-xl">{maintenance.status}</td>
+                    <td className="td table-cell-xl">{maintenance.jobCard}</td>
                     <td className="td table-cell-xl">
-                      {supplier.schedule.startAt &&
-                        moment(supplier.schedule.startAt.toDate()).format(Constants.dateTimeFormat)}
+                      {maintenance.schedule.startAt &&
+                        moment(maintenance.schedule.startAt.toDate()).format(
+                          Constants.dateTimeFormat,
+                        )}
                     </td>
                     <td className="td table-cell-xl">
-                      {supplier.lastUpdated &&
-                        moment(supplier.lastUpdated.toDate()).format(Constants.dateTimeFormat)}
+                      {maintenance.lastUpdated &&
+                        moment(maintenance.lastUpdated.toDate()).format(Constants.dateTimeFormat)}
                     </td>
                     <td className="td">
                       <div className="td-actions justify-start">
-                        <Link href={`/operations/suppliers/${supplier.docId}`}>
+                        <Link href={`/operations/maintenance/${maintenance.docId}`}>
                           <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
                         </Link>
-                        {/* <DeleteSupplierButton supplier={supplier} /> */}
                       </div>
                     </td>
                   </tr>
