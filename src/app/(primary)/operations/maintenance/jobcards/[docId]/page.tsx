@@ -4,9 +4,7 @@ import * as Yup from 'yup';
 import { useAuthContext } from '@/app/auth-provider';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
-import { DEPARTMENT } from '@/models/department';
-
-import DepartmentRoles from '@/json/departments.json';
+import { JOBCARD } from '@/models/jobcard';
 
 import {
   addDoc,
@@ -22,11 +20,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
-import { getAvatarPhoto } from '@/services/utils';
 
-const DepartmentSchema = () => {
+const JobcardSchema = () => {
   return Yup.object().shape({
-    name: Yup.string().required(' Department name is required.'),
+    name: Yup.string().required(' Jobcard name is required.'),
   });
 };
 
@@ -34,8 +31,8 @@ type Props = {
   params: { docId: string };
 };
 
-export default function Department({ params }: Props) {
-  const [department, setDepartment] = useState<DEPARTMENT>();
+export default function Jobcard({ params }: Props) {
+  const [jobcards, setJobcards] = useState<JOBCARD>();
   const { authUser } = useAuthContext();
   const { company } = useCurrentCompany();
   const router = useRouter();
@@ -43,15 +40,13 @@ export default function Department({ params }: Props) {
 
   useEffect(() => {
     if (docId && docId !== 'new') {
-      const docRef = doc(fbDb, Constants.fbDepartments, docId);
+      const docRef = doc(fbDb, Constants.fbJobCards, docId);
       const unsubscribe = onSnapshot(
         docRef,
         async (snapshot) => {
-          const data = snapshot.data() as DEPARTMENT;
-          data.displayName = data.displayName || '';
-          data.photoURL = data.photoURL || getAvatarPhoto(data.displayName);
+          const data = snapshot.data() as JOBCARD;
           data.docId = snapshot.id;
-          setDepartment(data);
+          setJobcards(data);
         },
         (error) => {
           console.error('onSnapshot > error:', error);
@@ -65,7 +60,7 @@ export default function Department({ params }: Props) {
   const doSave = async (formValues: any) => {
     console.debug('doSave > formValues:', formValues);
     if (!(authUser?.isAdmin || authUser?.isOwner)) {
-      toast.error('You are not authorised to manage departments.');
+      toast.error('You are not authorised to manage Jobcards.');
       return;
     }
 
@@ -73,7 +68,7 @@ export default function Department({ params }: Props) {
       formValues.displayName = `${formValues.name.trim()}`;
 
       if (docId === 'new') {
-        const colRef = collection(fbDb, Constants.fbDepartments);
+        const colRef = collection(fbDb, Constants.fbJobCards);
         await addDoc(colRef, {
           ...formValues,
           name: formValues.name.trim(),
@@ -85,19 +80,19 @@ export default function Department({ params }: Props) {
           dateCreated: serverTimestamp(),
           lastUpdated: serverTimestamp(),
         });
-        toast.success('New department added successfully.');
+        toast.success('New jobcard added successfully.');
       } else {
-        const docRef = doc(fbDb, Constants.fbDepartments, docId);
+        const docRef = doc(fbDb, Constants.fbJobCards, docId);
         await updateDoc(docRef, {
           ...formValues,
           lastUpdated: serverTimestamp(),
         });
-        toast.success('Department updated successfully.');
+        toast.success('Jobcard updated successfully.');
       }
 
-      router.push('/administration/departments');
+      router.push('/operations/maintenance');
     } catch (error) {
-      console.error('save department error:', error);
+      console.error('save jobcard error:', error);
     }
   };
 
@@ -105,29 +100,25 @@ export default function Department({ params }: Props) {
 
   return (
     <main className="-mx-4 rounded bg-white p-4">
-      <h2 className="font-bold">Department</h2>
+      <h2 className="font-bold">Jobcard</h2>
       <Formik
         enableReinitialize={true}
         initialValues={{
-          name: department?.name || '',
-          company: department?.company || {
+          name: jobcards?.name || '',
+          company: jobcards?.company || {
             docId: company.docId,
             name: company.name || '',
             email: company.email || '',
             phoneNumber: company.phoneNumber || '',
             regNumber: company.regNumber || '',
           },
-          rolesMap: department?.rolesMap || {
-            companyId: company.docId,
-            isActive: false,
-          },
-          roles: department?.roles || [],
+          isArchived: jobcards?.isArchived,
           updatedBy: {
             authId: authUser?.uid,
             email: authUser?.email,
           },
         }}
-        validationSchema={DepartmentSchema()}
+        validationSchema={JobcardSchema()}
         onSubmit={(values) => doSave(values)}
       >
         {({ isValid }) => (
@@ -151,40 +142,19 @@ export default function Department({ params }: Props) {
                 </div>
                 <div className="grid gap-5">
                   <label className="flex items-center gap-5">
-                    <Field type="checkbox" name="rolesMap.isActive" className="form-checkbox" />
-                    <span className="form-label">Is Active</span>
+                    <Field type="checkbox" name="isArchived" className="form-checkbox" />
+                    <span className="form-label">Is Archived</span>
                   </label>
                 </div>
               </div>
 
               <hr className="my-3" />
-
-              <div className="grid-1-3">
-                <div className="text-sm">
-                  <label className="font-medium">Roles</label>
-                </div>
-                <div className="grid-1-2 col-span-2 gap-3">
-                  {DepartmentRoles.staffRoles.map(({ name, value }) => {
-                    return (
-                      <label key={value} className="flex items-center gap-5">
-                        <Field
-                          type="checkbox"
-                          name="roles"
-                          value={value}
-                          className="form-checkbox"
-                        />
-                        <span className="form-label">{name}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
             </div>
 
             <div className="grid-1-3 mt-10 gap-5">
               <p className=""></p>
               <div className="flex justify-end gap-5">
-                <Link href="/administration" className="btn btn-outline">
+                <Link href="/operations" className="btn btn-outline">
                   Cancel
                 </Link>
                 <button
