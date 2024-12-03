@@ -8,13 +8,11 @@ import { PARAMS_MAP } from '@/models/params-map';
 import { MAINTENANCE } from '@/models/maintenance';
 import Maintenances from '@/json/maintenance.json';
 
-import { DocumentArrowDownIcon, PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { DocumentSnapshot } from 'firebase/firestore';
 import moment from 'moment';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import json2csv from 'json2csv';
-import { format } from 'date-fns';
 
 export default function Maintenance() {
   const { authUser } = useAuthContext();
@@ -53,36 +51,7 @@ export default function Maintenance() {
     },
     [maintenance],
   );
-  // const exportFiles = () => {
-  //   const fields = [
-  //     { label: 'Vehicle', value: (row: MAINTENANCE) => row.vehicle.regNumber },
-  //     { label: 'Supplier', value: (row: MAINTENANCE) => row.supplier.name },
-  //     { label: 'Status', value: 'status' },
-  //     { label: 'Jobcard', value: 'jobCard' },
-  //     {
-  //       label: 'Scheduled On',
-  //       value: (row: MAINTENANCE) =>
-  //         row.schedule?.startAt
-  //           ? format(row.schedule.startAt.toDate(), 'yyyy-MM-dd HH:mm:ss')
-  //           : 'N/A',
-  //     },
-  //     {
-  //       label: 'Last Modified',
-  //       value: (row: MAINTENANCE) =>
-  //         row.lastUpdated ? format(row.lastUpdated.toDate(), 'yyyy-MM-dd HH:mm:ss') : 'N/A',
-  //     },
-  //   ];
-  //   const opts = { fields };
-  //   const csv = json2csv.parse(maintenance, opts);
-  //   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  //   const link = document.createElement('a');
-  //   const url = URL.createObjectURL(blob);
-  //   link.setAttribute('href', url);
-  //   link.setAttribute('download', 'Maintenance.csv');
-  //   document.body.appendChild(link);
-  //   link.click();
-  //   document.body.removeChild(link);
-  // };
+
   return (
     <main className="-mx-4 rounded bg-white p-4">
       <section className="flex flex-col justify-between gap-5 sm:flex-row">
@@ -121,10 +90,6 @@ export default function Maintenance() {
               <p>Schedule Maintenance</p>
             </div>
           </Link>
-          {/* <button onClick={exportFiles} className="btn btn-flex btn-outline-secondary">
-            <DocumentArrowDownIcon className="h-5 w-5" />
-            <p>Export</p>
-          </button> */}
         </div>
       </section>
 
