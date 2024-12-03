@@ -21,7 +21,7 @@ export interface MAINTENANCE {
   };
   isApproved: boolean;
   notes: string;
-
+  cost: number;
   docRef: DocumentReference<DocumentData, DocumentData>;
   doc: QueryDocumentSnapshot<DocumentData, DocumentData>;
 
