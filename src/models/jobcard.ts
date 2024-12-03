@@ -1,17 +1,10 @@
 import { type DocumentData, DocumentReference, QueryDocumentSnapshot } from 'firebase/firestore';
 import { COMPANY_DETAILS } from './company';
 
-export interface DEPARTMENT {
+export interface JOBCARD {
   docId: string;
   name: string;
-  photoURL: string;
-  displayName?: string;
   company: COMPANY_DETAILS;
-  roles: Array<string>;
-  rolesMap: {
-    companyId: string;
-    isActive: boolean;
-  };
 
   docRef: DocumentReference<DocumentData, DocumentData>;
   doc: QueryDocumentSnapshot<DocumentData, DocumentData>;
@@ -21,10 +14,3 @@ export interface DEPARTMENT {
   createdBy: { email: string; authId: string };
   updatedBy: { email: string; authId: string };
 }
-export const DEPARTMETS_ROLES = {
-  canManageAdmins: 'canManageAdmins',
-  canManageClients: 'canManageClients',
-  canManageVehicles: 'canManageVehicles',
-  canManageTrips: 'canManageTrips',
-  canManageDrivers: 'canManageDrivers',
-};
