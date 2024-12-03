@@ -158,6 +158,7 @@ export default function Maintenance({ params }: Props) {
                 startAt: '',
                 endAt: '',
               },
+          isApproved: maintenance?.isApproved,
           updatedBy: {
             authId: authUser?.uid,
             email: authUser?.email,
@@ -209,35 +210,6 @@ export default function Maintenance({ params }: Props) {
               </label>
 
               <hr className="my-3" />
-
-              <label className="grid-1-3">
-                <div className="text-sm">
-                  <label className="font-medium">Status</label>
-                </div>
-                <div className="">
-                  <Field
-                    as="select"
-                    name="status"
-                    placeholder="Status"
-                    className="form-select w-40"
-                  >
-                    <option value="" disabled>
-                      Select...
-                    </option>
-                    {Maintenances.statusList.map(({ name, value }) => {
-                      return (
-                        <option key={value} value={value}>
-                          {name}
-                        </option>
-                      );
-                    })}
-                  </Field>
-                  <ErrorMessage name="yom" component="span" className="form-error" />
-                </div>
-              </label>
-
-              <hr className="my-3" />
-
               <label className="grid-1-3">
                 <div className="text-sm">
                   <label className="font-medium">Start Time</label>
@@ -256,8 +228,8 @@ export default function Maintenance({ params }: Props) {
                   <ErrorMessage name="schedule.endAt" component="span" className="form-error" />
                 </div>
               </label>
-              <hr className="my-3" />
 
+              <hr className="my-3" />
               <label className="grid-1-3">
                 <div className="text-sm">
                   <label className="font-medium">Notes</label>
@@ -266,6 +238,45 @@ export default function Maintenance({ params }: Props) {
                   <Field type="text" name="notes" className="form-input" placeholder="Optional" />
                 </div>
               </label>
+
+              <hr className="my-3" />
+              <div className="grid gap-5">
+                <label className="grid-1-3">
+                  <div className="text-sm">
+                    <label className="font-medium">Status</label>
+                  </div>
+                  <div className="">
+                    <Field
+                      as="select"
+                      name="status"
+                      placeholder="Status"
+                      className="form-select w-40"
+                    >
+                      <option value="" disabled>
+                        Select...
+                      </option>
+                      {Maintenances.statusList.map(({ name, value }) => {
+                        return (
+                          <option key={value} value={value}>
+                            {name}
+                          </option>
+                        );
+                      })}
+                    </Field>
+                    <ErrorMessage name="yom" component="span" className="form-error" />
+                  </div>
+                </label>
+
+                <label className="grid-1-3">
+                  <div className="text-sm">
+                    <label className="font-medium"></label>
+                  </div>
+                  <label className="flex items-center gap-5">
+                    <Field type="checkbox" name="isApproved" className="form-checkbox" />
+                    <span className="form-label">Is Approved</span>
+                  </label>
+                </label>
+              </div>
             </div>
 
             <div className="grid-1-3 mt-10 gap-5">
