@@ -19,6 +19,7 @@ export interface MAINTENANCE {
     startAt: Timestamp;
     endAt: Timestamp;
   };
+  isApproved: boolean;
   notes: string;
 
   docRef: DocumentReference<DocumentData, DocumentData>;
