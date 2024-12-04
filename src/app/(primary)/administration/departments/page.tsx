@@ -1,28 +1,23 @@
 'use client';
 
 import { useAuthContext } from '@/app/auth-provider';
+import RemotePagination from '@/components/remote-pagination';
 import Constants from '@/Constants';
+import { DEPARTMENT } from '@/models/department';
 import { PARAMS_MAP } from '@/models/params-map';
 import { DocumentArrowDownIcon, PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import useDepartments from '@/hooks/useDepartments';
 import { DocumentSnapshot } from 'firebase/firestore';
 import DeleteDeprtmentButton from './button-delete';
 import ToggleDepartmentButton from './button-toggle';
-import Image from 'next/image';
-
-import Link from 'next/link';
-import { DEPARTMENT } from '@/models/department';
-import moment from 'moment';
-import RemotePagination from '@/components/remote-pagination';
 import json2csv from 'json2csv';
+import moment from 'moment';
+import Link from 'next/link';
 
 export default function Departments() {
   const { authUser } = useAuthContext();
   const [status, setStatus] = useState<string>('');
-
-  // eslint-disable-next-line no-unused-vars
-  /* eslint-disable-next-line no-unused-vars */
   const [params, setParams] = useState<PARAMS_MAP>({
     max: Constants.defaultPageSize,
     orderBy: 'lastUpdated',
@@ -34,10 +29,20 @@ export default function Departments() {
     docId: null,
     params,
   });
-
   const cursors = useRef<Map<number, DocumentSnapshot>>(new Map());
   const [max, setMax] = useState(Constants.defaultPageSize);
   const [currentPage, setCurrentPage] = useState(0);
+
+  useEffect(() => {
+    setParams({
+      orderBy: 'lastUpdated',
+      direction: 'desc',
+      max: max,
+
+      cursor: cursors.current.get(currentPage),
+    });
+  }, [currentPage, max]);
+
   const onPageChanged = useCallback(
     (nextPage: number) => {
       setCurrentPage((page) => {
@@ -50,13 +55,14 @@ export default function Departments() {
     },
     [departments],
   );
+
   const exportFiles = () => {
     const fields = [
       { label: 'Name', value: 'name' },
       { label: 'LastUpdated', value: 'lastUpdated' },
       {
         label: 'Archive',
-        value: (row: DEPARTMENT) => (row.rolesMap.isActive ? 'Not Archived' : 'Archived'),
+        value: (row: DEPARTMENT) => (row.isActive ? 'Not Archived' : 'Archived'),
       },
       { label: 'UpdatedBy', value: (row: DEPARTMENT) => row.updatedBy.email },
     ];
@@ -71,6 +77,7 @@ export default function Departments() {
     link.click();
     document.body.removeChild(link);
   };
+
   return (
     <main className="-mx-4 rounded bg-white p-4">
       <section className="flex flex-col justify-between gap-5 sm:flex-row">
@@ -112,7 +119,6 @@ export default function Departments() {
           <table className="my-table">
             <thead className="sticky top-0">
               <tr className="tr-header">
-                <th className="th"></th>
                 <th className="th text-left">Name</th>
                 <th className="th table-cell-xl">Status</th>
                 <th className="th table-cell-xl">Last Updated</th>
@@ -123,25 +129,13 @@ export default function Departments() {
               {departments.map((department: DEPARTMENT) => {
                 return (
                   <tr key={department.docId} className="tr-body">
-                    <td className="td text-center">
-                      <div className="h-auto w-16 overflow-hidden rounded-xl">
-                        <Image
-                          src={department.photoURL}
-                          alt={`${department.name} image`}
-                          className="rounded-xl object-cover"
-                          height={50}
-                          width={50}
-                          priority
-                        />
-                      </div>
-                    </td>
                     <td className="td text-left">{department.name}</td>
                     <td className="td table-cell-xl">
                       <div className="flex justify-center">
                         <p
-                          className={`w-fit rounded-full px-4 py-2 ${department.rolesMap.isActive ? 'bg-secondary/20 text-teal-700' : 'bg-gray-300'}`}
+                          className={`w-fit rounded-full px-4 py-2 ${department.isActive ? 'bg-secondary/20 text-teal-700' : 'bg-gray-300'}`}
                         >
-                          {department.rolesMap.isActive ? 'Active' : 'Inactive'}
+                          {department.isActive ? 'Active' : 'Inactive'}
                         </p>
                       </div>
                     </td>
@@ -151,7 +145,7 @@ export default function Departments() {
                     </td>
                     <td className="td">
                       <div className="td-actions justify-start">
-                        <Link href={`/administration/users/${department.docId}`}>
+                        <Link href={`/administration/departments/${department.docId}`}>
                           <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
                         </Link>
                         <DeleteDeprtmentButton department={department} />
