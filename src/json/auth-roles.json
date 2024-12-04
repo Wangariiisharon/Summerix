@@ -1,5 +1,5 @@
 {
-  "staffRoles": [
+  "authRoles": [
     {
       "value": "canManageAdmins",
       "name": "Can manage admins",

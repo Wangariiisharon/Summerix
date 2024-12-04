@@ -5,9 +5,7 @@ import { useAuthContext } from '@/app/auth-provider';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { DEPARTMENT } from '@/models/department';
-
-import DepartmentRoles from '@/json/departments.json';
-
+import Roles from '@/json/auth-roles.json';
 import {
   addDoc,
   collection,
@@ -158,7 +156,7 @@ export default function Department({ params }: Props) {
                   <label className="font-medium">Roles</label>
                 </div>
                 <div className="grid-1-2 col-span-2 gap-3">
-                  {DepartmentRoles.staffRoles.map(({ name, value }) => {
+                  {Roles.authRoles.map(({ name, value }) => {
                     return (
                       <label key={value} className="flex items-center gap-5">
                         <Field
