@@ -17,10 +17,8 @@ export interface DEPARTMENT {
   updatedBy: { email: string; authId: string };
 }
 
-export const DEPARTMETS_ROLES = {
-  canManageAdmins: 'canManageAdmins',
-  canManageClients: 'canManageClients',
-  canManageVehicles: 'canManageVehicles',
-  canManageTrips: 'canManageTrips',
-  canManageDrivers: 'canManageDrivers',
-};
+export interface DEPARTMENT_DETAILS {
+  docId: string;
+  name: string;
+  roles: string[];
+}

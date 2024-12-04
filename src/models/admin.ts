@@ -1,5 +1,6 @@
 import { type DocumentData, DocumentReference, QueryDocumentSnapshot } from 'firebase/firestore';
 import { COMPANY_DETAILS } from './company';
+import { DEPARTMENT_DETAILS } from './department';
 
 export interface ADMIN {
   docId: string;
@@ -12,9 +13,9 @@ export interface ADMIN {
   phoneNumber: string;
   idNumber: string;
   photoURL: string;
-  department: string;
   company: COMPANY_DETAILS;
 
+  department: DEPARTMENT_DETAILS;
   roles: Array<string>;
   rolesMap: {
     companyId: string;

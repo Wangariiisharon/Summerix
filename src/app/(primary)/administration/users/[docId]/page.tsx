@@ -5,7 +5,7 @@ import { useAuthContext } from '@/app/auth-provider';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { ADMIN } from '@/models/admin';
-import AdminRoles from '@/json/roles.json';
+// import AdminRoles from '@/json/roles.json';
 import { getAdminByEmail, getAdminByPhoneNumber } from '@/services/admin';
 import {
   addDoc,
@@ -22,6 +22,8 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
 import { getAvatarPhoto } from '@/services/utils';
+import useDepartments from '@/hooks/useDepartments';
+import DepartmentAdminView from './department';
 
 const AdminSchema = (docId: string) => {
   return Yup.object().shape({
@@ -67,6 +69,9 @@ const AdminSchema = (docId: string) => {
           return snapshot.empty;
         },
       }),
+    // department: Yup.object().shape({
+    //   docId: Yup.string().required('Department is required.'),
+    // }),
   });
 };
 
@@ -78,6 +83,15 @@ export default function User({ params }: Props) {
   const [admin, setAdmin] = useState<ADMIN>();
   const { authUser } = useAuthContext();
   const { company } = useCurrentCompany();
+  const { departments } = useDepartments({
+    companyId: authUser?.companyId || 'xyz',
+    params: {
+      orderBy: 'lastUpdated',
+      direction: 'desc',
+    },
+    isActive: 'active',
+    docId: null,
+  });
   const router = useRouter();
   const { docId } = params;
 
@@ -163,13 +177,14 @@ export default function User({ params }: Props) {
             phoneNumber: company.phoneNumber || '',
             regNumber: company.regNumber || '',
           },
+          department: admin?.department || '',
+          roles: admin?.roles || [],
           rolesMap: admin?.rolesMap || {
             companyId: company.docId,
             isActive: false,
             isAdmin: false,
             isOwner: false,
           },
-          roles: admin?.roles || [],
           updatedBy: {
             authId: authUser?.uid,
             email: authUser?.email,
@@ -178,7 +193,7 @@ export default function User({ params }: Props) {
         validationSchema={AdminSchema(docId)}
         onSubmit={(values) => doSave(values)}
       >
-        {({ isValid }) => (
+        {({ errors, isValid, setFieldValue }) => (
           <Form className="mt-6">
             {/* <h2 className="text-center font-bold">Account setup</h2> */}
 
@@ -279,26 +294,13 @@ export default function User({ params }: Props) {
 
               <hr className="my-3" />
 
-              <div className="grid-1-3">
-                <div className="text-sm">
-                  <label className="font-medium">Roles</label>
-                </div>
-                <div className="grid-1-2 col-span-2 gap-3">
-                  {AdminRoles.staffRoles.map(({ name, value }) => {
-                    return (
-                      <label key={value} className="flex items-center gap-5">
-                        <Field
-                          type="checkbox"
-                          name="roles"
-                          value={value}
-                          className="form-checkbox"
-                        />
-                        <span className="form-label">{name}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
+              <DepartmentAdminView
+                admin={admin}
+                departments={departments}
+                setFieldValue={setFieldValue}
+                errors={errors}
+              />
+              {/* <ErrorMessage name="department.docId" component="span" className="form-error" /> */}
             </div>
 
             <div className="grid-1-3 mt-10 gap-5">

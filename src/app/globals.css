@@ -41,6 +41,10 @@
     @apply mx-auto w-full rounded-md border border-gray-300 p-2 text-xs text-gray-900 outline-none invalid:border-red-500 invalid:text-red-600 focus:border-blue-600 focus:bg-white focus:invalid:border-red-500 focus:invalid:ring-red-500 disabled:opacity-50;
   }
 
+  .form-checkbox {
+    @apply cursor-pointer rounded outline-none border border-gray-300 focus:border-primary text-primary disabled:opacity-50;
+  }
+
   .form-error {
     @apply text-sm text-red-500;
   }
