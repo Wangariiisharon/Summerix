@@ -31,7 +31,7 @@ export default function ToggleDepartmentButton({ department }: Props) {
 
       const docRef = doc(fbDb, Constants.fbDepartments, department.docId);
       await updateDoc(docRef, {
-        'rolesMap.isActive': !department.rolesMap.isActive,
+        isActive: !department.isActive,
         updatedBy: {
           authId: authUser.uid,
           email: authUser.email,
@@ -52,9 +52,9 @@ export default function ToggleDepartmentButton({ department }: Props) {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className={`rounded px-4 py-2 hover:opacity-50 ${department.rolesMap.isActive ? 'bg-danger/20 text-red-700' : 'bg-secondary/20 text-teal-700'}`}
+        className={`rounded px-4 py-2 hover:opacity-50 ${department.isActive ? 'bg-danger/20 text-red-700' : 'bg-secondary/20 text-teal-700'}`}
       >
-        {department.rolesMap.isActive ? 'Archive' : 'Unarchive'}
+        {department.isActive ? 'Archive' : 'Unarchive'}
       </button>
 
       <DialogLayout
@@ -63,13 +63,17 @@ export default function ToggleDepartmentButton({ department }: Props) {
         classNames="dialog-panel max-w-md"
       >
         <DialogTitle as="h3" className="dialog-title text-sm">
-          Confirm {department.rolesMap.isActive ? 'Archive' : 'Unarchive'} Department?
+          Confirm {department.isActive ? 'Archive' : 'Unarchive'} Department?
         </DialogTitle>
 
         <div className="mt-5 grid items-center gap-3">
           <div className="flex items-center justify-between gap-5">
-            <label className="form-label">Display Name:</label>
+            <label className="form-label">Name:</label>
             <p>{department.name}</p>
+          </div>
+          <div className="flex items-center justify-between gap-5">
+            <label className="form-label">Is Active:</label>
+            <p>{department.isActive ? 'Yes' : 'No'}</p>
           </div>
         </div>
 
@@ -80,9 +84,9 @@ export default function ToggleDepartmentButton({ department }: Props) {
           <button
             onClick={() => doToggle()}
             disabled={processing || !authUser}
-            className={`btn ${department.rolesMap.isActive ? 'btn-danger' : 'btn-secondary'}`}
+            className={`btn ${department.isActive ? 'btn-danger' : 'btn-secondary'}`}
           >
-            Confirm {department.rolesMap.isActive ? 'Archive' : 'Unarchive'}
+            Confirm {department.isActive ? 'Archive' : 'Unarchive'}
           </button>
         </div>
       </DialogLayout>
