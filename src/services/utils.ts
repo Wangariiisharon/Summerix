@@ -9,6 +9,11 @@ export function classNames(...classes: Array<string>) {
   return classes.filter(Boolean).join(' ');
 }
 
+export const camelCaseToWords = (s: string) => {
+  const result = s.replace(/([A-Z])/g, ' $1');
+  return result.charAt(0).toUpperCase() + result.slice(1);
+};
+
 export const getAvatarPhoto = (name: string, size: number = 300) => {
   return `https://ui-avatars.com/api/?name=${name}&size=${size}`;
 };
