@@ -14,7 +14,6 @@ import {
   where,
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { getAvatarPhoto } from '@/services/utils';
 
 interface Props {
   companyId: string;
@@ -40,8 +39,9 @@ function useDepartments({ companyId, docId, params, isActive }: Props) {
     if (companyId && companyId !== '') {
       constraints.push(where('company.docId', '==', companyId));
     }
+
     if (isActive && isActive !== '') {
-      constraints.push(where('rolesMap.isActive', '==', isActive === 'active'));
+      constraints.push(where('isActive', '==', isActive === 'active'));
     }
 
     getCountFromServer(query(colRef, ...constraints)).then((countSnap) => {
@@ -65,7 +65,6 @@ function useDepartments({ companyId, docId, params, isActive }: Props) {
           const data = doc.data() as DEPARTMENT;
           data.doc = doc; // QueryDocumentSnapshot
           data.docId = doc.id;
-          data.photoURL = data.photoURL || getAvatarPhoto(data.name);
 
           return data;
         });
