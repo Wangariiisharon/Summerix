@@ -14,6 +14,7 @@ import ToggleDepartmentButton from './button-toggle';
 import json2csv from 'json2csv';
 import moment from 'moment';
 import Link from 'next/link';
+import { camelCaseToWords } from '@/services/utils';
 
 export default function Departments() {
   const { authUser } = useAuthContext();
@@ -120,8 +121,9 @@ export default function Departments() {
             <thead className="sticky top-0">
               <tr className="tr-header">
                 <th className="th text-left">Name</th>
-                <th className="th table-cell-xl">Status</th>
-                <th className="th table-cell-xl">Last Updated</th>
+                <th className="th table-cell-sm">Status</th>
+                <th className="th table-cell-xl">Roles</th>
+                <th className="th table-cell-lg">Last Updated</th>
                 <th className="th text-left">Actions</th>
               </tr>
             </thead>
@@ -130,7 +132,7 @@ export default function Departments() {
                 return (
                   <tr key={department.docId} className="tr-body">
                     <td className="td text-left">{department.name}</td>
-                    <td className="td table-cell-xl">
+                    <td className="td table-cell-sm">
                       <div className="flex justify-center">
                         <p
                           className={`w-fit rounded-full px-4 py-2 ${department.isActive ? 'bg-secondary/20 text-teal-700' : 'bg-gray-300'}`}
@@ -139,7 +141,10 @@ export default function Departments() {
                         </p>
                       </div>
                     </td>
-                    <td className="td table-cell-xl">
+                    <td className="td table-cell-xl max-w-36 capitalize">
+                      {camelCaseToWords(department.roles.join(', '))}
+                    </td>
+                    <td className="td table-cell-lg">
                       {department.lastUpdated &&
                         moment(department.lastUpdated.toDate()).format(Constants.dateTimeFormat)}
                     </td>
