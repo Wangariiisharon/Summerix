@@ -24,7 +24,9 @@ import { MAINTENANCE, MAINTENANCE_STATUS } from '@/models/maintenance';
 
 import MaintenanceVehicle from './vehicle';
 import MaintenanceSuppliers from './suppliers';
+
 import moment from 'moment';
+import MaintenanceJobcard from './jobcard';
 
 const MaintenanceSchema = () => {
   return Yup.object().shape({
@@ -49,7 +51,9 @@ const MaintenanceSchema = () => {
         }),
     }),
     status: Yup.string().required('Status is required.'),
-    jobCard: Yup.string().required('JobCard is required.'),
+    jobCard: Yup.object().shape({
+      name: Yup.string().required('JobCard is required.'),
+    }),
   });
 };
 
@@ -144,7 +148,7 @@ export default function Maintenance({ params }: Props) {
           vehicle: maintenance?.vehicle || null,
           supplier: maintenance?.supplier || null,
           notes: maintenance?.notes || '',
-          jobCard: maintenance?.jobCard || '',
+          jobCard: maintenance?.jobCard || null,
           schedule: maintenance?.schedule
             ? {
                 startAt: maintenance.schedule.startAt
@@ -158,12 +162,13 @@ export default function Maintenance({ params }: Props) {
                 startAt: '',
                 endAt: '',
               },
+          isApproved: maintenance?.isApproved,
           updatedBy: {
             authId: authUser?.uid,
             email: authUser?.email,
           },
         }}
-        validationSchema={MaintenanceSchema()}
+        // validationSchema={MaintenanceSchema()}
         onSubmit={(values) => doSave(values)}
       >
         {({ isValid, setFieldValue }) => (
@@ -202,42 +207,10 @@ export default function Maintenance({ params }: Props) {
                 <div className="text-sm">
                   <label className="font-medium">Jobcard</label>
                 </div>
-                <div className="">
-                  <Field type="text" name="jobcard" className="form-input" placeholder="Jobcard" />
-                  <ErrorMessage name="jobcard" component="span" className="form-error" />
-                </div>
+                <MaintenanceJobcard setFieldValue={setFieldValue} maintenance={maintenance} />
+                <ErrorMessage name="jobCard" component="span" className="form-error" />
               </label>
-
               <hr className="my-3" />
-
-              <label className="grid-1-3">
-                <div className="text-sm">
-                  <label className="font-medium">Status</label>
-                </div>
-                <div className="">
-                  <Field
-                    as="select"
-                    name="status"
-                    placeholder="Status"
-                    className="form-select w-40"
-                  >
-                    <option value="" disabled>
-                      Select...
-                    </option>
-                    {Maintenances.statusList.map(({ name, value }) => {
-                      return (
-                        <option key={value} value={value}>
-                          {name}
-                        </option>
-                      );
-                    })}
-                  </Field>
-                  <ErrorMessage name="yom" component="span" className="form-error" />
-                </div>
-              </label>
-
-              <hr className="my-3" />
-
               <label className="grid-1-3">
                 <div className="text-sm">
                   <label className="font-medium">Start Time</label>
@@ -265,6 +238,46 @@ export default function Maintenance({ params }: Props) {
                 <div className="">
                   <Field type="text" name="notes" className="form-input" placeholder="Optional" />
                 </div>
+              </label>
+            </div>
+
+            <hr className="my-3" />
+
+            <div className="grid gap-5">
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Status</label>
+                </div>
+                <div className="">
+                  <Field
+                    as="select"
+                    name="status"
+                    placeholder="Status"
+                    className="form-select w-40"
+                  >
+                    <option value="" disabled>
+                      Select...
+                    </option>
+                    {Maintenances.statusList.map(({ name, value }) => {
+                      return (
+                        <option key={value} value={value}>
+                          {name}
+                        </option>
+                      );
+                    })}
+                  </Field>
+                  <ErrorMessage name="yom" component="span" className="form-error" />
+                </div>
+              </label>
+
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium"></label>
+                </div>
+                <label className="flex items-center gap-5">
+                  <Field type="checkbox" name="isApproved" className="form-checkbox" />
+                  <span className="form-label">Is Approved</span>
+                </label>
               </label>
             </div>
 
