@@ -202,8 +202,15 @@ export default function Maintenance({ params }: Props) {
                 <ErrorMessage name="suppliers" component="span" className="form-error" />
               </label>
               <hr className="my-3" />
-
               <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Jobcard</label>
+                </div>
+                <MaintenanceJobcard setFieldValue={setFieldValue} maintenance={maintenance} />
+                <ErrorMessage name="jobCard" component="span" className="form-error" />
+              </label>
+
+              {/* <label className="grid-1-3">
                 <div className="text-sm">
                   <label className="font-medium">Jobcard</label>
                 </div>
@@ -211,7 +218,7 @@ export default function Maintenance({ params }: Props) {
                   <Field type="text" name="jobCard" className="form-input" placeholder="Jobcard" />
                   <ErrorMessage name="jobCard" component="span" className="form-error" />
                 </div>
-              </label>
+              </label> */}
               <hr className="my-3" />
               <label className="grid-1-3">
                 <div className="text-sm">
