@@ -46,7 +46,6 @@ function useAdmins({ companyId, docId, params, isActive }: Props) {
     }
 
     getCountFromServer(query(colRef, ...constraints)).then((countSnap) => {
-      // console.debug('useAdmins > countSnap:', countSnap.data().count);
       setCount(countSnap.data().count);
     });
 

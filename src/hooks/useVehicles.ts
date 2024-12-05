@@ -71,7 +71,6 @@ function useVehicles({ companyId, docId, params }: Props) {
         });
 
         const results = await Promise.all(promises);
-        // console.debug('useVehicles > results:', results.length);
         setVehicles(results);
       },
       (error) => {

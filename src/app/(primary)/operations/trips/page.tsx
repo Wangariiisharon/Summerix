@@ -157,7 +157,7 @@ export default function TripsPage() {
             </tbody>
           </table>
         </div>
-        <div className="mx-2 my-5 mb-36">
+        <div className="mx-2 my-5">
           <RemotePagination
             max={max}
             setMax={setMax}
