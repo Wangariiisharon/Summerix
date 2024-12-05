@@ -5,9 +5,7 @@ import { useAuthContext } from '@/app/auth-provider';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { DEPARTMENT } from '@/models/department';
-
-import DepartmentRoles from '@/json/departments.json';
-
+import Roles from '@/json/auth-roles.json';
 import {
   addDoc,
   collection,
@@ -22,7 +20,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
-import { getAvatarPhoto } from '@/services/utils';
 
 const DepartmentSchema = () => {
   return Yup.object().shape({
@@ -48,8 +45,6 @@ export default function Department({ params }: Props) {
         docRef,
         async (snapshot) => {
           const data = snapshot.data() as DEPARTMENT;
-          data.displayName = data.displayName || '';
-          data.photoURL = data.photoURL || getAvatarPhoto(data.displayName);
           data.docId = snapshot.id;
           setDepartment(data);
         },
@@ -117,11 +112,8 @@ export default function Department({ params }: Props) {
             phoneNumber: company.phoneNumber || '',
             regNumber: company.regNumber || '',
           },
-          rolesMap: department?.rolesMap || {
-            companyId: company.docId,
-            isActive: false,
-          },
           roles: department?.roles || [],
+          isActive: department?.isActive || false,
           updatedBy: {
             authId: authUser?.uid,
             email: authUser?.email,
@@ -139,7 +131,7 @@ export default function Department({ params }: Props) {
                 </div>
                 <div className="">
                   <Field type="text" name="name" className="form-input" placeholder="Name" />
-                  <ErrorMessage name="firstName" component="span" className="form-error" />
+                  <ErrorMessage name="name" component="span" className="form-error" />
                 </div>
               </label>
 
@@ -151,7 +143,7 @@ export default function Department({ params }: Props) {
                 </div>
                 <div className="grid gap-5">
                   <label className="flex items-center gap-5">
-                    <Field type="checkbox" name="rolesMap.isActive" className="form-checkbox" />
+                    <Field type="checkbox" name="isActive" className="form-checkbox" />
                     <span className="form-label">Is Active</span>
                   </label>
                 </div>
@@ -164,7 +156,7 @@ export default function Department({ params }: Props) {
                   <label className="font-medium">Roles</label>
                 </div>
                 <div className="grid-1-2 col-span-2 gap-3">
-                  {DepartmentRoles.staffRoles.map(({ name, value }) => {
+                  {Roles.authRoles.map(({ name, value }) => {
                     return (
                       <label key={value} className="flex items-center gap-5">
                         <Field

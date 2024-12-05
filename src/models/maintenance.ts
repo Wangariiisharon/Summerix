@@ -20,9 +20,9 @@ export interface MAINTENANCE {
     startAt: Timestamp;
     endAt: Timestamp;
   };
-  notes: string;
   isApproved: boolean;
-
+  notes: string;
+  cost: number;
   docRef: DocumentReference<DocumentData, DocumentData>;
   doc: QueryDocumentSnapshot<DocumentData, DocumentData>;
 

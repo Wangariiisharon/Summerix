@@ -128,6 +128,7 @@ export default function Users() {
                 <th className="th"></th>
                 <th className="th text-left">Name</th>
                 <th className="th table-cell-sm">Email Address</th>
+                <th className="th table-cell-lg">Department</th>
                 <th className="th table-cell-xl">Status</th>
                 <th className="th table-cell-xl">Last Modified</th>
                 <th className="th text-left">Actions</th>
@@ -157,6 +158,7 @@ export default function Users() {
                       </div>
                     </td>
                     <td className="td table-cell-sm">{admin.email}</td>
+                    <td className="td table-cell-lg">{admin.department?.name || 'N/A'}</td>
                     <td className="td table-cell-xl">
                       <div className="flex justify-center">
                         <p
@@ -185,7 +187,7 @@ export default function Users() {
             </tbody>
           </table>
         </div>
-        <div className="mx-2 my-5 mb-36">
+        <div className="mx-2 my-5">
           <RemotePagination
             max={max}
             setMax={setMax}

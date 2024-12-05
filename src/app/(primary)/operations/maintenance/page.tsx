@@ -51,6 +51,7 @@ export default function Maintenance() {
     },
     [maintenance],
   );
+
   return (
     <main className="-mx-4 rounded bg-white p-4">
       <section className="flex flex-col justify-between gap-5 sm:flex-row">
@@ -112,17 +113,7 @@ export default function Maintenance() {
               {maintenance.map((maintenance: MAINTENANCE) => {
                 return (
                   <tr key={maintenance.docId} className="tr-body">
-                    <td className="td text-left">
-                      {maintenance.vehicle && (
-                        <Link
-                          href={`/operations/maintenance/jobcards/${maintenance.jobCard.docId}`}
-                          className="hover:text-secondary"
-                        >
-                          {maintenance.jobCard.name}
-                        </Link>
-                      )}
-                      {!maintenance.jobCard && 'N/A'}
-                    </td>
+                    <td className="td text-left">{maintenance.jobCard}</td>
                     <td className="td table-cell-sm">
                       {maintenance.vehicle && (
                         <Link
