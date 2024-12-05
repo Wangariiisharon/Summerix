@@ -33,12 +33,10 @@ export default function Home() {
     onRoute: 0,
   });
 
-  const doFilterVehicles = useCallback(async () => {
-    if (!authUser || !authUser.companyId) return;
-
+  const doFilterVehicles = useCallback(async (companyId: string) => {
     let q = query(
       collection(fbDb, Constants.fbVehicles),
-      where('company.docId', '==', authUser.companyId),
+      where('company.docId', '==', companyId),
       // where("dateCreated", ">=", Timestamp.fromDate(startDate)),
       // where("dateCreated", "<=", Timestamp.fromDate(endDate))
     );
@@ -82,14 +80,12 @@ export default function Home() {
       outOfService: snapshot3.data().docsCount,
       underMaintenance: snapshot4.data().docsCount,
     });
-  }, [authUser]);
+  }, []);
 
-  const doFilterTrips = useCallback(async () => {
-    if (!authUser || !authUser.companyId) return;
-
+  const doFilterTrips = useCallback(async (companyId: string) => {
     let q = query(
       collection(fbDb, Constants.fbTrips),
-      where('company.docId', '==', authUser.companyId),
+      where('company.docId', '==', companyId),
       // where("dateCreated", ">=", Timestamp.fromDate(startDate)),
       // where("dateCreated", "<=", Timestamp.fromDate(endDate))
     );
@@ -133,12 +129,14 @@ export default function Home() {
       completed: snapshot3.data().docsCount,
       cancelled: snapshot4.data().docsCount,
     });
-  }, [authUser]);
+  }, []);
 
   useEffect(() => {
-    doFilterVehicles();
-    doFilterTrips();
-  }, [doFilterTrips, doFilterVehicles]);
+    if (authUser && authUser.companyId) {
+      doFilterVehicles(authUser.companyId);
+      doFilterTrips(authUser.companyId);
+    }
+  }, [authUser, doFilterTrips, doFilterVehicles]);
 
   return (
     <main className="">
