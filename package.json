@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "lint:fix": "next lint --fix"
+    "lint:fix": "next lint --fix",
+    "precommit": "lint-staged"
+  },
+  "lint-staged": {
+    "": ["next lint --fix", "git add"]
   },
   "dependencies": {
     "@firebase/app-check": "^0.8.9",
