@@ -25,7 +25,6 @@ export default function MaintenanceJobcard({ setFieldValue, maintenance }: Props
     companyId: authUser?.companyId || 'xyz',
     docId: null,
   });
-  console.log('count:', count);
 
   // useEffect(() => {
   //   const colRef = collection(fbDb, Constants.fbJobCards);
