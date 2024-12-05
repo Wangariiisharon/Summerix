@@ -1,8 +1,8 @@
-import { Timestamp } from 'firebase/firestore';
+// import { Timestamp } from 'firebase/firestore';
 
 export interface PARAMS_FILTER {
   dateRange: string;
-  filterByDate: string;
-  startDate: Timestamp;
-  endDate: Timestamp;
+  filterByDate?: string;
+  startDate: Date | null;
+  endDate: Date | null;
 }
