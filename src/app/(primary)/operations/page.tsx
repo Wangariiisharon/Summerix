@@ -184,11 +184,11 @@ export default function Operations() {
 
   useEffect(() => {
     if (authUser && authUser.companyId) {
+      doFilterTrips(authUser.companyId);
+      doFilterVehicles(authUser.companyId);
       doFilterDrivers(authUser.companyId);
       doFilterMaintenance(authUser.companyId);
       doFilterSuppliers(authUser.companyId);
-      doFilterTrips(authUser.companyId);
-      doFilterVehicles(authUser.companyId);
     }
   }, [
     authUser,
