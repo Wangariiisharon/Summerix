@@ -11,7 +11,10 @@
     "precommit": "lint-staged"
   },
   "lint-staged": {
-    "": ["next lint --fix", "git add"]
+    "src/**/*.{js,jsx,ts,tsx,json,css,md}": [
+      "eslint --fix src",
+      "git add"
+    ]
   },
   "dependencies": {
     "@firebase/app-check": "^0.8.9",
@@ -57,6 +60,7 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-react": "^7.37.2",
+    "lint-staged": "^15.2.10",
     "postcss": "^8.4.21",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.8",
