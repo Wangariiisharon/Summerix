@@ -11,7 +11,7 @@ import { JOBCARD_DETAILS } from './jobcard';
 
 export interface MAINTENANCE {
   docId: string;
-  status: string; // select options
+  status: string;
   company: COMPANY_DETAILS;
   vehicle: VEHICLE_DETAILS;
   supplier: SUPPLIER_DETAILS;
@@ -30,10 +30,4 @@ export interface MAINTENANCE {
   lastUpdated: any;
   createdBy: { email: string; authId: string };
   updatedBy: { email: string; authId: string };
-}
-
-export enum MAINTENANCE_STATUS {
-  pending = 'pending',
-  planned = 'planned',
-  completed = 'completed',
 }
