@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import StatsCard from './stats-card';
 import { useCallback, useEffect, useState } from 'react';
 import { collection, count, getAggregateFromServer, query, where } from 'firebase/firestore';
 import { fbDb } from '@/firebase/configs';
@@ -9,6 +8,7 @@ import { useAuthContext } from '@/app/auth-provider';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { TruckIcon } from '@heroicons/react/24/solid';
+import StatsCard from '@/components/stats-card';
 import Constants from '@/Constants';
 import LatestTrips from './latest-trips';
 import { VEHICLE_STATUS } from '@/models/vehicle';
