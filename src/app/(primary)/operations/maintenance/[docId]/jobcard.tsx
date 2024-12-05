@@ -21,7 +21,7 @@ export default function MaintenanceJobcard({ setFieldValue, maintenance }: Props
   // const [jobcards, setJobcards] = useState<JOBCARD[]>([]);
   const { authUser } = useAuthContext();
 
-  const { count, jobcards } = useJobcards({
+  const { jobcards } = useJobcards({
     companyId: authUser?.companyId || 'xyz',
     docId: null,
   });
