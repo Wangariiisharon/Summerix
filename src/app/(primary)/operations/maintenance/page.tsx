@@ -113,7 +113,17 @@ export default function Maintenance() {
               {maintenance.map((maintenance: MAINTENANCE) => {
                 return (
                   <tr key={maintenance.docId} className="tr-body">
-                    <td className="td text-left">{maintenance.jobCard}</td>
+                    <td className="td text-left">
+                      {maintenance.jobCard && (
+                        <Link
+                          href={`/operations/maintenance/jobcards/${maintenance.jobCard.docId}`}
+                          className="text-primary hover:text-secondary"
+                        >
+                          {maintenance.jobCard.name}
+                        </Link>
+                      )}
+                      {!maintenance.jobCard && 'N/A'}
+                    </td>
                     <td className="td table-cell-sm">
                       {maintenance.vehicle && (
                         <Link
