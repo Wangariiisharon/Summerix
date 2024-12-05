@@ -21,7 +21,6 @@ import useCurrentCompany from '@/hooks/useCurrentCompany';
 import Maintenances from '@/json/maintenance.json';
 
 import { MAINTENANCE } from '@/models/maintenance';
-import { MAINTENANCE } from '@/models/maintenance';
 
 import MaintenanceVehicle from './vehicle';
 import MaintenanceSuppliers from './suppliers';
@@ -139,7 +138,6 @@ export default function Maintenance({ params }: Props) {
         enableReinitialize={true}
         initialValues={{
           status: maintenance?.status || 'pending',
-          status: maintenance?.status || 'pending',
           company: maintenance?.company || {
             docId: company.docId,
             name: company.name || '',
@@ -164,7 +162,6 @@ export default function Maintenance({ params }: Props) {
                 startAt: '',
                 endAt: '',
               },
-          isApproved: maintenance?.isApproved,
           isApproved: maintenance?.isApproved,
           updatedBy: {
             authId: authUser?.uid,
