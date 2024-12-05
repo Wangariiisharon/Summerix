@@ -6,5 +6,3 @@ export interface PARAMS_FILTER {
   startDate: Timestamp;
   endDate: Timestamp;
 }
-
-
