@@ -39,8 +39,8 @@ export default function Home() {
     let q = query(
       collection(fbDb, Constants.fbVehicles),
       where('company.docId', '==', authUser.companyId),
-      // where("timestamp", ">=", Timestamp.fromDate(startDate)),
-      // where("timestamp", "<=", Timestamp.fromDate(endDate))
+      // where("dateCreated", ">=", Timestamp.fromDate(startDate)),
+      // where("dateCreated", "<=", Timestamp.fromDate(endDate))
     );
 
     const snapshot = await getAggregateFromServer(q, {
@@ -90,8 +90,8 @@ export default function Home() {
     let q = query(
       collection(fbDb, Constants.fbTrips),
       where('company.docId', '==', authUser.companyId),
-      // where("timestamp", ">=", Timestamp.fromDate(startDate)),
-      // where("timestamp", "<=", Timestamp.fromDate(endDate))
+      // where("dateCreated", ">=", Timestamp.fromDate(startDate)),
+      // where("dateCreated", "<=", Timestamp.fromDate(endDate))
     );
 
     const snapshot = await getAggregateFromServer(q, {
