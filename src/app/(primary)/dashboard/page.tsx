@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import StatsCard from './stats-card';
 import { useCallback, useEffect, useState } from 'react';
 import { collection, count, getAggregateFromServer, query, where } from 'firebase/firestore';
 import { fbDb } from '@/firebase/configs';
@@ -9,15 +8,20 @@ import { useAuthContext } from '@/app/auth-provider';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { TruckIcon } from '@heroicons/react/24/solid';
+import DateRangeFilter from '@/components/date-range-filter';
+import StatsCard from '@/components/stats-card';
 import Constants from '@/Constants';
-import LatestTrips from './latest-trips';
+import useDateRangeFilter from '@/hooks/useDateRangeFilter';
 import { VEHICLE_STATUS } from '@/models/vehicle';
 import { TRIP_STATUS } from '@/models/trip';
+import LatestTrips from './latest-trips';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function Home() {
   const { authUser } = useAuthContext();
+  const [dateRange, setDateRange] = useState('thisMonth');
+  const params = useDateRangeFilter({ dateRange });
   const [tripStats, setTripStats] = useState({
     total: 0,
     booked: 0,
@@ -33,117 +37,123 @@ export default function Home() {
     onRoute: 0,
   });
 
-  const doFilterVehicles = useCallback(async () => {
-    if (!authUser || !authUser.companyId) return;
+  const doFilterVehicles = useCallback(
+    async (companyId: string) => {
+      let q = query(
+        collection(fbDb, Constants.fbVehicles),
+        where('company.docId', '==', companyId),
+      );
 
-    let q = query(
-      collection(fbDb, Constants.fbVehicles),
-      where('company.docId', '==', authUser.companyId),
-      // where("timestamp", ">=", Timestamp.fromDate(startDate)),
-      // where("timestamp", "<=", Timestamp.fromDate(endDate))
-    );
+      if (params && params.startDate && params.endDate) {
+        q = query(
+          q,
+          where('dateCreated', '>=', params.startDate),
+          where('dateCreated', '<=', params.endDate),
+        );
+      }
 
-    const snapshot = await getAggregateFromServer(q, {
-      docsCount: count(),
-    });
-
-    const snapshot1 = await getAggregateFromServer(
-      query(q, where('status', '==', VEHICLE_STATUS.available)),
-      {
+      const snapshot = await getAggregateFromServer(q, {
         docsCount: count(),
-      },
-    );
+      });
+      const snapshot1 = await getAggregateFromServer(
+        query(q, where('status', '==', VEHICLE_STATUS.available)),
+        {
+          docsCount: count(),
+        },
+      );
+      const snapshot2 = await getAggregateFromServer(
+        query(q, where('status', '==', VEHICLE_STATUS.onRoute)),
+        {
+          docsCount: count(),
+        },
+      );
+      const snapshot3 = await getAggregateFromServer(
+        query(q, where('status', '==', VEHICLE_STATUS.outOfService)),
+        {
+          docsCount: count(),
+        },
+      );
+      const snapshot4 = await getAggregateFromServer(
+        query(q, where('status', '==', VEHICLE_STATUS.underMaintenance)),
+        {
+          docsCount: count(),
+        },
+      );
 
-    const snapshot2 = await getAggregateFromServer(
-      query(q, where('status', '==', VEHICLE_STATUS.onRoute)),
-      {
+      setVehicleStats({
+        total: snapshot.data().docsCount,
+        available: snapshot1.data().docsCount,
+        onRoute: snapshot2.data().docsCount,
+        outOfService: snapshot3.data().docsCount,
+        underMaintenance: snapshot4.data().docsCount,
+      });
+    },
+    [params],
+  );
+
+  const doFilterTrips = useCallback(
+    async (companyId: string) => {
+      let q = query(collection(fbDb, Constants.fbTrips), where('company.docId', '==', companyId));
+
+      if (params && params.startDate && params.endDate) {
+        q = query(
+          q,
+          where('dateCreated', '>=', params.startDate),
+          where('dateCreated', '<=', params.endDate),
+        );
+      }
+
+      const snapshot = await getAggregateFromServer(q, {
         docsCount: count(),
-      },
-    );
+      });
+      const snapshot1 = await getAggregateFromServer(
+        query(q, where('status', '==', TRIP_STATUS.booked)),
+        {
+          docsCount: count(),
+        },
+      );
+      const snapshot2 = await getAggregateFromServer(
+        query(q, where('status', '==', TRIP_STATUS.active)),
+        {
+          docsCount: count(),
+        },
+      );
+      const snapshot3 = await getAggregateFromServer(
+        query(q, where('status', '==', TRIP_STATUS.completed)),
+        {
+          docsCount: count(),
+        },
+      );
+      const snapshot4 = await getAggregateFromServer(
+        query(q, where('status', '==', TRIP_STATUS.cancelled)),
+        {
+          docsCount: count(),
+        },
+      );
 
-    const snapshot3 = await getAggregateFromServer(
-      query(q, where('status', '==', VEHICLE_STATUS.outOfService)),
-      {
-        docsCount: count(),
-      },
-    );
-
-    const snapshot4 = await getAggregateFromServer(
-      query(q, where('status', '==', VEHICLE_STATUS.underMaintenance)),
-      {
-        docsCount: count(),
-      },
-    );
-
-    setVehicleStats({
-      total: snapshot.data().docsCount,
-      available: snapshot1.data().docsCount,
-      onRoute: snapshot2.data().docsCount,
-      outOfService: snapshot3.data().docsCount,
-      underMaintenance: snapshot4.data().docsCount,
-    });
-  }, [authUser]);
-
-  const doFilterTrips = useCallback(async () => {
-    if (!authUser || !authUser.companyId) return;
-
-    let q = query(
-      collection(fbDb, Constants.fbTrips),
-      where('company.docId', '==', authUser.companyId),
-      // where("timestamp", ">=", Timestamp.fromDate(startDate)),
-      // where("timestamp", "<=", Timestamp.fromDate(endDate))
-    );
-
-    const snapshot = await getAggregateFromServer(q, {
-      docsCount: count(),
-    });
-
-    const snapshot1 = await getAggregateFromServer(
-      query(q, where('status', '==', TRIP_STATUS.booked)),
-      {
-        docsCount: count(),
-      },
-    );
-
-    const snapshot2 = await getAggregateFromServer(
-      query(q, where('status', '==', TRIP_STATUS.active)),
-      {
-        docsCount: count(),
-      },
-    );
-
-    const snapshot3 = await getAggregateFromServer(
-      query(q, where('status', '==', TRIP_STATUS.completed)),
-      {
-        docsCount: count(),
-      },
-    );
-
-    const snapshot4 = await getAggregateFromServer(
-      query(q, where('status', '==', TRIP_STATUS.cancelled)),
-      {
-        docsCount: count(),
-      },
-    );
-
-    setTripStats({
-      total: snapshot.data().docsCount,
-      booked: snapshot1.data().docsCount,
-      active: snapshot2.data().docsCount,
-      completed: snapshot3.data().docsCount,
-      cancelled: snapshot4.data().docsCount,
-    });
-  }, [authUser]);
+      setTripStats({
+        total: snapshot.data().docsCount,
+        booked: snapshot1.data().docsCount,
+        active: snapshot2.data().docsCount,
+        completed: snapshot3.data().docsCount,
+        cancelled: snapshot4.data().docsCount,
+      });
+    },
+    [params],
+  );
 
   useEffect(() => {
-    doFilterVehicles();
-    doFilterTrips();
-  }, [doFilterTrips, doFilterVehicles]);
+    if (authUser && authUser.companyId) {
+      doFilterVehicles(authUser.companyId);
+      doFilterTrips(authUser.companyId);
+    }
+  }, [authUser, doFilterTrips, doFilterVehicles]);
 
   return (
     <main className="">
-      <div className="bg-white p-6">
+      <div className="flex flex-wrap items-center justify-between gap-5 bg-white p-6">
         <h2 className="text-xl font-semibold">Analytics</h2>
+        <DateRangeFilter dateRange={dateRange} setDateRange={setDateRange} />
       </div>
 
       <section className="grid-1-2-4 mt-5 gap-5">
