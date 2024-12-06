@@ -27,3 +27,11 @@ export interface CLIENT {
   dateCreated: any;
   lastUpdated: any;
 }
+export interface CLIENT_DETAILS {
+  docId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  photoURL: string;
+}
