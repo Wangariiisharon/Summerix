@@ -35,7 +35,7 @@ export default function DeleteClientButton({ client }: Props) {
 
       toast.success('Client deleted successfully.');
     } catch (error) {
-      console.error('doDelete error:', error);
+      console.error('Delete error:', error);
     } finally {
       setProcessing(false);
       setIsOpen(false);
