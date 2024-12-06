@@ -11,10 +11,9 @@ import { DocumentSnapshot } from 'firebase/firestore';
 import moment from 'moment';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import DeleteClientButton from './button-delete';
 
-import React from 'react';
 export default function ClientsPage() {
   const { authUser } = useAuthContext();
   const [params, setParams] = useState<PARAMS_MAP>({
@@ -23,7 +22,6 @@ export default function ClientsPage() {
     direction: 'desc',
   });
   const [status, setStatus] = useState<string>('');
-
   const { count, clients } = useClient({
     companyId: authUser?.companyId || 'xyz',
     docId: null,
