@@ -14,6 +14,7 @@ export default function OperationsNav() {
           { name: 'Overview', link: '' },
           { name: 'Trips', link: 'trips' },
           { name: 'Vehicles', link: 'vehicles' },
+          { name: 'Clients', link: 'clients' },
           { name: 'Drivers', link: 'drivers' },
           { name: 'Maintenance', link: 'maintenance' },
           { name: 'Suppliers', link: 'suppliers' },
