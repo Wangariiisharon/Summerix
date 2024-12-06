@@ -176,7 +176,7 @@ export default function Client({ params }: Props) {
         validationSchema={AdminSchema(docId)}
         onSubmit={(values) => doSave(values)}
       >
-        {({ errors, isValid, setFieldValue }) => (
+        {({ isValid }) => (
           <Form className="mt-6">
             <div className="mt-5 grid gap-5 p-4">
               <label className="grid-1-3">
