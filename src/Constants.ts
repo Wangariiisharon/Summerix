@@ -23,6 +23,7 @@ const Constants = {
   fbSuppliers: 'suppliers',
   fbTrips: 'trips',
   fbVehicles: 'vehicles',
+  fbClasses: 'classes',
 };
 
 export default Constants;

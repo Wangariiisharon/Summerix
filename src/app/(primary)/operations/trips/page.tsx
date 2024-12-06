@@ -80,6 +80,7 @@ export default function TripsPage() {
               })}
             </select>
           </label>
+
           <Link href="/operations/trips/new">
             <div className="btn btn-flex btn-secondary">
               <PlusIcon className="h-5 w-5" />
@@ -93,6 +94,12 @@ export default function TripsPage() {
             <DocumentArrowDownIcon className="h-5 w-5" />
             <p>Export</p>
           </button>
+          <Link href="/operations/trips/class/new">
+            <div className="btn btn-flex btn-secondary">
+              <PlusIcon className="h-5 w-5" />
+              <p>Add Class</p>
+            </div>
+          </Link>
         </div>
       </section>
 
