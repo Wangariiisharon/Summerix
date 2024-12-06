@@ -4,8 +4,8 @@ import * as Yup from 'yup';
 import { useAuthContext } from '@/app/auth-provider';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
-import { ADMIN } from '@/models/admin';
-// import AdminRoles from '@/json/roles.json';
+import { CLIENT } from '@/models/client';
+
 import { getAdminByEmail, getAdminByPhoneNumber } from '@/services/admin';
 import {
   addDoc,
@@ -22,13 +22,12 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
 import { getAvatarPhoto } from '@/services/utils';
-import useDepartments from '@/hooks/useDepartments';
-import DepartmentAdminView from './department';
 
 const AdminSchema = (docId: string) => {
   return Yup.object().shape({
     firstName: Yup.string().required('First name is required.'),
     lastName: Yup.string().required('Last name is required.'),
+    currency: Yup.string().required('Currency is required.'),
     email: Yup.string()
       .trim()
       .required('Email is required.')
@@ -76,33 +75,25 @@ type Props = {
   params: { docId: string };
 };
 
-export default function User({ params }: Props) {
-  const [admin, setAdmin] = useState<ADMIN>();
+export default function Client({ params }: Props) {
+  const [client, setClient] = useState<CLIENT>();
   const { authUser } = useAuthContext();
   const { company } = useCurrentCompany();
-  const { departments } = useDepartments({
-    companyId: authUser?.companyId || 'xyz',
-    params: {
-      orderBy: 'lastUpdated',
-      direction: 'desc',
-    },
-    isActive: 'active',
-    docId: null,
-  });
+
   const router = useRouter();
   const { docId } = params;
 
   useEffect(() => {
     if (docId && docId !== 'new') {
-      const docRef = doc(fbDb, Constants.fbAdmins, docId);
+      const docRef = doc(fbDb, Constants.fbClients, docId);
       const unsubscribe = onSnapshot(
         docRef,
         async (snapshot) => {
-          const data = snapshot.data() as ADMIN;
+          const data = snapshot.data() as CLIENT;
           data.displayName = data.displayName || '';
           data.photoURL = data.photoURL || getAvatarPhoto(data.displayName);
           data.docId = snapshot.id;
-          setAdmin(data);
+          setClient(data);
         },
         (error) => {
           console.error('onSnapshot > error:', error);
@@ -124,7 +115,7 @@ export default function User({ params }: Props) {
       formValues.displayName = `${formValues.firstName.trim()} ${formValues.lastName.trim()}`;
 
       if (docId === 'new') {
-        const colRef = collection(fbDb, Constants.fbAdmins);
+        const colRef = collection(fbDb, Constants.fbClients);
         await addDoc(colRef, {
           ...formValues,
           email: formValues.email.trim(),
@@ -138,17 +129,17 @@ export default function User({ params }: Props) {
           dateCreated: serverTimestamp(),
           lastUpdated: serverTimestamp(),
         });
-        toast.success('New user added successfully.');
+        toast.success('New Client added successfully.');
       } else {
-        const docRef = doc(fbDb, Constants.fbAdmins, docId);
+        const docRef = doc(fbDb, Constants.fbClients, docId);
         await updateDoc(docRef, {
           ...formValues,
           lastUpdated: serverTimestamp(),
         });
-        toast.success('User updated successfully.');
+        toast.success('Client updated successfully.');
       }
 
-      router.push('/administration/users');
+      router.push('/operations/clients');
     } catch (error) {
       console.error('save user error:', error);
     }
@@ -158,30 +149,25 @@ export default function User({ params }: Props) {
 
   return (
     <main className="-mx-4 rounded bg-white p-4">
-      <h2 className="font-bold">Admin User</h2>
+      <h2 className="font-bold">Client</h2>
       <Formik
         enableReinitialize={true}
         initialValues={{
-          email: admin?.email || '',
-          phoneNumber: admin?.phoneNumber || '',
-          firstName: admin?.firstName || '',
-          lastName: admin?.lastName || '',
-          idNumber: admin?.idNumber || '',
-          company: admin?.company || {
+          email: client?.email || '',
+          phoneNumber: client?.phoneNumber || '',
+          firstName: client?.firstName || '',
+          lastName: client?.lastName || '',
+          idNumber: client?.idNumber || '',
+          company: client?.company || {
             docId: company.docId,
             name: company.name || '',
             email: company.email || '',
             phoneNumber: company.phoneNumber || '',
             regNumber: company.regNumber || '',
           },
-          department: admin?.department || '',
-          roles: admin?.roles || [],
-          rolesMap: admin?.rolesMap || {
-            companyId: company.docId,
-            isActive: false,
-            isAdmin: false,
-            isOwner: false,
-          },
+
+          isActive: client?.isActive || false,
+          currency: client?.currency || company.currency,
           updatedBy: {
             authId: authUser?.uid,
             email: authUser?.email,
@@ -192,8 +178,6 @@ export default function User({ params }: Props) {
       >
         {({ errors, isValid, setFieldValue }) => (
           <Form className="mt-6">
-            {/* <h2 className="text-center font-bold">Account setup</h2> */}
-
             <div className="mt-5 grid gap-5 p-4">
               <label className="grid-1-3">
                 <div className="text-sm">
@@ -266,44 +250,39 @@ export default function User({ params }: Props) {
                   <ErrorMessage name="idNumber" component="span" className="form-error" />
                 </div>
               </label>
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Currency</label>
+                </div>
+                <div className="">
+                  <Field
+                    type="text"
+                    name="currency"
+                    className="form-input"
+                    placeholder="Currency"
+                  />
+                  <ErrorMessage name="currency" component="span" className="form-error" />
+                </div>
+              </label>
 
               <hr className="my-3" />
 
               <div className="grid-1-3">
-                <div className="text-sm">
-                  <label className="font-medium">Settings</label>
-                </div>
                 <div className="grid gap-5">
                   <label className="flex items-center gap-5">
-                    <Field type="checkbox" name="rolesMap.isActive" className="form-checkbox" />
+                    <Field type="checkbox" name="isActive" className="form-checkbox" />
                     <span className="form-label">Is Active</span>
-                  </label>
-                  <label className="flex items-center gap-5">
-                    <Field type="checkbox" name="rolesMap.isAdmin" className="form-checkbox" />
-                    <span className="form-label">Is Company Admin</span>
-                  </label>
-                  <label className="flex items-center gap-5">
-                    <Field type="checkbox" name="rolesMap.isOwner" className="form-checkbox" />
-                    <span className="form-label">Is Company Owner</span>
                   </label>
                 </div>
               </div>
 
               <hr className="my-3" />
-
-              <DepartmentAdminView
-                admin={admin}
-                departments={departments}
-                setFieldValue={setFieldValue}
-                errors={errors}
-              />
-              {/* <ErrorMessage name="department.docId" component="span" className="form-error" /> */}
             </div>
 
             <div className="grid-1-3 mt-10 gap-5">
               <p className=""></p>
               <div className="flex justify-end gap-5">
-                <Link href="/administration" className="btn btn-outline">
+                <Link href="/operations/clients" className="btn btn-outline">
                   Cancel
                 </Link>
                 <button
