@@ -26,8 +26,6 @@ function useSuppliers({ companyId, docId, params }: Props) {
   const [count, setCount] = useState<number>(0);
 
   useEffect(() => {
-    // console.debug('useSuppliers > details:', { docId, params });
-
     const constraints = [];
     const colRef = collection(fbDb, Constants.fbSuppliers);
 
@@ -40,7 +38,6 @@ function useSuppliers({ companyId, docId, params }: Props) {
     }
 
     getCountFromServer(query(colRef, ...constraints)).then((countSnap) => {
-      // console.debug('useSuppliers > countSnap:', countSnap.data().count);
       setCount(countSnap.data().count);
     });
 
@@ -60,13 +57,11 @@ function useSuppliers({ companyId, docId, params }: Props) {
           const data = doc.data() as SUPPLIER;
           data.doc = doc; // QueryDocumentSnapshot
           data.docId = doc.id;
-          // data.photoURL = data.photoURL || getAvatarPhoto(data.name);
 
           return data;
         });
 
         const results = await Promise.all(promises);
-        // console.debug('useSuppliers > results:', results.length);
         setSuppliers(results);
       },
       (error) => {
