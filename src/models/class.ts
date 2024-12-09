@@ -18,5 +18,4 @@ export interface CLASS {
 export interface CLASS_DETAILS {
   docId: string;
   name: string;
-  roles: string[];
 }

@@ -9,6 +9,7 @@ import { CLIENT_DETAILS } from './client';
 import { COMPANY_DETAILS } from './company';
 import { DRIVER_DETAILS } from './driver';
 import { VEHICLE_DETAILS } from './vehicle';
+import { CLASS_DETAILS } from './class';
 import { ADDRESS } from './address';
 import { DOCUMENT } from './document';
 
@@ -28,6 +29,7 @@ export interface TRIP {
   //   interChange: string;
   //   t1Form: string;
   // };
+  class: CLASS_DETAILS;
 
   distance: {
     text: string;
