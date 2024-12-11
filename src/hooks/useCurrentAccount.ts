@@ -1,29 +1,29 @@
 import { useAuthContext } from '@/app/auth-provider';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
-import { CLIENT } from '@/models/client';
+import { ACCOUNT } from '@/models/account';
 import { getAvatarPhoto } from '@/services/utils';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
-function useCurrentClient() {
-  const [client, setClient] = useState<CLIENT | null>(null);
+function useCurrentAccount() {
+  const [account, setAccount] = useState<ACCOUNT | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasAccount, setHasAccount] = useState<boolean>(true);
   const { authUser } = useAuthContext();
 
   useEffect(() => {
-    setClient(null);
+    setAccount(null);
     setIsLoading(true);
     setHasAccount(true);
 
     if (authUser && authUser.uid) {
-      const docRef = doc(fbDb, Constants.fbClients, authUser.uid);
+      const docRef = doc(fbDb, Constants.fbAccounts, authUser.uid);
       const unsubscribe = onSnapshot(
         docRef,
         async (snapshot) => {
           if (snapshot.exists()) {
-            const data = snapshot.data() as CLIENT;
+            const data = snapshot.data() as ACCOUNT;
             data.docRef = snapshot.ref;
             data.docId = snapshot.id;
             data.firstName = data.firstName || '';
@@ -32,7 +32,7 @@ function useCurrentClient() {
             data.photoURL = data.photoURL || getAvatarPhoto(data.displayName);
             data.currency = data.currency || 'KES';
 
-            setClient(data);
+            setAccount(data);
           } else {
             // show complete sign-up workflow
             setHasAccount(false);
@@ -50,7 +50,7 @@ function useCurrentClient() {
     }
   }, [authUser]);
 
-  return { client, hasAccount, isLoading };
+  return { account, hasAccount, isLoading };
 }
 
-export default useCurrentClient;
+export default useCurrentAccount;

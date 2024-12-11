@@ -10,9 +10,10 @@ const Constants = {
   authCookieName: 'truck-mate-token',
 
   // firebase collections
+  fbAccounts: 'accounts',
+  fbCompanies: 'companies',
   fbAdmins: 'admins',
   fbClients: 'clients',
-  fbCompanies: 'companies',
   fbDepartments: 'departments',
   fbPermissions: 'permisions',
   fbDrivers: 'drivers',
