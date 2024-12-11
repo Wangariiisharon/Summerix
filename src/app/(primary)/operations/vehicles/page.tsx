@@ -14,6 +14,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import DeleteVehicleButton from './button-delete';
+import json2csv from 'json2csv';
 
 export default function VehiclesPage() {
   const { authUser } = useAuthContext();
@@ -55,6 +56,37 @@ export default function VehiclesPage() {
     [vehicles],
   );
 
+  const exportFiles = () => {
+    const fields = [
+      {
+        label: 'Name',
+        value: (row: VEHICLE) => row.name,
+      },
+      {
+        label: 'Reg. Number',
+        value: (row: VEHICLE) => row.regNumber,
+      },
+      {
+        label: 'Driver',
+        value: (row: VEHICLE) => row.driver?.displayName,
+      },
+      {
+        label: 'Status',
+        value: (row: VEHICLE) => row.status,
+      },
+    ];
+    const opts = { fields };
+    const csv = json2csv.parse(vehicles, opts);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'Vehicle.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <main className="-mx-4 rounded bg-white p-4">
       <section className="flex flex-col justify-between gap-5 sm:flex-row">
@@ -93,10 +125,7 @@ export default function VehiclesPage() {
               <p>Add Vehicle</p>
             </div>
           </Link>
-          <button
-            onClick={() => console.debug('do export vehicles...')}
-            className="btn btn-flex btn-outline-secondary"
-          >
+          <button onClick={exportFiles} className="btn btn-flex btn-outline-secondary">
             <DocumentArrowDownIcon className="h-5 w-5" />
             <p>Export</p>
           </button>
