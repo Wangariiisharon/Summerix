@@ -21,13 +21,13 @@ import Image from 'next/image';
 import { fbAuth } from '@/firebase/configs';
 import { useAuthContext } from '../../auth-provider';
 import Link from 'next/link';
-import useCurrentClient from '@/hooks/useCurrentClient';
+import useCurrentAccount from '@/hooks/useCurrentAccount';
 import { doLogoutApiCall } from '@/services/auth';
 import useNavLinks from '@/hooks/useNavLinks';
 
 export default function Header() {
   const { appCheck, authUser } = useAuthContext();
-  const { client: currentClient } = useCurrentClient();
+  const { account } = useCurrentAccount();
   const navigation = useNavLinks();
   const pathName = usePathname();
   const router = useRouter();
@@ -57,16 +57,16 @@ export default function Header() {
                   <Menu as="div" className="relative flex-shrink-0">
                     <MenuButton className="inline-flex items-center gap-2 rounded-md p-2 text-white focus:outline-none">
                       <span className="sr-only">Open user menu</span>
-                      {currentClient && currentClient.photoURL && (
+                      {account && account.photoURL && (
                         <Image
-                          src={currentClient.photoURL}
-                          alt={`${currentClient.displayName} image`}
+                          src={account.photoURL}
+                          alt={`${account.displayName} image`}
                           className="h-12 w-12 rounded-full"
                           width={50}
                           height={50}
                         />
                       )}
-                      {!currentClient && <UserCircleIcon className="h-10 w-10" />}
+                      {!account && <UserCircleIcon className="h-10 w-10" />}
                       {/* <ChevronDownIcon className="size-4 fill-white/60" /> */}
                     </MenuButton>
                     <Transition
@@ -83,21 +83,19 @@ export default function Header() {
                       >
                         <MenuItem>
                           <div className="mt-5 flex items-center gap-3 px-3 text-sm">
-                            {currentClient && currentClient.photoURL && (
+                            {account && account.photoURL && (
                               <Image
-                                src={currentClient.photoURL}
-                                alt={`${currentClient.displayName} image`}
+                                src={account.photoURL}
+                                alt={`${account.displayName} image`}
                                 className="h-14 w-14 rounded-full"
                                 width={20}
                                 height={20}
                               />
                             )}
-                            {!currentClient && (
-                              <UserCircleIcon className="h-10 w-10 text-primary" />
-                            )}
+                            {!account && <UserCircleIcon className="h-10 w-10 text-primary" />}
                             <div className="font-medium">
-                              <p className="">{currentClient?.displayName || 'UNKNOWN'}</p>
-                              <p className="text-xs">{currentClient?.email}</p>
+                              <p className="">{account?.displayName || 'UNKNOWN'}</p>
+                              <p className="text-xs">{account?.email}</p>
                             </div>
                           </div>
                         </MenuItem>
