@@ -6,7 +6,7 @@ service cloud.firestore {
       allow read, write: if false;
     }
     
-    match /clients/{document=**} {
+    match /accounts/{document=**} {
     	allow read: if true;
       
       match /{docId} {
@@ -46,7 +46,7 @@ service cloud.firestore {
         allow update, delete: if isCompanyId(existingData().company.docId)
         	&& (isOwner() || (isAdmin() && hasRole('canManageAdmins')));
       }
-    } 
+    }  
     
     match /departments/{document=**} {
     	allow read: if isAuthenticated();
@@ -56,13 +56,11 @@ service cloud.firestore {
         	&& (isAdmin()))
           && incomingData().company != null
           && incomingData().name != null
-      	allow update: if isCompanyId(existingData().company.docId)
+          allow update: if isCompanyId(existingData().company.docId)
         	&& (isAdmin()); 
-        allow delete: if isCompanyId(existingData().company.docId)
-        	&& (isAdmin());
+         allow delete: if request.auth != null && request.auth.token.isAdmin;
       }
     }
-
     
     match /vehicles/{document=**} {
     	allow read: if isAuthenticated();
@@ -76,7 +74,7 @@ service cloud.firestore {
           && incomingData().make != null
           && incomingData().model != null
           && incomingData().status != null;
-        allow update, delete: if isCompanyId(existingData().company.docId)
+        allow update: if isCompanyId(existingData().company.docId)
         	&& (isOwner() || (isAdmin() && hasRole('canManageVehicles')));
       }
     }
@@ -92,8 +90,76 @@ service cloud.firestore {
           && incomingData().phoneNumber != null
           && incomingData().firstName != null
           && incomingData().lastName != null;
-        allow update, delete: if isCompanyId(existingData().company.docId)
+        allow update: if isCompanyId(existingData().company.docId)
         	&& (isOwner() || (isAdmin() && hasRole('canManageDrivers')));
+      }
+    }
+    
+    match /suppliers/{document=**} {
+    	allow read: if isAuthenticated();
+      
+      match /{docId} {
+        allow create: if (isCompanyId(incomingData().company.docId) 
+        	&& (isOwner() || (isAdmin() && hasRole('canManageDrivers'))))
+          && incomingData().company != null
+          && incomingData().name != null
+          && incomingData().email != null
+          // && incomingData().conctacts != null
+          && incomingData().typeOfSupplies != null;
+        allow update: if isCompanyId(existingData().company.docId)
+        	&& (isOwner() || (isAdmin() && hasRole('canManageSuppliers')));
+      }
+    }  
+    
+    match /clients/{document=**} {
+    	allow read: if isAuthenticated();
+      
+      match /{docId} {
+        allow create: if (isCompanyId(incomingData().company.docId) 
+        	&& (isOwner() || (isAdmin())))
+          && incomingData().company != null
+          && incomingData().firstName != null
+          && incomingData().lastName != null
+          && incomingData().email != null
+          && incomingData().phoneNumber != null
+        allow update,delete: if isCompanyId(existingData().company.docId)
+        	&& (isOwner() || (isAdmin()));
+      }
+    } 
+        
+    match /maintenance/{document=**} {
+    	allow read: if isAuthenticated();
+      
+      match /{docId} {
+        allow create: if (isCompanyId(incomingData().company.docId) 
+        	&& (isOwner() || (isAdmin() && hasRole('canManageVehicles'))))
+          && incomingData().company != null
+        allow update: if isCompanyId(existingData().company.docId)
+        	&& (isOwner() || (isAdmin() && hasRole('canManageVehicles')));
+      }
+    } 
+    
+    match /jobcard/{document=**} {
+    	allow read: if isAuthenticated();
+      
+      match /{docId} {
+        allow create: if (isCompanyId(incomingData().company.docId) 
+        	&& (isOwner() || (isAdmin() && hasRole('canManageVehicles'))))
+          && incomingData().company != null
+        allow update: if isCompanyId(existingData().company.docId)
+        	&& (isOwner() || (isAdmin() && hasRole('canManageVehicles')));
+      }
+    } 
+    
+    match /classes/{document=**} {
+    	allow read: if isAuthenticated();
+      
+      match /{docId} {
+        allow create: if (isCompanyId(incomingData().company.docId) 
+        	&& (isOwner() || (isAdmin())))
+          && incomingData().company != null
+        allow update: if isCompanyId(existingData().company.docId)
+        	&& (isOwner() || (isAdmin()));
       }
     }
     
@@ -106,7 +172,7 @@ service cloud.firestore {
           && incomingData().company != null
           && incomingData().client != null
           && incomingData().driver != null;
-        allow update, delete: if isCompanyId(existingData().company.docId)
+        allow update: if isCompanyId(existingData().company.docId)
         	&& (isOwner() || (isAdmin() && hasRole('canManageTrips')));
       }
     }
@@ -133,9 +199,11 @@ service cloud.firestore {
       return request.auth.token.companyId == companyId;
     }
     
+    
     function hasRole(role) {
-      return request.auth.token.roles.includes(role);
-    }
+    return role in request.auth.token.roles;
+     }
+
 
     // [READ] Data that exists on the Firestore document
     function existingData() {
