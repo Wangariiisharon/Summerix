@@ -3,7 +3,7 @@ import { logger, runWith } from 'firebase-functions/v1';
 import Constants from '../Constants';
 import { COMPANY } from '../models/company';
 import { getFirebaseUser } from '../services/auth.service';
-import { getClientData } from '../services/client.service';
+import { getAccountData } from '../services/account.service';
 
 export const OnCompanyCreated = runWith({
   maxInstances: 10,
@@ -15,9 +15,9 @@ export const OnCompanyCreated = runWith({
     logger.log('OnCompanyCreated > company:', company);
 
     try {
-      const client = await getClientData(docId);
-      if (client) {
-        const authUser = await getFirebaseUser(client, docId);
+      const account = await getAccountData(docId);
+      if (account) {
+        const authUser = await getFirebaseUser(account, docId);
         if (authUser && authUser.uid) {
           logger.debug('Create company`s default admin...');
 
@@ -26,13 +26,13 @@ export const OnCompanyCreated = runWith({
             .collection(Constants.fbAdmins)
             .doc(authUser.uid)
             .set({
-              email: client.email,
-              idNumber: client.idNumber || '',
-              phoneNumber: client.phoneNumber || '',
+              email: account.email,
+              idNumber: account.idNumber || '',
+              phoneNumber: account.phoneNumber || '',
 
-              firstName: client.firstName,
-              lastName: client.lastName,
-              displayName: client.displayName || '',
+              firstName: account.firstName,
+              lastName: account.lastName,
+              displayName: account.displayName || '',
 
               company: {
                 docId: company.docId,
@@ -42,7 +42,7 @@ export const OnCompanyCreated = runWith({
                 regNumber: company.regNumber || '',
               },
 
-              photoURL: client.photoURL || '',
+              photoURL: account.photoURL || '',
               roles: [
                 'canManageAdmins',
                 'canManageClients',

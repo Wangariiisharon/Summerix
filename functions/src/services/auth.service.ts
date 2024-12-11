@@ -1,11 +1,11 @@
 import { auth } from 'firebase-admin';
 import { logger } from 'firebase-functions/v1';
-import { ADMIN } from '../models/admin';
 import { getExistingAccountEmailBody, getNewAccountEmailBody } from './email.service';
-import { CLIENT } from '../models/client';
+import { ACCOUNT } from '../models/account';
+import { ADMIN } from '../models/admin';
 
 export const getFirebaseUser = async (
-  fUser: ADMIN | CLIENT,
+  fUser: ACCOUNT | ADMIN,
   uid?: string, // provided firebase uid
   email?: boolean, // no phone auth
 ): Promise<any> => {
