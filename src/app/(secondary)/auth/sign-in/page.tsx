@@ -37,7 +37,7 @@ export default function SignIn() {
       const idToken = await credential.user.getIdToken();
       await doLoginApiCall(idToken, appCheck);
 
-      const docRef = doc(fbDb, Constants.fbClients, credential.user.uid);
+      const docRef = doc(fbDb, Constants.fbAccounts, credential.user.uid);
       const snapshot = await getDoc(docRef);
       if (snapshot.exists()) {
         await setDoc(

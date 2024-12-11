@@ -1,4 +1,5 @@
 import * as admin from 'firebase-admin';
+import * as accounts from './accounts';
 import * as admins from './admins';
 import * as clients from './clients';
 import * as companies from './companies';
@@ -12,6 +13,7 @@ admin.firestore().settings({
   timestampsInSnapshots: true,
 });
 
+exports.accountsGroup = accounts.group;
 exports.adminsGroup = admins.group;
 exports.clientsGroup = clients.group;
 exports.companiesGroup = companies.group;
