@@ -8,6 +8,7 @@ import { PARAMS_MAP } from '@/models/params-map';
 import { SUPPLIER } from '@/models/supplier';
 import { DocumentArrowDownIcon, PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { DocumentSnapshot } from 'firebase/firestore';
+import json2csv from 'json2csv';
 import moment from 'moment';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -51,6 +52,37 @@ export default function Suppliers() {
     [suppliers],
   );
 
+  const exportFiles = () => {
+    const fields = [
+      {
+        label: 'Name',
+        value: (row: SUPPLIER) => row.name,
+      },
+      {
+        label: 'Email Address',
+        value: (row: SUPPLIER) => row.email,
+      },
+      {
+        label: 'Phone Number',
+        value: (row: SUPPLIER) => row.contacts?.at(0)?.phoneNumber,
+      },
+      {
+        label: 'Type Of Supplies',
+        value: (row: SUPPLIER) => row.typeOfSupplies,
+      },
+    ];
+    const opts = { fields };
+    const csv = json2csv.parse(suppliers, opts);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'Suppliers.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <main className="-mx-4 rounded bg-white p-4">
       <section className="flex flex-col justify-between gap-5 sm:flex-row">
@@ -66,10 +98,7 @@ export default function Suppliers() {
               <p>Add Supplier</p>
             </div>
           </Link>
-          <button
-            onClick={() => console.debug('do export drivers...')}
-            className="btn btn-flex btn-outline-secondary"
-          >
+          <button onClick={exportFiles} className="btn btn-flex btn-outline-secondary">
             <DocumentArrowDownIcon className="h-5 w-5" />
             <p>Export</p>
           </button>
