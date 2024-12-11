@@ -53,7 +53,7 @@ export default function AccountPage() {
       if (authUser && authUser.user) {
         formValues.displayName = `${formValues.firstName.trim()} ${formValues.lastName.trim()}`;
 
-        const docRef = doc(fbDb, Constants.fbClients, authUser.user.uid);
+        const docRef = doc(fbDb, Constants.fbAccounts, authUser.user.uid);
         await setDoc(
           docRef,
           {
@@ -80,7 +80,7 @@ export default function AccountPage() {
   };
 
   return (
-    <main className="">
+    <main className="mx-auto max-w-xl">
       <Formik
         enableReinitialize={true}
         initialValues={{
