@@ -78,7 +78,7 @@ export default function TripsPage() {
         value: (row: TRIP) => row.vehicle?.regNumber,
       },
       {
-        label: 'Vehicle',
+        label: 'Driver',
         value: (row: TRIP) => row.driver.displayName,
       },
       {
