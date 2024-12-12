@@ -2,6 +2,7 @@ import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { PARAMS_MAP } from '@/models/params-map';
 import { SUPPLIER } from '@/models/supplier';
+import { getAvatarPhoto } from '@/services/utils';
 import {
   collection,
   documentId,
@@ -57,6 +58,7 @@ function useSuppliers({ companyId, docId, params }: Props) {
           const data = doc.data() as SUPPLIER;
           data.doc = doc; // QueryDocumentSnapshot
           data.docId = doc.id;
+          data.photoURL = data.photoURL || getAvatarPhoto(data.name);
 
           return data;
         });
