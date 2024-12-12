@@ -3,20 +3,17 @@
 import { useAuthContext } from '@/app/auth-provider';
 import RemotePagination from '@/components/remote-pagination';
 import Constants from '@/Constants';
-import { DEPARTMENT } from '@/models/department';
 import { PARAMS_MAP } from '@/models/params-map';
 import { DocumentArrowDownIcon, PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import useDepartments from '@/hooks/useDepartments';
 import { DocumentSnapshot } from 'firebase/firestore';
-import DeleteDeprtmentButton from './button-delete';
-import ToggleDepartmentButton from './button-toggle';
-import json2csv from 'json2csv';
 import moment from 'moment';
 import Link from 'next/link';
-import { camelCaseToWords } from '@/services/utils';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import useClasses from '@/hooks/useClasses';
+import { CLASS } from '@/models/class';
+import DeleteClassButton from './button-delete';
 
-export default function Departments() {
+export default function ClassesPage() {
   const { authUser } = useAuthContext();
   const [status, setStatus] = useState<string>('');
   const [params, setParams] = useState<PARAMS_MAP>({
@@ -24,7 +21,7 @@ export default function Departments() {
     orderBy: 'lastUpdated',
     direction: 'desc',
   });
-  const { count, departments } = useDepartments({
+  const { count, classes } = useClasses({
     companyId: authUser?.companyId || 'xyz',
     isActive: status || '',
     docId: null,
@@ -39,52 +36,30 @@ export default function Departments() {
       orderBy: 'lastUpdated',
       direction: 'desc',
       max: max,
-
+      status: status,
       cursor: cursors.current.get(currentPage),
     });
-  }, [currentPage, max]);
+  }, [currentPage, max, status]);
 
   const onPageChanged = useCallback(
     (nextPage: number) => {
       setCurrentPage((page) => {
         // first, we save the last document as page's cursor
-        cursors.current.set(page + 1, departments[departments.length - 1]?.doc);
+        cursors.current.set(page + 1, classes[classes.length - 1]?.doc);
 
         // then we update the state with the next page's number
         return nextPage;
       });
     },
-    [departments],
+    [classes],
   );
-
-  const exportFiles = () => {
-    const fields = [
-      { label: 'Name', value: 'name' },
-      { label: 'LastUpdated', value: 'lastUpdated' },
-      {
-        label: 'Archive',
-        value: (row: DEPARTMENT) => (row.isActive ? 'Not Archived' : 'Archived'),
-      },
-      { label: 'UpdatedBy', value: (row: DEPARTMENT) => row.updatedBy.email },
-    ];
-    const opts = { fields };
-    const csv = json2csv.parse(departments, opts);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'Departments.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   return (
     <main className="-mx-4 rounded bg-white p-4">
       <section className="flex flex-col justify-between gap-5 sm:flex-row">
         <div className="">
-          <h2 className="font-bold">Departments</h2>
-          <p className="text-gray-500">Manage your Departments & their permissions.</p>
+          <h2 className="font-bold">Vehicle Classes</h2>
+          <p className="text-gray-500">Manage vehicle classes.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-5">
@@ -100,13 +75,17 @@ export default function Departments() {
               <option value="inactive">Inactive</option>
             </select>
           </label>
-          <Link href="/administration/departments/new">
+
+          <Link href="/operations/classes/new">
             <div className="btn btn-flex btn-secondary">
               <PlusIcon className="h-5 w-5" />
-              <p>Add Department</p>
+              <p>Add Class</p>
             </div>
           </Link>
-          <button onClick={exportFiles} className="btn btn-flex btn-outline-secondary">
+          <button
+            onClick={() => console.debug('do export...')}
+            className="btn btn-flex btn-outline-secondary"
+          >
             <DocumentArrowDownIcon className="h-5 w-5" />
             <p>Export</p>
           </button>
@@ -120,41 +99,42 @@ export default function Departments() {
           <table className="my-table">
             <thead className="sticky top-0">
               <tr className="tr-header">
-                <th className="th text-left">Name</th>
-                <th className="th table-cell-xl">Roles</th>
+                <th className="th">Name</th>
+                <th className="th table-cell-xl">Description</th>
                 <th className="th table-cell-sm">Status</th>
-                <th className="th table-cell-lg">Last Updated</th>
+                <th className="th table-cell-xl">Last Modified</th>
                 <th className="th text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {departments.map((department: DEPARTMENT) => {
+              {classes.map((myClass: CLASS) => {
                 return (
-                  <tr key={department.docId} className="tr-body">
-                    <td className="td text-left">{department.name}</td>
-                    <td className="td table-cell-xl max-w-36 capitalize">
-                      {camelCaseToWords(department.roles.join(', '))}
+                  <tr key={myClass.docId} className="tr-body">
+                    <td className="td">{myClass.name}</td>
+                    <td className="td table-cell-xl max-w-40">
+                      {(myClass.description?.length || 0) > 100
+                        ? `${myClass.description.substring(0, 100)}...`
+                        : myClass.description}
                     </td>
                     <td className="td table-cell-sm">
-                      <div className="flex justify-center">
+                      <div className="flex md:justify-center">
                         <p
-                          className={`w-fit rounded-full px-4 py-2 ${department.isActive ? 'bg-secondary/20 text-teal-700' : 'bg-gray-300'}`}
+                          className={`w-fit rounded-full px-4 py-2 ${myClass.isActive ? 'bg-secondary/20 text-teal-700' : 'bg-gray-300'}`}
                         >
-                          {department.isActive ? 'Active' : 'Inactive'}
+                          {myClass.isActive ? 'Active' : 'Inactive'}
                         </p>
                       </div>
                     </td>
-                    <td className="td table-cell-lg">
-                      {department.lastUpdated &&
-                        moment(department.lastUpdated.toDate()).format(Constants.dateTimeFormat)}
+                    <td className="td table-cell-xl">
+                      {myClass.lastUpdated &&
+                        moment(myClass.lastUpdated.toDate()).format(Constants.dateTimeFormat)}
                     </td>
                     <td className="td">
                       <div className="td-actions justify-start">
-                        <Link href={`/administration/departments/${department.docId}`}>
+                        <Link href={`/operations/classes/${myClass.docId}`}>
                           <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
                         </Link>
-                        <DeleteDeprtmentButton department={department} />
-                        <ToggleDepartmentButton department={department} />
+                        <DeleteClassButton myClass={myClass} />
                       </div>
                     </td>
                   </tr>

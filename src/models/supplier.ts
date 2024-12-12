@@ -17,6 +17,7 @@ export interface SUPPLIER {
   paymentTerms: string; // select options
   taxRegNumber: string;
   currency: string;
+  photoURL: string;
   notes: string;
 
   lowerCase: {
@@ -37,4 +38,5 @@ export interface SUPPLIER_DETAILS {
   name: string;
   email: string;
   phoneNumber: string;
+  photoURL: string;
 }
