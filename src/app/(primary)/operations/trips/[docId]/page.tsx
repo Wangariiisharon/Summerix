@@ -23,7 +23,6 @@ import Trips from '@/json/trips.json';
 import { TRIP, TRIP_STATUS } from '@/models/trip';
 import TripAddressInput from './address-input';
 import TripVehicle from './vehicle';
-import TripClass from './class';
 import Image from 'next/image';
 import moment from 'moment';
 
@@ -152,7 +151,6 @@ export default function Vehicle({ params }: Props) {
           },
           driver: trip?.driver || null,
           vehicle: trip?.vehicle || null,
-          class: trip?.class || null,
           schedule: trip?.schedule
             ? {
                 startAt: trip.schedule.startAt
@@ -212,16 +210,7 @@ export default function Vehicle({ params }: Props) {
                   trip={trip}
                 />
               </label>
-              <label className="grid-1-3">
-                <div className="text-sm">
-                  <label className="font-medium">Class</label>
-                </div>
-                <TripClass
-                  companyId={authUser?.companyId || 'xyz'}
-                  setFieldValue={setFieldValue}
-                  trip={trip}
-                />
-              </label>
+
               {trip && trip.driver && (
                 <div className="grid-1-3 gap-5">
                   <div className="text-sm">

@@ -20,10 +20,28 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
+import { getClassByName } from '@/services/class';
 
-const JobcardSchema = () => {
+const ClassSchema = (companyId: string, docId: string) => {
   return Yup.object().shape({
-    name: Yup.string().required(' Jobcard name is required.'),
+    name: Yup.string()
+      .required(' Name is required.')
+      .test({
+        exclusive: true,
+        name: 'display-name',
+        message: 'Name is already in use.',
+        test: async function (value: any) {
+          if (!value) return true;
+
+          const snapshot = await getClassByName(companyId, value);
+          if (!snapshot.empty) {
+            const doc = snapshot.docs[0];
+            return doc.id?.trim() === docId;
+          }
+
+          return snapshot.empty;
+        },
+      }),
   });
 };
 
@@ -117,7 +135,7 @@ export default function Class({ params }: Props) {
             email: authUser?.email,
           },
         }}
-        validationSchema={JobcardSchema()}
+        validationSchema={ClassSchema(authUser?.companyId || 'xyz', docId)}
         onSubmit={(values) => doSave(values)}
       >
         {({ isValid }) => (
