@@ -2,27 +2,31 @@
 
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
-import { TRIP } from '@/models/trip';
 import { CLASS, CLASS_DETAILS } from '@/models/class';
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon, PlusIcon, TruckIcon } from '@heroicons/react/24/outline';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { VEHICLE } from '@/models/vehicle';
 
 type Props = {
   companyId: string;
   setFieldValue: Function;
-  trip?: TRIP;
+  vehicle?: VEHICLE;
 };
 
-export default function TripClass({ companyId, setFieldValue, trip }: Props) {
-  const [selected, setSelected] = useState<CLASS_DETAILS | null>(trip?.class || null);
+export default function VehicleClass({ companyId, setFieldValue, vehicle }: Props) {
+  const [selected, setSelected] = useState<CLASS_DETAILS | null>(vehicle?.class || null);
   const [classes, setClasses] = useState<CLASS[]>([]);
 
   useEffect(() => {
     const colRef = collection(fbDb, Constants.fbClasses);
-    const queryRef = query(colRef, where('company.docId', '==', companyId));
+    const queryRef = query(
+      colRef,
+      where('company.docId', '==', companyId),
+      where('isActive', '==', true),
+    );
 
     const unsubscribe = onSnapshot(
       queryRef,
@@ -101,8 +105,8 @@ export default function TripClass({ companyId, setFieldValue, trip }: Props) {
                 </ListboxOption>
               ))}
 
-              {classes.length === 0 && (
-                <Link href="/operations/trips/class/new">
+              {classes.length < 5 && (
+                <Link href="/operations/classes/new">
                   <div className="btn btn-flex btn-secondary m-2">
                     <PlusIcon className="h-5 w-5" />
                     <p>Add New Class</p>

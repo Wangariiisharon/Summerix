@@ -24,6 +24,7 @@ import Vehicles from '@/json/vehicles.json';
 import { getAvatarPhoto } from '@/services/utils';
 import DriverAllocation from './driver';
 import Image from 'next/image';
+import VehicleClass from './class';
 
 const VehicleSchema = (companyId: string, docId: string) => {
   return Yup.object().shape({
@@ -160,6 +161,7 @@ export default function Vehicle({ params }: Props) {
             phoneNumber: company.phoneNumber || '',
             regNumber: company.regNumber || '',
           },
+          class: vehicle?.class || null,
           driver: vehicle?.driver || null,
           updatedBy: {
             authId: authUser?.uid,
@@ -169,7 +171,7 @@ export default function Vehicle({ params }: Props) {
         validationSchema={VehicleSchema(authUser?.companyId || 'xyz', docId)}
         onSubmit={(values) => doSave(values)}
       >
-        {({ isValid }) => (
+        {({ isValid, setFieldValue }) => (
           <Form className="mt-6">
             {/* <h2 className="text-center font-bold">Account setup</h2> */}
 
@@ -224,6 +226,51 @@ export default function Vehicle({ params }: Props) {
                   <ErrorMessage name="yom" component="span" className="form-error" />
                 </div>
               </label>
+
+              <hr className="my-3" />
+
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Class</label>
+                </div>
+                <VehicleClass
+                  companyId={authUser?.companyId || 'xyz'}
+                  setFieldValue={setFieldValue}
+                  vehicle={vehicle}
+                />
+              </label>
+
+              {vehicle && (
+                <>
+                  <div className="grid-1-3">
+                    <div className="text-sm">
+                      <label className="font-medium">Driver Allocation</label>
+                    </div>
+                    <div className="grid-1-2 col-span-2 gap-3">
+                      {vehicle.driver && (
+                        <div className="flex items-center gap-3 rounded border p-2">
+                          <Image
+                            src={vehicle.driver.photoURL}
+                            alt={vehicle.driver.displayName}
+                            className="size-20 shrink-0 rounded-full"
+                            width={100}
+                            height={100}
+                          />
+                          <div className="grid gap-0.5">
+                            <p className="">{vehicle.driver.displayName}</p>
+                            <div className="form-label">
+                              <p>{vehicle.driver.email}</p>
+                              <p>{vehicle.driver.phoneNumber}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      <DriverAllocation vehicle={vehicle} />
+                    </div>
+                  </div>
+                </>
+              )}
+
               <label className="grid-1-3">
                 <div className="text-sm">
                   <label className="font-medium">Status</label>
@@ -249,40 +296,9 @@ export default function Vehicle({ params }: Props) {
                   <ErrorMessage name="yom" component="span" className="form-error" />
                 </div>
               </label>
-
-              {vehicle && (
-                <>
-                  <hr className="my-3" />
-
-                  <div className="grid-1-3 gap-5">
-                    <div className="text-sm">
-                      <label className="font-medium">Driver Allocation</label>
-                    </div>
-                    <div className="grid-1-2 col-span-2 gap-3">
-                      {vehicle.driver && (
-                        <div className="flex items-center gap-3">
-                          <Image
-                            src={vehicle.driver.photoURL}
-                            alt={vehicle.driver.displayName}
-                            className="size-20 shrink-0 rounded-full"
-                            width={100}
-                            height={100}
-                          />
-                          <div className="grid gap-0.5">
-                            <p className="">{vehicle.driver.displayName}</p>
-                            <div className="form-label">
-                              <p>{vehicle.driver.email}</p>
-                              <p>{vehicle.driver.phoneNumber}</p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      <DriverAllocation vehicle={vehicle} />
-                    </div>
-                  </div>
-                </>
-              )}
             </div>
+
+            <hr className="my-3" />
 
             <div className="grid-1-3 mt-10 gap-5">
               <p className=""></p>
