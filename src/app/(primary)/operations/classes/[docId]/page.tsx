@@ -25,7 +25,7 @@ import { getClassByName } from '@/services/class';
 const ClassSchema = (companyId: string, docId: string) => {
   return Yup.object().shape({
     name: Yup.string()
-      .required(' Name is required.')
+      .required('Name is required.')
       .test({
         exclusive: true,
         name: 'display-name',
@@ -42,6 +42,7 @@ const ClassSchema = (companyId: string, docId: string) => {
           return snapshot.empty;
         },
       }),
+    description: Yup.string().required('Description is required.'),
   });
 };
 
@@ -122,6 +123,7 @@ export default function Class({ params }: Props) {
         enableReinitialize={true}
         initialValues={{
           name: myClass?.name || '',
+          description: myClass?.description || '',
           company: myClass?.company || {
             docId: company.docId,
             name: company.name || '',
@@ -146,8 +148,28 @@ export default function Class({ params }: Props) {
                   <label className="font-medium">Name</label>
                 </div>
                 <div className="">
-                  <Field type="text" name="name" className="form-input" placeholder="Name" />
+                  <Field
+                    type="text"
+                    name="name"
+                    className="form-input"
+                    placeholder="Display Name"
+                  />
                   <ErrorMessage name="name" component="span" className="form-error" />
+                </div>
+              </label>
+
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Description</label>
+                </div>
+                <div className="">
+                  <Field
+                    as="textarea"
+                    name="description"
+                    className="form-input"
+                    placeholder="A brief description"
+                  />
+                  <ErrorMessage name="description" component="span" className="form-error" />
                 </div>
               </label>
 

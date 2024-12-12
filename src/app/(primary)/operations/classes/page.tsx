@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import useClasses from '@/hooks/useClasses';
 import { CLASS } from '@/models/class';
+import DeleteClassButton from './button-delete';
 
 export default function ClassesPage() {
   const { authUser } = useAuthContext();
@@ -99,7 +100,8 @@ export default function ClassesPage() {
             <thead className="sticky top-0">
               <tr className="tr-header">
                 <th className="th">Name</th>
-                <th className="th table-cell-md">Status</th>
+                <th className="th table-cell-xl">Description</th>
+                <th className="th table-cell-sm">Status</th>
                 <th className="th table-cell-xl">Last Modified</th>
                 <th className="th text-left">Actions</th>
               </tr>
@@ -109,8 +111,13 @@ export default function ClassesPage() {
                 return (
                   <tr key={myClass.docId} className="tr-body">
                     <td className="td">{myClass.name}</td>
+                    <td className="td table-cell-xl max-w-40">
+                      {(myClass.description?.length || 0) > 100
+                        ? `${myClass.description.substring(0, 100)}...`
+                        : myClass.description}
+                    </td>
                     <td className="td table-cell-sm">
-                      <div className="flex justify-center">
+                      <div className="flex md:justify-center">
                         <p
                           className={`w-fit rounded-full px-4 py-2 ${myClass.isActive ? 'bg-secondary/20 text-teal-700' : 'bg-gray-300'}`}
                         >
@@ -127,7 +134,7 @@ export default function ClassesPage() {
                         <Link href={`/operations/classes/${myClass.docId}`}>
                           <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
                         </Link>
-                        {/* <DeleteClassesButton trip={trip} /> */}
+                        <DeleteClassButton myClass={myClass} />
                       </div>
                     </td>
                   </tr>
