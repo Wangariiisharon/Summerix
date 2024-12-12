@@ -43,7 +43,7 @@ export default function DepartmentAdminView({ admin, departments, setFieldValue,
               }
             }}
           >
-            <div className="relative mt-2 w-1/2">
+            <div className="relative mt-2 w-full">
               <ListboxButton className="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm/6">
                 <div className="flex items-center gap-2">
                   {!department && (
@@ -80,7 +80,7 @@ export default function DepartmentAdminView({ admin, departments, setFieldValue,
                   </ListboxOption>
                 ))}
 
-                {departments.length === 0 && (
+                {departments.length < 5 && (
                   <Link href="/administration/departments/new">
                     <div className="btn btn-flex btn-secondary m-2">
                       <PlusIcon className="h-5 w-5" />
