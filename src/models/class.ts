@@ -5,6 +5,7 @@ export interface CLASS {
   docId: string;
   name: string;
   company: COMPANY_DETAILS;
+  isActive: boolean;
 
   docRef: DocumentReference<DocumentData, DocumentData>;
   doc: QueryDocumentSnapshot<DocumentData, DocumentData>;

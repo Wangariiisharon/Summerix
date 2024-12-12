@@ -32,7 +32,7 @@ type Props = {
 };
 
 export default function Class({ params }: Props) {
-  const [classes, setClasses] = useState<CLASS>();
+  const [myClass, setMyClass] = useState<CLASS>();
   const { authUser } = useAuthContext();
   const { company } = useCurrentCompany();
   const router = useRouter();
@@ -46,7 +46,7 @@ export default function Class({ params }: Props) {
         async (snapshot) => {
           const data = snapshot.data() as CLASS;
           data.docId = snapshot.id;
-          setClasses(data);
+          setMyClass(data);
         },
         (error) => {
           console.error('onSnapshot > error:', error);
@@ -89,7 +89,7 @@ export default function Class({ params }: Props) {
         toast.success('Class updated successfully.');
       }
 
-      router.push('/operations/trips');
+      router.push('/operations/classes');
     } catch (error) {
       console.error('save class error:', error);
     }
@@ -99,18 +99,19 @@ export default function Class({ params }: Props) {
 
   return (
     <main className="-mx-4 rounded bg-white p-4">
-      <h2 className="font-bold">Class</h2>
+      <h2 className="font-bold">Vehicle Class</h2>
       <Formik
         enableReinitialize={true}
         initialValues={{
-          name: classes?.name || '',
-          company: classes?.company || {
+          name: myClass?.name || '',
+          company: myClass?.company || {
             docId: company.docId,
             name: company.name || '',
             email: company.email || '',
             phoneNumber: company.phoneNumber || '',
             regNumber: company.regNumber || '',
           },
+          isActive: myClass?.isActive || false,
           updatedBy: {
             authId: authUser?.uid,
             email: authUser?.email,
@@ -133,7 +134,21 @@ export default function Class({ params }: Props) {
               </label>
 
               <hr className="my-3" />
+
+              <div className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Settings</label>
+                </div>
+                <div className="grid gap-5">
+                  <label className="flex items-center gap-5">
+                    <Field type="checkbox" name="isActive" className="form-checkbox" />
+                    <span className="form-label">Is Active</span>
+                  </label>
+                </div>
+              </div>
             </div>
+
+            <hr className="my-3" />
 
             <div className="grid-1-3 mt-10 gap-5">
               <p className=""></p>
