@@ -121,8 +121,8 @@ export default function Departments() {
             <thead className="sticky top-0">
               <tr className="tr-header">
                 <th className="th text-left">Name</th>
-                <th className="th table-cell-sm">Status</th>
                 <th className="th table-cell-xl">Roles</th>
+                <th className="th table-cell-sm">Status</th>
                 <th className="th table-cell-lg">Last Updated</th>
                 <th className="th text-left">Actions</th>
               </tr>
@@ -132,6 +132,9 @@ export default function Departments() {
                 return (
                   <tr key={department.docId} className="tr-body">
                     <td className="td text-left">{department.name}</td>
+                    <td className="td table-cell-xl max-w-36 capitalize">
+                      {camelCaseToWords(department.roles.join(', '))}
+                    </td>
                     <td className="td table-cell-sm">
                       <div className="flex justify-center">
                         <p
@@ -140,9 +143,6 @@ export default function Departments() {
                           {department.isActive ? 'Active' : 'Inactive'}
                         </p>
                       </div>
-                    </td>
-                    <td className="td table-cell-xl max-w-36 capitalize">
-                      {camelCaseToWords(department.roles.join(', '))}
                     </td>
                     <td className="td table-cell-lg">
                       {department.lastUpdated &&
