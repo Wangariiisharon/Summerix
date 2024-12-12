@@ -4,6 +4,7 @@ import { COMPANY_DETAILS } from './company';
 export interface CLASS {
   docId: string;
   name: string;
+  description: string;
   company: COMPANY_DETAILS;
   isActive: boolean;
 

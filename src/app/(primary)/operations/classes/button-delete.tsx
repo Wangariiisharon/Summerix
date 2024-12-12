@@ -4,7 +4,7 @@ import { useAuthContext } from '@/app/auth-provider';
 import DialogLayout from '@/components/dialog-layout';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
-import { SUPPLIER } from '@/models/supplier';
+import { CLASS } from '@/models/class';
 import { DialogTitle } from '@headlessui/react';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { deleteDoc, doc } from 'firebase/firestore';
@@ -12,28 +12,28 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 type Props = {
-  supplier: SUPPLIER;
+  myClass: CLASS;
 };
 
-export default function DeleteSupplierButton({ supplier }: Props) {
+export default function DeleteClassButton({ myClass }: Props) {
   const { authUser } = useAuthContext();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [processing, setProcessing] = useState<boolean>(false);
 
   const doDelete = async () => {
-    console.debug('doDelete > docId:', supplier.docId);
+    console.debug('doDelete > docId:', myClass.docId);
     if (!(authUser?.isAdmin || authUser?.isOwner)) {
-      toast.error('You are not authorised to manage drivers.');
+      toast.error('You are not authorised to manage classes.');
       return;
     }
 
     try {
       setProcessing(true);
 
-      const docRef = doc(fbDb, Constants.fbSuppliers, supplier.docId);
+      const docRef = doc(fbDb, Constants.fbClasses, myClass.docId);
       await deleteDoc(docRef);
 
-      toast.success('Client deleted successfully.');
+      toast.success('Class deleted successfully.');
     } catch (error) {
       console.error('Delete error:', error);
     } finally {
@@ -54,21 +54,17 @@ export default function DeleteSupplierButton({ supplier }: Props) {
         classNames="dialog-panel max-w-md"
       >
         <DialogTitle as="h3" className="dialog-title text-sm">
-          Confirm Delete Supplier?
+          Confirm Delete Class?
         </DialogTitle>
 
         <div className="mt-5 grid items-center gap-3">
           <div className="flex items-center justify-between gap-5">
             <label className="form-label">Display Name:</label>
-            <p>{supplier.name}</p>
+            <p>{myClass.name}</p>
           </div>
           <div className="flex items-center justify-between gap-5">
-            <label className="form-label">Email Address:</label>
-            <p>{supplier.email}</p>
-          </div>
-          <div className="flex items-center justify-between gap-5">
-            <label className="form-label">Type of Supplies:</label>
-            <p>{supplier.typeOfSupplies}</p>
+            <label className="form-label">Is Active:</label>
+            <p>{myClass.isActive ? 'Yes' : 'No'}</p>
           </div>
         </div>
 
