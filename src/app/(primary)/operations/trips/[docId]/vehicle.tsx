@@ -131,7 +131,7 @@ export default function TripVehicle({ companyId, setFieldValue, trip }: Props) {
                 </ListboxOption>
               ))}
 
-              {vehicles.length === 0 && (
+              {vehicles.length < 5 && (
                 <Link href="/operations/vehicles/new">
                   <div className="btn btn-flex btn-secondary m-2">
                     <PlusIcon className="h-5 w-5" />
