@@ -18,10 +18,11 @@ import { useEffect, useState } from 'react';
 interface Props {
   companyId: string;
   docId: string | null;
+  isActive?: string;
   params?: PARAMS_MAP;
 }
 
-function useClass({ companyId, docId, params }: Props) {
+function useClasses({ companyId, docId, isActive, params }: Props) {
   const [classes, setClasses] = useState<CLASS[]>([]);
   const [count, setCount] = useState<number>(0);
 
@@ -37,6 +38,10 @@ function useClass({ companyId, docId, params }: Props) {
 
     if (companyId && companyId !== '') {
       constraints.push(where('company.docId', '==', companyId));
+    }
+
+    if (isActive && isActive !== '') {
+      constraints.push(where('isActive', '==', isActive === 'active'));
     }
 
     getCountFromServer(query(colRef, ...constraints)).then((countSnap) => {
@@ -73,7 +78,7 @@ function useClass({ companyId, docId, params }: Props) {
     );
 
     return () => unsubscribe();
-  }, [companyId, docId, params]);
+  }, [companyId, docId, isActive, params]);
 
   return {
     classes,
@@ -81,4 +86,4 @@ function useClass({ companyId, docId, params }: Props) {
   };
 }
 
-export default useClass;
+export default useClasses;

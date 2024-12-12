@@ -26,6 +26,11 @@
       "description": ""
     },
     {
+      "value": "canManageClasses",
+      "name": "Can manage classes",
+      "description": ""
+    },
+    {
       "value": "canManageClients",
       "name": "Can manage clients",
       "description": ""
