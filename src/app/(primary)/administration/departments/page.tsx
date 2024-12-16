@@ -11,7 +11,6 @@ import useDepartments from '@/hooks/useDepartments';
 import { DocumentSnapshot } from 'firebase/firestore';
 import DeleteDeprtmentButton from './button-delete';
 import ToggleDepartmentButton from './button-toggle';
-import json2csv from 'json2csv';
 import { exportDataToCSV } from './exportDeprtments';
 import moment from 'moment';
 import Link from 'next/link';
@@ -31,7 +30,6 @@ export default function Departments() {
     docId: null,
     params,
   });
-  const [isExporting, setIsExporting] = useState(false);
 
   const cursors = useRef<Map<number, DocumentSnapshot>>(new Map());
   const [max, setMax] = useState(Constants.defaultPageSize);
@@ -61,7 +59,6 @@ export default function Departments() {
   );
 
   const exportFiles = async () => {
-    setIsExporting(true);
     console.log('status:', status);
 
     try {
@@ -83,8 +80,6 @@ export default function Departments() {
     } catch (error) {
       console.error('Error exporting data:', error);
     }
-
-    setIsExporting(false);
   };
 
   return (
