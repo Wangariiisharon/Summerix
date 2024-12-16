@@ -1,14 +1,15 @@
 import { fbDb } from '@/firebase/configs';
-import { getDocs, collection, DocumentData } from 'firebase/firestore';
+import { getDocs, collection } from 'firebase/firestore';
 import Constants from '@/Constants';
+import { DEPARTMENT } from '@/models/department';
 
 export async function exportDataToCSV(companyId: string, status?: string) {
   const tripsCollection = collection(fbDb, Constants.fbDepartments);
   const snapshot = await getDocs(tripsCollection);
-  let data: DocumentData[] = [];
+  let data: DEPARTMENT[] = [];
 
   snapshot.forEach((doc) => {
-    const docData = doc.data();
+    const docData = doc.data() as DEPARTMENT;
     if (docData.company.docId === companyId) {
       data.push({
         ...docData,
