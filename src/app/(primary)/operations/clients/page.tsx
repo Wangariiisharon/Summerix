@@ -13,7 +13,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import DeleteClientButton from './button-delete';
-import json2csv from 'json2csv';
+import { exportDataToCSV } from './exportClients';
 
 export default function ClientsPage() {
   const { authUser } = useAuthContext();
@@ -58,39 +58,28 @@ export default function ClientsPage() {
     [clients],
   );
 
-  const exportFiles = () => {
-    const fields = [
-      {
-        label: 'Name',
-        value: (row: CLIENT) => row.displayName,
-      },
-      {
-        label: 'Email Address',
-        value: (row: CLIENT) => row.email,
-      },
-      {
-        label: 'Phone Number',
-        value: (row: CLIENT) => row.phoneNumber,
-      },
-      {
-        label: 'Phone Number',
-        value: (row: CLIENT) => row.phoneNumber,
-      },
-      {
-        label: 'Status',
-        value: (row: CLIENT) => (row.isActive ? 'Active' : 'Inactive'),
-      },
-    ];
-    const opts = { fields };
-    const csv = json2csv.parse(clients, opts);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'Clients.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const exportFiles = async () => {
+    console.log('status:', status);
+
+    try {
+      let csvData;
+
+      if (authUser && authUser.companyId && status === 'all') {
+        csvData = await exportDataToCSV(authUser.companyId);
+      } else {
+        csvData = await exportDataToCSV(authUser?.companyId as string, status);
+      }
+
+      // Create a blob and initiate the download
+      const blob = new Blob([csvData], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `exported-data-${status}.csv`;
+      a.click();
+    } catch (error) {
+      console.error('Error exporting data:', error);
+    }
   };
 
   return (

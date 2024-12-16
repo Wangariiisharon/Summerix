@@ -13,7 +13,7 @@ import moment from 'moment';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import DeleteTripButton from './button-delete';
-import json2csv from 'json2csv';
+import { exportDataToCSV } from './exportTrips';
 
 export default function TripsPage() {
   const { authUser } = useAuthContext();
@@ -55,47 +55,28 @@ export default function TripsPage() {
     [trips],
   );
 
-  const exportFiles = () => {
-    const fields = [
-      // {
-      //   label: 'Class',
-      //   value: (row: TRIP) => row.class.name,
-      // },
-      {
-        label: 'From',
-        value: (row: TRIP) => row.from?.location,
-      },
-      {
-        label: 'To',
-        value: (row: TRIP) => row.to?.location,
-      },
-      {
-        label: 'Distance',
-        value: (row: TRIP) => row.distance?.text,
-      },
-      {
-        label: 'Vehicle',
-        value: (row: TRIP) => row.vehicle?.regNumber,
-      },
-      {
-        label: 'Driver',
-        value: (row: TRIP) => row.driver.displayName,
-      },
-      {
-        label: 'Status',
-        value: (row: TRIP) => row.status,
-      },
-    ];
-    const opts = { fields };
-    const csv = json2csv.parse(trips, opts);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'Trips.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const exportFiles = async () => {
+    console.log('status:', status);
+
+    try {
+      let csvData;
+
+      if (authUser && authUser.companyId && status === 'all') {
+        csvData = await exportDataToCSV(authUser.companyId);
+      } else {
+        csvData = await exportDataToCSV(authUser?.companyId as string, status);
+      }
+
+      // Create a blob and initiate the download
+      const blob = new Blob([csvData], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `exported-data-${status}.csv`;
+      a.click();
+    } catch (error) {
+      console.error('Error exporting data:', error);
+    }
   };
 
   return (
