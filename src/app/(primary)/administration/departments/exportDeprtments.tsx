@@ -24,17 +24,12 @@ export async function exportDataToCSV(companyId: string, status?: string) {
 
   if (status && status !== 'all') {
     data = data.filter((department) => {
-      switch (status) {
-        case 'all':
-          return true;
-        case 'active':
-          return department.isActive === true;
-        case 'inactive':
-          return department.isActive === false;
-
-        default:
-          return false;
+      if (status === 'active') {
+        return !department.isActive; // Active vehicles
+      } else if (status === 'inactive') {
+        return department.isActive; // Inactive vehicles
       }
+      return false; // Invalid status
     });
 
     if (data.length === 0) {
@@ -43,12 +38,22 @@ export async function exportDataToCSV(companyId: string, status?: string) {
   }
 
   const csvData = data.map((department) => ({
-    Name: department.name,
+    Name: department.name || 'NA',
+    Roles: department.roles.join(', ') || 'NA',
     Status: department.isActive ? 'Active' : 'Inactive',
+    UpdatdBy: department.updatedBy.email || 'NA',
   }));
 
-  const header = 'Name,Status';
-  const csvString = [header, ...csvData.map((item) => Object.values(item).join(','))].join('\n');
+  const escapeCsvValue = (value: string): string => `"${value.replace(/"/g, '""')}"`; // Wrap in quotes and escape internal quotes
+  const header = ['Name', 'Roles', 'Status', 'UpdatdBy'].map(escapeCsvValue).join(',');
 
-  return csvString;
+  const rows = csvData
+    .map((item) =>
+      Object.values(item)
+        .map((value) => escapeCsvValue(String(value))) // Convert each value to string and escape
+        .join(','),
+    )
+    .join('\n');
+
+  return `${header}\n${rows}`;
 }
