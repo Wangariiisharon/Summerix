@@ -12,6 +12,7 @@ import { DocumentSnapshot } from 'firebase/firestore';
 import DeleteDeprtmentButton from './button-delete';
 import ToggleDepartmentButton from './button-toggle';
 import json2csv from 'json2csv';
+import { exportDataToCSV } from './exportDeprtments';
 import moment from 'moment';
 import Link from 'next/link';
 import { camelCaseToWords } from '@/services/utils';
@@ -30,6 +31,8 @@ export default function Departments() {
     docId: null,
     params,
   });
+  const [isExporting, setIsExporting] = useState(false);
+
   const cursors = useRef<Map<number, DocumentSnapshot>>(new Map());
   const [max, setMax] = useState(Constants.defaultPageSize);
   const [currentPage, setCurrentPage] = useState(0);
@@ -57,26 +60,31 @@ export default function Departments() {
     [departments],
   );
 
-  const exportFiles = () => {
-    const fields = [
-      { label: 'Name', value: 'name' },
-      { label: 'LastUpdated', value: 'lastUpdated' },
-      {
-        label: 'Archive',
-        value: (row: DEPARTMENT) => (row.isActive ? 'Not Archived' : 'Archived'),
-      },
-      { label: 'UpdatedBy', value: (row: DEPARTMENT) => row.updatedBy.email },
-    ];
-    const opts = { fields };
-    const csv = json2csv.parse(departments, opts);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'Departments.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const exportFiles = async () => {
+    setIsExporting(true);
+    console.log('status:', status);
+
+    try {
+      let csvData;
+
+      if (authUser && authUser.companyId && status === 'all') {
+        csvData = await exportDataToCSV(authUser.companyId);
+      } else {
+        csvData = await exportDataToCSV(authUser?.companyId as string, status); // Export data filtered by status
+      }
+
+      // Create a blob and initiate the download
+      const blob = new Blob([csvData], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `exported-data-${status}.csv`;
+      a.click();
+    } catch (error) {
+      console.error('Error exporting data:', error);
+    }
+
+    setIsExporting(false);
   };
 
   return (
