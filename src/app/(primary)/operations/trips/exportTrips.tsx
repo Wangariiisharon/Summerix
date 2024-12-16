@@ -25,8 +25,6 @@ export async function exportDataToCSV(companyId: string, status?: string) {
   if (status && status !== 'all') {
     data = data.filter((trip) => {
       switch (status) {
-        case 'all':
-          return true;
         case 'active':
           return trip.status === 'active';
         case 'booked':
@@ -35,7 +33,6 @@ export async function exportDataToCSV(companyId: string, status?: string) {
           return trip.status === 'completed';
         case 'cancelled':
           return trip.status === 'cancelled';
-
         default:
           return false;
       }
@@ -46,18 +43,31 @@ export async function exportDataToCSV(companyId: string, status?: string) {
     }
   }
 
+  // Prepare CSV Data
   const csvData = data.map((trip) => ({
-    From: trip.from.location,
-    To: trip.to.location,
-    Distance: trip.distance.text,
-    Vehicle: trip.vehicle?.regNumber,
-    Driver: trip.driver.displayName,
-    UpdatedBy: trip.updatedBy.email,
-    Status: trip.status,
+    From: trip.from?.location || 'N/A', // Ensure fallback for missing fields
+    To: trip.to?.location || 'N/A',
+    Distance: trip.distance?.text || 'N/A',
+    Vehicle: trip.vehicle?.regNumber || 'N/A',
+    Driver: trip.driver?.displayName || 'N/A',
+    UpdatedBy: trip.updatedBy?.email || 'N/A',
+    Status: trip.status || 'N/A',
   }));
 
-  const header = 'From,To,Distance,Vehicle,Driver,updatedBy,Status';
-  const csvString = [header, ...csvData.map((item) => Object.values(item).join(','))].join('\n');
+  // Escape and format each cell for CSV
+  const escapeCsvValue = (value: string): string => `"${value.replace(/"/g, '""')}"`;
 
-  return csvString;
+  const header = ['From', 'To', 'Distance', 'Vehicle', 'Driver', 'UpdatedBy', 'Status']
+    .map(escapeCsvValue)
+    .join(',');
+
+  const rows = csvData
+    .map((item) =>
+      Object.values(item)
+        .map((value) => escapeCsvValue(value as string))
+        .join(','),
+    )
+    .join('\n');
+
+  return `${header}\n${rows}`;
 }

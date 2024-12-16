@@ -24,9 +24,12 @@ export interface CLIENT {
   doc: QueryDocumentSnapshot<DocumentData, DocumentData>;
   docRef: DocumentReference<DocumentData, DocumentData>;
 
+  updatedBy: { email: string; authId: string };
+
   dateCreated: any;
   lastUpdated: any;
 }
+
 export interface CLIENT_DETAILS {
   docId: string;
   email: string;

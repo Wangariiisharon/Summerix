@@ -10,7 +10,7 @@ export async function exportDataToCSV(companyId: string, status?: string) {
 
   snapshot.forEach((doc) => {
     const docData = doc.data() as VEHICLE;
-    if (docData.company.docId === companyId) {
+    if (docData.company?.docId === companyId) {
       data.push({
         ...docData,
         docId: doc.id,
@@ -24,17 +24,12 @@ export async function exportDataToCSV(companyId: string, status?: string) {
 
   if (status && status !== 'all') {
     data = data.filter((vehicle) => {
-      switch (status) {
-        case 'all':
-          return true;
-        case 'active':
-          return vehicle.isArchived === true;
-        case 'inactive':
-          return vehicle.isArchived === false;
-
-        default:
-          return false;
+      if (status === 'active') {
+        return !vehicle.isArchived; // Active vehicles
+      } else if (status === 'inactive') {
+        return vehicle.isArchived; // Inactive vehicles
       }
+      return false; // Invalid status
     });
 
     if (data.length === 0) {
@@ -43,18 +38,30 @@ export async function exportDataToCSV(companyId: string, status?: string) {
   }
 
   const csvData = data.map((vehicle) => ({
-    Name: vehicle.name,
-    RegNumber: vehicle.regNumber,
-    Make: vehicle.make,
-    Model: vehicle.model,
-    Type: vehicle.type,
-    Cargo: vehicle.cargo.capacity,
-    Ownership: vehicle.ownership.status,
-    Status: vehicle.isArchived ? 'Active' : 'Inactive',
+    Name: vehicle.name || 'N/A', // Fallback for missing data
+    RegNumber: vehicle.regNumber || 'N/A',
+    Make: vehicle.make || 'N/A',
+    Model: vehicle.model || 'N/A',
+    Type: vehicle.type || 'N/A',
+    Cargo: vehicle.cargo?.capacity || 'N/A',
+    Ownership: vehicle.ownership?.status || 'N/A',
+    Status: vehicle.isArchived ? 'Inactive' : 'Active', // Map boolean to readable status
   }));
 
-  const header = 'Name,RegNumber,Make,Model,Type,Cargo,Ownership,Status';
-  const csvString = [header, ...csvData.map((item) => Object.values(item).join(','))].join('\n');
+  // Escape CSV values to prevent breaking structure
+  const escapeCsvValue = (value: string): string => `"${value.replace(/"/g, '""')}"`; // Wrap in quotes and escape internal quotes
 
-  return csvString;
+  const header = ['Name', 'RegNumber', 'Make', 'Model', 'Type', 'Cargo', 'Ownership', 'Status']
+    .map(escapeCsvValue)
+    .join(',');
+
+  const rows = csvData
+    .map((item) =>
+      Object.values(item)
+        .map((value) => escapeCsvValue(String(value))) // Convert each value to string and escape
+        .join(','),
+    )
+    .join('\n');
+
+  return `${header}\n${rows}`;
 }
