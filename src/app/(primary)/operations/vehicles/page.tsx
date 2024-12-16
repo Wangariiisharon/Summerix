@@ -14,7 +14,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import DeleteVehicleButton from './button-delete';
-import json2csv from 'json2csv';
+import { exportDataToCSV } from './exportVehicles';
 
 export default function VehiclesPage() {
   const { authUser } = useAuthContext();
@@ -56,35 +56,28 @@ export default function VehiclesPage() {
     [vehicles],
   );
 
-  const exportFiles = () => {
-    const fields = [
-      {
-        label: 'Name',
-        value: (row: VEHICLE) => row.name,
-      },
-      {
-        label: 'Reg. Number',
-        value: (row: VEHICLE) => row.regNumber,
-      },
-      {
-        label: 'Driver',
-        value: (row: VEHICLE) => row.driver?.displayName,
-      },
-      {
-        label: 'Status',
-        value: (row: VEHICLE) => row.status,
-      },
-    ];
-    const opts = { fields };
-    const csv = json2csv.parse(vehicles, opts);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'Vehicle.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const exportFiles = async () => {
+    console.log('status:', status);
+
+    try {
+      let csvData;
+
+      if (authUser && authUser.companyId && status === 'all') {
+        csvData = await exportDataToCSV(authUser.companyId);
+      } else {
+        csvData = await exportDataToCSV(authUser?.companyId as string, status);
+      }
+
+      // Create a blob and initiate the download
+      const blob = new Blob([csvData], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `exported-data-${status}.csv`;
+      a.click();
+    } catch (error) {
+      console.error('Error exporting data:', error);
+    }
   };
 
   return (
