@@ -269,11 +269,19 @@ export default function User({ params }: Props) {
 
               <hr className="my-3" />
 
-              <div className="grid-1-3">
+              <DepartmentAdminView
+                admin={admin}
+                departments={departments}
+                setFieldValue={setFieldValue}
+                errors={errors}
+              />
+              {/* <ErrorMessage name="department.docId" component="span" className="form-error" /> */}
+
+              <div className="grid-1-3 mt-5">
                 <div className="text-sm">
                   <label className="font-medium">Settings</label>
                 </div>
-                <div className="grid gap-5">
+                <div className="grid gap-3">
                   <label className="flex items-center gap-5">
                     <Field type="checkbox" name="rolesMap.isActive" className="form-checkbox" />
                     <span className="form-label">Is Active</span>
@@ -288,17 +296,9 @@ export default function User({ params }: Props) {
                   </label>
                 </div>
               </div>
-
-              <hr className="my-3" />
-
-              <DepartmentAdminView
-                admin={admin}
-                departments={departments}
-                setFieldValue={setFieldValue}
-                errors={errors}
-              />
-              {/* <ErrorMessage name="department.docId" component="span" className="form-error" /> */}
             </div>
+
+            <hr className="my-3" />
 
             <div className="grid-1-3 mt-10 gap-5">
               <p className=""></p>

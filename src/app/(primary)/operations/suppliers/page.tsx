@@ -10,8 +10,10 @@ import { DocumentArrowDownIcon, PencilSquareIcon, PlusIcon } from '@heroicons/re
 import { DocumentSnapshot } from 'firebase/firestore';
 import json2csv from 'json2csv';
 import moment from 'moment';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import DeleteSupplierButton from './button-delete';
 
 export default function Suppliers() {
   const { authUser } = useAuthContext();
@@ -112,6 +114,7 @@ export default function Suppliers() {
           <table className="my-table">
             <thead className="sticky top-0">
               <tr className="tr-header">
+                <th className="th"></th>
                 <th className="th text-left">Name</th>
                 <th className="th table-cell-sm">Email Address</th>
                 <th className="th table-cell-xl">Phone Number</th>
@@ -124,6 +127,18 @@ export default function Suppliers() {
               {suppliers.map((supplier: SUPPLIER) => {
                 return (
                   <tr key={supplier.docId} className="tr-body">
+                    <td className="td text-center">
+                      <div className="h-auto w-auto overflow-hidden rounded-xl">
+                        <Image
+                          src={supplier.photoURL}
+                          alt={`${supplier.name} image`}
+                          className="h-16 w-16 rounded-xl object-cover"
+                          height={50}
+                          width={50}
+                          priority
+                        />
+                      </div>
+                    </td>
                     <td className="td text-left">
                       <p>{supplier.name}</p>
                       <div className="mt-1 text-xs">
@@ -145,7 +160,7 @@ export default function Suppliers() {
                         <Link href={`/operations/suppliers/${supplier.docId}`}>
                           <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
                         </Link>
-                        {/* <DeleteSupplierButton supplier={supplier} /> */}
+                        <DeleteSupplierButton supplier={supplier} />
                       </div>
                     </td>
                   </tr>

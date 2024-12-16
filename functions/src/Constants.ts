@@ -1,8 +1,9 @@
 const Constants = {
   // firebase collections
+  fbAccounts: 'accounts',
+  fbCompanies: 'companies',
   fbAdmins: 'admins',
   fbClients: 'clients',
-  fbCompanies: 'companies',
   fbDepartments: 'departments',
   fbDrivers: 'drivers',
   fbJobCards: 'jobcard',

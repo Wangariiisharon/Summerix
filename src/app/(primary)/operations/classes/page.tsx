@@ -3,34 +3,33 @@
 import { useAuthContext } from '@/app/auth-provider';
 import RemotePagination from '@/components/remote-pagination';
 import Constants from '@/Constants';
-import useTrips from '@/hooks/useTrips';
-import Trips from '@/json/trips.json';
 import { PARAMS_MAP } from '@/models/params-map';
-import { TRIP } from '@/models/trip';
 import { DocumentArrowDownIcon, PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { DocumentSnapshot } from 'firebase/firestore';
 import moment from 'moment';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import DeleteTripButton from './button-delete';
-import { exportDataToCSV } from './exportTrips';
+import useClasses from '@/hooks/useClasses';
+import { CLASS } from '@/models/class';
+import DeleteClassButton from './button-delete';
 
-export default function TripsPage() {
+export default function ClassesPage() {
   const { authUser } = useAuthContext();
+  const [status, setStatus] = useState<string>('');
   const [params, setParams] = useState<PARAMS_MAP>({
     max: Constants.defaultPageSize,
     orderBy: 'lastUpdated',
     direction: 'desc',
   });
-  const { count, trips } = useTrips({
+  const { count, classes } = useClasses({
     companyId: authUser?.companyId || 'xyz',
+    isActive: status || '',
     docId: null,
     params,
   });
   const cursors = useRef<Map<number, DocumentSnapshot>>(new Map());
   const [max, setMax] = useState(Constants.defaultPageSize);
   const [currentPage, setCurrentPage] = useState(0);
-  const [status, setStatus] = useState<string>('');
 
   useEffect(() => {
     setParams({
@@ -46,45 +45,21 @@ export default function TripsPage() {
     (nextPage: number) => {
       setCurrentPage((page) => {
         // first, we save the last document as page's cursor
-        cursors.current.set(page + 1, trips[trips.length - 1]?.doc);
+        cursors.current.set(page + 1, classes[classes.length - 1]?.doc);
 
         // then we update the state with the next page's number
         return nextPage;
       });
     },
-    [trips],
+    [classes],
   );
-
-  const exportFiles = async () => {
-    console.log('status:', status);
-
-    try {
-      let csvData;
-
-      if (authUser && authUser.companyId && status === 'all') {
-        csvData = await exportDataToCSV(authUser.companyId);
-      } else {
-        csvData = await exportDataToCSV(authUser?.companyId as string, status);
-      }
-
-      // Create a blob and initiate the download
-      const blob = new Blob([csvData], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `exported-data-${status}.csv`;
-      a.click();
-    } catch (error) {
-      console.error('Error exporting data:', error);
-    }
-  };
 
   return (
     <main className="-mx-4 rounded bg-white p-4">
       <section className="flex flex-col justify-between gap-5 sm:flex-row">
         <div className="">
-          <h2 className="font-bold">Trips</h2>
-          <p className="text-gray-500">Manage company trips.</p>
+          <h2 className="font-bold">Vehicle Classes</h2>
+          <p className="text-gray-500">Manage vehicle classes.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-5">
@@ -93,26 +68,24 @@ export default function TripsPage() {
               name="status"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="form-select w-36 border-secondary py-2.5"
+              className="form-select w-24 border-secondary py-2.5"
             >
               <option value="">All</option>
-              {Trips.statusList.map(({ name, value }) => {
-                return (
-                  <option key={value} value={value}>
-                    {name}
-                  </option>
-                );
-              })}
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
             </select>
           </label>
 
-          <Link href="/operations/trips/new">
+          <Link href="/operations/classes/new">
             <div className="btn btn-flex btn-secondary">
               <PlusIcon className="h-5 w-5" />
-              <p>Add Trip</p>
+              <p>Add Class</p>
             </div>
           </Link>
-          <button onClick={exportFiles} className="btn btn-flex btn-outline-secondary">
+          <button
+            onClick={() => console.debug('do export...')}
+            className="btn btn-flex btn-outline-secondary"
+          >
             <DocumentArrowDownIcon className="h-5 w-5" />
             <p>Export</p>
           </button>
@@ -126,52 +99,42 @@ export default function TripsPage() {
           <table className="my-table">
             <thead className="sticky top-0">
               <tr className="tr-header">
-                <th className="th">From</th>
-                <th className="th">To</th>
-                <th className="th table-cell-lg">Distance</th>
-                <th className="th table-cell-sm">Vehicle</th>
-                <th className="th table-cell-md">Driver</th>
-                <th className="th table-cell-md">Status</th>
+                <th className="th">Name</th>
+                <th className="th table-cell-xl">Description</th>
+                <th className="th table-cell-sm">Status</th>
                 <th className="th table-cell-xl">Last Modified</th>
                 <th className="th text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {trips.map((trip: TRIP) => {
+              {classes.map((myClass: CLASS) => {
                 return (
-                  <tr key={trip.docId} className="tr-body">
-                    <td className="td max-w-40">{trip.from?.location}</td>
-                    <td className="td max-w-40">{trip.to?.location}</td>
-                    <td className="td table-cell-lg">{trip.distance?.text || 'N/A'}</td>
-                    <td className="td table-cell-sm">{trip.vehicle?.regNumber}</td>
-                    <td className="td table-cell-md">
-                      {trip.driver && (
-                        <Link
-                          href={`/operations/drivers/${trip.driver.docId}`}
-                          className="text-primary hover:text-secondary"
-                        >
-                          {trip.driver.displayName}
-                        </Link>
-                      )}
-                      {!trip.driver && 'N/A'}
+                  <tr key={myClass.docId} className="tr-body">
+                    <td className="td">{myClass.name}</td>
+                    <td className="td table-cell-xl max-w-40">
+                      {(myClass.description?.length || 0) > 100
+                        ? `${myClass.description.substring(0, 100)}...`
+                        : myClass.description}
                     </td>
-                    <td className="td table-cell-md">
-                      <div className="flex justify-center">
-                        <p className={`w-fit rounded-full px-4 py-2 status-${trip.status}`}>
-                          {trip.status}
+                    <td className="td table-cell-sm">
+                      <div className="flex md:justify-center">
+                        <p
+                          className={`w-fit rounded-full px-4 py-2 ${myClass.isActive ? 'bg-secondary/20 text-teal-700' : 'bg-gray-300'}`}
+                        >
+                          {myClass.isActive ? 'Active' : 'Inactive'}
                         </p>
                       </div>
                     </td>
                     <td className="td table-cell-xl">
-                      {trip.lastUpdated &&
-                        moment(trip.lastUpdated.toDate()).format(Constants.dateTimeFormat)}
+                      {myClass.lastUpdated &&
+                        moment(myClass.lastUpdated.toDate()).format(Constants.dateTimeFormat)}
                     </td>
                     <td className="td">
                       <div className="td-actions justify-start">
-                        <Link href={`/operations/trips/${trip.docId}`}>
+                        <Link href={`/operations/classes/${myClass.docId}`}>
                           <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
                         </Link>
-                        <DeleteTripButton trip={trip} />
+                        <DeleteClassButton myClass={myClass} />
                       </div>
                     </td>
                   </tr>
