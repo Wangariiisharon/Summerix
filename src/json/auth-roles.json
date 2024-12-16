@@ -6,13 +6,13 @@
       "description": ""
     },
     {
-      "value": "canManageClients",
-      "name": "Can manage clients",
+      "value": "canManageDepartments",
+      "name": "Can manage departments",
       "description": ""
     },
     {
-      "value": "canManageVehicles",
-      "name": "Can manage vehicles",
+      "value": "canManageIntegration",
+      "name": "Can manage integration",
       "description": ""
     },
     {
@@ -21,8 +21,18 @@
       "description": ""
     },
     {
-      "value": "canManagePayments",
-      "name": "Can manage payments",
+      "value": "canManageVehicles",
+      "name": "Can manage vehicles",
+      "description": ""
+    },
+    {
+      "value": "canManageClasses",
+      "name": "Can manage classes",
+      "description": ""
+    },
+    {
+      "value": "canManageClients",
+      "name": "Can manage clients",
       "description": ""
     },
     {
@@ -31,8 +41,23 @@
       "description": ""
     },
     {
+      "value": "canManageMaintenance",
+      "name": "Can manage maintenance",
+      "description": ""
+    },
+    {
       "value": "canManageSuppliers",
       "name": "Can manage suppliers",
+      "description": ""
+    },
+    {
+      "value": "canManageReports",
+      "name": "Can manage reports",
+      "description": ""
+    },
+    {
+      "value": "canManagePayments",
+      "name": "Can manage payments",
       "description": ""
     }
   ]

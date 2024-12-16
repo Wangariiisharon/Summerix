@@ -4,7 +4,7 @@ import { doUpdateAuthClaims } from '../services/admin.service';
 import { getFirebaseUser } from '../services/auth.service';
 import Constants from '../Constants';
 import { ADMIN } from '../models/admin';
-import { getClientByDocId } from '../services/client.service';
+import { getAccountByDocId } from '../services/account.service';
 
 export const OnAdminCreated = runWith({
   maxInstances: 10,
@@ -27,13 +27,13 @@ export const OnAdminCreated = runWith({
 
       await doUpdateAuthClaims(authUser.uid, admin);
 
-      // find corresponding client profile
-      const clientSnaphot = await getClientByDocId(docId);
-      if (!clientSnaphot.exists) {
-        logger.debug('Create client profile...');
+      // find corresponding account profile
+      const accountSnaphot = await getAccountByDocId(docId);
+      if (!accountSnaphot.exists) {
+        logger.debug('Create account profile...');
 
         await db()
-          .collection(Constants.fbClients)
+          .collection(Constants.fbAccounts)
           .doc(authUser.uid)
           .set({
             email: admin.email,

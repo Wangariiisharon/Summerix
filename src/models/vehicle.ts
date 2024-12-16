@@ -3,6 +3,7 @@ import { type DocumentData, DocumentReference, QueryDocumentSnapshot } from 'fir
 import { COMPANY_DETAILS } from './company';
 import { DRIVER_DETAILS } from './driver';
 import { DOCUMENT } from './document';
+import { CLASS_DETAILS } from './class';
 
 export interface VEHICLE {
   docId: string;
@@ -16,6 +17,7 @@ export interface VEHICLE {
   photoURL: string;
   isArchived: boolean;
   company: COMPANY_DETAILS;
+  class: CLASS_DETAILS;
   driver: DRIVER_DETAILS | null;
   documents?: DOCUMENT[];
 

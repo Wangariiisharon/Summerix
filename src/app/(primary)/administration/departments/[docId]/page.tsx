@@ -139,20 +139,6 @@ export default function Department({ params }: Props) {
 
               <div className="grid-1-3">
                 <div className="text-sm">
-                  <label className="font-medium">Settings</label>
-                </div>
-                <div className="grid gap-5">
-                  <label className="flex items-center gap-5">
-                    <Field type="checkbox" name="isActive" className="form-checkbox" />
-                    <span className="form-label">Is Active</span>
-                  </label>
-                </div>
-              </div>
-
-              <hr className="my-3" />
-
-              <div className="grid-1-3">
-                <div className="text-sm">
                   <label className="font-medium">Roles</label>
                 </div>
                 <div className="grid-1-2 col-span-2 gap-3">
@@ -171,7 +157,23 @@ export default function Department({ params }: Props) {
                   })}
                 </div>
               </div>
+
+              <hr className="my-3" />
+
+              <div className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Settings</label>
+                </div>
+                <div className="grid gap-5">
+                  <label className="flex items-center gap-5">
+                    <Field type="checkbox" name="isActive" className="form-checkbox" />
+                    <span className="form-label">Is Active</span>
+                  </label>
+                </div>
+              </div>
             </div>
+
+            <hr className="my-3" />
 
             <div className="grid-1-3 mt-10 gap-5">
               <p className=""></p>

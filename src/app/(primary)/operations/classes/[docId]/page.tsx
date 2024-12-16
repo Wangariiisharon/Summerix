@@ -20,10 +20,29 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
+import { getClassByName } from '@/services/class';
 
-const JobcardSchema = () => {
+const ClassSchema = (companyId: string, docId: string) => {
   return Yup.object().shape({
-    name: Yup.string().required(' Jobcard name is required.'),
+    name: Yup.string()
+      .required('Name is required.')
+      .test({
+        exclusive: true,
+        name: 'display-name',
+        message: 'Name is already in use.',
+        test: async function (value: any) {
+          if (!value) return true;
+
+          const snapshot = await getClassByName(companyId, value);
+          if (!snapshot.empty) {
+            const doc = snapshot.docs[0];
+            return doc.id?.trim() === docId;
+          }
+
+          return snapshot.empty;
+        },
+      }),
+    description: Yup.string().required('Description is required.'),
   });
 };
 
@@ -32,7 +51,7 @@ type Props = {
 };
 
 export default function Class({ params }: Props) {
-  const [classes, setClasses] = useState<CLASS>();
+  const [myClass, setMyClass] = useState<CLASS>();
   const { authUser } = useAuthContext();
   const { company } = useCurrentCompany();
   const router = useRouter();
@@ -46,7 +65,7 @@ export default function Class({ params }: Props) {
         async (snapshot) => {
           const data = snapshot.data() as CLASS;
           data.docId = snapshot.id;
-          setClasses(data);
+          setMyClass(data);
         },
         (error) => {
           console.error('onSnapshot > error:', error);
@@ -89,7 +108,7 @@ export default function Class({ params }: Props) {
         toast.success('Class updated successfully.');
       }
 
-      router.push('/operations/trips');
+      router.push('/operations/classes');
     } catch (error) {
       console.error('save class error:', error);
     }
@@ -99,24 +118,26 @@ export default function Class({ params }: Props) {
 
   return (
     <main className="-mx-4 rounded bg-white p-4">
-      <h2 className="font-bold">Class</h2>
+      <h2 className="font-bold">Vehicle Class</h2>
       <Formik
         enableReinitialize={true}
         initialValues={{
-          name: classes?.name || '',
-          company: classes?.company || {
+          name: myClass?.name || '',
+          description: myClass?.description || '',
+          company: myClass?.company || {
             docId: company.docId,
             name: company.name || '',
             email: company.email || '',
             phoneNumber: company.phoneNumber || '',
             regNumber: company.regNumber || '',
           },
+          isActive: myClass?.isActive || false,
           updatedBy: {
             authId: authUser?.uid,
             email: authUser?.email,
           },
         }}
-        validationSchema={JobcardSchema()}
+        validationSchema={ClassSchema(authUser?.companyId || 'xyz', docId)}
         onSubmit={(values) => doSave(values)}
       >
         {({ isValid }) => (
@@ -127,13 +148,47 @@ export default function Class({ params }: Props) {
                   <label className="font-medium">Name</label>
                 </div>
                 <div className="">
-                  <Field type="text" name="name" className="form-input" placeholder="Name" />
+                  <Field
+                    type="text"
+                    name="name"
+                    className="form-input"
+                    placeholder="Display Name"
+                  />
                   <ErrorMessage name="name" component="span" className="form-error" />
                 </div>
               </label>
 
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Description</label>
+                </div>
+                <div className="">
+                  <Field
+                    as="textarea"
+                    name="description"
+                    className="form-input"
+                    placeholder="A brief description"
+                  />
+                  <ErrorMessage name="description" component="span" className="form-error" />
+                </div>
+              </label>
+
               <hr className="my-3" />
+
+              <div className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Settings</label>
+                </div>
+                <div className="grid gap-5">
+                  <label className="flex items-center gap-5">
+                    <Field type="checkbox" name="isActive" className="form-checkbox" />
+                    <span className="form-label">Is Active</span>
+                  </label>
+                </div>
+              </div>
             </div>
+
+            <hr className="my-3" />
 
             <div className="grid-1-3 mt-10 gap-5">
               <p className=""></p>

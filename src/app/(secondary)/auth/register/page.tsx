@@ -63,7 +63,7 @@ export default function RegisterPage() {
       if (userCredential && userCredential.user) {
         formValues.displayName = `${formValues.firstName.trim()} ${formValues.lastName.trim()}`;
 
-        const docRef = doc(fbDb, Constants.fbClients, userCredential.user.uid);
+        const docRef = doc(fbDb, Constants.fbAccounts, userCredential.user.uid);
         await setDoc(
           docRef,
           {
