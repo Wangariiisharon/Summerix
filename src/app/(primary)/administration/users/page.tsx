@@ -14,7 +14,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import DeleteAdminButton from './button-delete';
 import ToggleAdminButton from './button-toggle';
-import json2csv from 'json2csv';
+import { exportDataToCSV } from './exportUsers';
 
 export default function Users() {
   const { authUser } = useAuthContext();
@@ -57,31 +57,28 @@ export default function Users() {
     [admins],
   );
 
-  const exportFiles = () => {
-    const fields = [
-      { label: 'First Name', value: 'firstName' },
-      { label: 'Last Name', value: 'lastName' },
-      { label: 'Email', value: 'email' },
-      { label: 'Phone Number', value: 'phoneNumber' },
-      {
-        label: 'Status',
-        value: (row: ADMIN) => (row.rolesMap.isActive ? 'Active' : 'Inactive'),
-      },
-      {
-        label: 'Archive',
-        value: (row: ADMIN) => (row.rolesMap.isActive ? 'Not Archived' : 'Archived'),
-      },
-    ];
-    const opts = { fields };
-    const csv = json2csv.parse(admins, opts);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'Admins.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const exportFiles = async () => {
+    console.log('status:', status);
+
+    try {
+      let csvData;
+
+      if (authUser && authUser.companyId && status === 'all') {
+        csvData = await exportDataToCSV(authUser.companyId);
+      } else {
+        csvData = await exportDataToCSV(authUser?.companyId as string, status); // Export data filtered by status
+      }
+
+      // Create a blob and initiate the download
+      const blob = new Blob([csvData], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `exported-data-${status}.csv`;
+      a.click();
+    } catch (error) {
+      console.error('Error exporting data:', error);
+    }
   };
 
   return (

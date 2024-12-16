@@ -1,15 +1,15 @@
 import { fbDb } from '@/firebase/configs';
 import { getDocs, collection } from 'firebase/firestore';
 import Constants from '@/Constants';
-import { DEPARTMENT } from '@/models/department';
+import { ADMIN } from '@/models/admin';
 
 export async function exportDataToCSV(companyId: string, status?: string) {
-  const departmentsCollection = collection(fbDb, Constants.fbDepartments);
-  const snapshot = await getDocs(departmentsCollection);
-  let data: DEPARTMENT[] = [];
+  const adminsCollection = collection(fbDb, Constants.fbAdmins);
+  const snapshot = await getDocs(adminsCollection);
+  let data: ADMIN[] = [];
 
   snapshot.forEach((doc) => {
-    const docData = doc.data() as DEPARTMENT;
+    const docData = doc.data() as ADMIN;
     if (docData.company.docId === companyId) {
       data.push({
         ...docData,
@@ -23,14 +23,14 @@ export async function exportDataToCSV(companyId: string, status?: string) {
   }
 
   if (status && status !== 'all') {
-    data = data.filter((department) => {
+    data = data.filter((admin) => {
       switch (status) {
         case 'all':
           return true;
         case 'active':
-          return department.isActive === true;
+          return admin.rolesMap.isActive === true;
         case 'inactive':
-          return department.isActive === false;
+          return admin.rolesMap.isActive === false;
 
         default:
           return false;
@@ -42,12 +42,16 @@ export async function exportDataToCSV(companyId: string, status?: string) {
     }
   }
 
-  const csvData = data.map((department) => ({
-    Name: department.name,
-    Status: department.isActive ? 'Active' : 'Inactive',
+  const csvData = data.map((admin) => ({
+    Name: admin.displayName,
+    Email: admin.email,
+    Department: admin.department?.name || 'N/A',
+    PhoneNumber: admin.phoneNumber,
+    updatedBy: admin.updatedBy.email,
+    Status: admin.rolesMap.isActive ? 'Active' : 'Inactive',
   }));
 
-  const header = 'Name,Status';
+  const header = 'Name,Email,Department,PhoneNumber,updatedBy,Status';
   const csvString = [header, ...csvData.map((item) => Object.values(item).join(','))].join('\n');
 
   return csvString;
