@@ -716,10 +716,10 @@
   resolved "https://registry.yarnpkg.com/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-14.2.20.tgz#689bc7beb8005b73c95d926e7edfb7f73efc78f2"
   integrity sha512-AFmqeLW6LtxeFTuoB+MXFeM5fm5052i3MU6xD0WzJDOwku6SkZaxb1bxjBaRC8uNqTRTSPl0yMFtjNowIVI67w==
 
-"@next/third-parties@14":
-  version "14.2.18"
-  resolved "https://registry.yarnpkg.com/@next/third-parties/-/third-parties-14.2.18.tgz#d8ac6d89cf330a13d0bfeb7bb066dc227d127147"
-  integrity sha512-GMKDCbef/qQ3wTg37w85vARtR9JRxDq4ft+MSu1QZTZK/fzxkmGfLwQZN6k72umZZSNAtn3mTBcmbqWYS06xmQ==
+"@next/third-parties@14.2.20":
+  version "14.2.20"
+  resolved "https://registry.yarnpkg.com/@next/third-parties/-/third-parties-14.2.20.tgz#393b8bf1e598281490a23c49e215d32c6b0a3492"
+  integrity sha512-Fpoq6DK/IcblMri0PzLT4x/b8lljgm0D+FVcdbvqaV+JuUT1qJsFvo+2+a4adiabQsTOWP0h8Pq4IivBLUCJOQ==
   dependencies:
     third-party-capital "1.0.20"
 
@@ -3815,7 +3815,7 @@ next-firebase-auth-edge@^1.8.2:
     encoding "^0.1.13"
     jose "^5.6.3"
 
-next@14:
+next@14.2.20:
   version "14.2.20"
   resolved "https://registry.yarnpkg.com/next/-/next-14.2.20.tgz#99b551d87ca6505ce63074904cb31a35e21dac9b"
   integrity sha512-yPvIiWsiyVYqJlSQxwmzMIReXn5HxFNq4+tlVQ812N1FbvhmE+fDpIAD7bcS2mGYQwPJ5vAsQouyme2eKsxaug==
