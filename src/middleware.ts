@@ -123,7 +123,7 @@ export async function middleware(req: NextRequest) {
 
       return redirectToLogin(req, {
         publicPaths: publicRoutes,
-        path: '//auth/sign-in',
+        path: '/auth/sign-in',
       });
     },
   });
