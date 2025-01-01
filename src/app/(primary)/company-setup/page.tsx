@@ -4,7 +4,7 @@ import { useAuthContext } from '@/app/auth-provider';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { getCompanyByEmail, getCompanyByName, getCompanyByPhoneNumber } from '@/services/company';
-import { getCountries, getCountryByName, getCurrencies, getTimezones } from '@/services/utils';
+import { getCountries, getCurrencies, getTimezones } from '@/services/utils';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { useRouter } from 'next/navigation';
@@ -13,12 +13,11 @@ import toast from 'react-hot-toast';
 import * as Yup from 'yup';
 import { Combobox } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
-import { parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js';
-import CountryList from 'country-list-js';
-  // Memoize countries data
-  const countries = getCountries();
-  const currencies = getCurrencies();
-  const timezones = getTimezones();
+import { isValidPhoneNumber } from 'libphonenumber-js';
+// Memoize countries data
+const countries = getCountries();
+const currencies = getCurrencies();
+const timezones = getTimezones();
 
 const CompanySchema = (docId?: string) => {
   return Yup.object().shape({
@@ -72,19 +71,19 @@ const CompanySchema = (docId?: string) => {
 
           try {
             // Find country from countries array using the selected country value
-            const country = countries.find(c => c.value === parent.country);
+            const country = countries.find((c) => c.value === parent.country);
             if (!country?.iso2) return false;
-            
+
             // Add the dial code if it's not already there
             const fullNumber = value.startsWith('+') ? value : `${country.dialing_code}${value}`;
-            console.log(country)
+            console.log(country);
             // Validate phone number for specific country using iso2 code
             return isValidPhoneNumber(fullNumber, country.iso2);
           } catch (error) {
             console.error('Phone validation error:', error);
             return false;
           }
-        }
+        },
       })
       .test({
         exclusive: true,
@@ -116,13 +115,11 @@ export default function Company() {
   const { authUser } = useAuthContext();
   const router = useRouter();
 
-
-
   const filteredCountries = useMemo(() => {
     return countryQuery === ''
       ? countries
       : countries.filter((country) =>
-          country.name.toLowerCase().includes(countryQuery.toLowerCase())
+          country.name.toLowerCase().includes(countryQuery.toLowerCase()),
         );
   }, [countryQuery, countries]);
 
@@ -130,7 +127,7 @@ export default function Company() {
     return currencyQuery === ''
       ? currencies
       : currencies.filter((currency) =>
-          currency.name.toLowerCase().includes(currencyQuery.toLowerCase())
+          currency.name.toLowerCase().includes(currencyQuery.toLowerCase()),
         );
   }, [currencyQuery, currencies]);
 
@@ -138,7 +135,7 @@ export default function Company() {
     return timezoneQuery === ''
       ? timezones
       : timezones.filter((timezone) =>
-          timezone.name.toLowerCase().includes(timezoneQuery.toLowerCase())
+          timezone.name.toLowerCase().includes(timezoneQuery.toLowerCase()),
         );
   }, [timezoneQuery, timezones]);
 
@@ -251,7 +248,7 @@ export default function Company() {
                   <Combobox
                     value={values.country}
                     onChange={(value) => {
-                      const country = countries.find(c => c.value === value);
+                      const country = countries.find((c) => c.value === value);
                       setSelectedDialCode(country?.dialing_code || '+1');
                       setFieldValue('country', value);
                     }}
@@ -260,8 +257,8 @@ export default function Company() {
                       <Combobox.Input
                         className="form-select"
                         onChange={(event) => setCountryQuery(event.target.value)}
-                        displayValue={(value: any) => 
-                          countries.find(country => country.value === value)?.name || ''
+                        displayValue={(value: any) =>
+                          countries.find((country) => country.value === value)?.name || ''
                         }
                       />
                       <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
@@ -299,7 +296,7 @@ export default function Company() {
                     <Field
                       type="tel"
                       name="phoneNumber"
-                      className="block w-full border-0 py-1.5 px-3 text-gray-900 ring-0 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
+                      className="block w-full border-0 px-3 py-1.5 text-gray-900 ring-0 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                       placeholder="Phone number"
                     />
                   </div>
@@ -320,7 +317,7 @@ export default function Company() {
                         className="form-select"
                         onChange={(event) => setTimezoneQuery(event.target.value)}
                         displayValue={(value: any) =>
-                          timezones.find(timezone => timezone.value === value)?.name || ''
+                          timezones.find((timezone) => timezone.value === value)?.name || ''
                         }
                       />
                       <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
@@ -360,7 +357,7 @@ export default function Company() {
                         className="form-select"
                         onChange={(event) => setCurrencyQuery(event.target.value)}
                         displayValue={(value: any) =>
-                          currencies.find(currency => currency.value === value)?.name || ''
+                          currencies.find((currency) => currency.value === value)?.name || ''
                         }
                       />
                       <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">

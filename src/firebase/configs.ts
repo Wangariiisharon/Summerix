@@ -12,7 +12,7 @@ if (!apps.length || apps.length === 0) {
   try {
     initializeApp(clientConfig);
   } catch (error) {
-    console.error('FIREBASE INIT ERROR:::', error); 
+    console.error('FIREBASE INIT ERROR:::', error);
   }
 }
 console.debug('apps:', getApps());

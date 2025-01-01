@@ -37,7 +37,9 @@ const SignUpSchema = () => {
           return snapshot.empty;
         },
       }),
-    password: Yup.string().required('Password is required.').min(6, 'Password must be at least 6 characters'),
+    password: Yup.string()
+      .required('Password is required.')
+      .min(6, 'Password must be at least 6 characters'),
     password2: Yup.string()
       .required('Confirm password is required.')
       .oneOf([Yup.ref('password')], 'Passwords do not match.'),
