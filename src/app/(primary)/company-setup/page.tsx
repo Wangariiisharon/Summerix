@@ -142,7 +142,7 @@ export default function Company() {
   const doSave = async (formValues: any) => {
     console.debug('doSave > formValues:', formValues);
     if (!authUser || !authUser.user) return;
-
+    console.log(authUser);
     try {
       setProcessing(true);
 
@@ -166,7 +166,7 @@ export default function Company() {
         { merge: true },
       );
       toast.success('Account saved successfully.');
-      router.push('/administration');
+      router.push('/');
     } catch (error) {
       console.error('doSave error:', error);
       toast.error('Save account failed. Please try again.');
@@ -183,7 +183,7 @@ export default function Company() {
         initialValues={{
           name: '',
           description: '',
-          email: `${authUser?.email || ''}`,
+          email: `${''}`,
           phoneNumber: `${authUser?.phoneNumber || ''}`,
           country: '',
           timezone: '',

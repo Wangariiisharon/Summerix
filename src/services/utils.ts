@@ -66,8 +66,9 @@ export const getCountries = (): CountryData[] => {
   const countriesList: { [key: string]: CountryData } = CountryList.all;
   const countries = Object.values(countriesList).map((country) => {
     return {
-      dial_code: country.dialing_code,
       ...country,
+      dial_code: country.dialing_code,
+      value: country.name.toLowerCase(),
     };
   });
 

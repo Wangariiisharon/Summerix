@@ -159,7 +159,8 @@ export default function Home() {
       <section className="grid-1-2-4 mt-5 gap-5">
         <StatsCard
           label="Total Income"
-          value="335K"
+          value="0"
+          suffix="K"
           classNames="bg-white border-b-4 border-primary"
         >
           <i className="fas fa-money-bills"></i>
