@@ -1,12 +1,10 @@
 'use client';
 
-import * as Yup from 'yup';
 import { useAuthContext } from '@/app/auth-provider';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { ADMIN } from '@/models/admin';
 // import AdminRoles from '@/json/roles.json';
-import { getAdminByEmail, getAdminByPhoneNumber } from '@/services/admin';
 import {
   addDoc,
   collection,
@@ -24,53 +22,7 @@ import useCurrentCompany from '@/hooks/useCurrentCompany';
 import { getAvatarPhoto } from '@/services/utils';
 import useDepartments from '@/hooks/useDepartments';
 import DepartmentAdminView from './department';
-
-const AdminSchema = (docId: string) => {
-  return Yup.object().shape({
-    firstName: Yup.string().required('First name is required.'),
-    lastName: Yup.string().required('Last name is required.'),
-    email: Yup.string()
-      .trim()
-      .required('Email is required.')
-      .email('Enter a valid email address.')
-      .test({
-        exclusive: true,
-        name: 'admin-email',
-        message: 'Email is already in use.',
-        test: async function (value: any) {
-          if (!value) return true;
-
-          const snapshot = await getAdminByEmail(value);
-          if (!snapshot.empty) {
-            const doc = snapshot.docs[0];
-            return doc.id?.trim() === docId;
-          }
-
-          return snapshot.empty;
-        },
-      }),
-    phoneNumber: Yup.string()
-      .trim()
-      .required('Phone number is required.')
-      .matches(Constants.phoneRegExp, 'Phone number is not valid.')
-      .test({
-        exclusive: true,
-        name: 'admin-phone',
-        message: 'Phone number is already in use as admin.',
-        test: async function (value: any) {
-          if (!value) return true;
-
-          const snapshot = await getAdminByPhoneNumber(value);
-          if (!snapshot.empty) {
-            const doc = snapshot.docs[0];
-            return doc.id?.trim() === docId;
-          }
-
-          return snapshot.empty;
-        },
-      }),
-  });
-};
+import { UserFormSchema } from '@/app/schemas/user-form-schema';
 
 type Props = {
   params: { docId: string };
@@ -102,6 +54,7 @@ export default function User({ params }: Props) {
           data.displayName = data.displayName || '';
           data.photoURL = data.photoURL || getAvatarPhoto(data.displayName);
           data.docId = snapshot.id;
+          console.log('onSnapshot > data:', data);
           setAdmin(data);
         },
         (error) => {
@@ -158,7 +111,6 @@ export default function User({ params }: Props) {
 
   return (
     <main className="-mx-4 rounded bg-white p-4">
-      <h2 className="font-bold">Admin User</h2>
       <Formik
         enableReinitialize={true}
         initialValues={{
@@ -187,7 +139,7 @@ export default function User({ params }: Props) {
             email: authUser?.email,
           },
         }}
-        validationSchema={AdminSchema(docId)}
+        validationSchema={UserFormSchema(docId)}
         onSubmit={(values) => doSave(values)}
       >
         {({ errors, isValid, setFieldValue }) => (
