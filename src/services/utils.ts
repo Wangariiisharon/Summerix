@@ -157,9 +157,12 @@ export const getCurrencies = () => {
   return currencies;
 };
 
-export const validatePhoneNumberForCountry = (phoneNumber: string, countryValue: string): boolean => {
+export const validatePhoneNumberForCountry = (
+  phoneNumber: string,
+  countryValue: string,
+): boolean => {
   if (!phoneNumber || !countryValue) return false;
-  
+
   try {
     const countries = getCountries();
     const country = countries.find((c) => c.value === countryValue);

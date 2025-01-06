@@ -3,7 +3,7 @@ import { Field } from 'formik';
 interface PhoneNumberInputProps {
   name: string;
   dialCode: string;
-  error?: string;
+  error?: string; // Just string now
 }
 
 export const PhoneNumberInput = ({ name, dialCode, error }: PhoneNumberInputProps) => {

@@ -1,5 +1,4 @@
 import * as Yup from 'yup';
-import Constants from '@/Constants';
 import { getAdminByEmail, getAdminByPhoneNumber } from '@/services/admin';
 import { validatePhoneNumberForCountry } from '@/services/utils';
 
@@ -58,4 +57,4 @@ export const UserFormSchema = (docId: string) => {
         },
       }),
   });
-}
+};

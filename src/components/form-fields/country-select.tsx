@@ -7,7 +7,7 @@ interface CountrySelectProps {
   value: string;
   onChange: any;
   onDialCodeChange?: any;
-  error?: string;
+  error?: string; // Just string now
   className?: string;
   as?: React.ElementType;
 }

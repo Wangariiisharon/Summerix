@@ -1,9 +1,6 @@
 import * as Yup from 'yup';
 import { getCompanyByEmail, getCompanyByName, getCompanyByPhoneNumber } from '@/services/company';
 import { validatePhoneNumberForCountry } from '@/services/utils';
-import { getCountries } from '@/services/utils';
-
-const countries = getCountries();
 
 export const CompanySchema = (docId?: string) => {
   return Yup.object().shape({

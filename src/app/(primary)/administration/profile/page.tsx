@@ -1,12 +1,9 @@
 'use client';
-
-import * as Yup from 'yup';
 import { useAuthContext } from '@/app/auth-provider';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
-import { getCompanyByEmail, getCompanyByName, getCompanyByPhoneNumber } from '@/services/company';
-import { getCountries, getTimezones } from '@/services/utils';
+import { getTimezones } from '@/services/utils';
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import Link from 'next/link';
@@ -15,74 +12,13 @@ import toast from 'react-hot-toast';
 import AddCurrencyButton from './button-add-currency';
 import DeleteCurrencyButton from './button-delete-currency';
 import EditCurrencyButton from './button-edit-currency';
-
-const CompanySchema = (docId?: string) => {
-  return Yup.object().shape({
-    name: Yup.string()
-      .trim()
-      .required('Company name is required.')
-      .test({
-        exclusive: true,
-        name: 'company-name',
-        message: 'Name is already in use.',
-        test: async function (value: any) {
-          if (!value) return true;
-
-          const snapshot = await getCompanyByName(value);
-          if (snapshot && !snapshot.empty) {
-            return snapshot.docs[0]?.id?.trim() === docId;
-          }
-
-          return snapshot.empty;
-        },
-      }),
-    description: Yup.string().trim().required('Description is required.'),
-    email: Yup.string()
-      .trim()
-      .required('Email is required.')
-      .email('Enter a valid email address.')
-      .test({
-        exclusive: true,
-        name: 'company-email',
-        message: 'Email is already in use.',
-        test: async function (value: any) {
-          if (!value) return true;
-
-          const snapshot = await getCompanyByEmail(value);
-          if (snapshot && !snapshot.empty) {
-            return snapshot.docs[0]?.id?.trim() === docId;
-          }
-
-          return snapshot.empty;
-        },
-      }),
-    phoneNumber: Yup.string()
-      .trim()
-      .required('Phone number is required.')
-      .matches(Constants.phoneRegExp, 'Phone number is not valid.')
-      .test({
-        exclusive: true,
-        name: 'company-phone-number',
-        message: 'Phone number is already in use.',
-        test: async function (value: any) {
-          if (!value) return true;
-
-          const snapshot = await getCompanyByPhoneNumber(value);
-          if (snapshot && !snapshot.empty) {
-            return snapshot.docs[0]?.id?.trim() === docId;
-          }
-
-          return snapshot.empty;
-        },
-      }),
-    country: Yup.string().trim().required('Country is required.'),
-    timezone: Yup.string().trim().required('Timezone is required.'),
-    currency: Yup.string().trim().required('Currency is required.'),
-  });
-};
+import { CompanySchema } from '@/app/schemas/company-schema';
+import { CountrySelect } from '@/components/form-fields/country-select';
+import { PhoneNumberInput } from '@/components/form-fields/phone-number-select';
 
 export default function Profile() {
   const [processing, setProcessing] = useState(false);
+  const [dialCode, setDialCode] = useState('');
   const { company } = useCurrentCompany();
   const { authUser } = useAuthContext();
 
@@ -132,167 +68,169 @@ export default function Profile() {
         validationSchema={CompanySchema(company?.docId)}
         onSubmit={(values) => doSave(values)}
       >
-        {({ isValid, values }) => (
-          <Form className="mt-6">
-            {/* <h2 className="text-center font-bold"></h2> */}
+        {({ isValid, values, setFieldValue, errors }) => {
+          console.log('isValid:', isValid);
+          console.log('values:', values);
+          return (
+            <>
+              <Form className="mt-6">
+                {/* <h2 className="text-center font-bold"></h2> */}
 
-            <div className="mt-5 grid gap-6 p-4 shadow-sm">
-              <label className="grid-1-3 gap-5">
-                <div className="flex flex-col gap-1 text-sm">
-                  <label className="font-medium">Public profile</label>
-                  <p className="text-gray-500">This will be displayed on your profile</p>
-                </div>
-                <div className="">
-                  <Field
-                    type="text"
-                    name="name"
-                    className="form-input"
-                    placeholder="Company name"
-                  />
-                  <ErrorMessage name="name" component="span" className="form-error" />
-                </div>
-              </label>
-              <label className="grid-1-3 gap-5">
-                <div className="grid text-sm">
-                  <label className="font-medium">Description</label>
-                  <p className="text-gray-500">A short description of the company</p>
-                </div>
-                <div className="">
-                  <Field
-                    name="description"
-                    className="form-input"
-                    placeholder="A short description"
-                    as="textarea"
-                  />
-                  <ErrorMessage name="description" component="span" className="form-error" />
-                </div>
-              </label>
-              <label className="grid-1-3 gap-5">
-                <div className="flex flex-col gap-1 text-sm">
-                  <label className="font-medium">Email address</label>
-                  <p className="text-gray-500">Add your company email</p>
-                </div>
-                <div className="">
-                  <Field
-                    type="email"
-                    name="email"
-                    className="form-input"
-                    placeholder="Company email address"
-                  />
-                  <ErrorMessage name="email" component="span" className="form-error" />
-                </div>
-              </label>
-              <label className="grid-1-3 gap-5">
-                <div className="flex flex-col gap-1 text-sm">
-                  <label className="font-medium">Phone number</label>
-                  <p className="text-gray-500">Add your company phone number</p>
-                </div>
-                <div className="">
-                  <Field
-                    type="tel"
-                    name="phoneNumber"
-                    className="form-input"
-                    placeholder="Company phone number"
-                  />
-                  <ErrorMessage name="phoneNumber" component="span" className="form-error" />
-                </div>
-              </label>
-              <label className="grid-1-3 gap-5">
-                <div className="flex flex-col gap-1 text-sm">
-                  <label className="font-medium">Country</label>
-                  <p className="text-gray-500">Select your country</p>
-                </div>
-                <div className="">
-                  <Field as="select" name="country" className="form-select">
-                    <option value="" disabled>
-                      Select country...
-                    </option>
-                    {getCountries().map(({ name, value }) => {
-                      return (
-                        <option key={value} value={value}>
-                          {name}
-                        </option>
-                      );
-                    })}
-                  </Field>
-                  <ErrorMessage name="country" component="span" className="form-error" />
-                </div>
-              </label>
-              <label className="grid-1-3 gap-5">
-                <div className="flex flex-col gap-1 text-sm">
-                  <label className="font-medium">Timezone</label>
-                  <p className="text-gray-500">Select your timezone</p>
-                </div>
-                <div className="">
-                  <Field as="select" name="timezone" className="form-select">
-                    <option value="" disabled>
-                      Select timezone...
-                    </option>
-                    {getTimezones().map(({ name, value }) => {
-                      return (
-                        <option key={value} value={value}>
-                          {name}
-                        </option>
-                      );
-                    })}
-                  </Field>
-                  <ErrorMessage name="timezone" component="span" className="form-error" />
-                </div>
-              </label>
-              <label className="grid-1-3 gap-5">
-                <div className="flex flex-col gap-1 text-sm">
-                  <label className="font-medium">Currencies</label>
-                  <p className="text-gray-500">Add your currencies</p>
-                </div>
-                <div className="grid gap-2">
-                  {values.currencyList.map((currency) => {
-                    const isPrimary = currency.code === values.currency;
+                <div className="mt-5 grid gap-6 p-4 shadow-sm">
+                  <label className="grid-1-3 gap-5">
+                    <div className="flex flex-col gap-1 text-sm">
+                      <label className="font-medium">Public profile</label>
+                      <p className="text-gray-500">This will be displayed on your profile</p>
+                    </div>
+                    <div className="">
+                      <Field
+                        type="text"
+                        name="name"
+                        className="form-input"
+                        placeholder="Company name"
+                      />
+                      <ErrorMessage name="name" component="span" className="form-error" />
+                    </div>
+                  </label>
+                  <label className="grid-1-3 gap-5">
+                    <div className="grid text-sm">
+                      <label className="font-medium">Description</label>
+                      <p className="text-gray-500">A short description of the company</p>
+                    </div>
+                    <div className="">
+                      <Field
+                        name="description"
+                        className="form-input"
+                        placeholder="A short description"
+                        as="textarea"
+                      />
+                      <ErrorMessage name="description" component="span" className="form-error" />
+                    </div>
+                  </label>
+                  <label className="grid-1-3 gap-5">
+                    <div className="flex flex-col gap-1 text-sm">
+                      <label className="font-medium">Email address</label>
+                      <p className="text-gray-500">Add your company email</p>
+                    </div>
+                    <div className="">
+                      <Field
+                        type="email"
+                        name="email"
+                        className="form-input"
+                        placeholder="Company email address"
+                      />
+                      <ErrorMessage name="email" component="span" className="form-error" />
+                    </div>
+                  </label>
 
-                    return (
-                      <div
-                        key={currency.code}
-                        className="flex items-center justify-between gap-5 rounded bg-gray-100 px-4 py-2"
-                      >
-                        <div className="grid gap-2">
-                          <p className="text-sm">{currency.name}</p>
-                          <div className="flex items-center gap-5">
-                            <p className="font-semibold text-gray-600">{currency.code}</p>
-                            {isPrimary && (
-                              <span className="status-approved rounded-full text-xs">Primary</span>
-                            )}
+                  {/* Country select moved before phone number */}
+                  <label className="grid-1-3 gap-5">
+                    <div className="flex flex-col gap-1 text-sm">
+                      <label className="font-medium">Country</label>
+                      <p className="text-gray-500">Select your country</p>
+                    </div>
+                    <div className="">
+                      <CountrySelect
+                        value={values.country}
+                        onChange={(value: string) => setFieldValue('country', value)}
+                        onDialCodeChange={(code: string) => setDialCode(code)}
+                        error={errors.country}
+                      />
+                    </div>
+                  </label>
+
+                  <label className="grid-1-3 gap-5">
+                    <div className="flex flex-col gap-1 text-sm">
+                      <label className="font-medium">Phone number</label>
+                      <p className="text-gray-500">Add your company phone number</p>
+                    </div>
+                    <div className="">
+                      <PhoneNumberInput
+                        name="phoneNumber"
+                        dialCode={dialCode}
+                        error={errors.phoneNumber}
+                      />
+                    </div>
+                  </label>
+                  <label className="grid-1-3 gap-5">
+                    <div className="flex flex-col gap-1 text-sm">
+                      <label className="font-medium">Timezone</label>
+                      <p className="text-gray-500">Select your timezone</p>
+                    </div>
+                    <div className="">
+                      <Field as="select" name="timezone" className="form-select">
+                        <option value="" disabled>
+                          Select timezone...
+                        </option>
+                        {getTimezones().map(({ name, value }) => {
+                          return (
+                            <option key={value} value={value}>
+                              {name}
+                            </option>
+                          );
+                        })}
+                      </Field>
+                      <ErrorMessage name="timezone" component="span" className="form-error" />
+                    </div>
+                  </label>
+                  <label className="grid-1-3 gap-5">
+                    <div className="flex flex-col gap-1 text-sm">
+                      <label className="font-medium">Currencies</label>
+                      <p className="text-gray-500">Add your currencies</p>
+                    </div>
+                    <div className="grid gap-2">
+                      {values.currencyList.map((currency) => {
+                        const isPrimary = currency.code === values.currency;
+
+                        return (
+                          <div
+                            key={currency.code}
+                            className="flex items-center justify-between gap-5 rounded bg-gray-100 px-4 py-2"
+                          >
+                            <div className="grid gap-2">
+                              <p className="text-sm">{currency.name}</p>
+                              <div className="flex items-center gap-5">
+                                <p className="font-semibold text-gray-600">{currency.code}</p>
+                                {isPrimary && (
+                                  <span className="status-approved rounded-full text-xs">
+                                    Primary
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex gap-3">
+                              <EditCurrencyButton company={company} currency={currency} />
+                              <DeleteCurrencyButton company={company} currency={currency} />
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex gap-3">
-                          <EditCurrencyButton company={company} currency={currency} />
-                          <DeleteCurrencyButton company={company} currency={currency} />
-                        </div>
-                      </div>
-                    );
-                  })}
+                        );
+                      })}
+                    </div>
+                    <div className="">
+                      <AddCurrencyButton company={company} />
+                    </div>
+                  </label>
                 </div>
-                <div className="">
-                  <AddCurrencyButton company={company} />
-                </div>
-              </label>
-            </div>
 
-            <div className="grid-1-3 mt-5 items-center gap-5">
-              <p className=""></p>
-              <div className="flex justify-end gap-5">
-                <Link href="/administration" className="btn btn-outline">
-                  Cancel
-                </Link>
-                <button
-                  type="submit"
-                  disabled={!isValid || !authUser || processing}
-                  className="btn btn-secondary"
-                >
-                  Save Company
-                </button>
-              </div>
-            </div>
-          </Form>
-        )}
+                <div className="grid-1-3 mt-5 items-center gap-5">
+                  <p className=""></p>
+                  <div className="flex justify-end gap-5">
+                    <Link href="/administration" className="btn btn-outline">
+                      Cancel
+                    </Link>
+                    <button
+                      type="submit"
+                      disabled={!isValid || !authUser || processing}
+                      className="btn btn-secondary"
+                    >
+                      Save Company
+                    </button>
+                  </div>
+                </div>
+              </Form>
+            </>
+          );
+        }}
       </Formik>
     </main>
   );
