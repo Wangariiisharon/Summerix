@@ -6,7 +6,22 @@ import { AUTH_USER } from './models/auth-user';
 
 const publicRoutes = ['/auth/sign-in', '/auth/register', '/auth/forgot-password'];
 
-const toUser = ({ decodedToken }: Tokens): AUTH_USER => {
+const assignCompanyAndAdmin = async (authUser: AUTH_USER) => {
+  if (!authUser.companyId) {
+    authUser.companyId = `${authUser.uid}`;
+    authUser.isAdmin = true;
+
+    console.debug('assignCompanyAndAdmin > Assigned:', {
+      uid: authUser.uid,
+      companyId: authUser.companyId,
+      isAdmin: authUser.isAdmin,
+    });
+  }
+
+  return authUser;
+};
+
+const toUser = async ({ decodedToken }: Tokens): Promise<AUTH_USER> => {
   const {
     uid,
     email,
@@ -18,9 +33,8 @@ const toUser = ({ decodedToken }: Tokens): AUTH_USER => {
   } = decodedToken;
 
   const claims = filterStandardClaims(decodedToken);
-  // console.debug('toUser > customClaims:', customClaims);
 
-  return {
+  const authUser = {
     uid,
     user: null,
     email: email ?? null,
@@ -37,13 +51,9 @@ const toUser = ({ decodedToken }: Tokens): AUTH_USER => {
     isOwner: (claims['isOwner'] as boolean) || false,
     roles: (claims.roles as string[]) || [],
   } as AUTH_USER;
-};
 
-// const adminACL = [
-//   { routes: ['/administration/users'], role: 'canManageAdmins' },
-//   { routes: ['/administration/clients'], role: 'canManageClients' },
-//   { routes: ['/administration/vehicles'], role: 'canManageVehicles' },
-// ];
+  return assignCompanyAndAdmin(authUser);
+};
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
@@ -58,14 +68,14 @@ export async function middleware(req: NextRequest) {
     cookieSerializeOptions: serverConfig.cookieSerializeOptions,
     serviceAccount: serverConfig.serviceAccount,
     handleValidToken: async (tokens, headers) => {
-      const authUser = toUser(tokens);
+      let authUser = await toUser(tokens);
       console.debug('handleValidToken > authUser:', {
         uid: authUser.uid,
         email: authUser.email,
         companyId: authUser.companyId,
-        // customClaims: authUser.customClaims,
         providerId: authUser.providerId,
         roles: authUser.roles,
+        isAdmin: authUser.isAdmin,
       });
 
       // Authenticated user should not be able to access 'public routes'
@@ -87,21 +97,6 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(new URL('/auth/forbidden', req.url));
       }
 
-      // add role-based /admin access control
-      // for (const acl of adminACL) {
-      //   // console.debug('adminACL > acl:', acl, pathname);
-
-      //   if (acl.routes.includes(pathname) && !authUser.roles.includes(acl.role)) {
-      //     console.debug('middleware > admin roles redirect:', {
-      //       acl,
-      //       isOwner: authUser.isOwner,
-      //       roles: authUser.roles,
-      //       url: req.url,
-      //     });
-      //     return NextResponse.redirect(new URL('/auth/forbidden', req.url));
-      //   }
-      // }
-
       return NextResponse.next({
         request: {
           headers,
@@ -110,8 +105,6 @@ export async function middleware(req: NextRequest) {
     },
     handleInvalidToken: async (reason) => {
       console.debug('Missing or malformed credentials', { reason });
-      // return NextResponse.next({ request: req });
-
       return redirectToLogin(req, {
         publicPaths: publicRoutes,
         path: '/auth/sign-in',
@@ -119,15 +112,14 @@ export async function middleware(req: NextRequest) {
     },
     handleError: async (error) => {
       console.error('Unhandled authentication error', { error });
-
       return redirectToLogin(req, {
         publicPaths: publicRoutes,
-        path: '//auth/sign-in',
+        path: '/auth/sign-in',
       });
     },
   });
 }
 
 export const config = {
-  matcher: ['/', '/((?!_next|api|.*\\.).*)', '/api/login', '/api/logout'],
+  matcher: ['/', '/((?!_next|api|.*\.).*)', '/api/login', '/api/logout'],
 };
