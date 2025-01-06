@@ -14,23 +14,6 @@ import { PhoneNumberInput } from '@/components/form-fields/phone-number-select';
 import { TimezoneSelect } from '@/components/form-fields/timezone-select';
 import { CurrencySelect } from '@/components/form-fields/currency-select';
 
-// // Dynamic imports with no SSR
-// const CountrySelect = dynamic(
-//   () => import('@/components/form-fields/country-select').then((mod) => mod.CountrySelect),
-//   { ssr: false },
-// );
-// const CurrencySelect = dynamic(
-//   () => import('@/components/form-fields/currency-select').then((mod) => mod.CurrencySelect),
-//   { ssr: false },
-// );
-// const PhoneNumberInput = dynamic(
-//   () => import('@/components/form-fields/phone-number-select').then((mod) => mod.PhoneNumberInput),
-//   { ssr: false },
-// );
-// const TimezoneSelect = dynamic(
-//   () => import('@/components/form-fields/timezone-select').then((mod) => mod.TimezoneSelect),
-//   { ssr: false },
-// );
 
 export default function CompanySetup() {
   const [processing, setProcessing] = useState(false);

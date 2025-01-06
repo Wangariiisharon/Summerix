@@ -23,6 +23,8 @@ import { getAvatarPhoto } from '@/services/utils';
 import useDepartments from '@/hooks/useDepartments';
 import DepartmentAdminView from './department';
 import { UserFormSchema } from '@/app/schemas/user-form-schema';
+import { CountrySelect } from '@/components/form-fields/country-select';
+import { PhoneNumberInput } from '@/components/form-fields/phone-number-select';
 
 type Props = {
   params: { docId: string };
@@ -30,6 +32,7 @@ type Props = {
 
 export default function User({ params }: Props) {
   const [admin, setAdmin] = useState<ADMIN>();
+  const [selectedDialCode, setSelectedDialCode] = useState('+1');
   const { authUser } = useAuthContext();
   const { company } = useCurrentCompany();
   const { departments } = useDepartments({
@@ -119,6 +122,7 @@ export default function User({ params }: Props) {
           firstName: admin?.firstName || '',
           lastName: admin?.lastName || '',
           idNumber: admin?.idNumber || '',
+          country: admin?.country || '', // Add country to initial values
           company: admin?.company || {
             docId: company.docId,
             name: company.name || '',
@@ -142,8 +146,13 @@ export default function User({ params }: Props) {
         validationSchema={UserFormSchema(docId)}
         onSubmit={(values) => doSave(values)}
       >
-        {({ errors, isValid, setFieldValue }) => (
-          <Form className="mt-6">
+        {({ errors, isValid, setFieldValue, values }) => 
+          {
+            console.log('errors:', errors);
+            console.log('isValid:', isValid);
+            return (
+              <>
+              <Form className="mt-6">
             {/* <h2 className="text-center font-bold">Account setup</h2> */}
 
             <div className="mt-5 grid gap-5 p-4">
@@ -158,7 +167,7 @@ export default function User({ params }: Props) {
                     className="form-input"
                     placeholder="First Name"
                   />
-                  <ErrorMessage name="firstName" component="span" className="form-error" />
+                  {/* <ErrorMessage name="firstName" component="span" className="form-error" /> */}
                 </div>
               </label>
               <label className="grid-1-3">
@@ -172,7 +181,7 @@ export default function User({ params }: Props) {
                     className="form-input"
                     placeholder="Last Name"
                   />
-                  <ErrorMessage name="lastName" component="span" className="form-error" />
+                  {/* <ErrorMessage name="lastName" component="span" className="form-error" /> */}
                 </div>
               </label>
               <label className="grid-1-3">
@@ -187,21 +196,32 @@ export default function User({ params }: Props) {
                     placeholder="Email Address"
                     disabled={docId !== 'new'}
                   />
-                  <ErrorMessage name="email" component="span" className="form-error" />
+                </div>
+              </label>
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Country</label>
+                </div>
+                <div className="relative">
+                  <CountrySelect
+                    value={values.country}
+                    onChange={(value: any) => setFieldValue('country', value)}
+                    onDialCodeChange={setSelectedDialCode}
+                    error={errors.country}
+                    as="div"
+                  />
                 </div>
               </label>
               <label className="grid-1-3">
                 <div className="text-sm">
                   <label className="font-medium">Phone Number</label>
                 </div>
-                <div className="">
-                  <Field
-                    type="tel"
+                <div>
+                  <PhoneNumberInput
                     name="phoneNumber"
-                    className="form-input"
-                    placeholder="Phone Number"
+                    dialCode={selectedDialCode}
+                    error={errors.phoneNumber}
                   />
-                  <ErrorMessage name="phoneNumber" component="span" className="form-error" />
                 </div>
               </label>
               <label className="grid-1-3">
@@ -215,7 +235,7 @@ export default function User({ params }: Props) {
                     className="form-input"
                     placeholder="ID Number"
                   />
-                  <ErrorMessage name="idNumber" component="span" className="form-error" />
+                  {/* <ErrorMessage name="idNumber" component="span" className="form-error" /> */}
                 </div>
               </label>
 
@@ -268,7 +288,10 @@ export default function User({ params }: Props) {
               </div>
             </div>
           </Form>
-        )}
+          </>
+        )
+        }
+        }
       </Formik>
     </main>
   );

@@ -4,6 +4,7 @@ import CountryList from 'country-list-js';
 import { getIn } from 'formik';
 import moment from 'moment-timezone';
 import { CountryCode } from '@/types';
+import { isValidPhoneNumber } from 'libphonenumber-js';
 
 export interface CountryOption {
   name: string;
@@ -154,4 +155,29 @@ export const getCurrencies = () => {
   ].sort((a, b) => a.name.localeCompare(b.name));
 
   return currencies;
+};
+
+export const validatePhoneNumberForCountry = (phoneNumber: string, countryValue: string): boolean => {
+  if (!phoneNumber || !countryValue) return false;
+  
+  try {
+    const countries = getCountries();
+    const country = countries.find((c) => c.value === countryValue);
+    if (!country?.iso2) return false;
+
+    // Remove any existing "+" from the number
+    const cleanNumber = phoneNumber.replace(/^\+/, '');
+    // Remove country code if it's already there
+    const numberWithoutCode = cleanNumber.replace(
+      new RegExp(`^${country.dialing_code.replace('+', '')}`),
+      '',
+    );
+    // Add the country code
+    const fullNumber = `${country.dialing_code}${numberWithoutCode}`;
+
+    return isValidPhoneNumber(fullNumber, country.iso2);
+  } catch (error) {
+    console.error('Phone validation error:', error);
+    return false;
+  }
 };

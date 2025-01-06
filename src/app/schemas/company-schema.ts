@@ -1,6 +1,6 @@
 import * as Yup from 'yup';
 import { getCompanyByEmail, getCompanyByName, getCompanyByPhoneNumber } from '@/services/company';
-import { isValidPhoneNumber } from 'libphonenumber-js';
+import { validatePhoneNumberForCountry } from '@/services/utils';
 import { getCountries } from '@/services/utils';
 
 const countries = getCountries();
@@ -52,28 +52,8 @@ export const CompanySchema = (docId?: string) => {
         name: 'phone',
         message: 'Invalid phone number for selected country',
         test: function (value) {
-          if (!value) return false;
           const { parent } = this;
-
-          try {
-            const country = countries.find((c) => c.value === parent.country);
-            if (!country?.iso2) return false;
-
-            // Remove any existing "+" from the number
-            const cleanNumber = value.replace(/^\+/, '');
-            // Remove country code if it's already there
-            const numberWithoutCode = cleanNumber.replace(
-              new RegExp(`^${country.dialing_code.replace('+', '')}`),
-              '',
-            );
-            // Add the country code
-            const fullNumber = `${country.dialing_code}${numberWithoutCode}`;
-
-            return isValidPhoneNumber(fullNumber, country.iso2);
-          } catch (error) {
-            console.error('Phone validation error:', error);
-            return false;
-          }
+          return validatePhoneNumberForCountry(value, parent.country);
         },
       })
       .test({

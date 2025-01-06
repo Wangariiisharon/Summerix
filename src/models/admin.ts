@@ -10,6 +10,7 @@ export interface ADMIN {
   displayName?: string;
 
   email: string;
+  country: string;
   phoneNumber: string;
   idNumber: string;
   photoURL: string;
