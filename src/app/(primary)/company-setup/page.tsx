@@ -14,7 +14,6 @@ import { PhoneNumberInput } from '@/components/form-fields/phone-number-select';
 import { TimezoneSelect } from '@/components/form-fields/timezone-select';
 import { CurrencySelect } from '@/components/form-fields/currency-select';
 
-
 export default function CompanySetup() {
   const [processing, setProcessing] = useState(false);
   const [selectedDialCode, setSelectedDialCode] = useState('+1');

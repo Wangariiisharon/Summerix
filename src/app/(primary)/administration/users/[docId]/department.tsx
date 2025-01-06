@@ -1,26 +1,23 @@
 'use client';
 
 import { ADMIN } from '@/models/admin';
-import { DEPARTMENT, DEPARTMENT_DETAILS } from '@/models/department';
+import { DEPARTMENT } from '@/models/department';
 import { camelCaseToWords } from '@/services/utils';
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { Field } from 'formik';
 import Link from 'next/link';
-import { useState } from 'react';
 
 type Props = {
   admin?: ADMIN;
   departments: DEPARTMENT[];
   setFieldValue: Function;
   errors: any;
+  values: any; // Add this prop
 };
 
-export default function DepartmentAdminView({ admin, departments, setFieldValue, errors }: Props) {
-  const [department, setDepartment] = useState<DEPARTMENT_DETAILS | null>(
-    admin?.department || null,
-  );
-
+export default function DepartmentAdminView({ departments, setFieldValue, errors, values }: Props) {
+  // Remove useState, use values.department instead
   return (
     <>
       <div className="grid-1-3">
@@ -29,7 +26,7 @@ export default function DepartmentAdminView({ admin, departments, setFieldValue,
         </div>
         <div className="grid gap-3">
           <Listbox
-            value={department}
+            value={values.department || null}
             onChange={(value) => {
               if (value) {
                 const details = {
@@ -37,7 +34,6 @@ export default function DepartmentAdminView({ admin, departments, setFieldValue,
                   name: value.name,
                   roles: value.roles,
                 };
-                setDepartment(details);
                 setFieldValue('department', details);
                 setFieldValue('roles', details?.roles);
               }
@@ -46,12 +42,12 @@ export default function DepartmentAdminView({ admin, departments, setFieldValue,
             <div className="relative mt-2 w-full">
               <ListboxButton className="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm/6">
                 <div className="flex items-center gap-2">
-                  {!department && (
+                  {!values.department && (
                     <div className="shrink-0 rounded-full bg-gray-300 p-1">
                       <PlusIcon className="h-3 w-3" />
                     </div>
                   )}
-                  <p className="block truncate">{department?.name}</p>
+                  <p className="block truncate">{values.department?.name}</p>
                 </div>
                 <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
                   <ChevronUpDownIcon aria-hidden="true" className="size-5 text-gray-400" />
@@ -98,13 +94,13 @@ export default function DepartmentAdminView({ admin, departments, setFieldValue,
         </div>
       </div>
 
-      {department && (
+      {values.department && (
         <div className="grid-1-3">
           <div className="text-sm">
             <label className="font-medium">Roles</label>
           </div>
           <div className="grid-1-2 col-span-2 gap-3">
-            {department?.roles.map((role) => {
+            {values.department?.roles.map((role: any) => {
               return (
                 <label key={role} className="flex items-center gap-5">
                   <Field

@@ -13,10 +13,10 @@ import {
   serverTimestamp,
   updateDoc,
 } from 'firebase/firestore';
-import { ErrorMessage, Field, Form, Formik } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
 import { getAvatarPhoto } from '@/services/utils';
@@ -35,12 +35,21 @@ export default function User({ params }: Props) {
   const [selectedDialCode, setSelectedDialCode] = useState('+1');
   const { authUser } = useAuthContext();
   const { company } = useCurrentCompany();
+
+  // Get companyId once and memoize it
+  const companyId = useMemo(() => authUser?.companyId || '', [authUser?.companyId]);
+
+  const departmentParams = useMemo(
+    () => ({
+      orderBy: 'lastUpdated' as const,
+      direction: 'desc' as const,
+    }),
+    [],
+  ); // These values never change, so empty dependency array is fine
+
   const { departments } = useDepartments({
-    companyId: authUser?.companyId || 'xyz',
-    params: {
-      orderBy: 'lastUpdated',
-      direction: 'desc',
-    },
+    companyId,
+    params: departmentParams,
     isActive: 'active',
     docId: null,
   });
@@ -52,7 +61,7 @@ export default function User({ params }: Props) {
       const docRef = doc(fbDb, Constants.fbAdmins, docId);
       const unsubscribe = onSnapshot(
         docRef,
-        async (snapshot) => {
+        (snapshot) => {
           const data = snapshot.data() as ADMIN;
           data.displayName = data.displayName || '';
           data.photoURL = data.photoURL || getAvatarPhoto(data.displayName);
@@ -110,188 +119,192 @@ export default function User({ params }: Props) {
     }
   };
 
+  const initialValues = useMemo(
+    () => ({
+      email: admin?.email || '',
+      phoneNumber: admin?.phoneNumber || '',
+      firstName: admin?.firstName || '',
+      lastName: admin?.lastName || '',
+      idNumber: admin?.idNumber || '',
+      country: admin?.country || '',
+      company: admin?.company || {
+        docId: company?.docId,
+        name: company?.name || '',
+        email: company?.email || '',
+        phoneNumber: company?.phoneNumber || '',
+        regNumber: company?.regNumber || '',
+      },
+      department: admin?.department || '',
+      roles: admin?.roles || [],
+      rolesMap: admin?.rolesMap || {
+        companyId: company?.docId,
+        isActive: false,
+        isAdmin: false,
+        isOwner: false,
+      },
+      updatedBy: {
+        authId: authUser?.uid,
+        email: authUser?.email,
+      },
+    }),
+    [admin, company, authUser],
+  );
+
   if (!company) return <></>;
 
   return (
     <main className="-mx-4 rounded bg-white p-4">
       <Formik
         enableReinitialize={true}
-        initialValues={{
-          email: admin?.email || '',
-          phoneNumber: admin?.phoneNumber || '',
-          firstName: admin?.firstName || '',
-          lastName: admin?.lastName || '',
-          idNumber: admin?.idNumber || '',
-          country: admin?.country || '', // Add country to initial values
-          company: admin?.company || {
-            docId: company.docId,
-            name: company.name || '',
-            email: company.email || '',
-            phoneNumber: company.phoneNumber || '',
-            regNumber: company.regNumber || '',
-          },
-          department: admin?.department || '',
-          roles: admin?.roles || [],
-          rolesMap: admin?.rolesMap || {
-            companyId: company.docId,
-            isActive: false,
-            isAdmin: false,
-            isOwner: false,
-          },
-          updatedBy: {
-            authId: authUser?.uid,
-            email: authUser?.email,
-          },
-        }}
+        initialValues={initialValues}
         validationSchema={UserFormSchema(docId)}
         onSubmit={(values) => doSave(values)}
       >
-        {({ errors, isValid, setFieldValue, values }) => 
-          {
-            console.log('errors:', errors);
-            console.log('isValid:', isValid);
-            return (
-              <>
+        {({ errors, isValid, setFieldValue, values }) => {
+          console.log('errors:', errors);
+          console.log('isValid:', isValid);
+          return (
+            <>
               <Form className="mt-6">
-            {/* <h2 className="text-center font-bold">Account setup</h2> */}
+                {/* <h2 className="text-center font-bold">Account setup</h2> */}
 
-            <div className="mt-5 grid gap-5 p-4">
-              <label className="grid-1-3">
-                <div className="text-sm">
-                  <label className="font-medium">First Name</label>
-                </div>
-                <div className="">
-                  <Field
-                    type="text"
-                    name="firstName"
-                    className="form-input"
-                    placeholder="First Name"
-                  />
-                  {/* <ErrorMessage name="firstName" component="span" className="form-error" /> */}
-                </div>
-              </label>
-              <label className="grid-1-3">
-                <div className="text-sm">
-                  <label className="font-medium">Last Name</label>
-                </div>
-                <div className="">
-                  <Field
-                    type="text"
-                    name="lastName"
-                    className="form-input"
-                    placeholder="Last Name"
-                  />
-                  {/* <ErrorMessage name="lastName" component="span" className="form-error" /> */}
-                </div>
-              </label>
-              <label className="grid-1-3">
-                <div className="text-sm">
-                  <label className="font-medium">Email Address</label>
-                </div>
-                <div className="">
-                  <Field
-                    type="email"
-                    name="email"
-                    className="form-input"
-                    placeholder="Email Address"
-                    disabled={docId !== 'new'}
-                  />
-                </div>
-              </label>
-              <label className="grid-1-3">
-                <div className="text-sm">
-                  <label className="font-medium">Country</label>
-                </div>
-                <div className="relative">
-                  <CountrySelect
-                    value={values.country}
-                    onChange={(value: any) => setFieldValue('country', value)}
-                    onDialCodeChange={setSelectedDialCode}
-                    error={errors.country}
-                    as="div"
-                  />
-                </div>
-              </label>
-              <label className="grid-1-3">
-                <div className="text-sm">
-                  <label className="font-medium">Phone Number</label>
-                </div>
-                <div>
-                  <PhoneNumberInput
-                    name="phoneNumber"
-                    dialCode={selectedDialCode}
-                    error={errors.phoneNumber}
-                  />
-                </div>
-              </label>
-              <label className="grid-1-3">
-                <div className="text-sm">
-                  <label className="font-medium">ID Number</label>
-                </div>
-                <div className="">
-                  <Field
-                    type="number"
-                    name="idNumber"
-                    className="form-input"
-                    placeholder="ID Number"
-                  />
-                  {/* <ErrorMessage name="idNumber" component="span" className="form-error" /> */}
-                </div>
-              </label>
-
-              <hr className="my-3" />
-
-              <DepartmentAdminView
-                admin={admin}
-                departments={departments}
-                setFieldValue={setFieldValue}
-                errors={errors}
-              />
-              {/* <ErrorMessage name="department.docId" component="span" className="form-error" /> */}
-
-              <div className="grid-1-3 mt-5">
-                <div className="text-sm">
-                  <label className="font-medium">Settings</label>
-                </div>
-                <div className="grid gap-3">
-                  <label className="flex items-center gap-5">
-                    <Field type="checkbox" name="rolesMap.isActive" className="form-checkbox" />
-                    <span className="form-label">Is Active</span>
+                <div className="mt-5 grid gap-5 p-4">
+                  <label className="grid-1-3">
+                    <div className="text-sm">
+                      <label className="font-medium">First Name</label>
+                    </div>
+                    <div className="">
+                      <Field
+                        type="text"
+                        name="firstName"
+                        className="form-input"
+                        placeholder="First Name"
+                      />
+                      {/* <ErrorMessage name="firstName" component="span" className="form-error" /> */}
+                    </div>
                   </label>
-                  <label className="flex items-center gap-5">
-                    <Field type="checkbox" name="rolesMap.isAdmin" className="form-checkbox" />
-                    <span className="form-label">Is Company Admin</span>
+                  <label className="grid-1-3">
+                    <div className="text-sm">
+                      <label className="font-medium">Last Name</label>
+                    </div>
+                    <div className="">
+                      <Field
+                        type="text"
+                        name="lastName"
+                        className="form-input"
+                        placeholder="Last Name"
+                      />
+                      {/* <ErrorMessage name="lastName" component="span" className="form-error" /> */}
+                    </div>
                   </label>
-                  <label className="flex items-center gap-5">
-                    <Field type="checkbox" name="rolesMap.isOwner" className="form-checkbox" />
-                    <span className="form-label">Is Company Owner</span>
+                  <label className="grid-1-3">
+                    <div className="text-sm">
+                      <label className="font-medium">Email Address</label>
+                    </div>
+                    <div className="">
+                      <Field
+                        type="email"
+                        name="email"
+                        className="form-input"
+                        placeholder="Email Address"
+                        disabled={docId !== 'new'}
+                      />
+                    </div>
                   </label>
+                  <label className="grid-1-3">
+                    <div className="text-sm">
+                      <label className="font-medium">Country</label>
+                    </div>
+                    <div className="relative">
+                      <CountrySelect
+                        value={values.country}
+                        onChange={(value: any) => setFieldValue('country', value)}
+                        onDialCodeChange={setSelectedDialCode}
+                        error={errors.country}
+                        as="div"
+                      />
+                    </div>
+                  </label>
+                  <label className="grid-1-3">
+                    <div className="text-sm">
+                      <label className="font-medium">Phone Number</label>
+                    </div>
+                    <div>
+                      <PhoneNumberInput
+                        name="phoneNumber"
+                        dialCode={selectedDialCode}
+                        error={errors.phoneNumber}
+                      />
+                    </div>
+                  </label>
+                  <label className="grid-1-3">
+                    <div className="text-sm">
+                      <label className="font-medium">ID Number</label>
+                    </div>
+                    <div className="">
+                      <Field
+                        type="number"
+                        name="idNumber"
+                        className="form-input"
+                        placeholder="ID Number"
+                      />
+                      {/* <ErrorMessage name="idNumber" component="span" className="form-error" /> */}
+                    </div>
+                  </label>
+
+                  <hr className="my-3" />
+
+                  <DepartmentAdminView
+                    admin={admin}
+                    departments={departments}
+                    setFieldValue={setFieldValue}
+                    errors={errors}
+                    values={values} // Add this prop
+                  />
+                  {/* <ErrorMessage name="department.docId" component="span" className="form-error" /> */}
+
+                  <div className="grid-1-3 mt-5">
+                    <div className="text-sm">
+                      <label className="font-medium">Settings</label>
+                    </div>
+                    <div className="grid gap-3">
+                      <label className="flex items-center gap-5">
+                        <Field type="checkbox" name="rolesMap.isActive" className="form-checkbox" />
+                        <span className="form-label">Is Active</span>
+                      </label>
+                      <label className="flex items-center gap-5">
+                        <Field type="checkbox" name="rolesMap.isAdmin" className="form-checkbox" />
+                        <span className="form-label">Is Company Admin</span>
+                      </label>
+                      <label className="flex items-center gap-5">
+                        <Field type="checkbox" name="rolesMap.isOwner" className="form-checkbox" />
+                        <span className="form-label">Is Company Owner</span>
+                      </label>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <hr className="my-3" />
+                <hr className="my-3" />
 
-            <div className="grid-1-3 mt-10 gap-5">
-              <p className=""></p>
-              <div className="flex justify-end gap-5">
-                <Link href="/administration" className="btn btn-outline">
-                  Cancel
-                </Link>
-                <button
-                  type="submit"
-                  disabled={!isValid || !authUser}
-                  className="btn btn-secondary"
-                >
-                  Save
-                </button>
-              </div>
-            </div>
-          </Form>
-          </>
-        )
-        }
-        }
+                <div className="grid-1-3 mt-10 gap-5">
+                  <p className=""></p>
+                  <div className="flex justify-end gap-5">
+                    <Link href="/administration" className="btn btn-outline">
+                      Cancel
+                    </Link>
+                    <button
+                      type="submit"
+                      disabled={!isValid || !authUser}
+                      className="btn btn-secondary"
+                    >
+                      Save
+                    </button>
+                  </div>
+                </div>
+              </Form>
+            </>
+          );
+        }}
       </Formik>
     </main>
   );
