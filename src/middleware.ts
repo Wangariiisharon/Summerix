@@ -123,6 +123,9 @@ export async function middleware(req: NextRequest) {
   });
 }
 
+// export const config = {
+//   matcher: ['/', '/((?!_next|api|.*\.).*)', '/api/login', '/api/logout'],
+// };
 export const config = {
-  matcher: ['/', '/((?!_next|api|.*\.).*)', '/api/login', '/api/logout'],
+  matcher: ['/', '/((?!_next|api|.*).*)', '/api/login', '/api/logout'],
 };
