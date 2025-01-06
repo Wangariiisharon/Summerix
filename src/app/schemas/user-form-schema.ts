@@ -1,9 +1,11 @@
 import * as Yup from 'yup';
 import Constants from '@/Constants';
 import { getAdminByEmail, getAdminByPhoneNumber } from '@/services/admin';
+import { validatePhoneNumberForCountry } from '@/services/utils';
 
 export const UserFormSchema = (docId: string) => {
   // console.log('docId:', docId);
+
   return Yup.object().shape({
     firstName: Yup.string().required('First name is required.'),
     lastName: Yup.string().required('Last name is required.'),
@@ -31,7 +33,14 @@ export const UserFormSchema = (docId: string) => {
     phoneNumber: Yup.string()
       .trim()
       .required('Phone number is required.')
-      .matches(Constants.phoneRegExp, 'Phone number is not valid.')
+      .test({
+        name: 'phone',
+        message: 'Invalid phone number for selected country',
+        test: function (value) {
+          const { parent } = this;
+          return validatePhoneNumberForCountry(value, parent.country);
+        },
+      })
       .test({
         exclusive: true,
         name: 'admin-phone',
@@ -49,4 +58,4 @@ export const UserFormSchema = (docId: string) => {
         },
       }),
   });
-};
+}
