@@ -1,14 +1,13 @@
 'use client';
 
+import React from 'react';
+
 export default function Reports() {
   return (
-    <main className="">
-      <h2 className="font-bold">Reports</h2>
-      <p className="mt-5">
-        Lorem ipsum dolor sit amet consectetur, adipisicing elit. Animi eos neque laborum corporis
-        dolore molestias. Modi unde in magnam neque corporis nam, rerum, optio aspernatur ipsam
-        minima ad accusamus recusandae!
-      </p>
-    </main>
+    <div>
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+      labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+      laboris nisi ut aliquip ex ea commodo consequat.
+    </div>
   );
 }
