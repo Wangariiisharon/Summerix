@@ -62,6 +62,7 @@ export async function middleware(req: NextRequest) {
   return authMiddleware(req, {
     loginPath: '/api/login',
     logoutPath: '/api/logout',
+    refreshTokenPath: '/api/refresh-token',
     apiKey: clientConfig.apiKey,
     cookieName: serverConfig.cookieName,
     cookieSignatureKeys: serverConfig.cookieSignatureKeys,
@@ -114,6 +115,7 @@ export async function middleware(req: NextRequest) {
       console.error('Unhandled authentication error', { error });
       return redirectToLogin(req, {
         publicPaths: publicRoutes,
+        path: '/auth/sign-in',
         path: '/auth/sign-in',
       });
     },
