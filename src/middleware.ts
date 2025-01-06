@@ -80,6 +80,8 @@ export async function middleware(req: NextRequest) {
       });
 
       // Authenticated user should not be able to access 'public routes'
+      // Authenticated user should not be able to access 'public routes'
+
       if (publicRoutes.includes(pathname)) {
         return redirectToHome(req);
       }
@@ -115,7 +117,6 @@ export async function middleware(req: NextRequest) {
       console.error('Unhandled authentication error', { error });
       return redirectToLogin(req, {
         publicPaths: publicRoutes,
-        path: '/auth/sign-in',
         path: '/auth/sign-in',
       });
     },
