@@ -15,6 +15,13 @@ import {
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
+// interface QueryParams {
+//   orderBy: 'lastUpdated';
+//   direction: 'desc' | 'asc';
+//   cursor?: any;
+//   max?: number;
+// }
+
 interface Props {
   companyId: string;
   docId: string | null;
@@ -60,17 +67,14 @@ function useDepartments({ companyId, docId, params, isActive }: Props) {
 
     const unsubscribe = onSnapshot(
       query(colRef, ...constraints),
-      async (snapshot) => {
-        const promises = snapshot.docs.map(async (doc) => {
+      (snapshot) => {
+        const results = snapshot.docs.map((doc) => {
           const data = doc.data() as DEPARTMENT;
           data.doc = doc; // QueryDocumentSnapshot
           data.docId = doc.id;
-
           return data;
         });
 
-        const results = await Promise.all(promises);
-        // console.debug('useAdmins > results:', results.length);
         setDepartments(results);
       },
       (error) => {
@@ -79,7 +83,7 @@ function useDepartments({ companyId, docId, params, isActive }: Props) {
     );
 
     return () => unsubscribe();
-  }, [companyId, docId, params, isActive]);
+  }, [companyId, docId, isActive, params?.orderBy, params?.direction, params?.cursor, params?.max]);
 
   return {
     departments,

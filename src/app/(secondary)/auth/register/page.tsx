@@ -25,9 +25,9 @@ const SignUpSchema = () => {
         name: 'client-email',
         message: 'Email is already in use.',
         test: async function (value: any) {
-          if (!value) return true;
+          if (!value?.trim()) return true;
 
-          const snapshot = await getClientByEmail(value);
+          const snapshot = await getClientByEmail(value.trim());
           if (!snapshot.empty) {
             const id = this.parent.docId;
             const doc = snapshot.docs[0];
@@ -37,7 +37,9 @@ const SignUpSchema = () => {
           return snapshot.empty;
         },
       }),
-    password: Yup.string().required('Password is required.'),
+    password: Yup.string()
+      .required('Password is required.')
+      .min(6, 'Password must be at least 6 characters'),
     password2: Yup.string()
       .required('Confirm password is required.')
       .oneOf([Yup.ref('password')], 'Passwords do not match.'),
@@ -135,6 +137,7 @@ export default function RegisterPage() {
                   name="email"
                   placeholder="Your email address"
                   className="form-input"
+                  autoComplete="email"
                 />
                 <ErrorMessage name="email" component="span" className="form-error" />
               </label>
@@ -145,6 +148,7 @@ export default function RegisterPage() {
                   name="password"
                   placeholder="Enter your password"
                   className="form-input"
+                  autoComplete="new-password"
                 />
                 <ErrorMessage name="password" component="span" className="form-error" />
               </label>
