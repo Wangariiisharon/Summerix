@@ -5,7 +5,7 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const apps = getApps();
-
+console.debug('apps:', apps);
 if (!apps.length || apps.length === 0) {
   console.debug('do initialize firebase...');
 
@@ -15,7 +15,7 @@ if (!apps.length || apps.length === 0) {
     console.error('FIREBASE INIT ERROR:::', error);
   }
 }
-
+console.debug('apps:', getApps());
 const firebaseApp = getApps()[0];
 export const fbDb = getFirestore(firebaseApp);
 export const fbAuth = getAuth(firebaseApp);
