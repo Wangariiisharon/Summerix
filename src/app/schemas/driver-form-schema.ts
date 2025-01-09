@@ -1,25 +1,22 @@
 import * as Yup from 'yup';
-import { getClientByEmail, getClientByPhoneNumber } from '@/services/client';
+import { getDriverByEmail, getDriverByPhoneNumber } from '@/services/driver';
 
-export const ClientFormSchema = (docId: string) => {
+export const DriverFormSchema = (companyId: string, docId: string) => {
   return Yup.object().shape({
-    companyName: Yup.string().required('Company Name is required.'),
-    contactInfo: Yup.string().required('Contact Information is required.'),
-    currency: Yup.string().required('Currency is required.'),
-
+    firstName: Yup.string().required('First name is required.'),
+    lastName: Yup.string().required('First name is required.'),
     email: Yup.string()
       .trim()
       .required('Email is required.')
       .email('Enter a valid email address.')
       .test({
         exclusive: true,
-        name: 'admin-email',
+        name: 'driver-email',
         message: 'Email is already in use.',
         test: async function (value: any) {
           if (!value) return true;
 
-          const snapshot = await getClientByEmail(value);
-          console.log('snapshot:', snapshot);
+          const snapshot = await getDriverByEmail(companyId, value);
           if (!snapshot.empty) {
             const doc = snapshot.docs[0];
             return doc.id?.trim() === docId;
@@ -38,11 +35,11 @@ export const ClientFormSchema = (docId: string) => {
       .test({
         exclusive: true,
         name: 'admin-phone',
-        message: 'Phone number is already in use as client.',
+        message: 'Phone number is already in use as driver.',
         test: async function (value: any) {
           if (!value) return true;
 
-          const snapshot = await getClientByPhoneNumber(value);
+          const snapshot = await getDriverByPhoneNumber(companyId, value);
           if (!snapshot.empty) {
             const doc = snapshot.docs[0];
             return doc.id?.trim() === docId;
