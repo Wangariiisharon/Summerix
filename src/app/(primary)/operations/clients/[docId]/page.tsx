@@ -5,7 +5,7 @@ import { useAuthContext } from '@/app/auth-provider';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { CLIENT } from '@/models/client';
-
+import { PhoneNumberInput } from '@/components/form-fields/phone-number-select';
 import { getAdminByEmail, getAdminByPhoneNumber } from '@/services/admin';
 import {
   addDoc,
@@ -22,54 +22,7 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
 import { getAvatarPhoto } from '@/services/utils';
-
-const AdminSchema = (docId: string) => {
-  return Yup.object().shape({
-    firstName: Yup.string().required('First name is required.'),
-    lastName: Yup.string().required('Last name is required.'),
-    currency: Yup.string().required('Currency is required.'),
-    email: Yup.string()
-      .trim()
-      .required('Email is required.')
-      .email('Enter a valid email address.')
-      .test({
-        exclusive: true,
-        name: 'admin-email',
-        message: 'Email is already in use.',
-        test: async function (value: any) {
-          if (!value) return true;
-
-          const snapshot = await getAdminByEmail(value);
-          if (!snapshot.empty) {
-            const doc = snapshot.docs[0];
-            return doc.id?.trim() === docId;
-          }
-
-          return snapshot.empty;
-        },
-      }),
-    phoneNumber: Yup.string()
-      .trim()
-      .required('Phone number is required.')
-      .matches(Constants.phoneRegExp, 'Phone number is not valid.')
-      .test({
-        exclusive: true,
-        name: 'admin-phone',
-        message: 'Phone number is already in use as admin.',
-        test: async function (value: any) {
-          if (!value) return true;
-
-          const snapshot = await getAdminByPhoneNumber(value);
-          if (!snapshot.empty) {
-            const doc = snapshot.docs[0];
-            return doc.id?.trim() === docId;
-          }
-
-          return snapshot.empty;
-        },
-      }),
-  });
-};
+import { ClientFormSchema } from '@/app/schemas/client-form-schema';
 
 type Props = {
   params: { docId: string };
@@ -173,10 +126,10 @@ export default function Client({ params }: Props) {
             email: authUser?.email,
           },
         }}
-        validationSchema={AdminSchema(docId)}
+        validationSchema={ClientFormSchema(docId)}
         onSubmit={(values) => doSave(values)}
       >
-        {({ isValid }) => (
+        {({ errors, isValid }) => (
           <Form className="mt-6">
             <div className="mt-5 grid gap-5 p-4">
               <label className="grid-1-3">
@@ -227,13 +180,13 @@ export default function Client({ params }: Props) {
                   <label className="font-medium">Phone Number</label>
                 </div>
                 <div className="">
-                  <Field
+                  {/* <Field
                     type="tel"
                     name="phoneNumber"
                     className="form-input"
                     placeholder="Phone Number"
-                  />
-                  <ErrorMessage name="phoneNumber" component="span" className="form-error" />
+                  /> */}
+                  <PhoneNumberInput name="phoneNumber" dialCode="" error={errors.phoneNumber} />
                 </div>
               </label>
               <label className="grid-1-3">
