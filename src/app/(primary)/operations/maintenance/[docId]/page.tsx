@@ -272,10 +272,10 @@ export default function Maintenance({ params }: Props) {
                   <div className="text-sm">
                     <label className="font-medium"></label>
                   </div>
-                  <label className="flex items-center gap-5">
+                  {/* <label className="flex items-center gap-5">
                     <Field type="checkbox" name="isApproved" className="form-checkbox" />
                     <span className="form-label">Is Approved</span>
-                  </label>
+                  </label> */}
                 </label>
               </div>
             </div>
