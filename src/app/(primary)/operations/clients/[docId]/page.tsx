@@ -1,12 +1,10 @@
 'use client';
 
-import * as Yup from 'yup';
 import { useAuthContext } from '@/app/auth-provider';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { CLIENT } from '@/models/client';
 import { PhoneNumberInput } from '@/components/form-fields/phone-number-select';
-import { getAdminByEmail, getAdminByPhoneNumber } from '@/services/admin';
 import {
   addDoc,
   collection,
@@ -15,7 +13,7 @@ import {
   serverTimestamp,
   updateDoc,
 } from 'firebase/firestore';
-import { ErrorMessage, Field, Form, Formik } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -65,7 +63,7 @@ export default function Client({ params }: Props) {
     }
 
     try {
-      formValues.displayName = `${formValues.firstName.trim()} ${formValues.lastName.trim()}`;
+      formValues.displayName = `${formValues.companyName.trim()}}`;
 
       if (docId === 'new') {
         const colRef = collection(fbDb, Constants.fbClients);
@@ -73,8 +71,8 @@ export default function Client({ params }: Props) {
           ...formValues,
           email: formValues.email.trim(),
           phoneNumber: formValues.phoneNumber.trim(),
-          firstName: formValues.firstName.trim(),
-          lastName: formValues.lastName.trim(),
+          companyName: formValues.companyName.trim(),
+          contactInfo: formValues.contactInfo.trim(),
           createdBy: {
             authId: authUser.uid,
             email: authUser.email,
@@ -108,8 +106,8 @@ export default function Client({ params }: Props) {
         initialValues={{
           email: client?.email || '',
           phoneNumber: client?.phoneNumber || '',
-          firstName: client?.firstName || '',
-          lastName: client?.lastName || '',
+          companyName: client?.companyName || '',
+          contactInfo: client?.contactInfo || '',
           idNumber: client?.idNumber || '',
           company: client?.company || {
             docId: company.docId,
@@ -134,30 +132,30 @@ export default function Client({ params }: Props) {
             <div className="mt-5 grid gap-5 p-4">
               <label className="grid-1-3">
                 <div className="text-sm">
-                  <label className="font-medium">First Name</label>
+                  <label className="font-medium">Company Name</label>
                 </div>
                 <div className="">
                   <Field
                     type="text"
-                    name="firstName"
+                    name="companyName"
                     className="form-input"
-                    placeholder="First Name"
+                    placeholder="Company Name"
                   />
-                  <ErrorMessage name="firstName" component="span" className="form-error" />
+                  {/* <ErrorMessage name="firstName" component="span" className="form-error" />  */}
                 </div>
               </label>
               <label className="grid-1-3">
                 <div className="text-sm">
-                  <label className="font-medium">Last Name</label>
+                  <label className="font-medium">Contact Information</label>
                 </div>
                 <div className="">
                   <Field
                     type="text"
-                    name="lastName"
+                    name="contactInfo"
                     className="form-input"
-                    placeholder="Last Name"
+                    placeholder="Contact Information"
                   />
-                  <ErrorMessage name="lastName" component="span" className="form-error" />
+                  {/* <ErrorMessage name="lastName" component="span" className="form-error" /> */}
                 </div>
               </label>
               <label className="grid-1-3">
@@ -172,7 +170,7 @@ export default function Client({ params }: Props) {
                     placeholder="Email Address"
                     disabled={docId !== 'new'}
                   />
-                  <ErrorMessage name="email" component="span" className="form-error" />
+                  {/* <ErrorMessage name="email" component="span" className="form-error" /> */}
                 </div>
               </label>
               <label className="grid-1-3">
@@ -180,12 +178,6 @@ export default function Client({ params }: Props) {
                   <label className="font-medium">Phone Number</label>
                 </div>
                 <div className="">
-                  {/* <Field
-                    type="tel"
-                    name="phoneNumber"
-                    className="form-input"
-                    placeholder="Phone Number"
-                  /> */}
                   <PhoneNumberInput name="phoneNumber" dialCode="" error={errors.phoneNumber} />
                 </div>
               </label>
@@ -200,7 +192,7 @@ export default function Client({ params }: Props) {
                     className="form-input"
                     placeholder="ID Number"
                   />
-                  <ErrorMessage name="idNumber" component="span" className="form-error" />
+                  {/* <ErrorMessage name="idNumber" component="span" className="form-error" /> */}
                 </div>
               </label>
               <label className="grid-1-3">
@@ -214,7 +206,7 @@ export default function Client({ params }: Props) {
                     className="form-input"
                     placeholder="Currency"
                   />
-                  <ErrorMessage name="currency" component="span" className="form-error" />
+                  {/* <ErrorMessage name="currency" component="span" className="form-error" /> */}
                 </div>
               </label>
 

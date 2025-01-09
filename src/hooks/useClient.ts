@@ -63,7 +63,7 @@ function useClient({ companyId, docId, params, isActive }: Props) {
           const data = doc.data() as CLIENT;
           data.doc = doc; // QueryDocumentSnapshot
           data.docId = doc.id;
-          data.displayName = `${data.firstName} ${data.lastName}`;
+          data.displayName = `${data.companyName}`;
           data.photoURL = data.photoURL || getAvatarPhoto(data.displayName);
 
           return data;
