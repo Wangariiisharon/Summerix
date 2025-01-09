@@ -178,7 +178,7 @@ export default function Client({ params }: Props) {
                   <label className="font-medium">Phone Number</label>
                 </div>
                 <div className="">
-                  <PhoneNumberInput name="phoneNumber" dialCode="" error={errors.phoneNumber} />
+                  <PhoneNumberInput name="phoneNumber" error={errors.phoneNumber} />
                 </div>
               </label>
               <label className="grid-1-3">
