@@ -38,6 +38,8 @@ function useJobcards({ companyId, docId, params }: Props) {
       constraints.push(where('company.docId', '==', companyId));
     }
 
+    constraints.push(where('isArchived', '==', false));
+
     getCountFromServer(query(colRef, ...constraints)).then((countSnap) => {
       setCount(countSnap.data().count);
     });
