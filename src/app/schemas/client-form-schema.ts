@@ -3,8 +3,8 @@ import { getClientByEmail, getClientByPhoneNumber } from '@/services/client';
 
 export const ClientFormSchema = (docId: string) => {
   return Yup.object().shape({
-    firstName: Yup.string().required('First name is required.'),
-    lastName: Yup.string().required('Last name is required.'),
+    companyName: Yup.string().required('Company Name is required.'),
+    contactInfo: Yup.string().required('Contact Information is required.'),
     currency: Yup.string().required('Currency is required.'),
 
     email: Yup.string()
