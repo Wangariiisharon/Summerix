@@ -1,6 +1,5 @@
 'use client';
 
-import * as Yup from 'yup';
 import { useAuthContext } from '@/app/auth-provider';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
@@ -25,41 +24,18 @@ import TripAddressInput from './address-input';
 import TripVehicle from './vehicle';
 import Image from 'next/image';
 import moment from 'moment';
-
-const TripSchema = () => {
-  return Yup.object().shape({
-    from: Yup.object().shape({
-      location: Yup.string().required('From location is required.'),
-    }),
-    to: Yup.object().shape({
-      location: Yup.string().required('To location is required.'),
-    }),
-    vehicle: Yup.object().shape({
-      regNumber: Yup.string().required('Vehicle reg. number is required.'),
-    }),
-    schedule: Yup.object().shape({
-      startAt: Yup.date()
-        .required('Start time is required.')
-        .test('dates-test-1', 'Cannot be before today.', (value) => {
-          const testDate = moment().startOf('day').toDate();
-          return value ? moment(value, 'MM/DD/YYYY').toDate() >= testDate : true;
-        }),
-      endAt: Yup.date()
-        .required('End time is required.')
-        .test('dates-test-2', 'Should be after start time.', (value, context) => {
-          const testDate = moment(context.parent.startAt, 'MM/DD/YYYY').toDate();
-          return value ? moment(value, 'MM/DD/YYYY').toDate() >= testDate : true;
-        }),
-    }),
-    status: Yup.string().required('Status is required.'),
-  });
-};
+import { TripFormSchema } from '@/app/schemas/trip-form-schema';
+import TripClasses from './class';
+import TripClients from './client';
+import { DocumentIcon, EyeIcon } from '@heroicons/react/24/outline';
+import DeleteDocumentButton from './button-delete-document';
+import AddDocumentButton from './button-add-document';
 
 type Props = {
   params: { docId: string };
 };
 
-export default function Vehicle({ params }: Props) {
+export default function Trip({ params }: Props) {
   const [trip, setTrip] = useState<TRIP>();
   const { authUser } = useAuthContext();
   const { company } = useCurrentCompany();
@@ -86,7 +62,7 @@ export default function Vehicle({ params }: Props) {
   }, [docId]);
 
   const doSave = async (formValues: any) => {
-    console.debug('doSave > formValues:', formValues);
+    console.log('doSave > formValues:', formValues);
     if (!(authUser?.isAdmin || authUser?.isOwner)) {
       toast.error('You are not authorised to manage trips.');
       return;
@@ -151,6 +127,22 @@ export default function Vehicle({ params }: Props) {
           },
           driver: trip?.driver || null,
           vehicle: trip?.vehicle || null,
+          documents: trip?.documents || [],
+          class: trip?.class || null,
+          cargoType: trip?.cargoType || null,
+          memo: trip?.memo || '',
+          containerNumber: trip?.containerNumber || '',
+          // distance: {
+          //   text: trip?.distance?.text || '',
+          //   value: trip?.distance?.value || 0,
+          // },
+          payments: {
+            dealValue: trip?.payments?.dealValue || 0,
+            paidAmount: trip?.payments?.paidAmount || 0,
+            mileageFee: trip?.payments?.mileageFee || 0,
+          },
+          fuel: trip?.fuel || 0,
+
           schedule: trip?.schedule
             ? {
                 startAt: trip.schedule.startAt
@@ -169,7 +161,7 @@ export default function Vehicle({ params }: Props) {
             email: authUser?.email,
           },
         }}
-        validationSchema={TripSchema()}
+        validationSchema={TripFormSchema}
         onSubmit={(values) => doSave(values)}
       >
         {({ isValid, setFieldValue, values }) => (
@@ -211,6 +203,52 @@ export default function Vehicle({ params }: Props) {
                 />
               </label>
 
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Class</label>
+                </div>
+                <TripClasses setFieldValue={setFieldValue} trip={trip} />
+              </label>
+
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Client</label>
+                </div>
+                <TripClients setFieldValue={setFieldValue} trip={trip} />
+              </label>
+
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Deal Value</label>
+                </div>
+                <div className="block">
+                  <Field type="number" name="payments.dealValue" className="form-input" />
+                </div>
+              </label>
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Paid Amount</label>
+                </div>
+                <div className="block">
+                  <Field type="number" name="payments.paidAmount" className="form-input" />
+                </div>
+              </label>
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Mileage Fee</label>
+                </div>
+                <div className="block">
+                  <Field type="number" name="payments.mileageFee" className="form-input" />
+                </div>
+              </label>
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Fuel</label>
+                </div>
+                <div className="block">
+                  <Field type="number" name="payments.fuel" className="form-input" />
+                </div>
+              </label>
               {trip && trip.driver && (
                 <div className="grid-1-3 gap-5">
                   <div className="text-sm">
@@ -261,6 +299,14 @@ export default function Vehicle({ params }: Props) {
               </label>
               <label className="grid-1-3">
                 <div className="text-sm">
+                  <label className="font-medium">Memo</label>
+                </div>
+                <div className="block">
+                  <Field type="text" name="memo" className="form-input" placeholder="Optional" />
+                </div>
+              </label>
+              <label className="grid-1-3">
+                <div className="text-sm">
                   <label className="font-medium">Status</label>
                 </div>
                 <div className="">
@@ -285,6 +331,47 @@ export default function Vehicle({ params }: Props) {
                 </div>
               </label>
             </div>
+            {trip && (
+              <div className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Documents</label>
+                </div>
+                <div className="grid gap-3">
+                  {values.documents.map((document, i) => {
+                    return (
+                      <div
+                        key={`${document.downloadURL}-${i}`}
+                        className="flex items-center justify-between gap-5 rounded bg-gray-100 px-4 py-2"
+                      >
+                        <div className="flex items-center gap-4">
+                          <DocumentIcon className="h-12 w-12" />
+                          <div className="grid gap-0.5">
+                            <p className="">{document.fileName}</p>
+                            <Link
+                              href={document.downloadURL}
+                              className="flex items-center gap-2 text-xs text-primary hover:opacity-50"
+                              target="_blank"
+                            >
+                              <EyeIcon className="h-4 w-4" /> View File
+                            </Link>
+                          </div>
+                        </div>
+
+                        <DeleteDocumentButton document={document} trip={trip} />
+                        {/* {trip && <DeleteDocumentButton document={document} trip={trip} />} */}
+                      </div>
+                    );
+                  })}
+
+                  {values.documents.length === 0 && (
+                    <p className="text-gray-400">No items to display.</p>
+                  )}
+                </div>
+                <div className="">
+                  <AddDocumentButton trip={trip} />
+                </div>
+              </div>
+            )}
 
             <div className="grid-1-3 mt-10 gap-5">
               <p className=""></p>
