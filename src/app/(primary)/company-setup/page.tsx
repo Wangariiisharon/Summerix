@@ -32,7 +32,7 @@ export default function CompanySetup() {
       });
 
       toast.success('Company profile saved successfully.');
-      router.push('/');
+      router.push('/account');
     } catch (error) {
       console.error('Save error:', error);
       const appError = error as AppError;
