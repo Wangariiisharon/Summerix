@@ -93,7 +93,7 @@ export default function AccountPage() {
           { merge: true },
         );
         toast.success('Account saved successfully.');
-        router.push('/');
+        router.push('/auth/sign-in');
       }
     } catch (error) {
       console.error('doSaveAccount error:', error);
