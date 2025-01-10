@@ -11,11 +11,11 @@ import { DRIVER_DETAILS } from './driver';
 import { VEHICLE_DETAILS } from './vehicle';
 import { ADDRESS } from './address';
 import { DOCUMENT } from './document';
+import { CLASS_DETAILS } from '@/models/class';
 
 export interface TRIP {
   docId: string;
   status: string;
-
   company: COMPANY_DETAILS;
   client: CLIENT_DETAILS; // requested by
   driver: DRIVER_DETAILS;
@@ -24,6 +24,10 @@ export interface TRIP {
   to: ADDRESS; // drop-off location details
   cargo: any; // cargo details e.g. size, type, quantity
   documents?: DOCUMENT[];
+  class: CLASS_DETAILS;
+  cargoType: string;
+  memo: string;
+  containerNumber: string;
 
   distance: {
     text: string;
@@ -37,13 +41,13 @@ export interface TRIP {
   payments: {
     dealValue: number;
     paidAmount: number;
-    remainingAmount: number;
-    excessWeightFee: string;
+    // remainingAmount: number;
+    // excessWeightFee: string;
     mileageFee: number;
   };
 
   fuel: {
-    amount: number;
+    // amount: number;
     cost: number;
   };
 
