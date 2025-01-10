@@ -7,7 +7,7 @@ import { ErrorMessage, Field, Form, Formik } from 'formik';
 import Link from 'next/link';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import { getClientByEmail } from '@/services/client';
+// import { getClientByEmail } from '@/services/client';
 import Constants from '@/Constants';
 import { useRouter } from 'next/navigation';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
