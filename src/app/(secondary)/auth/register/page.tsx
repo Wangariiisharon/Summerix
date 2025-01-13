@@ -30,7 +30,6 @@ const SignUpSchema = () => {
     //       const doc = snapshot.docs[0];
     //       return doc.id?.trim() === id?.trim();
     //     }
-
     //     return snapshot.empty;
     //   },
     // })
