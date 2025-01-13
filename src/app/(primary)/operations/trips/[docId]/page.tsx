@@ -132,10 +132,7 @@ export default function Trip({ params }: Props) {
           cargoType: trip?.cargoType || null,
           memo: trip?.memo || '',
           containerNumber: trip?.containerNumber || '',
-          // distance: {
-          //   text: trip?.distance?.text || '',
-          //   value: trip?.distance?.value || 0,
-          // },
+
           payments: {
             dealValue: trip?.payments?.dealValue || 0,
             paidAmount: trip?.payments?.paidAmount || 0,
