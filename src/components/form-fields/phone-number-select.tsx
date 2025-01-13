@@ -2,17 +2,21 @@ import { Field } from 'formik';
 
 interface PhoneNumberInputProps {
   name: string;
-  dialCode: string;
+  dialCode?: string; // Made optional
   error?: string; // Just string now
 }
 
 export const PhoneNumberInput = ({ name, dialCode, error }: PhoneNumberInputProps) => {
   return (
     <div>
-      <div className="grid grid-cols-[80px_1fr] overflow-hidden rounded-md border border-gray-300 bg-white">
-        <div className="flex items-center justify-center border-r border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
-          {dialCode}
-        </div>
+      <div
+        className={`grid ${dialCode ? 'grid-cols-[80px_1fr]' : 'grid-cols-1'} overflow-hidden rounded-md border border-gray-300 bg-white`}
+      >
+        {dialCode && (
+          <div className="flex items-center justify-center border-r border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
+            {dialCode}
+          </div>
+        )}
         <Field
           type="tel"
           name={name}

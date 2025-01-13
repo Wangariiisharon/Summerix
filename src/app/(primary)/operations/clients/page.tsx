@@ -125,7 +125,7 @@ export default function ClientsPage() {
             <thead className="sticky top-0">
               <tr className="tr-header">
                 <th className="th"></th>
-                <th className="th text-left">Name</th>
+                <th className="th text-left">Company Name</th>
                 <th className="th table-cell-sm">Phone Number</th>
                 <th className="th table-cell-md">Status</th>
                 <th className="th table-cell-xl">Last Updated</th>
@@ -178,7 +178,7 @@ export default function ClientsPage() {
                     </td>
                     <td className="td">
                       <div className="td-actions justify-start">
-                        <Link href={`/operations/vehicles/${client.docId}`}>
+                        <Link href={`/operations/clients/${client.docId}`}>
                           <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
                         </Link>
                         <DeleteClientButton client={client} />

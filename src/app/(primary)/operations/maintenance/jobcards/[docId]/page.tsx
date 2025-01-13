@@ -24,6 +24,7 @@ import useCurrentCompany from '@/hooks/useCurrentCompany';
 const JobcardSchema = () => {
   return Yup.object().shape({
     name: Yup.string().required(' Jobcard name is required.'),
+    isArchived: Yup.boolean(), // Ensure this field is validated as a boolean
   });
 };
 
@@ -65,8 +66,6 @@ export default function Jobcard({ params }: Props) {
     }
 
     try {
-      formValues.displayName = `${formValues.name.trim()}`;
-
       if (docId === 'new') {
         const colRef = collection(fbDb, Constants.fbJobCards);
         await addDoc(colRef, {
@@ -112,7 +111,7 @@ export default function Jobcard({ params }: Props) {
             phoneNumber: company.phoneNumber || '',
             regNumber: company.regNumber || '',
           },
-          isArchived: jobcards?.isArchived,
+          isArchived: jobcards?.isArchived ?? false,
           updatedBy: {
             authId: authUser?.uid,
             email: authUser?.email,
