@@ -13,11 +13,13 @@ import { CountrySelect } from '@/components/form-fields/country-select';
 import { PhoneNumberInput } from '@/components/form-fields/phone-number-select';
 import { TimezoneSelect } from '@/components/form-fields/timezone-select';
 import { CurrencySelect } from '@/components/form-fields/currency-select';
+import { fbAuth } from '@/firebase/configs';
+import { doLogoutApiCall } from '@/services/auth';
 
 export default function CompanySetup() {
   const [processing, setProcessing] = useState(false);
   const [selectedDialCode, setSelectedDialCode] = useState('+1');
-  const { authUser } = useAuthContext();
+  const { appCheck, authUser } = useAuthContext();
   const router = useRouter();
 
   const handleSave = async (formValues: Company) => {
@@ -32,7 +34,12 @@ export default function CompanySetup() {
       });
 
       toast.success('Company profile saved successfully.');
-      router.push('/account');
+
+      await fbAuth.signOut();
+      await doLogoutApiCall(appCheck);
+      router.push('/auth/sign-in');
+
+      // router.push('/auth/sign-in');
     } catch (error) {
       console.error('Save error:', error);
       const appError = error as AppError;
