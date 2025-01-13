@@ -20,6 +20,7 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function Home() {
   const { authUser } = useAuthContext();
+
   const [dateRange, setDateRange] = useState('thisMonth');
   const params = useDateRangeFilter({ dateRange });
   const [tripStats, setTripStats] = useState({

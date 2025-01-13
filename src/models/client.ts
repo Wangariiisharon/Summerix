@@ -5,8 +5,8 @@ export interface CLIENT {
   docId: string;
 
   company: COMPANY_DETAILS;
-  firstName: string;
-  lastName: string;
+  companyName: string;
+  contactInfo: string;
   displayName: string;
   isActive: boolean;
 
@@ -17,8 +17,7 @@ export interface CLIENT {
   photoURL: string;
 
   lowerCase: {
-    firstName: string;
-    lastName: string;
+    companyName: string;
   };
 
   doc: QueryDocumentSnapshot<DocumentData, DocumentData>;
@@ -33,8 +32,8 @@ export interface CLIENT {
 export interface CLIENT_DETAILS {
   docId: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  companyName: string;
+  contactInfo: string;
   phoneNumber: string;
   photoURL: string;
 }

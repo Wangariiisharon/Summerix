@@ -1,6 +1,5 @@
 'use client';
 
-import * as Yup from 'yup';
 import { useAuthContext } from '@/app/auth-provider';
 import { fbDb } from '@/firebase/configs';
 import {
@@ -11,7 +10,7 @@ import {
   serverTimestamp,
   updateDoc,
 } from 'firebase/firestore';
-import { ErrorMessage, Field, Form, Formik } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -19,60 +18,14 @@ import toast from 'react-hot-toast';
 import Constants from '@/Constants';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
 import { DRIVER } from '@/models/driver';
-import { getDriverByEmail, getDriverByPhoneNumber } from '@/services/driver';
 import { getAvatarPhoto } from '@/services/utils';
 import Image from 'next/image';
 import VehicleAllocation from './vehicle';
 import AddDocumentButton from './button-add-document';
 import { DocumentIcon, EyeIcon } from '@heroicons/react/24/outline';
 import DeleteDocumentButton from './button-delete-document';
-
-const DriverSchema = (companyId: string, docId: string) => {
-  return Yup.object().shape({
-    firstName: Yup.string().required('First name is required.'),
-    lastName: Yup.string().required('First name is required.'),
-    email: Yup.string()
-      .trim()
-      .required('Email is required.')
-      .email('Enter a valid email address.')
-      .test({
-        exclusive: true,
-        name: 'driver-email',
-        message: 'Email is already in use.',
-        test: async function (value: any) {
-          if (!value) return true;
-
-          const snapshot = await getDriverByEmail(companyId, value);
-          if (!snapshot.empty) {
-            const doc = snapshot.docs[0];
-            return doc.id?.trim() === docId;
-          }
-
-          return snapshot.empty;
-        },
-      }),
-    phoneNumber: Yup.string()
-      .trim()
-      .required('Phone number is required.')
-      .matches(Constants.phoneRegExp, 'Phone number is not valid.')
-      .test({
-        exclusive: true,
-        name: 'driver-phone',
-        message: 'Phone number is already in use as admin.',
-        test: async function (value: any) {
-          if (!value) return true;
-
-          const snapshot = await getDriverByPhoneNumber(companyId, value);
-          if (!snapshot.empty) {
-            const doc = snapshot.docs[0];
-            return doc.id?.trim() === docId;
-          }
-
-          return snapshot.empty;
-        },
-      }),
-  });
-};
+import { PhoneNumberInput } from '@/components/form-fields/phone-number-select';
+import { DriverFormSchema } from '@/app/schemas/driver-form-schema';
 
 type Props = {
   params: { docId: string };
@@ -174,10 +127,10 @@ export default function Driver({ params }: Props) {
             email: authUser?.email,
           },
         }}
-        validationSchema={DriverSchema(authUser?.companyId || 'xyz', docId)}
+        validationSchema={DriverFormSchema(authUser?.companyId || 'xyz', docId)}
         onSubmit={(values) => doSave(values)}
       >
-        {({ isValid, values }) => (
+        {({ errors, isValid, values }) => (
           <Form className="mt-6">
             {/* <h2 className="text-center font-bold">Account setup</h2> */}
 
@@ -193,7 +146,7 @@ export default function Driver({ params }: Props) {
                     className="form-input"
                     placeholder="First Name"
                   />
-                  <ErrorMessage name="firstName" component="span" className="form-error" />
+                  {/* <ErrorMessage name="firstName" component="span" className="form-error" /> */}
                 </div>
               </label>
               <label className="grid-1-3">
@@ -207,7 +160,7 @@ export default function Driver({ params }: Props) {
                     className="form-input"
                     placeholder="Last Name"
                   />
-                  <ErrorMessage name="lastName" component="span" className="form-error" />
+                  {/* <ErrorMessage name="lastName" component="span" className="form-error" /> */}
                 </div>
               </label>
               <label className="grid-1-3">
@@ -222,7 +175,7 @@ export default function Driver({ params }: Props) {
                     placeholder="Email Address"
                     disabled={docId !== 'new'}
                   />
-                  <ErrorMessage name="email" component="span" className="form-error" />
+                  {/* <ErrorMessage name="email" component="span" className="form-error" /> */}
                 </div>
               </label>
               <label className="grid-1-3">
@@ -230,13 +183,9 @@ export default function Driver({ params }: Props) {
                   <label className="font-medium">Phone Number</label>
                 </div>
                 <div className="">
-                  <Field
-                    type="tel"
-                    name="phoneNumber"
-                    className="form-input"
-                    placeholder="Phone Number"
-                  />
-                  <ErrorMessage name="phoneNumber" component="span" className="form-error" />
+                  <PhoneNumberInput name="phoneNumber" error={errors.phoneNumber} />
+
+                  {/* <ErrorMessage name="phoneNumber" component="span" className="form-error" /> */}
                 </div>
               </label>
               <label className="grid-1-3">
@@ -250,7 +199,7 @@ export default function Driver({ params }: Props) {
                     className="form-input"
                     placeholder="ID Number"
                   />
-                  <ErrorMessage name="idNumber" component="span" className="form-error" />
+                  {/* <ErrorMessage name="idNumber" component="span" className="form-error" /> */}
                 </div>
               </label>
 

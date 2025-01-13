@@ -1,23 +1,23 @@
 'use client';
 
-import { MAINTENANCE } from '@/models/maintenance';
-import { JOBCARD_DETAILS } from '@/models/jobcard';
+import { TRIP } from '@/models/trip';
+import { CLASS_DETAILS } from '@/models/class';
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon, PlusIcon, TruckIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useState } from 'react';
-import useJobcards from '@/hooks/useJobcards';
+import useClass from '@/hooks/useClasses';
 import { useAuthContext } from '@/app/auth-provider';
 
 type Props = {
   setFieldValue: Function;
-  maintenance?: MAINTENANCE;
+  trip?: TRIP;
 };
-export default function MaintenanceJobcard({ setFieldValue, maintenance }: Props) {
-  const [selected, setSelected] = useState<JOBCARD_DETAILS | null>(maintenance?.jobCard || null);
+export default function TripClasses({ setFieldValue, trip }: Props) {
+  const [selected, setSelected] = useState<CLASS_DETAILS | null>(trip?.class || null);
   const { authUser } = useAuthContext();
 
-  const { jobcards } = useJobcards({
+  const { classes } = useClass({
     companyId: authUser?.companyId || 'xyz',
     docId: null,
   });
@@ -28,12 +28,12 @@ export default function MaintenanceJobcard({ setFieldValue, maintenance }: Props
         <Listbox
           value={selected}
           onChange={(value) => {
-            const jobcard = jobcards.find((v) => v.docId === value?.docId);
-            if (jobcard && jobcard.docId) {
+            const tripClass = classes.find((v) => v.docId === value?.docId);
+            if (tripClass && tripClass.docId) {
               setFieldValue('jobCard', {
-                docId: jobcard.docId,
-                name: jobcard.name,
-                isArchived: jobcard.isArchived,
+                docId: tripClass.docId,
+                name: tripClass.name,
+                isArchived: tripClass.isActive,
               });
             }
 
@@ -44,6 +44,11 @@ export default function MaintenanceJobcard({ setFieldValue, maintenance }: Props
             <ListboxButton className="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm/6">
               <div className="flex items-center gap-2">
                 {!selected && (
+                  <div className="h-3 w-3 shrink-0 rounded-full bg-gray-300 p-1">
+                    <TruckIcon className="h-3 w-3" />
+                  </div>
+                )}
+                {selected && (
                   <div className="h-3 w-3 shrink-0 rounded-full bg-gray-300 p-1">
                     <TruckIcon className="h-3 w-3" />
                   </div>
@@ -61,15 +66,15 @@ export default function MaintenanceJobcard({ setFieldValue, maintenance }: Props
               transition
               className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none data-[closed]:data-[leave]:opacity-0 data-[leave]:transition data-[leave]:duration-100 data-[leave]:ease-in sm:text-sm"
             >
-              {jobcards.map((jobcard) => (
+              {classes.map((classes) => (
                 <ListboxOption
-                  key={jobcard.docId}
-                  value={jobcard}
+                  key={classes.docId}
+                  value={classes}
                   className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-primary data-[focus]:text-white"
                 >
                   <div className="flex items-center gap-2">
                     <div className="block truncate group-data-[selected]:font-semibold">
-                      <p className="font-medium">{jobcard.name}</p>
+                      <p className="font-medium">{classes.name}</p>
                     </div>
                   </div>
 
@@ -79,11 +84,11 @@ export default function MaintenanceJobcard({ setFieldValue, maintenance }: Props
                 </ListboxOption>
               ))}
 
-              {jobcards.length === 0 && (
-                <Link href="/operations/maintenance/jobcards/new">
+              {classes.length === 0 && (
+                <Link href="/operations/classes/new">
                   <div className="btn btn-flex btn-secondary m-2">
                     <PlusIcon className="h-5 w-5" />
-                    <p>Add New Jobcard</p>
+                    <p>Add New Class</p>
                   </div>
                 </Link>
               )}

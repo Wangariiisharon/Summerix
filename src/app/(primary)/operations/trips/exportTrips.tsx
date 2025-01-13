@@ -52,12 +52,36 @@ export async function exportDataToCSV(companyId: string, status?: string) {
     Driver: trip.driver?.displayName || 'N/A',
     UpdatedBy: trip.updatedBy?.email || 'N/A',
     Status: trip.status || 'N/A',
+    Class: trip.class || 'N/A',
+    CargoType: trip.cargoType || 'N/A',
+    Memo: trip.memo || 'N/A',
+    ContainerNumber: trip.containerNumber || 'N/A',
+    DealValue: trip.payments?.dealValue || 0,
+    PaidAmount: trip.payments?.paidAmount || 0,
+    MileageFee: trip.payments?.mileageFee || 0,
+    Fuel: trip.fuel || 0,
   }));
 
   // Escape and format each cell for CSV
   const escapeCsvValue = (value: string): string => `"${value.replace(/"/g, '""')}"`;
 
-  const header = ['From', 'To', 'Distance', 'Vehicle', 'Driver', 'UpdatedBy', 'Status']
+  const header = [
+    'From',
+    'To',
+    'Distance',
+    'Vehicle',
+    'Driver',
+    'UpdatedBy',
+    'Status',
+    'Class',
+    'CargoType',
+    'Memo',
+    'ContainerNumber',
+    'DealValue',
+    'PaidAmount',
+    'MileageFee',
+    'Fuel',
+  ]
     .map(escapeCsvValue)
     .join(',');
 
