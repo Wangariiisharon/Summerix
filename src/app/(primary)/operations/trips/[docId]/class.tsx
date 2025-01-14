@@ -30,7 +30,7 @@ export default function TripClasses({ setFieldValue, trip }: Props) {
           onChange={(value) => {
             const tripClass = classes.find((v) => v.docId === value?.docId);
             if (tripClass && tripClass.docId) {
-              setFieldValue('jobCard', {
+              setFieldValue('class', {
                 docId: tripClass.docId,
                 name: tripClass.name,
                 isArchived: tripClass.isActive,

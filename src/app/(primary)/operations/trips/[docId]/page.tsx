@@ -243,9 +243,34 @@ export default function Trip({ params }: Props) {
                   <label className="font-medium">Fuel</label>
                 </div>
                 <div className="block">
-                  <Field type="number" name="payments.fuel" className="form-input" />
+                  <Field type="number" name="fuel" className="form-input" />
                 </div>
               </label>
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Distance</label>
+                </div>
+                <div className="block">
+                  <Field type="text" name="distance.text" className="form-input" disabled />
+                </div>
+              </label>
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Cargo Type</label>
+                </div>
+                <div className="block">
+                  <Field type="text" name="cargoType" className="form-input" />
+                </div>
+              </label>
+              <label className="grid-1-3">
+                <div className="text-sm">
+                  <label className="font-medium">Container Number</label>
+                </div>
+                <div className="block">
+                  <Field type="text" name="containerNumber" className="form-input" />
+                </div>
+              </label>
+
               {trip && trip.driver && (
                 <div className="grid-1-3 gap-5">
                   <div className="text-sm">
