@@ -15,6 +15,7 @@ const Constants = {
   fbAdmins: 'admins',
   fbClients: 'clients',
   fbDepartments: 'departments',
+  fbExpenses: 'expenses',
   fbPermissions: 'permisions',
   fbDrivers: 'drivers',
   fbJobCards: 'jobcard',

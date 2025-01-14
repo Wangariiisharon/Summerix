@@ -41,6 +41,7 @@ function useNavLinks() {
           { name: 'Overview', link: '' },
           { name: 'Trips', link: 'trips' },
           { name: 'Vehicles', link: 'vehicles' },
+          { name: 'Expenses', link: 'expenses' },
           { name: 'Classes', link: 'classes' },
           { name: 'Clients', link: 'clients' },
           { name: 'Drivers', link: 'drivers' },
