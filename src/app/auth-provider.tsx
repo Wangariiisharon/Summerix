@@ -1,7 +1,6 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useRouter } from 'next/router';
 import { onAuthStateChanged } from 'firebase/auth';
 import firebaseApp, { fbAuth } from '@/firebase/configs';
 import { AUTH_USER } from '@/models/auth-user';
@@ -11,6 +10,7 @@ import {
   initializeAppCheck,
   ReCaptchaEnterpriseProvider,
 } from '@firebase/app-check';
+import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
   appCheck: AppCheck | null;
