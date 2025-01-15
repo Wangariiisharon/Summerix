@@ -139,7 +139,10 @@ export default function Trip({ params }: Props) {
             mileageFee: trip?.payments?.mileageFee || 0,
           },
           fuel: trip?.fuel || 0,
-
+          distance: {
+            text: trip?.distance?.text || '',
+            value: trip?.distance?.value || 0,
+          },
           schedule: trip?.schedule
             ? {
                 startAt: trip.schedule.startAt
