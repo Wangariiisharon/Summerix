@@ -5,6 +5,7 @@ import DialogLayout from '@/components/dialog-layout';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { DEPARTMENT } from '@/models/department';
+import { checkHasUsers } from '@/services/departments';
 import { DialogTitle } from '@headlessui/react';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { deleteDoc, doc } from 'firebase/firestore';
@@ -19,6 +20,7 @@ export default function DeleteDeprtmentButton({ department }: Props) {
   const { authUser } = useAuthContext();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [processing, setProcessing] = useState<boolean>(false);
+  const [hasUsers, setHasUsers] = useState<boolean>(false);
 
   const doDelete = async () => {
     console.debug('doDelete > docId:', department.docId);
@@ -29,16 +31,26 @@ export default function DeleteDeprtmentButton({ department }: Props) {
 
     try {
       setProcessing(true);
+      const hasAssociatedUsers = await checkHasUsers(department);
+
+      if (hasAssociatedUsers) {
+        setHasUsers(true);
+        toast.error(
+          'Cannot delete department with associated users. Please reassign or remove users first.',
+        );
+        return;
+      }
 
       const docRef = doc(fbDb, Constants.fbDepartments, department.docId);
       await deleteDoc(docRef);
 
-      toast.success('Department user deleted successfully.');
+      toast.success('Department deleted successfully.');
+      setIsOpen(false);
     } catch (error) {
       console.error('doDelete error:', error);
+      toast.error('Failed to delete department.');
     } finally {
       setProcessing(false);
-      setIsOpen(false);
     }
   };
 
@@ -62,6 +74,12 @@ export default function DeleteDeprtmentButton({ department }: Props) {
             <label className="form-label">Display Name:</label>
             <p>{department.name}</p>
           </div>
+          {hasUsers && (
+            <div className="mt-2 text-sm text-red-600">
+              This department cannot be deleted because it has associated users. Please reassign or
+              remove all users from this department first.
+            </div>
+          )}
         </div>
 
         <div className="mt-10 flex w-full justify-end gap-5">
@@ -70,7 +88,7 @@ export default function DeleteDeprtmentButton({ department }: Props) {
           </button>
           <button
             onClick={() => doDelete()}
-            disabled={processing || !authUser}
+            disabled={processing || !authUser || hasUsers}
             className="btn btn-danger"
           >
             Confirm Delete
