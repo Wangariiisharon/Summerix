@@ -106,8 +106,10 @@ export async function middleware(req: NextRequest) {
         },
       });
     },
+
     handleInvalidToken: async (reason) => {
       console.debug('Missing or malformed credentials', { reason });
+
       return redirectToLogin(req, {
         publicPaths: publicRoutes,
         path: '/auth/sign-in',
