@@ -4,7 +4,7 @@ import { AUTH_USER } from '../models/auth-user';
 
 export const getAuthUser = async (fUser: User) => {
   const tokenResult = await fUser.getIdTokenResult();
-  // console.debug('getAuthUser > tokenResult:', tokenResult);
+  console.debug('getAuthUser > tokenResult:', tokenResult);
   const claims = tokenResult.claims || {};
 
   return {
