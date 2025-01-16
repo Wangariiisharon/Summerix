@@ -15,6 +15,12 @@ import useDateRangeFilter from '@/hooks/useDateRangeFilter';
 import { VEHICLE_STATUS } from '@/models/vehicle';
 import { TRIP_STATUS } from '@/models/trip';
 import LatestTrips from './latest-trips';
+import {
+  calculateTotalExpenses,
+  calculateTotalIncome,
+  calculateAverageExpensesPerTruck,
+  calculateAverageIncomePerTruck,
+} from '@/services/expenses';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -37,6 +43,10 @@ export default function Home() {
     underMaintenance: 0,
     onRoute: 0,
   });
+  const [totalExpenses, setTotalExpenses] = useState(0);
+  const [totalIncome, setTotalIncome] = useState(0);
+  const [avgExpensesPerTruck, setAvgExpensesPerTruck] = useState(0);
+  const [avgIncomePerTruck, setAvgIncomePerTruck] = useState(0);
 
   const doFilterVehicles = useCallback(
     async (companyId: string) => {
@@ -150,6 +160,43 @@ export default function Home() {
     }
   }, [authUser, doFilterTrips, doFilterVehicles]);
 
+  useEffect(() => {
+    async function fetchFinancials() {
+      if (authUser?.companyId) {
+        const [income, expenses, avgExpenses, avgIncome] = await Promise.all([
+          calculateTotalIncome(
+            authUser.companyId,
+            params?.startDate || null,
+            params?.endDate || null,
+          ),
+          calculateTotalExpenses(
+            authUser.companyId,
+            params?.startDate || null,
+            params?.endDate || null,
+          ),
+          calculateAverageExpensesPerTruck(
+            authUser.companyId,
+            params?.startDate || null,
+            params?.endDate || null,
+            vehicleStats.total,
+          ),
+          calculateAverageIncomePerTruck(
+            authUser.companyId,
+            params?.startDate || null,
+            params?.endDate || null,
+            vehicleStats.total,
+          ),
+        ]);
+        setTotalIncome(income);
+        setTotalExpenses(expenses);
+        setAvgExpensesPerTruck(avgExpenses);
+        setAvgIncomePerTruck(avgIncome);
+      }
+    }
+
+    fetchFinancials();
+  }, [authUser?.companyId, params, vehicleStats.total]);
+
   return (
     <main className="">
       <div className="flex flex-wrap items-center justify-between gap-5 bg-white p-6">
@@ -160,29 +207,28 @@ export default function Home() {
       <section className="grid-1-2-4 mt-5 gap-5">
         <StatsCard
           label="Total Income"
-          value="0"
-          suffix="K"
+          value={totalIncome.toLocaleString()}
           classNames="bg-white border-b-4 border-primary"
         >
           <i className="fas fa-money-bills"></i>
         </StatsCard>
         <StatsCard
           label="Total Expense"
-          value="335K"
+          value={totalExpenses.toLocaleString()}
           classNames="bg-white border-b-4 border-[#ffd648]"
         >
           <i className="fas fa-money-bills"></i>
         </StatsCard>
         <StatsCard
           label="Avg. Expenses Per Truck"
-          value="335K"
+          value={avgExpensesPerTruck.toLocaleString()}
           classNames="bg-white border-b-4 border-cyan-500"
         >
           <i className="fas fa-money-bills"></i>
         </StatsCard>
         <StatsCard
-          label="Avg. Profit Per Truck"
-          value="335K"
+          label="Avg. Income Per Truck"
+          value={avgIncomePerTruck.toLocaleString()}
           classNames="bg-white border-b-4 border-green-500"
         >
           <i className="fas fa-money-bills"></i>
