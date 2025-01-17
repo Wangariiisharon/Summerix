@@ -1,12 +1,12 @@
 import Constants from '@/Constants';
 import '@/app/globals.css';
-
+// import '@nextui-org/react/styles.css';
 import { Outfit } from 'next/font/google';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { ReactNode } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { AuthContextProvider } from './auth-provider';
-
+import { NextUIProvider } from '@nextui-org/react';
 const font = Outfit({ subsets: ['latin'] });
 
 export const metadata = {
@@ -41,9 +41,9 @@ export default function RootLayout({ children }: Props) {
       </head>
       <body>
         <GoogleAnalytics gaId={`${process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID}`} />
-
-        <AuthContextProvider>{children}</AuthContextProvider>
-
+        <NextUIProvider>
+          <AuthContextProvider>{children}</AuthContextProvider>
+        </NextUIProvider>
         <Toaster />
       </body>
     </html>
