@@ -13,7 +13,7 @@ export interface VEHICLE {
   make: string;
   model: string;
   yom: string;
-  status: boolean; // 'available', 'on-route', etc
+  status: string; // 'available', 'on-route', etc
   photoURL: string;
   isArchived: boolean;
   company: COMPANY_DETAILS;
