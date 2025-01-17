@@ -1,5 +1,4 @@
 'use client';
-import * as Yup from 'yup';
 import { useAuthContext } from '@/app/auth-provider';
 import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
