@@ -24,10 +24,14 @@ export async function exportDataToCSV(companyId: string, status?: string) {
 
   if (status && status !== 'all') {
     data = data.filter((vehicle) => {
-      if (status === 'active') {
-        return !vehicle.isArchived; // Active vehicles
-      } else if (status === 'inactive') {
-        return vehicle.isArchived; // Inactive vehicles
+      if (status === 'available') {
+        return vehicle.status === 'available';
+      } else if (status === 'on-route') {
+        return vehicle.status === 'on-route';
+      } else if (status === 'out-of-service') {
+        return vehicle.status === 'out-of-service';
+      } else if (status === 'under-maintenance') {
+        return vehicle.status === 'under-maintenance';
       }
       return false; // Invalid status
     });
@@ -45,7 +49,7 @@ export async function exportDataToCSV(companyId: string, status?: string) {
     Type: vehicle.type || 'N/A',
     Cargo: vehicle.cargo?.capacity || 'N/A',
     Ownership: vehicle.ownership?.status || 'N/A',
-    Status: vehicle.isArchived ? 'Inactive' : 'Active', // Map boolean to readable status
+    Status: vehicle.status || 'N/A',
   }));
 
   // Escape CSV values to prevent breaking structure
