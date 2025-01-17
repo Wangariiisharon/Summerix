@@ -29,7 +29,6 @@ export default function DeleteDeprtmentButton({ department }: Props) {
 
     try {
       setProcessing(true);
-
       const docRef = doc(fbDb, Constants.fbDepartments, department.docId);
       await deleteDoc(docRef);
 
@@ -41,6 +40,9 @@ export default function DeleteDeprtmentButton({ department }: Props) {
       setIsOpen(false);
     }
   };
+  // const doDeleteDepartUsers=() => {
+  //   // compare fb.admins o fb.departments for documents with same selectd department.
+  // }
 
   return (
     <>

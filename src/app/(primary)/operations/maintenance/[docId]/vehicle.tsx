@@ -63,7 +63,6 @@ export default function MaintenanceVehicle({ companyId, setFieldValue, maintenan
           onChange={(value) => {
             const vehicle = vehicles.find((v) => v.docId === value?.docId);
             if (vehicle && vehicle.docId) {
-              setFieldValue('driver', vehicle.driver);
               setFieldValue('vehicle', {
                 docId: vehicle.docId,
                 name: vehicle.name,
