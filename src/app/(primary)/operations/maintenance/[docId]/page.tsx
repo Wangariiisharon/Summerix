@@ -132,7 +132,8 @@ export default function Maintenance({ params }: Props) {
                 startAt: '',
                 endAt: '',
               },
-          isApproved: maintenance?.isApproved,
+          isApproved: maintenance?.isApproved || false,
+          cost: maintenance?.cost || 0,
           updatedBy: {
             authId: authUser?.uid,
             email: authUser?.email,

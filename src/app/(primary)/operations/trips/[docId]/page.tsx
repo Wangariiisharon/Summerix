@@ -249,14 +249,14 @@ export default function Trip({ params }: Props) {
                   <Field type="number" name="fuel" className="form-input" />
                 </div>
               </label>
-              <label className="grid-1-3">
+              {/* <label className="grid-1-3">
                 <div className="text-sm">
                   <label className="font-medium">Distance</label>
                 </div>
                 <div className="block">
                   <Field type="text" name="distance.text" className="form-input" disabled />
                 </div>
-              </label>
+              </label> */}
               <label className="grid-1-3">
                 <div className="text-sm">
                   <label className="font-medium">Cargo Type</label>
