@@ -25,9 +25,9 @@ export async function exportDataToCSV(companyId: string, status?: string) {
   if (status && status !== 'all') {
     data = data.filter((department) => {
       if (status === 'active') {
-        return !department.isActive; // Active vehicles
+        return department.isActive; // Active vehicles
       } else if (status === 'inactive') {
-        return department.isActive; // Inactive vehicles
+        return !department.isActive; // Inactive vehicles
       }
       return false; // Invalid status
     });
