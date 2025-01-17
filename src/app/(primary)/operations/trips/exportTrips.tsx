@@ -2,7 +2,6 @@ import { fbDb } from '@/firebase/configs';
 import { getDocs, collection } from 'firebase/firestore';
 import Constants from '@/Constants';
 import { TRIP } from '@/models/trip';
-
 export async function exportDataToCSV(companyId: string, status?: string) {
   const tripsCollection = collection(fbDb, Constants.fbTrips);
   const snapshot = await getDocs(tripsCollection);
@@ -43,16 +42,15 @@ export async function exportDataToCSV(companyId: string, status?: string) {
     }
   }
 
-  // Prepare CSV Data
   const csvData = data.map((trip) => ({
-    From: trip.from?.location || 'N/A', // Ensure fallback for missing fields
+    From: trip.from?.location || 'N/A',
     To: trip.to?.location || 'N/A',
     Distance: trip.distance?.text || 'N/A',
     Vehicle: trip.vehicle?.regNumber || 'N/A',
     Driver: trip.driver?.displayName || 'N/A',
     UpdatedBy: trip.updatedBy?.email || 'N/A',
     Status: trip.status || 'N/A',
-    Class: trip.class || 'N/A',
+    Class: trip.class.name || 'N/A',
     CargoType: trip.cargoType || 'N/A',
     Memo: trip.memo || 'N/A',
     ContainerNumber: trip.containerNumber || 'N/A',
@@ -62,8 +60,7 @@ export async function exportDataToCSV(companyId: string, status?: string) {
     Fuel: trip.fuel || 0,
   }));
 
-  // Escape and format each cell for CSV
-  const escapeCsvValue = (value: string): string => `"${value.replace(/"/g, '""')}"`;
+  const escapeCsvValue = (value: unknown): string => `"${String(value ?? '').replace(/"/g, '""')}"`;
 
   const header = [
     'From',
@@ -88,7 +85,7 @@ export async function exportDataToCSV(companyId: string, status?: string) {
   const rows = csvData
     .map((item) =>
       Object.values(item)
-        .map((value) => escapeCsvValue(value as string))
+        .map((value) => escapeCsvValue(value))
         .join(','),
     )
     .join('\n');
