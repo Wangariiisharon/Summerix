@@ -4,7 +4,7 @@ import { getDriverByEmail, getDriverByPhoneNumber } from '@/services/driver';
 export const DriverFormSchema = (companyId: string, docId: string) => {
   return Yup.object().shape({
     firstName: Yup.string().required('First name is required.'),
-    lastName: Yup.string().required('First name is required.'),
+    lastName: Yup.string().required('Last name is required.'),
     email: Yup.string()
       .trim()
       .required('Email is required.')
