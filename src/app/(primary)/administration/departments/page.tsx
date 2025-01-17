@@ -132,11 +132,12 @@ export default function Departments() {
             </thead>
             <tbody>
               {departments.map((department: DEPARTMENT) => {
+                console.log('department:', department);
                 return (
                   <tr key={department.docId} className="tr-body">
                     <td className="td text-left">{department.name}</td>
                     <td className="td table-cell-xl max-w-36 capitalize">
-                      {camelCaseToWords(department.roles.join(', '))}
+                      {camelCaseToWords(department?.roles.join(', '))}
                     </td>
                     <td className="td table-cell-sm">
                       <div className="flex justify-center">

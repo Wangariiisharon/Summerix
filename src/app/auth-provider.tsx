@@ -10,6 +10,7 @@ import {
   initializeAppCheck,
   ReCaptchaEnterpriseProvider,
 } from '@firebase/app-check';
+import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
   appCheck: AppCheck | null;
@@ -38,6 +39,7 @@ export const AuthContextProvider = ({ children }: Props) => {
   const [authUser, setAuthUser] = useState<AUTH_USER | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
   const [appCheck, setAppCheck] = useState<AppCheck | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     setIsAuthLoading(true);
@@ -49,13 +51,16 @@ export const AuthContextProvider = ({ children }: Props) => {
         const authUser = await getAuthUser(fUser);
         // console.debug('onAuthStateChanged > authUser:', authUser);
         setAuthUser(authUser);
-      } else setAuthUser(null);
+      } else {
+        setAuthUser(null);
+        router.push('/auth/sign-in'); // Redirect to sign-in screen
+      }
 
       setIsAuthLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_KEY) {
