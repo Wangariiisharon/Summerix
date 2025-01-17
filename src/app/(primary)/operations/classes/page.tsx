@@ -12,6 +12,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import useClasses from '@/hooks/useClasses';
 import { CLASS } from '@/models/class';
 import DeleteClassButton from './button-delete';
+import { exportDataToCSV } from './exportClasses';
 
 export default function ClassesPage() {
   const { authUser } = useAuthContext();
@@ -54,6 +55,30 @@ export default function ClassesPage() {
     [classes],
   );
 
+  const exportFiles = async () => {
+    console.log('status:', status);
+
+    try {
+      let csvData;
+
+      if (authUser && authUser.companyId && status === 'all') {
+        csvData = await exportDataToCSV(authUser.companyId);
+      } else {
+        csvData = await exportDataToCSV(authUser?.companyId as string, status); // Export data filtered by status
+      }
+
+      // Create a blob and initiate the download
+      const blob = new Blob([csvData], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `exported-data-${status}.csv`;
+      a.click();
+    } catch (error) {
+      console.error('Error exporting data:', error);
+    }
+  };
+
   return (
     <main className="-mx-4 rounded bg-white p-4">
       <section className="flex flex-col justify-between gap-5 sm:flex-row">
@@ -82,10 +107,8 @@ export default function ClassesPage() {
               <p>Add Class</p>
             </div>
           </Link>
-          <button
-            onClick={() => console.debug('do export...')}
-            className="btn btn-flex btn-outline-secondary"
-          >
+
+          <button onClick={exportFiles} className="btn btn-flex btn-outline-secondary">
             <DocumentArrowDownIcon className="h-5 w-5" />
             <p>Export</p>
           </button>
