@@ -30,34 +30,6 @@ export const UserFormSchema = (docId: string) => {
         },
       }),
     country: Yup.string().required('Country is required.'),
-    //   phoneNumber: Yup.string()
-    //     .trim()
-    //     .required('Phone number is required.')
-    //     .test({
-    //       name: 'phone',
-    //       message: 'Invalid phone number for selected country',
-    //       test: function (value) {
-    //         const { parent } = this;
-    //         return validatePhoneNumberForCountry(value, parent.country);
-    //       },
-    //     })
-    //     .test({
-    //       exclusive: true,
-    //       name: 'admin-phone',
-    //       message: 'Phone number is already in use as admin.',
-    //       test: async function (value: any) {
-    //         if (!value) return true;
-
-    //         const snapshot = await getAdminByPhoneNumber(value);
-    //         if (!snapshot.empty) {
-    //           const doc = snapshot.docs[0];
-    //           return doc.id?.trim() === docId;
-    //         }
-
-    //         return snapshot.empty;
-    //       },
-    //     }),
-    // });
     phoneNumber: Yup.string()
       .trim()
       .when('country', (country, schema) => {
@@ -90,5 +62,33 @@ export const UserFormSchema = (docId: string) => {
               })
           : schema.notRequired();
       }),
+    //   phoneNumber: Yup.string()
+    //     .trim()
+    //     .required('Phone number is required.')
+    //     .test({
+    //       name: 'phone',
+    //       message: 'Invalid phone number for selected country',
+    //       test: function (value) {
+    //         const { parent } = this;
+    //         return validatePhoneNumberForCountry(value, parent.country);
+    //       },
+    //     })
+    //     .test({
+    //       exclusive: true,
+    //       name: 'admin-phone',
+    //       message: 'Phone number is already in use as admin.',
+    //       test: async function (value: any) {
+    //         if (!value) return true;
+
+    //         const snapshot = await getAdminByPhoneNumber(value);
+    //         if (!snapshot.empty) {
+    //           const doc = snapshot.docs[0];
+    //           return doc.id?.trim() === docId;
+    //         }
+
+    //         return snapshot.empty;
+    //       },
+    //     }),
+    // });
   });
 };
