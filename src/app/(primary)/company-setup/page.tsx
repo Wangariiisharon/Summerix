@@ -136,6 +136,7 @@ export default function CompanySetup() {
                 <div>
                   <PhoneNumberInput
                     name="phoneNumber"
+                    disabled={!values.country}
                     dialCode={selectedDialCode}
                     error={errors.phoneNumber}
                   />
