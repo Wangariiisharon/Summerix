@@ -148,6 +148,7 @@ export default function Profile() {
                       <PhoneNumberInput
                         name="phoneNumber"
                         dialCode={dialCode}
+                        disabled={!values.country}
                         error={errors.phoneNumber}
                       />
                     </div>
