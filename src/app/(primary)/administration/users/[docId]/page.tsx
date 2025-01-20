@@ -233,6 +233,7 @@ export default function User({ params }: Props) {
                       <PhoneNumberInput
                         name="phoneNumber"
                         dialCode={selectedDialCode}
+                        disabled={!values.country} // Disable if no country is selected
                         error={errors.phoneNumber}
                       />
                     </div>

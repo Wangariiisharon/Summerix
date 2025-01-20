@@ -44,30 +44,61 @@ export const CompanySchema = (docId?: string) => {
       }),
     phoneNumber: Yup.string()
       .trim()
-      .required('Phone number is required.')
-      .test({
-        name: 'phone',
-        message: 'Invalid phone number for selected country',
-        test: function (value) {
-          const { parent } = this;
-          return validatePhoneNumberForCountry(value, parent.country);
-        },
-      })
-      .test({
-        exclusive: true,
-        name: 'company-phone-number',
-        message: 'Phone number is already in use.',
-        test: async function (value: any) {
-          if (!value) return true;
+      .when('country', (country, schema) => {
+        return country
+          ? schema
+              .required('Phone number is required.')
+              .test({
+                name: 'phone',
+                message: 'Invalid phone number for selected country',
+                test: function (value) {
+                  const { parent } = this;
+                  return validatePhoneNumberForCountry(value, parent.country);
+                },
+              })
+              .test({
+                exclusive: true,
+                name: 'company-phone-number',
+                message: 'Phone number is already in use.',
+                test: async function (value: any) {
+                  if (!value) return true;
 
-          const snapshot = await getCompanyByPhoneNumber(value);
-          if (snapshot && !snapshot.empty) {
-            return snapshot.docs[0]?.id?.trim() === docId;
-          }
+                  const snapshot = await getCompanyByPhoneNumber(value);
+                  if (snapshot && !snapshot.empty) {
+                    return snapshot.docs[0]?.id?.trim() === docId;
+                  }
 
-          return snapshot.empty;
-        },
+                  return snapshot.empty;
+                },
+              })
+          : schema.notRequired();
       }),
+    // phoneNumber: Yup.string()
+    //   .trim()
+    //   .required('Phone number is required.')
+    //   .test({
+    //     name: 'phone',
+    //     message: 'Invalid phone number for selected country',
+    //     test: function (value) {
+    //       const { parent } = this;
+    //       return validatePhoneNumberForCountry(value, parent.country);
+    //     },
+    //   })
+    //   .test({
+    //     exclusive: true,
+    //     name: 'company-phone-number',
+    //     message: 'Phone number is already in use.',
+    //     test: async function (value: any) {
+    //       if (!value) return true;
+
+    //       const snapshot = await getCompanyByPhoneNumber(value);
+    //       if (snapshot && !snapshot.empty) {
+    //         return snapshot.docs[0]?.id?.trim() === docId;
+    //       }
+
+    //       return snapshot.empty;
+    //     },
+    //   }),
     country: Yup.string().trim().required('Country is required.'),
     timezone: Yup.string().trim().required('Timezone is required.'),
     currency: Yup.string().trim().required('Currency is required.'),
