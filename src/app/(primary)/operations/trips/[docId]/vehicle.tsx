@@ -59,7 +59,7 @@ export default function TripVehicle({ companyId, setFieldValue, trip }: Props) {
       <div className="flex items-center justify-between gap-5">
         <Listbox
           value={selected}
-          onChange={(value) => {
+          onChange={(value: any) => {
             const vehicle = vehicles.find((v) => v.docId === value?.docId);
             if (vehicle && vehicle.docId) {
               setFieldValue('driver', vehicle.driver);
