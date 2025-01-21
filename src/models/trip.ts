@@ -28,7 +28,6 @@ export interface TRIP {
   cargoType: string;
   memo: string;
   containerNumber: string;
-
   distance: {
     text: string;
     value: number;
