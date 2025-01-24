@@ -6,6 +6,7 @@ import * as companies from './companies';
 import * as drivers from './drivers';
 import * as trips from './trips';
 import * as vehicles from './vehicles';
+import * as checkTripSchedules from './trip-Update-Schedule';
 
 admin.initializeApp();
 admin.firestore().settings({
@@ -20,3 +21,4 @@ exports.companiesGroup = companies.group;
 exports.driversGroup = drivers.group;
 exports.tripsGroup = trips.group;
 exports.vehiclesGroup = vehicles.group;
+exports.checkTripSchedules = checkTripSchedules.checkTripSchedules;
