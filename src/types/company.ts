@@ -17,6 +17,7 @@ export interface CompanyWithMetadata extends Company {
     authId: string;
     email: string;
   };
+  docId: string;
   dateCreated: any; // Firebase Timestamp
   lastUpdated: any; // Firebase Timestamp
 }
