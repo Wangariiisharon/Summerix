@@ -79,6 +79,7 @@ export const createOrUpdateCompany = async (params: CreateCompanyParams): Promis
         authId: userId,
         email: userEmail,
       },
+      docId: userId,
       dateCreated: serverTimestamp(),
       lastUpdated: serverTimestamp(),
     };
