@@ -2,7 +2,6 @@ import { firestore } from 'firebase-admin';
 import { logger, runWith } from 'firebase-functions/v1';
 import Constants from '../Constants';
 import { TRIP } from '../models/trip';
-import { VEHICLE_STATUS, TRIP_STATUS } from './tripsEnum';
 import { getTripDistance } from '../services/trip.service';
 
 export const OnTripUpdated = runWith({
@@ -35,61 +34,36 @@ export const OnTripUpdated = runWith({
           }
         }
       }
-
-      // Update vehicle status based on trip schedule
-      const now = firestore.Timestamp.now();
-      const startAt = trip.startedAt;
-      const endAt = trip.endedAt;
-      const vehicleDocRef = firestore().collection('vehicles').doc(trip.vehicle.docId);
-
-      if (trip.status !== TRIP_STATUS.cancelled) {
-        if (
-          startAt &&
-          startAt.toMillis() <= now.toMillis() &&
-          prevTrip.status !== TRIP_STATUS.active
-        ) {
-          // Trip is starting
-          await vehicleDocRef.update({
-            status: VEHICLE_STATUS.onRoute,
-            lastUpdated: firestore.FieldValue.serverTimestamp(),
-          });
-        } else if (
-          endAt &&
-          endAt.toMillis() <= now.toMillis() &&
-          prevTrip.status !== TRIP_STATUS.completed
-        ) {
-          // Trip has ended
-          await vehicleDocRef.update({
-            status: VEHICLE_STATUS.available,
-            lastUpdated: firestore.FieldValue.serverTimestamp(),
-          });
-        }
-      }
     } catch (error) {
       logger.error('OnTripUpdated error:::', error);
     }
   });
+//     // Update vehicle status based on trip schedule
+//     const now = firestore.Timestamp.now();
+//     const startAt = trip.startedAt;
+//     const endAt = trip.endedAt;
+//     const vehicleDocRef = firestore().collection('vehicles').doc(trip.vehicle.docId);
 
-//   const now = firestore.Timestamp.now();
-//   const startAt = trip.startedAt;
-//   const endAt = trip.endedAt;
-//   const vehicleDocRef = firestore().collection('vehicles').doc(trip.vehicle.docId);
-
-//   if (trip.status !== TRIP_STATUS.cancelled) {
-//     if (startAt && startAt.toMillis() <= now.toMillis() && endAt.toMillis() > now.toMillis()) {
-//       // Trip is ongoing
-//       await vehicleDocRef.update({
-//         status: VEHICLE_STATUS.onRoute,
-//         lastUpdated: firestore.FieldValue.serverTimestamp(),
-//       });
-//     } else if (endAt && endAt.toMillis() <= now.toMillis()) {
-//       // Trip has ended
-//       await vehicleDocRef.update({
-//         status: VEHICLE_STATUS.available,
-//         lastUpdated: firestore.FieldValue.serverTimestamp(),
-//       });
+//     if (trip.status !== TRIP_STATUS.cancelled) {
+//       if (
+//         startAt &&
+//         startAt.toMillis() <= now.toMillis() &&
+//         prevTrip.status !== TRIP_STATUS.active
+//       ) {
+//         // Trip is starting
+//         await vehicleDocRef.update({
+//           status: VEHICLE_STATUS.onRoute,
+//           lastUpdated: firestore.FieldValue.serverTimestamp(),
+//         });
+//       } else if (
+//         endAt &&
+//         endAt.toMillis() <= now.toMillis() &&
+//         prevTrip.status !== TRIP_STATUS.completed
+//       ) {
+//         // Trip has ended
+//         await vehicleDocRef.update({
+//           status: VEHICLE_STATUS.available,
+//           lastUpdated: firestore.FieldValue.serverTimestamp(),
+//         });
+//       }
 //     }
-//   }
-// } catch (error) {
-//   logger.error('OnTripUpdated error:::', error);
-// }
