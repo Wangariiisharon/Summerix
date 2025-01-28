@@ -79,6 +79,8 @@ export default function Maintenance({ params }: Props) {
             authId: authUser.uid,
             email: authUser.email,
           },
+          startedAt: formValues.schedule.startAt,
+          endedAt: formValues.schedule.endAt,
           dateCreated: serverTimestamp(),
           lastUpdated: serverTimestamp(),
         });
