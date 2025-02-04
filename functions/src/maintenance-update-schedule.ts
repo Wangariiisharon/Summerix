@@ -29,7 +29,7 @@ export const checkMaintenanceSchedules = runWith({ memory: '128MB', timeoutSecon
       }
 
       const completedMaintenance = await maintenanceRef
-        .where('endedAt', '<=', now)
+        .where('endedAt', '>=', now)
         .where('status', '!=', 'pending')
         .where('isApproved', '==', true)
         .get();
