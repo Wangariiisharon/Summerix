@@ -54,26 +54,29 @@ export default function GenerateInvoiceButton({ trip }: Props) {
 
     const doc = new jsPDF();
 
-    // Add Logo
-    const logoURL = company?.photoURL || '/images/logo-black.png'; // Use company.photoURL or fallback to default logo
-    const logoBase64 = await fetch(logoURL)
-      .then((response) => response.blob())
-      .then((blob) => {
-        return new Promise<string>((resolve, reject) => {
+    let logoBase64: string | undefined;
+
+    if (company?.photoURL) {
+      try {
+        const response = await fetch(company.photoURL);
+        const blob = await response.blob();
+        logoBase64 = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onloadend = () => resolve(reader.result as string);
           reader.onerror = reject;
           reader.readAsDataURL(blob);
         });
-      })
-      .catch(() => {
-        // Fallback to default logo in case of an error
-        return '/images/logo-black.png';
-      });
+      } catch (error) {
+        console.error('Error loading company logo:', error);
+      }
+    }
+
+    // Ensure that a valid logo is added to the PDF
+    if (logoBase64) {
+      doc.addImage(logoBase64, 'PNG', 10, 10, 40, 20);
+    }
 
     const invoiceDate = trip.startedAt.toDate().toLocaleDateString();
-
-    doc.addImage(logoBase64, 'PNG', 10, 10, 40, 20);
 
     // Add Title and Invoice Details
     doc.setFontSize(18);
@@ -124,10 +127,6 @@ export default function GenerateInvoiceButton({ trip }: Props) {
 
   return (
     <>
-      {/* <button onClick={() => setIsOpen(true)}>
-        <DocumentArrowUpIcon className="h-5 w-5 text-primary hover:opacity-50" />
-      </button> */}
-
       <button
         onClick={() => {
           if (trip.invoiceUrl) {
