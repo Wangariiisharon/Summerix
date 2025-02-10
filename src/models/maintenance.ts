@@ -25,7 +25,8 @@ export interface MAINTENANCE {
   cost: number;
   docRef: DocumentReference<DocumentData, DocumentData>;
   doc: QueryDocumentSnapshot<DocumentData, DocumentData>;
-
+  startedAt: Timestamp;
+  endededAt: Timestamp;
   dateCreated: any;
   lastUpdated: any;
   createdBy: { email: string; authId: string };

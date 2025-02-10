@@ -18,10 +18,10 @@ export const checkMaintenanceSchedules = runWith({ memory: '128MB', timeoutSecon
 
       for (const maintenanceDoc of activeMaintenance.docs) {
         const maintenance = maintenanceDoc.data();
-        await maintenanceDoc.ref.update({
-          status: 'planned',
-          lastUpdated: firestore.FieldValue.serverTimestamp(),
-        });
+        // await maintenanceDoc.ref.update({
+        //   status: 'planned',
+        //   lastUpdated: firestore.FieldValue.serverTimestamp(),
+        // });
         await firestore().collection('vehicles').doc(maintenance.vehicle.docId).update({
           status: 'out-of-service',
           lastUpdated: firestore.FieldValue.serverTimestamp(),
@@ -29,7 +29,7 @@ export const checkMaintenanceSchedules = runWith({ memory: '128MB', timeoutSecon
       }
 
       const completedMaintenance = await maintenanceRef
-        .where('endedAt', '>=', now)
+        .where('endedAt', '<=', now)
         .where('status', '!=', 'pending')
         .where('isApproved', '==', true)
         .get();
