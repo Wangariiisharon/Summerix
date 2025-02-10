@@ -141,6 +141,7 @@ export default function Trip({ params }: Props) {
             mileageFee: trip?.payments?.mileageFee || 0,
           },
           fuel: trip?.fuel || 0,
+          currency: trip?.currency || '',
           distance: {
             text: trip?.distance?.text || '',
             value: trip?.distance?.value || 0,
@@ -221,6 +222,26 @@ export default function Trip({ params }: Props) {
 
               <label className="grid-1-3">
                 <div className="text-sm">
+                  <label className="font-medium">Currency</label>
+                </div>
+                <div className="block">
+                  <Field as="select" name="currency" className="form-input">
+                    <option value="" disabled>
+                      Select...
+                    </option>
+                    {company.currencyList.map(({ code }) => {
+                      return (
+                        <option key={code} value={code}>
+                          {code}
+                        </option>
+                      );
+                    })}
+                  </Field>
+                </div>
+              </label>
+
+              <label className="grid-1-3">
+                <div className="text-sm">
                   <label className="font-medium">Deal Value</label>
                 </div>
                 <div className="block">
@@ -261,7 +282,7 @@ export default function Trip({ params }: Props) {
               </label> */}
               <label className="grid-1-3">
                 <div className="text-sm">
-                  <label className="font-medium">Cargo Type</label>
+                  <label className="font-medium">Cargo Size</label>
                 </div>
                 <div className="block">
                   <Field type="text" name="cargoType" className="form-input" />
@@ -329,7 +350,7 @@ export default function Trip({ params }: Props) {
                   <label className="font-medium">Memo</label>
                 </div>
                 <div className="block">
-                  <Field type="text" name="memo" className="form-input" placeholder="Optional" />
+                  <Field type="text" name="memo" className="form-input" placeholder="Required" />
                 </div>
               </label>
               <label className="grid-1-3">

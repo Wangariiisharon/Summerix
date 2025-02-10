@@ -27,5 +27,7 @@ export const TripFormSchema = () => {
         }),
     }),
     status: Yup.string().required('Status is required.'),
+    memo: Yup.string().required('Memo is required.'),
+    currency: Yup.string().required('Currency is required.'),
   });
 };

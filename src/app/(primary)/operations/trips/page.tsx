@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import DeleteTripButton from './button-delete';
 import { exportDataToCSV } from './exportTrips';
+import GenerateInvoiceButton from './generateInvoice';
 
 export default function TripsPage() {
   const { authUser } = useAuthContext();
@@ -172,6 +173,8 @@ export default function TripsPage() {
                           <PencilSquareIcon className="h-5 w-5 text-primary hover:opacity-50" />
                         </Link>
                         <DeleteTripButton trip={trip} />
+
+                        <GenerateInvoiceButton trip={trip} />
                       </div>
                     </td>
                   </tr>
