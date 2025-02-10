@@ -71,7 +71,7 @@ export async function exportDataToCSV(companyId: string, status?: string) {
     'UpdatedBy',
     'Status',
     'Class',
-    'CargoType',
+    'CargoSize',
     'Memo',
     'ContainerNumber',
     'DealValue',
