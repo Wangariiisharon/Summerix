@@ -8,6 +8,10 @@ import DialogLayout from '@/components/dialog-layout';
 import { DialogTitle } from '@headlessui/react';
 import { useAuthContext } from '@/app/auth-provider';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
+import { doUploadImage } from '@/services/utils';
+import { fbDb } from '@/firebase/configs';
+import Constants from '@/Constants';
+import { doc, updateDoc } from 'firebase/firestore';
 
 type Props = {
   trip: TRIP;
@@ -18,11 +22,35 @@ export default function GenerateInvoiceButton({ trip }: Props) {
   const { company } = useCurrentCompany();
   const { authUser } = useAuthContext();
 
+  const doSave = async (pdfBlob: Blob) => {
+    try {
+      const fileName = `invoice_${trip.docId}.pdf`;
+      const downloadUrl = await doUploadImage(pdfBlob, 'invoices', fileName);
+
+      const tripRef = doc(fbDb, Constants.fbTrips, trip.docId);
+      await updateDoc(tripRef, {
+        invoiceUrl: downloadUrl,
+      });
+
+      toast.success('Invoice saved successfully');
+    } catch (error) {
+      toast.error('Error saving invoice');
+      console.error('doSave > error:', error);
+    }
+  };
+
   const generatePDF = async () => {
     if (!trip) {
       toast.error('No trip data available');
       return;
     }
+
+    if (trip.invoiceUrl) {
+      window.open(trip.invoiceUrl, '_blank');
+      return;
+    }
+
+    setProcessing(true);
 
     const doc = new jsPDF();
 
@@ -86,16 +114,30 @@ export default function GenerateInvoiceButton({ trip }: Props) {
       foot: [['', '', '', 'TOTAL', `${trip.currency} ${trip.payments.dealValue}`]],
     });
 
-    // Save PDF
+    const pdfBlob = doc.output('blob');
+    await doSave(pdfBlob);
     doc.save('Invoice.pdf');
     setProcessing(false);
     setIsOpen(false);
-    toast.success('Invoice generated successfully!');
+    toast.success('Invoice generated and saved successfully!');
   };
 
   return (
     <>
-      <button onClick={() => setIsOpen(true)}>
+      {/* <button onClick={() => setIsOpen(true)}>
+        <DocumentArrowUpIcon className="h-5 w-5 text-primary hover:opacity-50" />
+      </button> */}
+
+      <button
+        onClick={() => {
+          if (trip.invoiceUrl) {
+            window.open(trip.invoiceUrl, '_blank');
+            return; // Prevent opening the dialog
+          } else {
+            setIsOpen(true);
+          }
+        }}
+      >
         <DocumentArrowUpIcon className="h-5 w-5 text-primary hover:opacity-50" />
       </button>
 
@@ -108,22 +150,17 @@ export default function GenerateInvoiceButton({ trip }: Props) {
           Confirm Generate Invoice
         </DialogTitle>
 
-        <div className="mt-5 grid items-center gap-3">
-          <div className="flex items-center justify-between gap-5">
-            <label className="form-label">Display Name:</label>
-          </div>
-        </div>
-
         <div className="mt-10 flex w-full justify-end gap-5">
           <button onClick={() => setIsOpen(false)} className="btn btn-outline-danger">
             Cancel
           </button>
+
           <button
             onClick={generatePDF}
             disabled={processing || !authUser}
             className="btn btn-danger"
           >
-            Generate Invoice
+            Generate & Save Invoice
           </button>
         </div>
       </DialogLayout>

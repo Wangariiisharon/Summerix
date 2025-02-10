@@ -45,7 +45,7 @@ export interface TRIP {
     // excessWeightFee: string;
     mileageFee: number;
   };
-
+  invoiceUrl: string;
   fuel: {
     // amount: number;
     cost: number;
