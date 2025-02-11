@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { TRIP } from '@/models/trip';
@@ -20,7 +20,16 @@ export default function GenerateInvoiceButton({ trip }: Props) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [processing, setProcessing] = useState<boolean>(false);
   const { company } = useCurrentCompany();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [photo, setPhoto] = useState<string | null>(null);
+
   const { authUser } = useAuthContext();
+
+  useEffect(() => {
+    if (company?.photoURL) {
+      setPhoto(company.photoURL);
+    }
+  }, [company]);
 
   const doSave = async (pdfBlob: Blob) => {
     try {
@@ -50,31 +59,38 @@ export default function GenerateInvoiceButton({ trip }: Props) {
       return;
     }
 
+    if (!company || !company.photoURL) {
+      toast.error('Company logo not available, please wait or check your profile settings.');
+      return;
+    }
+
     setProcessing(true);
 
     const doc = new jsPDF();
 
-    let logoBase64: string | undefined;
-
-    if (company?.photoURL) {
-      try {
-        const response = await fetch(company.photoURL);
-        const blob = await response.blob();
-        logoBase64 = await new Promise<string>((resolve, reject) => {
+    const logoBase64 = await fetch(company.photoURL)
+      .then((response) => response.blob())
+      .then((blob) => {
+        return new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onloadend = () => resolve(reader.result as string);
           reader.onerror = reject;
           reader.readAsDataURL(blob);
         });
-      } catch (error) {
-        console.error('Error loading company logo:', error);
-      }
-    }
+      })
+      .catch((error) => {
+        toast.error('Error fetching company logo');
+        console.error('generatePDF > fetch logo error:', error);
+        setProcessing(false);
+        return;
+      });
 
-    // Ensure that a valid logo is added to the PDF
-    if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', 10, 10, 40, 20);
+    if (!logoBase64) {
+      return;
     }
+    console.log('Company logo base64:', logoBase64);
+
+    doc.addImage(logoBase64, 'PNG', 10, 10, 40, 20);
 
     const invoiceDate = trip.startedAt.toDate().toLocaleDateString();
 
