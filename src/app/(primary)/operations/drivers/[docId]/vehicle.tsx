@@ -56,7 +56,7 @@ export default function VehicleAllocation({ driver }: Props) {
           const data = doc.data() as VEHICLE;
           data.doc = doc; // QueryDocumentSnapshot
           data.docId = doc.id;
-          data.photoURL = data.photoURL || getAvatarPhoto(data.name);
+          data.photoURL = data.photoURL || getAvatarPhoto(data.regNumber);
 
           return data;
         });
@@ -99,7 +99,7 @@ export default function VehicleAllocation({ driver }: Props) {
       batch.update(driverDocRef, {
         vehicle: {
           docId: selected.docId,
-          name: selected.name,
+          name: selected.regNumber,
           regNumber: selected.regNumber,
           photoURL: selected.photoURL,
         },
@@ -183,7 +183,7 @@ export default function VehicleAllocation({ driver }: Props) {
                     {selected && (
                       <Image
                         src={selected.photoURL}
-                        alt={selected.name}
+                        alt={selected.regNumber}
                         className="size-5 shrink-0 rounded-full"
                         width={100}
                         height={100}
@@ -194,7 +194,7 @@ export default function VehicleAllocation({ driver }: Props) {
                         <UserPlusIcon className="h-3 w-3" />
                       </div>
                     )}
-                    <p className="block truncate">{selected?.name}</p>
+                    <p className="block truncate">{selected?.regNumber}</p>
                   </div>
                   <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
                     <ChevronUpDownIcon aria-hidden="true" className="size-5 text-gray-400" />
@@ -214,13 +214,13 @@ export default function VehicleAllocation({ driver }: Props) {
                       <div className="flex items-center gap-2">
                         <Image
                           src={vehicle.photoURL}
-                          alt={vehicle.name}
+                          alt={vehicle.regNumber}
                           className="size-5 shrink-0 rounded-full"
                           width={100}
                           height={100}
                         />
                         <p className="block truncate font-normal group-data-[selected]:font-semibold">
-                          {vehicle.name}
+                          {vehicle.regNumber}
                         </p>
                       </div>
 

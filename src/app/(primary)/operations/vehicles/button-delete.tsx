@@ -76,10 +76,6 @@ export default function DeleteVehicleButton({ vehicle }: Props) {
 
         <div className="mt-5 grid items-center gap-3">
           <div className="flex items-center justify-between gap-5">
-            <label className="form-label">Name:</label>
-            <p>{vehicle.name}</p>
-          </div>
-          <div className="flex items-center justify-between gap-5">
             <label className="form-label">Reg. Number:</label>
             <p>{vehicle.regNumber}</p>
           </div>

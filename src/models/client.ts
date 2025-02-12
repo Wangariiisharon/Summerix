@@ -12,8 +12,6 @@ export interface CLIENT {
 
   email: string;
   phoneNumber: string;
-  idNumber: string;
-  currency: string;
   photoURL: string;
 
   lowerCase: {

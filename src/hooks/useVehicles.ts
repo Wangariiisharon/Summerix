@@ -2,7 +2,7 @@ import Constants from '@/Constants';
 import { fbDb } from '@/firebase/configs';
 import { PARAMS_MAP } from '@/models/params-map';
 import { VEHICLE } from '@/models/vehicle';
-import { getAvatarPhoto } from '@/services/utils';
+import { getVehiclePhoto } from '@/services/utils';
 import {
   collection,
   documentId,
@@ -65,7 +65,7 @@ function useVehicles({ companyId, docId, params }: Props) {
           const data = doc.data() as VEHICLE;
           data.doc = doc; // QueryDocumentSnapshot
           data.docId = doc.id;
-          data.photoURL = data.photoURL || getAvatarPhoto(data.name);
+          data.photoURL = data.photoURL || getVehiclePhoto(data.regNumber);
 
           return data;
         });

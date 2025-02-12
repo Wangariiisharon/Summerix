@@ -19,34 +19,15 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import useCurrentCompany from '@/hooks/useCurrentCompany';
-import { getVehicleByName, getVehicleByRegNumber } from '@/services/vehicle';
+import { getVehicleByRegNumber } from '@/services/vehicle';
 import Vehicles from '@/json/vehicles.json';
-import { getAvatarPhoto } from '@/services/utils';
+import { getVehiclePhoto } from '@/services/utils';
 import DriverAllocation from './driver';
 import Image from 'next/image';
 import VehicleClass from './class';
 
 const VehicleSchema = (companyId: string, docId: string) => {
   return Yup.object().shape({
-    name: Yup.string()
-      .trim()
-      .required('Name is required.')
-      .test({
-        exclusive: true,
-        name: 'vehicle-name',
-        message: 'Name is already in use.',
-        test: async function (value: any) {
-          if (!value) return true;
-
-          const snapshot = await getVehicleByName(companyId, value);
-          if (!snapshot.empty) {
-            const doc = snapshot.docs[0];
-            return doc.id?.trim() === docId;
-          }
-
-          return snapshot.empty;
-        },
-      }),
     regNumber: Yup.string()
       .trim()
       .required('Reg. number is required.')
@@ -90,7 +71,10 @@ export default function Vehicle({ params }: Props) {
         docRef,
         async (snapshot) => {
           const data = snapshot.data() as VEHICLE;
-          data.photoURL = data.photoURL || getAvatarPhoto(data.name);
+          data.photoURL = data.photoURL || getVehiclePhoto(data.regNumber);
+
+          console.log('data:photoURL', data.photoURL);
+
           data.docId = snapshot.id;
           setVehicle(data);
         },
@@ -115,7 +99,6 @@ export default function Vehicle({ params }: Props) {
         const colRef = collection(fbDb, Constants.fbVehicles);
         await addDoc(colRef, {
           ...formValues,
-          name: formValues.name.trim(),
           regNumber: formValues.regNumber.trim(),
           createdBy: {
             authId: authUser.uid,
@@ -148,7 +131,6 @@ export default function Vehicle({ params }: Props) {
       <Formik
         enableReinitialize={true}
         initialValues={{
-          name: vehicle?.name || '',
           regNumber: vehicle?.regNumber || '',
           make: vehicle?.make || '',
           model: vehicle?.model || '',
@@ -176,15 +158,6 @@ export default function Vehicle({ params }: Props) {
             {/* <h2 className="text-center font-bold">Account setup</h2> */}
 
             <div className="mt-5 grid gap-5 p-4">
-              <label className="grid-1-3">
-                <div className="text-sm">
-                  <label className="font-medium">Name</label>
-                </div>
-                <div className="">
-                  <Field type="text" name="name" className="form-input" placeholder="Name" />
-                  <ErrorMessage name="name" component="span" className="form-error" />
-                </div>
-              </label>
               <label className="grid-1-3">
                 <div className="text-sm">
                   <label className="font-medium">Reg. Number</label>

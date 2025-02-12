@@ -139,7 +139,7 @@ export default function Drivers() {
                       <p>{driver.displayName}</p>
                       <div className="mt-1 text-xs">
                         <p className="block sm:hidden">{driver.email}</p>
-                        <p className="block md:hidden">{driver.vehicle?.name}</p>
+                        <p className="block md:hidden">{driver.vehicle?.regNumber}</p>
                       </div>
                     </td>
                     <td className="td table-cell-sm">{driver.email}</td>
@@ -150,7 +150,7 @@ export default function Drivers() {
                           href={`/operations/vehicles/${driver.vehicle.docId}`}
                           className="text-primary hover:text-secondary"
                         >
-                          {driver.vehicle.name}
+                          {driver.vehicle.regNumber}
                         </Link>
                       )}
                       {!driver.vehicle && 'N/A'}

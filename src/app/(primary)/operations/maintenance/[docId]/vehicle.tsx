@@ -39,7 +39,7 @@ export default function MaintenanceVehicle({ companyId, setFieldValue, maintenan
           const data = doc.data() as VEHICLE;
           data.doc = doc; // QueryDocumentSnapshot
           data.docId = doc.id;
-          data.photoURL = data.photoURL || getAvatarPhoto(data.name);
+          data.photoURL = data.photoURL || getAvatarPhoto(data.regNumber);
 
           return data;
         });
@@ -65,7 +65,6 @@ export default function MaintenanceVehicle({ companyId, setFieldValue, maintenan
             if (vehicle && vehicle.docId) {
               setFieldValue('vehicle', {
                 docId: vehicle.docId,
-                name: vehicle.name,
                 photoURL: vehicle.photoURL,
                 regNumber: vehicle.regNumber,
               });
@@ -80,7 +79,7 @@ export default function MaintenanceVehicle({ companyId, setFieldValue, maintenan
                 {selected && (
                   <Image
                     src={selected.photoURL}
-                    alt={selected.name}
+                    alt={selected.regNumber}
                     className="size-10 shrink-0 rounded-full"
                     width={100}
                     height={100}
@@ -92,8 +91,7 @@ export default function MaintenanceVehicle({ companyId, setFieldValue, maintenan
                   </div>
                 )}
                 <div className="block truncate">
-                  <p className="font-medium">{selected?.name}</p>
-                  <p className="text-xs">{selected?.regNumber}</p>
+                  <p className="font-medium">{selected?.regNumber}</p>
                 </div>
               </div>
               <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
@@ -114,14 +112,13 @@ export default function MaintenanceVehicle({ companyId, setFieldValue, maintenan
                   <div className="flex items-center gap-2">
                     <Image
                       src={vehicle.photoURL}
-                      alt={vehicle.name}
+                      alt={vehicle.regNumber}
                       className="size-10 shrink-0 rounded-full"
                       width={100}
                       height={100}
                     />
                     <div className="block truncate group-data-[selected]:font-semibold">
-                      <p className="font-medium">{vehicle.name}</p>
-                      <p className="text-xs">{vehicle.regNumber}</p>
+                      <p className="font-medium">{vehicle.regNumber}</p>
                     </div>
                   </div>
 

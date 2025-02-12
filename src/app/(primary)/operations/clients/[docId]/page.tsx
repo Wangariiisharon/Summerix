@@ -108,7 +108,6 @@ export default function Client({ params }: Props) {
           phoneNumber: client?.phoneNumber || '',
           companyName: client?.companyName || '',
           contactInfo: client?.contactInfo || '',
-          idNumber: client?.idNumber || '',
           company: client?.company || {
             docId: company.docId,
             name: company.name || '',
@@ -118,7 +117,6 @@ export default function Client({ params }: Props) {
           },
 
           isActive: client?.isActive || false,
-          currency: client?.currency || company.currency,
           updatedBy: {
             authId: authUser?.uid,
             email: authUser?.email,
@@ -179,34 +177,6 @@ export default function Client({ params }: Props) {
                 </div>
                 <div className="">
                   <PhoneNumberInput name="phoneNumber" error={errors.phoneNumber} />
-                </div>
-              </label>
-              <label className="grid-1-3">
-                <div className="text-sm">
-                  <label className="font-medium">ID Number</label>
-                </div>
-                <div className="">
-                  <Field
-                    type="number"
-                    name="idNumber"
-                    className="form-input"
-                    placeholder="ID Number"
-                  />
-                  {/* <ErrorMessage name="idNumber" component="span" className="form-error" /> */}
-                </div>
-              </label>
-              <label className="grid-1-3">
-                <div className="text-sm">
-                  <label className="font-medium">Currency</label>
-                </div>
-                <div className="">
-                  <Field
-                    type="text"
-                    name="currency"
-                    className="form-input"
-                    placeholder="Currency"
-                  />
-                  {/* <ErrorMessage name="currency" component="span" className="form-error" /> */}
                 </div>
               </label>
 
