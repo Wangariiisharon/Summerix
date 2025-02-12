@@ -8,7 +8,6 @@ import { CLASS_DETAILS } from './class';
 export interface VEHICLE {
   docId: string;
 
-  name: string;
   regNumber: string;
   make: string;
   model: string;
@@ -41,7 +40,6 @@ export interface VEHICLE {
 
 export interface VEHICLE_DETAILS {
   docId: string;
-  name: string;
   regNumber: string;
   photoURL: string;
 }

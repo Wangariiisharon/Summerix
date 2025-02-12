@@ -133,11 +133,11 @@ export default function VehiclesPage() {
             <thead className="sticky top-0">
               <tr className="tr-header">
                 <th className="th"></th>
-                <th className="th text-left">Name</th>
-                <th className="th table-cell-sm">Reg. Number</th>
-                <th className="th table-cell-md">Driver</th>
+                {/* <th className="th text-left">Name</th> */}
+                <th className="th text-left">Reg. Number</th>
+                <th className="th table-cell-sm">Driver</th>
                 <th className="th table-cell-md">Status</th>
-                <th className="th table-cell-xl">Last Modified</th>
+                <th className="th table-cell-md">Last Modified</th>
                 <th className="th text-left">Actions</th>
               </tr>
             </thead>
@@ -149,7 +149,7 @@ export default function VehiclesPage() {
                       <div className="h-auto w-auto overflow-hidden rounded-xl">
                         <Image
                           src={vehicle.photoURL}
-                          alt={`${vehicle.name} image`}
+                          alt={`${vehicle.regNumber} image`}
                           className="h-16 w-16 rounded-xl object-cover"
                           height={50}
                           width={50}
@@ -158,7 +158,7 @@ export default function VehiclesPage() {
                       </div>
                     </td>
                     <td className="td text-left">
-                      <p>{vehicle.name}</p>
+                      <p>{vehicle.regNumber}</p>
                       <div className="mt-1 grid gap-2">
                         <p className="block sm:hidden">{vehicle.regNumber}</p>
                         <div className="block md:hidden">
@@ -168,8 +168,8 @@ export default function VehiclesPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="td table-cell-sm">{vehicle.regNumber}</td>
-                    <td className="td table-cell-md">
+                    {/* <td className="td table-cell-sm">{vehicle.regNumber}</td> */}
+                    <td className="td table-cell-sm">
                       {vehicle.driver && (
                         <Link
                           href={`/operations/drivers/${vehicle.driver.docId}`}
@@ -187,7 +187,7 @@ export default function VehiclesPage() {
                         </p>
                       </div>
                     </td>
-                    <td className="td table-cell-xl">
+                    <td className="td table-cell-md">
                       {vehicle.lastUpdated &&
                         moment(vehicle.lastUpdated.toDate()).format(Constants.dateTimeFormat)}
                     </td>

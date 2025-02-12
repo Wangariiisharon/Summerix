@@ -100,7 +100,6 @@ export default function DriverAllocation({ vehicle }: Props) {
       batch.update(driverDocRef, {
         vehicle: {
           docId: vehicle.docId,
-          name: vehicle.name,
           regNumber: vehicle.regNumber,
           photoURL: vehicle.photoURL,
         },
@@ -160,10 +159,6 @@ export default function DriverAllocation({ vehicle }: Props) {
         <div className="mt-5 grid items-center gap-5">
           <h3 className="font-medium">Vehicle</h3>
           <div className="grid gap-2">
-            <div className="flex items-center justify-between gap-5">
-              <label className="form-label">Name:</label>
-              <p>{vehicle.name}</p>
-            </div>
             <div className="flex items-center justify-between gap-5">
               <label className="form-label">Reg. Number:</label>
               <p>{vehicle.regNumber}</p>

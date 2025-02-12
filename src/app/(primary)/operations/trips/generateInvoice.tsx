@@ -12,6 +12,7 @@ import { doUploadImage } from '@/services/utils';
 import { fbDb } from '@/firebase/configs';
 import Constants from '@/Constants';
 import { doc, updateDoc } from 'firebase/firestore';
+import { checkInvoiceNumber } from '@/services/trip';
 
 type Props = {
   trip: TRIP;
@@ -22,13 +23,19 @@ export default function GenerateInvoiceButton({ trip }: Props) {
   const { company } = useCurrentCompany();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [photo, setPhoto] = useState<string | null>(null);
+  const [invoiceNumber, setInvoiceNumber] = useState<number | null>(null);
 
   const { authUser } = useAuthContext();
-
   useEffect(() => {
     if (company?.photoURL) {
       setPhoto(company.photoURL);
     }
+    const fetchInvoiceNumber = async () => {
+      const number = await checkInvoiceNumber(trip);
+      setInvoiceNumber(number + 1);
+    };
+
+    fetchInvoiceNumber();
   }, [company]);
 
   const doSave = async (pdfBlob: Blob) => {
@@ -64,6 +71,11 @@ export default function GenerateInvoiceButton({ trip }: Props) {
       return;
     }
 
+    if (invoiceNumber === null) {
+      toast.error('Invoice number not available');
+      return;
+    }
+
     setProcessing(true);
 
     const doc = new jsPDF();
@@ -88,7 +100,6 @@ export default function GenerateInvoiceButton({ trip }: Props) {
     if (!logoBase64) {
       return;
     }
-    console.log('Company logo base64:', logoBase64);
 
     doc.addImage(logoBase64, 'PNG', 10, 10, 40, 20);
 
@@ -103,7 +114,7 @@ export default function GenerateInvoiceButton({ trip }: Props) {
     doc.text(invoiceDate, 170, 40);
 
     doc.text('Invoice No:', 140, 45);
-    doc.text('AKL/24/009', 170, 45);
+    doc.text(`${invoiceNumber.toString().padStart(3, '0')}`, 170, 45);
 
     // Add Recipient Details
     doc.setFontSize(12);

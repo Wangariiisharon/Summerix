@@ -5,7 +5,6 @@ export const ClientFormSchema = (docId: string) => {
   return Yup.object().shape({
     companyName: Yup.string().required('Company Name is required.'),
     contactInfo: Yup.string().required('Contact Information is required.'),
-    currency: Yup.string().required('Currency is required.'),
 
     email: Yup.string()
       .trim()

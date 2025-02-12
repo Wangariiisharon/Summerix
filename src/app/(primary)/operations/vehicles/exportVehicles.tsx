@@ -42,7 +42,6 @@ export async function exportDataToCSV(companyId: string, status?: string) {
   }
 
   const csvData = data.map((vehicle) => ({
-    Name: vehicle.name || 'N/A', // Fallback for missing data
     RegNumber: vehicle.regNumber || 'N/A',
     Make: vehicle.make || 'N/A',
     Model: vehicle.model || 'N/A',
@@ -55,7 +54,7 @@ export async function exportDataToCSV(companyId: string, status?: string) {
   // Escape CSV values to prevent breaking structure
   const escapeCsvValue = (value: string): string => `"${value.replace(/"/g, '""')}"`; // Wrap in quotes and escape internal quotes
 
-  const header = ['Name', 'RegNumber', 'Make', 'Model', 'Type', 'Cargo', 'Ownership', 'Status']
+  const header = ['RegNumber', 'Make', 'Model', 'Type', 'Cargo', 'Ownership', 'Status']
     .map(escapeCsvValue)
     .join(',');
 

@@ -38,7 +38,7 @@ export default function TripVehicle({ companyId, setFieldValue, trip }: Props) {
           const data = doc.data() as VEHICLE;
           data.doc = doc; // QueryDocumentSnapshot
           data.docId = doc.id;
-          data.photoURL = data.photoURL || getAvatarPhoto(data.name);
+          data.photoURL = data.photoURL || getAvatarPhoto(data.regNumber);
 
           return data;
         });
@@ -65,7 +65,6 @@ export default function TripVehicle({ companyId, setFieldValue, trip }: Props) {
               setFieldValue('driver', vehicle.driver);
               setFieldValue('vehicle', {
                 docId: vehicle.docId,
-                name: vehicle.name,
                 photoURL: vehicle.photoURL,
                 regNumber: vehicle.regNumber,
               });
@@ -80,7 +79,7 @@ export default function TripVehicle({ companyId, setFieldValue, trip }: Props) {
                 {selected && (
                   <Image
                     src={selected.photoURL}
-                    alt={selected.name}
+                    alt={selected.regNumber}
                     className="size-10 shrink-0 rounded-full"
                     width={100}
                     height={100}
@@ -92,7 +91,6 @@ export default function TripVehicle({ companyId, setFieldValue, trip }: Props) {
                   </div>
                 )}
                 <div className="block truncate">
-                  <p className="font-medium">{selected?.name}</p>
                   <p className="text-xs">{selected?.regNumber}</p>
                 </div>
               </div>
@@ -114,14 +112,13 @@ export default function TripVehicle({ companyId, setFieldValue, trip }: Props) {
                   <div className="flex items-center gap-2">
                     <Image
                       src={vehicle.photoURL}
-                      alt={vehicle.name}
+                      alt={vehicle.regNumber}
                       className="size-10 shrink-0 rounded-full"
                       width={100}
                       height={100}
                     />
                     <div className="block truncate group-data-[selected]:font-semibold">
-                      <p className="font-medium">{vehicle.name}</p>
-                      <p className="text-xs">{vehicle.regNumber}</p>
+                      <p className="font-medium">{vehicle.regNumber}</p>
                     </div>
                   </div>
 

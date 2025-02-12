@@ -258,13 +258,12 @@ export default function Driver({ params }: Props) {
                         <div className="flex items-center gap-3">
                           <Image
                             src={driver.vehicle.photoURL}
-                            alt={driver.vehicle.name}
+                            alt={driver.vehicle.regNumber}
                             className="size-20 shrink-0 rounded-full"
                             width={100}
                             height={100}
                           />
                           <div className="grid gap-0.5">
-                            <p className="">{driver.vehicle.name}</p>
                             <div className="form-label">
                               <p>{driver.vehicle.regNumber}</p>
                             </div>

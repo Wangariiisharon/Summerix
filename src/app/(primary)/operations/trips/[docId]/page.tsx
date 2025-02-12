@@ -242,7 +242,7 @@ export default function Trip({ params }: Props) {
 
               <label className="grid-1-3">
                 <div className="text-sm">
-                  <label className="font-medium">Deal Value</label>
+                  <label className="font-medium">Rates</label>
                 </div>
                 <div className="block">
                   <Field type="number" name="payments.dealValue" className="form-input" />

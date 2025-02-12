@@ -130,7 +130,7 @@ export default function Maintenance() {
                           href={`/operations/vehicles/${maintenance.vehicle.docId}`}
                           className="text-primary hover:text-secondary"
                         >
-                          {maintenance.vehicle.name}
+                          {maintenance.vehicle.regNumber}
                         </Link>
                       )}
                       {!maintenance.vehicle && 'N/A'}

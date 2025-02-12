@@ -47,11 +47,10 @@ export async function exportDataToCSV(companyId: string, status?: string) {
     contactInfo: client.contactInfo,
     Email: client.email,
     PhoneNumber: client.phoneNumber,
-    Currency: client.currency,
     Status: client.isActive ? 'Active' : 'Inactive',
   }));
 
-  const header = 'Company Name,Contact Information,Email,PhoneNumber,Currency,Status';
+  const header = 'Company Name,Contact Information,Email,PhoneNumber,Status';
   const csvString = [header, ...csvData.map((item) => Object.values(item).join(','))].join('\n');
 
   return csvString;
