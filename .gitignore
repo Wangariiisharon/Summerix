@@ -41,4 +41,8 @@ next-env.d.ts
 # seviceKeys
 serviceAccount.json
 # Sentry Config File
-.env.sentry-build-plugin
+.env.sentry-build-plugin 
+.firebase/
+node_modules/
+.next/
+
