@@ -1,7 +1,7 @@
 {
   "projects": {
-    "default": "truck-it-bf0b2",
-    "dev": "truck-it-bf0b2",
+    "default": "summerix",
+    "dev": "summerix",
     "prod": "truck-mate-prod"
   }
 }
