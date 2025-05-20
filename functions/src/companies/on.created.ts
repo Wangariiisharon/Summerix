@@ -20,11 +20,15 @@ export const OnCompanyCreated = runWith({
         const authUser = await getFirebaseUser(account, docId);
         if (authUser && authUser.uid) {
           logger.debug('Create company`s default admin...');
+          
 
           // create the company owner admin profile
           await db()
             .collection(Constants.fbAdmins)
-            .doc(authUser.uid)
+            .doc(authUser.uid) 
+        
+            
+
             .set({
               email: account.email,
               idNumber: account.idNumber || '',
