@@ -37,8 +37,8 @@ export default function Layout({ children }: Props) {
               src="/images/logo-black.png"
               alt="company logo image"
               className="h-auto w-auto"
-              width={200}
-              height={100}
+              width={300}
+              height={200}
             />
           </header>
 

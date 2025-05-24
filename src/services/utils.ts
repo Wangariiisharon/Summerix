@@ -38,6 +38,10 @@ export const camelCaseToWords = (s: string) => {
 export const getAvatarPhoto = (name: string, size: number = 300) => {
   return `https://ui-avatars.com/api/?name=${name}&size=${size}`;
 };
+export const getVehiclePhoto = (regNumber: string, size: number = 300) => {
+  const initials = regNumber.slice(0, 2).toUpperCase();
+  return `https://ui-avatars.com/api/?name=${initials}&size=${size}`;
+};
 
 export const getInputStyle = (errors: any, fieldName: string | string[]) => {
   return getIn(errors, fieldName) ? 'form-input border-red-500 text-red-500' : 'form-input';

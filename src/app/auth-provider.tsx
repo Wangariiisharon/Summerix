@@ -46,6 +46,7 @@ export const AuthContextProvider = ({ children }: Props) => {
 
     const unsubscribe = onAuthStateChanged(fbAuth, async (fUser) => {
       console.debug('onAuthStateChanged > fUser:', fUser);
+      console.log('onAuthStateChanged > fUser:', fUser);
 
       if (fUser) {
         const authUser = await getAuthUser(fUser);

@@ -3,14 +3,17 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if true;
     }
+    
+    // AUTH
     
     match /accounts/{document=**} {
     	allow read: if true;
       
       match /{docId} {
-        allow create: if isAuthUid(docId) 
+          allow read: if true;
+          allow create: if true 
           && incomingData().email != null
           && incomingData().phoneNumber != null
           && incomingData().firstName != null
@@ -32,18 +35,22 @@ service cloud.firestore {
       }
     }
     
+    
+    // ADMINSTRATION
+    
     match /admins/{document=**} {
     	allow read: if isAuthenticated();
       
       match /{docId} {
         allow create: if (isCompanyId(incomingData().company.docId) 
-        	&& (isOwner() || (isAdmin() && hasRole('canManageAdmins'))))
+        	&& (isOwner() || (isAdmin())))
           && incomingData().company != null
           && incomingData().email != null
           && incomingData().phoneNumber != null
           && incomingData().firstName != null
           && incomingData().lastName != null;
-        allow update, delete: if isCompanyId(existingData().company.docId)
+        allow update: if true;
+        allow delete: if isCompanyId(existingData().company.docId)
         	&& (isOwner() || (isAdmin() && hasRole('canManageAdmins')));
       }
     }  
@@ -53,12 +60,33 @@ service cloud.firestore {
       
       match /{docId} {
         allow create: if (isCompanyId(incomingData().company.docId) 
-        	&& (isAdmin()))
+        	&& (isOwner() || (isAdmin() )))
           && incomingData().company != null
           && incomingData().name != null
-          allow update: if isCompanyId(existingData().company.docId)
-        	&& (isAdmin()); 
-         allow delete: if request.auth != null && request.auth.token.isAdmin;
+        allow update, delete: if isCompanyId(existingData().company.docId)
+        	&& (isOwner() || (isAdmin()));
+      }
+    }
+    
+    
+    // OPERATIONS
+    
+    match /trips/{document=**} {
+    	allow read: if isAuthenticated();
+      
+      match /{docId} {
+        allow create: if (isCompanyId(incomingData().company.docId) 
+        	&& (isOwner() || (isAdmin()))) 
+          && incomingData().company != null
+          && incomingData().driver != null
+          && incomingData().client != null
+          && incomingData().vehicle != null
+          && incomingData().from != null
+          && incomingData().to != null
+          && incomingData().payments.dealValue != null
+          
+        allow update: if isCompanyId(existingData().company.docId)
+        	&& (isOwner() || (isAdmin() || hasRole('canManageTrips')));
       }
     }
     
@@ -74,8 +102,56 @@ service cloud.firestore {
           && incomingData().make != null
           && incomingData().model != null
           && incomingData().status != null;
-        allow update: if isCompanyId(existingData().company.docId)
+        allow update, delete: if isCompanyId(existingData().company.docId)
         	&& (isOwner() || (isAdmin() && hasRole('canManageVehicles')));
+      }
+    }
+    // EXPENSES
+    match /expenses/{document=**} {
+      allow read: if isAuthenticated();
+      
+      match /{docId} {
+        allow create: if (isCompanyId(incomingData().company.docId) 
+          && (isOwner() || (isAdmin())))
+          && incomingData().company != null
+          && incomingData().name != null
+          && incomingData().amount != null
+          && incomingData().category != null
+          && incomingData().date != null;
+        allow update: if isCompanyId(existingData().company.docId)
+          && (isOwner() || (isAdmin()));
+        allow delete: if isCompanyId(existingData().company.docId)
+          && (isOwner() || (isAdmin()));
+      }
+    }
+    match /classes/{document=**} {
+    	allow read: if isAuthenticated();
+      
+      match /{docId} {
+        allow create: if (isCompanyId(incomingData().company.docId) 
+        	&& (isOwner() || (isAdmin() && hasRole('canManageClasses'))))
+          && incomingData().company != null
+          && incomingData().name != null
+          && incomingData().description != null;
+        allow update, delete: if isCompanyId(existingData().company.docId)
+        	&& (isOwner() || (isAdmin() && hasRole('canManageClasses')));
+      }
+    }
+    
+    match /clients/{document=**} {
+    	// allow read: if isAuthenticated();
+      allow read: if true
+      
+      match /{docId} {
+        allow create: if (isCompanyId(incomingData().company.docId) 
+        	&& (isOwner() || (isAdmin() && hasRole('canManageClients'))))
+          && incomingData().company != null
+          && incomingData().firstName != null
+          && incomingData().lastName != null
+          && incomingData().email != null
+          && incomingData().phoneNumber != null
+        allow update,delete: if isCompanyId(existingData().company.docId)
+        	&& (isOwner() || (isAdmin() && hasRole('canManageClients')));
       }
     }
     
@@ -109,22 +185,6 @@ service cloud.firestore {
         allow update: if isCompanyId(existingData().company.docId)
         	&& (isOwner() || (isAdmin() && hasRole('canManageSuppliers')));
       }
-    }  
-    
-    match /clients/{document=**} {
-    	allow read: if isAuthenticated();
-      
-      match /{docId} {
-        allow create: if (isCompanyId(incomingData().company.docId) 
-        	&& (isOwner() || (isAdmin())))
-          && incomingData().company != null
-          && incomingData().firstName != null
-          && incomingData().lastName != null
-          && incomingData().email != null
-          && incomingData().phoneNumber != null
-        allow update,delete: if isCompanyId(existingData().company.docId)
-        	&& (isOwner() || (isAdmin()));
-      }
     } 
         
     match /maintenance/{document=**} {
@@ -148,32 +208,6 @@ service cloud.firestore {
           && incomingData().company != null
         allow update: if isCompanyId(existingData().company.docId)
         	&& (isOwner() || (isAdmin() && hasRole('canManageVehicles')));
-      }
-    } 
-    
-    match /classes/{document=**} {
-    	allow read: if isAuthenticated();
-      
-      match /{docId} {
-        allow create: if (isCompanyId(incomingData().company.docId) 
-        	&& (isOwner() || (isAdmin())))
-          && incomingData().company != null
-        allow update: if isCompanyId(existingData().company.docId)
-        	&& (isOwner() || (isAdmin()));
-      }
-    }
-    
-    match /trips/{document=**} {
-    	allow read: if isAuthenticated();
-      
-      match /{docId} {
-        allow create: if (isCompanyId(incomingData().company.docId) 
-        	&& (isOwner() || (isAdmin() && hasRole('canManageTrips')))) 
-          && incomingData().company != null
-          && incomingData().client != null
-          && incomingData().driver != null;
-        allow update: if isCompanyId(existingData().company.docId)
-        	&& (isOwner() || (isAdmin() && hasRole('canManageTrips')));
       }
     }
     

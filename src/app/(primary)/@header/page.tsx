@@ -40,7 +40,7 @@ export default function Header() {
             <div className="flex w-full flex-col gap-2 bg-primary p-4 sm:flex-row sm:items-center">
               <Link href="/dashboard" className="flex h-10 w-full">
                 <Image
-                  src="/images/logo.svg"
+                  src="/images/logo.png"
                   alt="company logo image"
                   className="h-auto w-auto"
                   width={200}
