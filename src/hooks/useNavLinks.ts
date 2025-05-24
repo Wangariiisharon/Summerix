@@ -1,7 +1,6 @@
 import { useAuthContext } from '@/app/auth-provider';
 import {
   BriefcaseIcon,
-  ChartBarIcon,
   DocumentChartBarIcon,
   HomeIcon,
   WrenchScrewdriverIcon,
@@ -30,23 +29,6 @@ function useNavLinks() {
           { name: 'Users', link: 'users' },
           { name: 'Departments', link: 'departments' },
           { name: 'Integration', link: 'integration' },
-        ],
-      },
-      {
-        name: 'Operations',
-        href: '/operations',
-        icon: ChartBarIcon,
-        visible: authUser && authUser.companyId,
-        children: [
-          { name: 'Overview', link: '' },
-          { name: 'Trips', link: 'trips' },
-          { name: 'Vehicles', link: 'vehicles' },
-          { name: 'Expenses', link: 'expenses' },
-          { name: 'Classes', link: 'classes' },
-          { name: 'Clients', link: 'clients' },
-          { name: 'Drivers', link: 'drivers' },
-          { name: 'Maintenance', link: 'maintenance' },
-          { name: 'Suppliers', link: 'suppliers' },
         ],
       },
       {
