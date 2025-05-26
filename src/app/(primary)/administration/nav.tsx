@@ -36,7 +36,6 @@ export default function CompanyNav() {
           { name: 'Profile', link: 'profile' },
           { name: 'Users', link: 'users' },
           { name: 'Departments', link: 'departments' },
-          { name: 'Integration', link: 'integration' },
         ].map(({ name, link }) => {
           const isActive =
             (pathName.startsWith(`/administration/${link}`) && name !== 'Overview') ||

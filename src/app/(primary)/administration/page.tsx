@@ -98,9 +98,7 @@ export default function Administration() {
         >
           <i className="fas fa-users-rectangle"></i>
         </StatsCard>
-        <StatsCard label="Integration" value="0" classNames="bg-white border-b-4 border-primary">
-          <i className="fas fa-puzzle-piece"></i>
-        </StatsCard>
+     
       </section>
 
       <section className="grid-1-2 mt-5 gap-5">

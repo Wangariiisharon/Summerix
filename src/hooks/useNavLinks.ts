@@ -28,7 +28,6 @@ function useNavLinks() {
           { name: 'Profile', link: 'profile' },
           { name: 'Users', link: 'users' },
           { name: 'Departments', link: 'departments' },
-          { name: 'Integration', link: 'integration' },
         ],
       },
       {
