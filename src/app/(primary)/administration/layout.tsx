@@ -3,7 +3,7 @@ import CompanyNav from './nav';
 
 export const metadata = {
   title: {
-    template: '%s | TruckMate Administration',
+    template: '%s | Launchkit Administration',
     default: 'Administration',
   },
 };

@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 
 export const metadata = {
   title: {
-    template: '%s | TruckMate Users',
+    template: '%s | Launchkit Users',
     default: 'Users',
   },
 };

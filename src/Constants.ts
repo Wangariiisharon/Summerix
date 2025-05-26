@@ -7,25 +7,13 @@ const Constants = {
   dateFormat: 'MMMM DD, YYYY',
   dateTimeFormat: 'DD/MM/YYYY HH:mm',
   dateInputFormat: 'YYYY-MM-DDThh:mm',
-  authCookieName: 'truck-mate-token',
+  authCookieName: 'summerix-token',
 
   // firebase collections
   fbAccounts: 'accounts',
   fbCompanies: 'companies',
   fbAdmins: 'admins',
-  fbClients: 'clients',
   fbDepartments: 'departments',
-  fbExpenses: 'expenses',
-  fbPermissions: 'permisions',
-  fbDrivers: 'drivers',
-  fbJobCards: 'jobcard',
-  fbMaintenance: 'maintenance',
-  fbNotifications: 'notifications',
-  fbSettings: 'settings',
-  fbSuppliers: 'suppliers',
-  fbTrips: 'trips',
-  fbVehicles: 'vehicles',
-  fbClasses: 'classes',
 };
 
 export default Constants;

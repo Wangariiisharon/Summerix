@@ -57,7 +57,7 @@ export const getFirebaseUser = async (
     logger.debug('sendNewAccountEmail > emailBody:', emailBody);
 
     // await sendNewAccountEmail({
-    //   subject: 'Welcome to TruckMate',
+    //   subject: 'Welcome to Launchkit',
     //   email: userRecord.email,
     //   body: emailBody,
     //   html: emailBody,

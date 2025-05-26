@@ -79,7 +79,7 @@ export default function Header() {
                     >
                       <MenuItems
                         anchor="bottom end"
-                        className="w-fit min-w-60 origin-top-right rounded-b border border-primary bg-white p-3 focus:outline-none"
+                        className="w-fit min-w-60 origin-top-right rounded-b border border-primary bg-[#1C1967] p-3 focus:outline-none"
                       >
                         <MenuItem>
                           <div className="mt-5 flex items-center gap-3 px-3 text-sm">
@@ -94,8 +94,8 @@ export default function Header() {
                             )}
                             {!account && <UserCircleIcon className="h-10 w-10 text-primary" />}
                             <div className="font-medium">
-                              <p className="">{account?.displayName || 'UNKNOWN'}</p>
-                              <p className="text-xs">{account?.email}</p>
+                              <p className="text-white">{account?.displayName || 'UNKNOWN'}</p>
+                              <p className="text-xs text-white">{account?.email}</p>
                             </div>
                           </div>
                         </MenuItem>
@@ -109,7 +109,7 @@ export default function Header() {
                               await doLogoutApiCall(appCheck);
                               router.push('/auth/sign-in');
                             }}
-                            className="btn btn-outline-danger w-full rounded"
+                            className="btn btn-outline-danger w-full rounded bg-white"
                           >
                             <div className="flex items-center justify-center gap-2">
                               <ArrowLeftEndOnRectangleIcon className="h-5 w-5" />

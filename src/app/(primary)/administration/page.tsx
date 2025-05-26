@@ -122,7 +122,7 @@ export default function Administration() {
                     {
                       label: 'Active',
                       data: [adminStats.active, adminStats.total - adminStats.active],
-                      backgroundColor: ['#4FD1C5', '#E9ECEF'],
+                      backgroundColor: ['#1C1967', '#E9ECEF'],
                       borderWidth: 2,
                     },
                     {
@@ -152,7 +152,7 @@ export default function Administration() {
                   {
                     name: 'Active',
                     value: adminStats.active,
-                    classNames: 'bg-[#4FD1C5]/20 text-[#4FD1C5]',
+                    classNames: 'bg-[#1C1967]/20 text-[#1C1967]',
                   },
                   {
                     name: 'Inactive',

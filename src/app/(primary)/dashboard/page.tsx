@@ -36,14 +36,14 @@ const [dateRange, setDateRange] = useState('thisMonth');
           <i className="fas fa-money-bills"></i>
         </StatsCard>
         <StatsCard
-          label="Avg. Expenses Per Truck"
+          label="Avg. ExpenseS"
           value="334k"
           classNames="bg-white border-b-4 border-cyan-500"
         >
           <i className="fas fa-money-bills"></i>
         </StatsCard>
         <StatsCard
-          label="Avg. Income Per Truck"
+          label="Avg. Income"
           value="334k"
           classNames="bg-white border-b-4 border-green-500"
         >
@@ -55,12 +55,12 @@ const [dateRange, setDateRange] = useState('thisMonth');
         <div className="rounded bg-white p-4">
           <div className="flex items-center justify-between gap-5">
             <h3 className="text-lg">Overview</h3>
-            <Link
-              href="/operations/vehicles"
-              className="btn btn-outline border-[#C0D7FA] font-light"
+          
+            <button 
+            className="btn btn-outline border-[#C0D7FA] font-light"
             >
               View All
-            </Link>
+            </button> 
           </div>
           <div className="mt-5 grid grid-cols-1 items-center gap-5 sm:grid-cols-2">
             <div className="">
@@ -68,25 +68,25 @@ const [dateRange, setDateRange] = useState('thisMonth');
                 data={{
                   datasets: [
                     {
-                      label: 'Available',
+                      label: 'Active',
                       data: [6, 14 - 4],
                       backgroundColor: ['#4FD1C5', '#E9ECEF'],
                       borderWidth: 2,
                     },
                     {
-                      label: 'On Route',
+                      label: 'Incative',
                       data: [2, 14- 2],
                       backgroundColor: ['#065AD8', '#E9ECEF'],
                       borderWidth: 1,
                     },
                     {
-                      label: 'Under Maintenance',
+                      label: 'Archived',
                       data: [1, 14- 1,],
                       backgroundColor: ['#FFC107', '#E9ECEF'],
                       borderWidth: 1,
                     },
                     {
-                      label: 'Out of service',
+                      label: 'Offline',
                       data: [1, 14- 1,],
                       backgroundColor: ['#C80815', '#E9ECEF'],
                       borderWidth: 1,
@@ -110,22 +110,22 @@ const [dateRange, setDateRange] = useState('thisMonth');
               <div className="mt-5 grid gap-1">
                 {[
                   {
-                    name: 'Available',
+                    name: 'Active',
                     value: 6,
                     classNames: 'bg-[#4FD1C5]/20 text-[#4FD1C5]',
                   },
                   {
-                    name: 'On Route',
+                    name: 'Inactive',
                     value: 2,
                     classNames: 'bg-[#065AD8]/20 text-[#065AD8]',
                   },
                   {
-                    name: 'Under Maintenance',
+                    name: 'Archived',
                     value: 1,
                     classNames: 'bg-[#FFC107]/20 text-[#FFC107]',
                   },
                   {
-                    name: 'Out Of Service',
+                    name: 'Offline',
                     value: 1,
                     classNames: 'bg-[#C80815]/20 text-[#C80815]',
                   },
@@ -149,10 +149,12 @@ const [dateRange, setDateRange] = useState('thisMonth');
         </div>
         <div className="rounded bg-white p-4">
           <div className="flex items-center justify-between gap-5">
-            <h3 className="text-lg">Trips Overview</h3>
-            <Link href="/operations/trips" className="btn btn-outline border-[#C0D7FA] font-light">
+            <h3 className="text-lg">Overview</h3>
+            <button 
+            className="btn btn-outline border-[#C0D7FA] font-light"
+            >
               View All
-            </Link>
+            </button> 
           </div>
           <div className="mt-5 grid grid-cols-1 items-center gap-5 sm:grid-cols-2">
             <div className="">
@@ -160,19 +162,19 @@ const [dateRange, setDateRange] = useState('thisMonth');
                 data={{
                   datasets: [
                     {
-                      label: 'Booked',
+                      label: 'Subscribed',
                       data: [2, 10 - 2],
                       backgroundColor: ['#FFC107', '#E9ECEF'],
                       borderWidth: 2,
                     },
                     {
-                      label: 'Active',
+                      label: 'Unsubscribed',
                       data: [5, 10 - 5],
                       backgroundColor: ['#065AD8', '#E9ECEF'],
                       borderWidth: 2,
                     },
                     {
-                      label: 'Completed',
+                      label: 'Free',
                       data: [2, 10 - 2],
                       backgroundColor: ['#4FD1C5', '#E9ECEF'],
                       borderWidth: 2,
@@ -202,17 +204,17 @@ const [dateRange, setDateRange] = useState('thisMonth');
               <div className="mt-5 grid gap-1">
                 {[
                   {
-                    name: 'Booked',
+                    name: 'Subscribed',
                     value: 2,
                     classNames: 'bg-[#FFC107]/20 text-[#FFC107]',
                   },
                   {
-                    name: 'Active',
+                    name: 'Unsubscribed',
                     value: 5,
                     classNames: 'bg-[#065AD8]/20 text-[#065AD8]',
                   },
                   {
-                    name: 'Completed',
+                    name: 'Free',
                     value: 2,
                     classNames: 'bg-[#4FD1C5]/20 text-[#4FD1C5]',
                   },

@@ -11,17 +11,17 @@ const font = Outfit({ subsets: ['latin'] });
 
 export const metadata = {
   title: {
-    template: '%s | TruckMate',
-    default: 'TruckMate Platform',
+    template: '%s | Launchkit',
+    default: 'Launchkit Platform',
   },
   description: Constants.description,
-  metadataBase: new URL('https://www.truckmate.io'),
+  metadataBase: new URL('https://www.summerix.io'),
   openGraph: {
     images: ['/images/cover.png'],
   },
   twitter: {
     card: 'summary',
-    creator: '@TruckMate',
+    creator: '@Launchkit',
     images: ['/images/cover.png'],
   },
 };

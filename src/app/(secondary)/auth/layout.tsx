@@ -5,7 +5,7 @@ import { ReactNode } from 'react';
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | TruckMate',
+    template: '%s | Launchkit',
     default: 'Auth',
   },
   description: Constants.description,
@@ -45,7 +45,7 @@ export default function Layout({ children }: Props) {
           {children}
 
           <footer className="mt-10 text-center text-xs text-gray-400">
-            <p className="">&copy; {new Date().getFullYear()} TruckMate</p>
+            <p className="">&copy; {new Date().getFullYear()} Launchkit</p>
           </footer>
         </div>
       </div>

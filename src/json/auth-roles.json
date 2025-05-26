@@ -14,51 +14,6 @@
       "value": "canManageIntegration",
       "name": "Can manage integration",
       "description": ""
-    },
-    {
-      "value": "canManageTrips",
-      "name": "Can manage trips",
-      "description": ""
-    },
-    {
-      "value": "canManageVehicles",
-      "name": "Can manage vehicles",
-      "description": ""
-    },
-    {
-      "value": "canManageClasses",
-      "name": "Can manage classes",
-      "description": ""
-    },
-    {
-      "value": "canManageClients",
-      "name": "Can manage clients",
-      "description": ""
-    },
-    {
-      "value": "canManageDrivers",
-      "name": "Can manage drivers",
-      "description": ""
-    },
-    {
-      "value": "canManageMaintenance",
-      "name": "Can manage maintenance",
-      "description": ""
-    },
-    {
-      "value": "canManageSuppliers",
-      "name": "Can manage suppliers",
-      "description": ""
-    },
-    {
-      "value": "canManageReports",
-      "name": "Can manage reports",
-      "description": ""
-    },
-    {
-      "value": "canManagePayments",
-      "name": "Can manage payments",
-      "description": ""
     }
   ]
 }

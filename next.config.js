@@ -5,13 +5,17 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'firebasestorage.googleapis.com',
-        pathname: '/v0/b/summerix.appspot.com/o/**',
-        port: '',
+        pathname: '/v0/b/**/o/**', // match any Firebase storage bucket
+      },
+      {
+        protocol: 'https',
+        hostname: 'summerix.firebasestorage.app',
+        pathname: '/**', // allow fallback URL format
       },
       {
         protocol: 'https',
         hostname: 'ui-avatars.com',
-        port: '',
+        pathname: '/**',
       },
     ],
   },
@@ -37,8 +41,7 @@ module.exports = withSentryConfig(module.exports, {
   // For all available options, see:
   // https://github.com/getsentry/sentry-webpack-plugin#options
 
-  org: 'gessic',
-  project: 'truck-mate',
+  project: 'summerix',
 
   // Only print logs for uploading source maps in CI
   silent: true, // !process.env.CI,

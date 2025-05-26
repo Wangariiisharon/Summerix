@@ -47,11 +47,11 @@ export const OnAdminCreated = runWith({
 
             createdBy: {
               authId: 'functions',
-              email: 'functions@truckmate.com',
+              email: 'functions@summerix.com',
             },
             updatedBy: {
               authId: 'functions',
-              email: 'functions@truckmate.com',
+              email: 'functions@summerix.com',
             },
 
             dateCreated: db.FieldValue.serverTimestamp(),

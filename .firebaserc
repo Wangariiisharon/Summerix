@@ -2,6 +2,6 @@
   "projects": {
     "default": "summerix",
     "dev": "summerix",
-    "prod": "truck-mate-prod"
+    "prod": "summerix-prod"
   }
 }
