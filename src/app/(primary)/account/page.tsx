@@ -6,7 +6,6 @@ import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import { getClientByEmail, getClientByPhoneNumber } from '@/services/client';
 import Constants from '@/Constants';
 import { useRouter } from 'next/navigation';
 import { useAuthContext } from '@/app/auth-provider';
@@ -15,51 +14,14 @@ const AccountSchema = () => {
   return Yup.object().shape({
     firstName: Yup.string().trim().required('First name is required.'),
     lastName: Yup.string().trim().required('Last name is required.'),
-    email: Yup.string()
-      .trim()
-      .required('Email is required.')
-      .email('Enter a valid email address.')
-      .test({
-        exclusive: true,
-        name: 'client-email',
-        message: 'Email is already in use.',
-        test: async function (value: any) {
-          if (!value) return true;
-
-          const snapshot = await getClientByEmail(value);
-          if (!snapshot.empty) {
-            const id = this.parent.docId;
-            const doc = snapshot.docs[0];
-            return doc.id?.trim() === id?.trim();
-          }
-
-          return snapshot.empty;
-        },
-      }),
+    email: Yup.string().trim().required('Email is required.').email('Enter a valid email address.'),
     phoneNumber: Yup.string()
       .trim()
       .required('Phone number is required.')
       .matches(
         /^\+\d{1,4}\s?\d{6,14}$/,
         'Phone number must be in international format, e.g., +254 XXXXXXXXX.',
-      )
-      .test({
-        exclusive: true,
-        name: 'admin-phone',
-        message: 'Phone number is already in use as driver.',
-        test: async function (value: any) {
-          if (!value) return true;
-
-          const snapshot = await getClientByPhoneNumber(value);
-          if (!snapshot.empty) {
-            const id = this.parent.docId;
-            const doc = snapshot.docs[0];
-            return doc.id?.trim() === id?.trim();
-          }
-
-          return snapshot.empty;
-        },
-      }),
+      ),
   });
 };
 

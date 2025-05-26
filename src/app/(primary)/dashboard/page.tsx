@@ -1,6 +1,4 @@
 'use client';
-
-import Link from 'next/link';
 import { useState } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -11,8 +9,7 @@ import StatsCard from '@/components/stats-card';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function Home() {
-const [dateRange, setDateRange] = useState('thisMonth');
-
+  const [dateRange, setDateRange] = useState('thisMonth');
   return (
     <main className="">
       <div className="flex flex-wrap items-center justify-between gap-5 bg-white p-6">
@@ -55,12 +52,8 @@ const [dateRange, setDateRange] = useState('thisMonth');
         <div className="rounded bg-white p-4">
           <div className="flex items-center justify-between gap-5">
             <h3 className="text-lg">Overview</h3>
-          
-            <button 
-            className="btn btn-outline border-[#C0D7FA] font-light"
-            >
-              View All
-            </button> 
+
+            <button className="btn btn-outline border-[#C0D7FA] font-light">View All</button>
           </div>
           <div className="mt-5 grid grid-cols-1 items-center gap-5 sm:grid-cols-2">
             <div className="">
@@ -75,19 +68,19 @@ const [dateRange, setDateRange] = useState('thisMonth');
                     },
                     {
                       label: 'Incative',
-                      data: [2, 14- 2],
+                      data: [2, 14 - 2],
                       backgroundColor: ['#065AD8', '#E9ECEF'],
                       borderWidth: 1,
                     },
                     {
                       label: 'Archived',
-                      data: [1, 14- 1,],
+                      data: [1, 14 - 1],
                       backgroundColor: ['#FFC107', '#E9ECEF'],
                       borderWidth: 1,
                     },
                     {
                       label: 'Offline',
-                      data: [1, 14- 1,],
+                      data: [1, 14 - 1],
                       backgroundColor: ['#C80815', '#E9ECEF'],
                       borderWidth: 1,
                     },
@@ -150,11 +143,7 @@ const [dateRange, setDateRange] = useState('thisMonth');
         <div className="rounded bg-white p-4">
           <div className="flex items-center justify-between gap-5">
             <h3 className="text-lg">Overview</h3>
-            <button 
-            className="btn btn-outline border-[#C0D7FA] font-light"
-            >
-              View All
-            </button> 
+            <button className="btn btn-outline border-[#C0D7FA] font-light">View All</button>
           </div>
           <div className="mt-5 grid grid-cols-1 items-center gap-5 sm:grid-cols-2">
             <div className="">
@@ -240,7 +229,7 @@ const [dateRange, setDateRange] = useState('thisMonth');
             </div>
           </div>
         </div>
-      </section>    
+      </section>
     </main>
   );
-} 
+}

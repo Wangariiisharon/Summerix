@@ -98,7 +98,6 @@ export default function Administration() {
         >
           <i className="fas fa-users-rectangle"></i>
         </StatsCard>
-     
       </section>
 
       <section className="grid-1-2 mt-5 gap-5">
