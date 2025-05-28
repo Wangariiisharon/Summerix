@@ -1,5 +1,5 @@
 const Constants = {
-  description: 'Truck mate logistics',
+  description: 'LaunchKit Saas',
   imageURL: '',
 
   phoneRegExp: /\+\d{12}$/,
